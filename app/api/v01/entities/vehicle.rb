@@ -20,13 +20,13 @@ class V01::Entities::VehicleWithoutVehicleUsage < Grape::Entity
     'V01_VehicleWithoutVehicleUsage'
   end
 
-  expose(:id, documentation: { type: Integer })
-  expose(:ref, documentation: { type: String })
-  expose(:name, documentation: { type: String })
-  expose(:contact_email, documentation: { type: String })
-  expose(:phone_number, documentation: { type: String })
-  expose(:emission, documentation: { type: Float })
-  expose(:consumption, documentation: { type: Float })
+  expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 2 })
+  expose(:ref, documentation: { type: String, desc: 'External unique reference. Use ref:VALUE in path/ids filters.', example: 'VEH-1' })
+  expose(:name, documentation: { type: String, desc: 'Display name.', example: 'Truck 1' })
+  expose(:contact_email, documentation: { type: String, desc: 'Driver device e-mail(s). Several addresses may be separated by spaces, commas or semicolons.' })
+  expose(:phone_number, documentation: { type: String, desc: 'Driver phone number (SMS).' })
+  expose(:emission, documentation: { type: Float, desc: 'CO2 emission factor used to compute route emission.' })
+  expose(:consumption, documentation: { type: Float, desc: 'Fuel consumption factor used to compute route consumption.' })
   expose(:capacity, documentation: { type: Integer, desc: 'Deprecated, use capacities instead.' }) { |m|
     if m.capacities && m.customer.deliverable_units.size == 1
       capacities = m.capacities.values
@@ -39,24 +39,24 @@ class V01::Entities::VehicleWithoutVehicleUsage < Grape::Entity
       m.customer.deliverable_units[0].label if deliverable_unit_ids.size == 1
     end
   }
-  expose(:capacities, using: V01::Entities::DeliverableUnitQuantity, documentation: { type: V01::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
+  expose(:capacities, using: V01::Entities::DeliverableUnitQuantity, documentation: { type: V01::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form', desc: 'Vehicle capacities per deliverable unit (quantity = max load).' }) { |m|
     m.capacities ? m.capacities.to_a.collect{ |a| {deliverable_unit_id: a[0], quantity: a[1]} } : []
   }
-  expose(:color, documentation: { type: String, desc: 'Color code with #. For instance: #FF0000' })
-  expose(:fuel_type, documentation: { type: String })
-  expose(:router_id, documentation: { type: Integer })
-  expose(:router_dimension, documentation: { type: String, values: ::Router::DIMENSION.keys })
-  expose(:router_options, using: V01::Entities::RouterOptions, documentation: { type: V01::Entities::RouterOptions })
+  expose(:color, documentation: { type: String, desc: 'Color code with #. For instance: #FF0000', example: '#FF0000' })
+  expose(:fuel_type, documentation: { type: String, desc: 'Fuel type label (informational).' })
+  expose(:router_id, documentation: { type: Integer, desc: 'Router used to compute this vehicle tracks. Falls back to customer router.' })
+  expose(:router_dimension, documentation: { type: String, values: ::Router::DIMENSION.keys, desc: 'Optimize for time or distance.' })
+  expose(:router_options, using: V01::Entities::RouterOptions, documentation: { type: V01::Entities::RouterOptions, desc: 'Truck constraints passed to the router (weight, height, toll, …).' })
   expose(:speed_multiplicator, documentation: { type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
-  expose(:speed_multiplier, documentation: { type: Float })
+  expose(:speed_multiplier, documentation: { type: Float, desc: 'Speed multiplier applied to router times (1 is default).', example: 1.0 })
   expose(:max_distance, documentation: { type: Integer, desc: 'Maximum achievable distance in meters' })
   expose(:max_ride_distance, documentation: { type: Integer, desc: 'Maximum riding distance between two stops within a route in meters' })
   expose(:max_ride_duration, documentation: { type: DateTime, desc: 'Maximum riding time between two stops within a route' }) { |m| m.max_ride_duration_absolute_time_with_seconds }
-  expose(:tag_ids, documentation: { type: Integer, is_array: true })
+  expose(:tag_ids, documentation: { type: Integer, is_array: true, desc: 'Skills: visit tags required on this vehicle. Visits with unmatched tags raise out_of_skill.' })
   # Devices
   # add auth for : orange_id, teksat_id, tomtom_id
-  expose(:devices, documentation: {type: Hash})
-  expose(:custom_attributes_typed_hash, documentation: {type: Hash, desc: 'Additional properties'}, as: :custom_attributes)
+  expose(:devices, documentation: { type: Hash, desc: 'Telematics device identifiers keyed by provider (when the customer option is enabled).' })
+  expose(:custom_attributes_typed_hash, documentation: { type: Hash, desc: 'Additional typed properties defined on CustomAttribute for vehicles.' }, as: :custom_attributes)
 end
 
 class V01::Entities::Vehicle < V01::Entities::VehicleWithoutVehicleUsage
@@ -64,5 +64,5 @@ class V01::Entities::Vehicle < V01::Entities::VehicleWithoutVehicleUsage
     'V01_Vehicle'
   end
 
-  expose(:vehicle_usages, using: V01::Entities::VehicleUsage, documentation: { type: V01::Entities::VehicleUsage, is_array: true })
+  expose(:vehicle_usages, using: V01::Entities::VehicleUsage, documentation: { type: V01::Entities::VehicleUsage, is_array: true, desc: 'Usages of this vehicle in each vehicle usage set.' })
 end

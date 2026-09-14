@@ -130,6 +130,7 @@ class V01::Destinations < Grape::API
 
   resource :destinations do
     desc 'Fetch customer\'s destinations.',
+      detail: 'Returns all destinations of the customer, or a subset when ids is set (numeric ids or ref:VALUE). Use .geojson for a FeatureCollection of points; quantities adds pickup/delivery on features. No pagination: the whole customer scope is returned.',
       nickname: 'getDestinations',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Destination),
@@ -155,6 +156,7 @@ class V01::Destinations < Grape::API
     end
 
     desc 'Fetch destination.',
+      detail: 'Returns one destination by numeric id or ref:VALUE, including nested visits.',
       nickname: 'getDestination',
       success: V01::Status.success(:code_200, V01::Entities::Destination),
       failure: V01::Status.failures
@@ -166,6 +168,7 @@ class V01::Destinations < Grape::API
     end
 
     desc 'Create destination.',
+      detail: 'Creates a destination and optional nested visits. Address is geocoded when lat/lng are omitted. Rejected with an error if an optimizer job is running. Prefer importDestinations (PUT /destinations) to upsert many records by ref.',
       nickname: 'createDestination',
       success: V01::Status.success(:code_201, V01::Entities::Destination),
       failure: V01::Status.failures
@@ -184,7 +187,7 @@ class V01::Destinations < Grape::API
     end
 
     desc 'Import destinations by upload a CSV file, by JSON or from TomTom.',
-      detail: 'Import multiple destinations and visits. Use your internal and unique ids as a "reference" to automatically retrieve and update objects. If "route" key is provided for a visit or if a planning attribute is sent, a planning will be automatically created at the same time. If all "route" attibutes are blank or none attribute for planning is sent, only destinations and visits will be created/updated.',
+      detail: 'Import multiple destinations and visits. Use your internal and unique ids as a "reference" to automatically retrieve and update objects (upsert). If "route" or "ref_vehicle" is provided for a visit or if a planning attribute is sent, a planning will be automatically created at the same time. If all "route" attributes are blank and no planning attribute is sent, only destinations and visits will be created/updated. CSV headers follow Accept-Language. HTTP 202 when geocoding runs asynchronously (poll GET /jobs/:id); HTTP 200 when the import is synchronous.',
       nickname: 'importDestinations',
       is_array: true,
       http_codes: [
@@ -331,6 +334,7 @@ class V01::Destinations < Grape::API
     end
 
     desc 'Delete destination.',
+      detail: 'Deletes the destination and its visits. Stops on existing plannings are removed. Rejected if an optimizer job is running.',
       nickname: 'deleteDestination',
       success: V01::Status.success(:code_204),
       failure: V01::Status.failures
@@ -346,6 +350,7 @@ class V01::Destinations < Grape::API
     end
 
     desc 'Delete multiple destinations.',
+      detail: 'Deletes destinations listed in ids (numeric ids or ref:VALUE). WARNING: if ids is omitted or empty, ALL destinations of the customer are deleted. HTTP 304 when the filter matches nothing.',
       nickname: 'deleteDestinations',
       success: V01::Status.success(:code_204),
       failure: V01::Status.failures

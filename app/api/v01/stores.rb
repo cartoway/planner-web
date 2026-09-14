@@ -32,6 +32,7 @@ class V01::Stores < Grape::API
 
   resource :stores do
     desc 'Fetch customer\'s stores. At least one store exists per customer.',
+      detail: 'Returns depots (start/stop/reload). A default store is created with the customer. Use .geojson for a FeatureCollection of points.',
       nickname: 'getStores',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Store),
@@ -72,6 +73,7 @@ class V01::Stores < Grape::API
     end
 
     desc 'Fetch store.',
+      detail: 'Returns one store by numeric id or ref:VALUE.',
       nickname: 'getStore',
       success: V01::Status.success(:code_200, V01::Entities::Store),
       failure: V01::Status.failures
@@ -99,6 +101,7 @@ class V01::Stores < Grape::API
     end
 
     desc 'Import stores by upload a CSV file or by JSON.',
+      detail: 'Bulk create/update stores. Use ref as upsert key. CSV headers follow Accept-Language. JSON body uses stores[].',
       nickname: 'importStores',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Store),

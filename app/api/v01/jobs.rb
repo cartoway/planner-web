@@ -33,6 +33,7 @@ class V01::Jobs < Grape::API
 
   resource :jobs do
     desc 'Fetch customer\'s jobs.',
+         detail: 'Returns the customer\'s running asynchronous jobs (optimizer, destination geocoding, store geocoding). At most one of each. An empty list means no job is running.',
          nickname: 'getJobs',
          is_array: true,
          success: V01::Entities::Job
@@ -51,7 +52,7 @@ class V01::Jobs < Grape::API
     end
 
     desc 'Return a job.',
-      detail: 'Return asynchronous job (like geocoding, optimizer) currently runned for the customer.',
+      detail: 'Poll until the job disappears (success: it is deleted) or failed_at is set. HTTP 404 when the id is not the current optimizer/geocoding job.',
       nickname: 'getJob',
       success: V01::Entities::Job
     params do
@@ -74,7 +75,7 @@ class V01::Jobs < Grape::API
     end
 
     desc 'Cancel job.',
-      detail: 'Cancel asynchronous job (like geocoding, optimizer) currently runned for the customer.',
+      detail: 'Cancels a running optimizer or geocoding job. HTTP 409 if the optimizer job is already in transmission to the solver. Returns 204 on success.',
       nickname: 'deleteJob'
     params do
       requires :id, type: Integer, desc: ID_DESC

@@ -30,7 +30,7 @@ class V01::Geocoder < Grape::API
 
   resource :geocoder do
     desc 'Geocode.',
-      detail: 'Return a list of address which match with input query.',
+      detail: 'Free-text address search against the configured geocoder (not persisted). Returns an array of { address: { housenumber, street, postcode, city, country }, boundingbox, display_name, importance, lat, lon }. limit defaults to 10 (max 10). lat/lng bias results. json_callback wraps JSONP as text/plain.',
       nickname: 'geocode',
       is_array: true,
       success: V01::Status.success(:code_200),

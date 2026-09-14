@@ -52,6 +52,7 @@ class V01::RoutesGet < Grape::API
 
   resource :routes do
     desc 'Fetch customer\'s routes.',
+      detail: 'Returns routes across all plannings. Heavy payload (includes stops). Prefer GET /plannings/:planning_id/routes. Filter with ids. .geojson supported.',
       nickname: 'getRoutes',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Route),
@@ -82,6 +83,7 @@ class V01::RoutesGet < Grape::API
     segment '/:planning_id' do
       resource :routes do
         desc 'Fetch planning\'s routes.',
+          detail: 'Returns all routes of a planning including the unassigned route (vehicle_usage_id null) and nested stops. Filter with ids. .geojson supported.',
           nickname: 'getRoutes',
           is_array: true,
           success: V01::Status.success(:code_200, V01::Entities::Route),
@@ -105,6 +107,7 @@ class V01::RoutesGet < Grape::API
         end
 
         desc 'Fetch route.',
+          detail: 'Returns one route with ordered stops. .ics exports a calendar; .geojson exports the track. email=true on .ics sends the calendar to the driver and returns 204.',
           nickname: 'getRoute',
           http_codes: [
             V01::Status.success(:code_200, V01::Entities::Route),

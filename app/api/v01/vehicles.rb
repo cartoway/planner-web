@@ -87,6 +87,7 @@ class V01::Vehicles < Grape::API
 
   resource :vehicles do
     desc 'Fetch customer\'s vehicles.',
+      detail: 'Returns physical vehicles with capacities, router options and nested vehicle_usages. Filter with ids (numeric or ref:VALUE).',
       nickname: 'getVehicles',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Vehicle),
@@ -184,6 +185,7 @@ class V01::Vehicles < Grape::API
     end
 
     desc 'Fetch vehicle.',
+      detail: 'Returns one vehicle by numeric id or ref:VALUE, including nested vehicle_usages.',
       nickname: 'getVehicle',
       success: V01::Status.success(:code_200, V01::Entities::Vehicle),
       failure: V01::Status.failures
@@ -195,6 +197,7 @@ class V01::Vehicles < Grape::API
     end
 
     desc 'Update vehicle.',
+      detail: 'Updates capacities, router, speed, tags (skills) and device ids. Existing plannings using this vehicle become outdated until refresh/compute.',
       nickname: 'updateVehicle',
       success: V01::Status.success(:code_200, V01::Entities::Vehicle),
       failure: V01::Status.failures
