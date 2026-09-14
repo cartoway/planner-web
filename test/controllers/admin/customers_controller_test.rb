@@ -27,6 +27,37 @@ class Admin::CustomersControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'admin edit shows last_async_jobs' do
+    @customer.update_column(:last_async_jobs, {
+      'optimizer' => {
+        'id' => 42,
+        'type' => 'optimizer',
+        'status' => 'succeeded',
+        'finished_at' => '2026-09-14T10:00:00Z'
+      }
+    })
+
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select '.last-async-jobs', text: /optimizer#42/
+    assert_select '.last-async-jobs .label', text: 'succeeded'
+  end
+
+  test 'admin index shows last_async_jobs' do
+    @customer.update_column(:last_async_jobs, {
+      'destination_geocoding' => {
+        'id' => 99,
+        'type' => 'destination_geocoding',
+        'status' => 'succeeded',
+        'finished_at' => '2026-09-14T10:00:00Z'
+      }
+    })
+
+    get :index
+    assert_response :success
+    assert_select '.last-async-jobs', text: /destination_geocoding#99/
+  end
+
   test 'should render map marker icon selectpickers on edit' do
     get :edit, params: { id: @customer }
     assert_response :success

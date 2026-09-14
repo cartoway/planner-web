@@ -188,6 +188,7 @@ fr:
         description_title: Description
         description_label: Informations du compte
         description_help: Détails sur le compte et les utilisateurs courants
+        last_async_jobs: Derniers jobs asynchrones
         end_subscription: Fin de souscription
         test: Test
         max_vehicles: Nombre livreurs

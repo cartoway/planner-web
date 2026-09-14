@@ -104,6 +104,36 @@ class CustomerTest < ActiveSupport::TestCase
     end
   end
 
+  test 'optimizer_running? ignores a failed job kept in last_async_jobs' do
+    job = delayed_jobs(:job_optimizer)
+    job.update!(failed_at: Time.now.utc)
+    planning = plannings(:planning_one)
+    @customer.update!(
+      job_optimizer: job,
+      last_async_jobs: {
+        'optimizer' => { 'id' => job.id, 'type' => 'optimizer', 'status' => 'failed', 'planning_id' => planning.id }
+      }
+    )
+
+    refute @customer.optimizer_running?
+    assert @customer.last_failed_optimizer_job(planning.id)
+    assert_nil @customer.last_failed_optimizer_job(plannings(:planning_two).id)
+  end
+
+  test 'dismissed last failed optimizer is not returned for the planning modal' do
+    planning = plannings(:planning_one)
+    @customer.update!(
+      last_async_jobs: {
+        'optimizer' => { 'id' => 42, 'type' => 'optimizer', 'status' => 'failed', 'planning_id' => planning.id }
+      }
+    )
+
+    Customer.dismiss_last_async_job!(@customer.id, 42)
+
+    assert @customer.reload.last_async_jobs['optimizer']['dismissed']
+    assert_nil @customer.last_failed_optimizer_job(planning.id)
+  end
+
   test 'should destination add' do
     customer = customers(:customer_one)
     assert_difference('Destination.count') do

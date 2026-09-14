@@ -87,6 +87,10 @@ class OptimizerJob < OptimizerJobStruct
     1
   end
 
+  def destroy_failed_jobs?
+    true
+  end
+
   def apply_optimum_and_capture_state!(planning, optimum)
     planning.set_stops(optimum, **set_stops_options)
     planning = Planning.where(id: planning.id).first!
