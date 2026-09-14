@@ -48,6 +48,7 @@ class V01::PlanningsGet < Grape::API
 
   resource :plannings do
     desc 'Fetch customer\'s plannings.',
+      detail: 'Lists plannings. Filter with ids, begin_date/end_date, active, tags. Use .ics for iCalendar (optional email=true sends calendars to driver emails and returns 204). Use .geojson for a FeatureCollection of routes. No pagination.',
       nickname: 'getPlannings',
       is_array: true,
       http_codes: [
@@ -95,6 +96,7 @@ class V01::PlanningsGet < Grape::API
     end
 
     desc 'Fetch planning.',
+      detail: 'Returns one planning by numeric id or ref:VALUE (route_ids and aggregated metrics, not full stop lists). Use GET /plannings/:id/routes to load routes and stops. .ics exports a calendar; .geojson exports tracks. email=true on .ics sends calendars and returns 204.',
       nickname: 'getPlanning',
       http_codes: [
         V01::Status.success(:code_200, V01::Entities::Planning),

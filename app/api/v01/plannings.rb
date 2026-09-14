@@ -39,7 +39,7 @@ class V01::Plannings < Grape::API
 
   resource :plannings do # rubocop:disable Metrics/BlockLength
     desc 'Create planning.',
-      detail: 'Create a planning. An out-of-route (unplanned) route and a route for each vehicle are automatically created. If some visits exist (or fetch if you use tags), as many stops as fetching visits will be created (ie: there is no specific operation to create routes and stops, the application create them for you).',
+      detail: 'Create a planning. There is no create-route or create-stop endpoint: an out-of-route (unassigned) route and a route for each vehicle of the vehicle_usage_set are created automatically. If visits exist (filtered by tag_ids / tag_operation when set), as many stops as matching visits are created. Defaults vehicle_usage_set_id to the customer first set. HTTP 400 when the planning quota is exceeded.',
       nickname: 'createPlanning',
       success: V01::Status.success(:code_201, V01::Entities::Planning),
       failure: V01::Status.failures
@@ -64,6 +64,7 @@ class V01::Plannings < Grape::API
     end
 
     desc 'Update planning.',
+      detail: 'Updates planning attributes (name, dates, tags, zonings). Optional routes[] updates hidden/locked/color on existing routes. Does not recompute times unless you call refresh afterwards when outdated is true.',
       nickname: 'updatePlanning',
       success: V01::Status.success(:code_200, V01::Entities::Planning),
       failure: V01::Status.failures
@@ -125,6 +126,7 @@ class V01::Plannings < Grape::API
     end
 
     desc 'Delete planning.',
+      detail: 'Deletes the planning and its routes/stops. Destinations and visits are kept.',
       nickname: 'deletePlanning',
       success: V01::Status.success(:code_204),
       failure: V01::Status.failures
@@ -212,7 +214,7 @@ class V01::Plannings < Grape::API
     end
 
     desc 'Insert one or more stop into planning routes.',
-      detail: 'Insert automatically one or more stops in best routes and on best positions to have minimal influence on route\'s total time (this operation doesn\'t take into account time windows if they exist...). You should use this operation with existing stops in current planning\'s routes. In addition, you should not use this operation with many stops. You should use instead zoning (with automatic clustering creation for instance) to set multiple stops in each available route.',
+      detail: 'Heuristic insert of existing stops onto the cheapest routes/positions (total time, without time windows). Use only for a few already-created stops in this planning. For many unassigned stops, create a zoning (automatic clustering) then apply_zonings. HTTP 400 on loop errors. Returns 204; fetch the planning afterwards.',
       nickname: 'automaticInsertStop',
       success: V01::Status.success(:code_204),
       failure: V01::Status.failures
@@ -285,7 +287,7 @@ class V01::Plannings < Grape::API
     end
 
     desc 'Optimize routes.',
-      detail: 'Optimize all unlocked routes by keeping visits in same route or not.',
+      detail: 'Starts an asynchronous optimization of unlocked routes. global=true allows moving visits between routes; false keeps visits on their current route. Returns a Job (poll GET /jobs/:id until the job disappears or failed_at is set). HTTP 409 if another optimizer job is already running. HTTP 304 if the solver finds no solution. Synchronous mode is deprecated and ignored for locking: optimization must run asynchronously.',
       nickname: 'optimizeRoutes',
       http_codes: [
         V01::Status.success(:code_200, V01::Entities::Job),
@@ -327,6 +329,7 @@ class V01::Plannings < Grape::API
     end
 
     desc 'Clone the planning.',
+      detail: 'Duplicates the planning, routes and stops. Does not copy async jobs. The copy is independent (further edits do not affect the original).',
       nickname: 'clonePlanning',
       success: V01::Status.success(:code_201, V01::Entities::Planning),
       failure: V01::Status.failures

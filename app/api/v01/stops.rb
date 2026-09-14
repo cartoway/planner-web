@@ -49,6 +49,7 @@ class V01::Stops < Grape::API
 
           resource :stops do
             desc 'Fetch stop.',
+              detail: 'Returns one stop of a planning route (visit, reload or rest) with planned time, alerts and device status.',
               nickname: 'getStop',
               success: V01::Status.success(:code_200, V01::Entities::Stop),
               failure: V01::Status.failures
@@ -61,6 +62,7 @@ class V01::Stops < Grape::API
             end
 
             desc 'Update stop activation.',
+              detail: 'Sets active (skipped when false) and/or locked (optimization keeps the visit on this route). Recomputes the route. Locking may require extra user permissions (HTTP 403). Returns 204.',
               nickname: 'updateStop',
               success: V01::Status.success(:code_204),
               failure: V01::Status.failures
@@ -82,7 +84,7 @@ class V01::Stops < Grape::API
             end
 
             desc 'Move stop position in routes.',
-              detail: 'Set a new #N position for a stop in route which was in a previous #M position in the same route or another.',
+              detail: 'Moves a stop to index N on the target route (same route or another in the same planning). Index is 1-based; -1 appends at the end; 0 is invalid. HTTP 400 on invalid index. Returns 204; fetch the route afterwards.',
               nickname: 'moveStop',
               success: V01::Status.success(:code_204),
               failure: V01::Status.failures

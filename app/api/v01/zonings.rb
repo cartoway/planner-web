@@ -38,6 +38,7 @@ class V01::Zonings < Grape::API
 
   resource :zonings do
     desc 'Fetch customer\'s zonings.',
+      detail: 'Returns zonings (named sets of zones). Apply a zoning on a planning with GET /plannings/:id/apply_zonings to assign stops to zone vehicles.',
       nickname: 'getZonings',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Zoning),
@@ -55,6 +56,7 @@ class V01::Zonings < Grape::API
     end
 
     desc 'Fetch zoning.',
+      detail: 'Returns one zoning with its zones (polygons and vehicle_id).',
       nickname: 'getZoning',
       success: V01::Status.success(:code_200, V01::Entities::Zoning),
       failure: V01::Status.failures

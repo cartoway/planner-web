@@ -28,6 +28,7 @@ class V01::VisitsGet < Grape::API
 
   resource :visits do
     desc 'Fetch customer\'s visits.',
+      detail: 'Returns all visits of the customer (not nested under destinations), or a subset when ids is set. Use .geojson for a FeatureCollection; quantities adds pickup/delivery on features.',
       nickname: 'getVisits',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Visit),

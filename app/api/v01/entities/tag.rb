@@ -20,10 +20,10 @@ class V01::Entities::Tag < Grape::Entity
     'V01_Tag'
   end
 
-  expose(:id, documentation: { type: Integer })
-  expose(:label, documentation: { type: String })
-  expose(:ref, documentation: { type: String })
-  expose(:color, documentation: { type: String, desc: "Color code with #. Default: #{Planner::Application.config.tag_color_default}." })
+  expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 4 })
+  expose(:label, documentation: { type: String, desc: 'Display label used to filter visits when creating a planning.', example: 'Monday' })
+  expose(:ref, documentation: { type: String, desc: 'External unique reference. Use ref:VALUE in path/ids filters.', example: 'MON' })
+  expose(:color, documentation: { type: String, desc: "Color code with #. Default: #{Planner::Application.config.tag_color_default}.", example: '#FF9900' })
   expose(:icon, documentation: { type: String, desc: "Icon name from font-awesome. Default: #{Planner::Application.config.tag_icon_default}." })
   expose(:icon_size, documentation: { type: String, values: MapIconSize::SIZES, desc: "Icon size. Default: customer destination_icon_size or #{Planner::Application.config.destination_icon_size_default}." })
 end
