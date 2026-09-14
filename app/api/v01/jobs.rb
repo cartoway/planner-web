@@ -55,7 +55,7 @@ class V01::Jobs < Grape::API
       if job
         present job, with: V01::Entities::Job
       else
-        error! 'Job not found', 404
+        error! V01::Status.code_response(:code_404, message: 'Job not found.'), 404
       end
     end
 
