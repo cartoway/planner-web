@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """REST API 0.1 examples. Replace the placeholders, then run: python3 example.py
 
-See ../../getting-started.md for conventions and workflows.
+See ../../getting-started.md for the happy path, pitfalls, and CSV headers.
 """
 import json
 import time
@@ -29,9 +29,11 @@ def request(method, path, body=None, query=None):
         return json.loads(raw) if raw else None
 
 
-# EXAMPLE 1 — list destinations
-destinations = request('GET', '/api/0.1/destinations.json')
-print('Found %s destinations' % len(destinations))
+# EXAMPLE 1 — bootstrap: deliverable unit ids and vehicle refs
+units = request('GET', '/api/0.1/deliverable_units.json')
+print('Deliverable units: %s' % [(u.get('id'), u.get('ref')) for u in units])
+vehicles = request('GET', '/api/0.1/vehicles.json')
+print('Vehicles: %s' % [(v.get('id'), v.get('ref')) for v in vehicles])
 
 # EXAMPLE 2 — create one destination with a nested visit
 created = request('POST', '/api/0.1/destinations.json', {
@@ -51,7 +53,7 @@ created = request('POST', '/api/0.1/destinations.json', {
 })
 print('Created destination id=%s' % created['id'])
 
-# EXAMPLE 3 — bulk upsert and create a planning when visits have a route ref
+# EXAMPLE 3 — bulk upsert and create a planning when visits have a vehicle ref
 imported = request('PUT', '/api/0.1/destinations.json', {
     'planning': {'name': 'Monday', 'ref': 'PLAN-MON'},
     'destinations': [{
@@ -80,7 +82,7 @@ planning = request('POST', '/api/0.1/plannings.json', {
 })
 print('Planning id=%s route_ids=%s' % (planning['id'], planning['route_ids']))
 
-# EXAMPLE 5 — start global optimization, then poll the job
+# EXAMPLE 5 — start global optimization, then poll until HTTP 404 (success) or failed_at
 job = request('GET', '/api/0.1/plannings/%s/optimize.json' % planning['id'], query={'global': 'true'})
 if job and job.get('id'):
     print('Optimizer job id=%s' % job['id'])
@@ -96,6 +98,8 @@ if job and job.get('id'):
             print('Job failed: %s' % status)
             break
         time.sleep(2)
+    routes = request('GET', '/api/0.1/plannings/%s/routes.json' % planning['id'])
+    print('Routes after optimize: %s' % [r.get('id') for r in routes])
 
 # EXAMPLE 6 — move a stop (uncomment and set ids)
 # request('PATCH', '/api/0.1/plannings/1/routes/2/stops/10/move/3.json')
