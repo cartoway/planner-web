@@ -168,7 +168,7 @@ class V01::Routes < Grape::API
         end
         patch ':id/optimize' do
           begin
-            raise Exceptions::JobInProgressError if current_customer.job_optimizer
+            raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
             Stop.includes_destinations_and_stores.scoping do
               authorize!(:optimize, get_route)

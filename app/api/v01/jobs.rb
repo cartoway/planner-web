@@ -33,7 +33,7 @@ class V01::Jobs < Grape::API
 
   resource :jobs do
     desc 'Fetch customer\'s jobs.',
-         detail: 'Live optimizer/geocoding jobs plus the last succeeded job of each kind (recorded when Delayed::Job is destroyed on success).',
+         detail: 'Live optimizer/geocoding jobs plus the last finished job of each kind (succeeded, failed, or killed).',
          nickname: 'getJobs',
          is_array: true,
          success: V01::Entities::Job
@@ -44,7 +44,7 @@ class V01::Jobs < Grape::API
     end
 
     desc 'Return a job.',
-      detail: 'HTTP 200 with status running or failed while the job exists, succeeded after successful completion. HTTP 404 if this id was never a job of this customer.',
+      detail: 'HTTP 200 with status running or failed while the job exists; succeeded, failed, or killed after completion. HTTP 404 if this id was never a job of this customer.',
       nickname: 'getJob',
       success: V01::Entities::Job
     params do
@@ -60,7 +60,7 @@ class V01::Jobs < Grape::API
     end
 
     desc 'Cancel job.',
-      detail: 'Cancels a running optimizer or geocoding job. HTTP 409 if the optimizer job is already in transmission to the solver. Returns 204 on success.',
+      detail: 'Cancels a running optimizer or geocoding job and remembers it as killed. HTTP 409 if the optimizer job is already in transmission to the solver. Returns 204 on success.',
       nickname: 'deleteJob'
     params do
       requires :id, type: Integer, desc: ID_DESC
@@ -78,6 +78,7 @@ class V01::Jobs < Grape::API
       elsif customer.job_store_geocoding && customer.job_store_geocoding_id == params[:id]
         customer.job_store_geocoding.destroy
       end
+      Customer.dismiss_last_async_job!(customer.id, params[:id])
       status 204
     rescue Exceptions::JobInTransmissionError
       status 409
