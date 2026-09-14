@@ -23,7 +23,7 @@ class V01::Entities::Order < Grape::Entity
   expose(:id, documentation: { type: Integer })
   expose(:visit_id, documentation: { type: Integer })
   # Deprecated
-  expose(:destination_id, documentation: { type: Integer }) { |m| m.visit.destination.id }
+  expose(:destination_id, documentation: { hidden: true, deprecated: true, type: Integer, desc: 'Deprecated, use visit_id.' }) { |m| m.visit.destination.id }
   expose(:shift, documentation: { type: Integer })
   expose(:product_ids, documentation: { type: Integer, is_array: true })
 end
