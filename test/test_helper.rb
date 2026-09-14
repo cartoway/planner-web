@@ -196,7 +196,7 @@ end
 def clear_jobs
   jobs = JSON.parse(get_jobs(nil).body)
   jobs.each{ |job|
-    delete_job(job['message']['id'])
+    delete_job(job['id'])
   }
 end
 

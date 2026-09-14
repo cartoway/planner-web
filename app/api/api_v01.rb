@@ -101,7 +101,7 @@ Input schedule fields use `HH:MM` or `HH:MM:SS`. Output times are DateTime value
 ### I18n
 Functional messages and CSV headers follow `Accept-Language`. HTTP error codes are not translated. Errors look like `{ "message": "...", "status": 401 }`.
 ### Asynchronous jobs
-Optimization and bulk geocoding return a `Job`. Poll `GET /jobs/:id`: HTTP **404** means success (the job is deleted); `failed_at` set means failure. HTTP **409** means another optimizer job is already running.
+Optimization and bulk geocoding return a `Job`. Poll `GET /jobs/:id` until `status` is `succeeded` or `failed` (`failed_at` set). HTTP **404** means this id was never a job of this customer. HTTP **409** means another optimizer job is already running.
 
 ## Admin access
 Using an admin `api_key` unlocks advanced operations (on `Customer`, `User`, `Vehicle`, `Profile`). Most operations from the current API are usable either for a normal user `api_key` or an admin user `api_key` (not both).
