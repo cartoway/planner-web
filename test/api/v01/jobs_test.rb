@@ -39,6 +39,9 @@ class V01::JobsTest < ActiveSupport::TestCase
   test 'GET job returns 404 for an id this customer never ran' do
     get api(9_000_404)
     assert_equal 404, last_response.status, last_response.body
+    body = JSON.parse(last_response.body)
+    assert_equal 404, body['status']
+    assert_equal 'Job not found.', body['message']
   end
 
   test 'GET job returns running for a live Delayed::Job' do
