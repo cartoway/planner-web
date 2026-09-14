@@ -27,13 +27,13 @@ class V01::Entities::VehicleWithoutVehicleUsage < Grape::Entity
   expose(:phone_number, documentation: { type: String, desc: 'Driver phone number (SMS).' })
   expose(:emission, documentation: { type: Float, desc: 'CO2 emission factor used to compute route emission.' })
   expose(:consumption, documentation: { type: Float, desc: 'Fuel consumption factor used to compute route consumption.' })
-  expose(:capacity, documentation: { type: Integer, desc: 'Deprecated, use capacities instead.' }) { |m|
+  expose(:capacity, documentation: { hidden: true, deprecated: true, type: Integer, desc: 'Deprecated, use capacities instead.' }) { |m|
     if m.capacities && m.customer.deliverable_units.size == 1
       capacities = m.capacities.values
       capacities[0] if capacities.size == 1
     end
   }
-  expose(:capacity_unit, documentation: { type: String, desc: 'Deprecated, use capacities and deliverable_unit entity instead.' }) { |m|
+  expose(:capacity_unit, documentation: { hidden: true, deprecated: true, type: String, desc: 'Deprecated, use capacities and deliverable_unit entity instead.' }) { |m|
     if m.capacities && m.customer.deliverable_units.size == 1
       deliverable_unit_ids = m.capacities.keys
       m.customer.deliverable_units[0].label if deliverable_unit_ids.size == 1
@@ -47,7 +47,7 @@ class V01::Entities::VehicleWithoutVehicleUsage < Grape::Entity
   expose(:router_id, documentation: { type: Integer, desc: 'Router used to compute this vehicle tracks. Falls back to customer router.' })
   expose(:router_dimension, documentation: { type: String, values: ::Router::DIMENSION.keys, desc: 'Optimize for time or distance.' })
   expose(:router_options, using: V01::Entities::RouterOptions, documentation: { type: V01::Entities::RouterOptions, desc: 'Truck constraints passed to the router (weight, height, toll, …).' })
-  expose(:speed_multiplicator, documentation: { type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
+  expose(:speed_multiplicator, documentation: { hidden: true, deprecated: true, type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
   expose(:speed_multiplier, documentation: { type: Float, desc: 'Speed multiplier applied to router times (1 is default).', example: 1.0 })
   expose(:max_distance, documentation: { type: Integer, desc: 'Maximum achievable distance in meters' })
   expose(:max_ride_distance, documentation: { type: Integer, desc: 'Maximum riding distance between two stops within a route in meters' })
