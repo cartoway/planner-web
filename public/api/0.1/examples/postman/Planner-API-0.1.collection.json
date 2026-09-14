@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "7c8e9f01-2a3b-4c5d-8e9f-0a1b2c3d4e5f",
     "name": "Planner REST API 0.1",
-    "description": "Curated requests for the integration happy path (not a dump of every endpoint).\n\n1. Import this collection **and** `Planner-API-0.1.environment.json`.\n2. Set `api_key` (user form in the web UI). `base` matches `swagger_docs_base_path` without the trailing slash (default `http://localhost:8080`). Change it if your instance is published elsewhere.\n3. Run the **Happy path** folder in order.\n\nInsomnia: Import → From File → this collection, then set `base` and `api_key` on the environment.\n\nFull catalog: import `GET {{base}}/api/0.1/swagger_doc` (Swagger 2.0).\nGuide: `/api/0.1/getting-started.md`\n\nPitfall: polling `GET /jobs/:id` until **HTTP 404** means success (the job is deleted). `failed_at` on HTTP 200 means failure.",
+    "description": "Curated requests for the integration happy path (not a dump of every endpoint).\n\n1. Import this collection **and** `Planner-API-0.1.environment.json`.\n2. Set `api_key` (user form in the web UI). `base` matches `swagger_docs_base_path` without the trailing slash (default `http://localhost:8080`). Change it if your instance is published elsewhere.\n3. Run the **Happy path** folder in order.\n\nInsomnia: Import → From File → this collection, then set `base` and `api_key` on the environment.\n\nFull catalog: import `GET {{base}}/api/0.1/swagger_doc` (Swagger 2.0).\nGuide: `/api/0.1/getting-started.md`\n\nPitfall: polling `GET /jobs/:id` until `status` is **succeeded**. `status` failed / `failed_at` means failure. HTTP 404 means this id was never a job of this customer.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -110,7 +110,7 @@
             "method": "GET",
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base}}/api/0.1/jobs/{{job_id}}.json",
-            "description": "Repeat until HTTP **404** (success: job deleted) or HTTP 200 with `failed_at` set (failure). Do not retry optimize on 404."
+            "description": "Repeat until `status` is **succeeded** (or **failed** / `failed_at`). HTTP 404 means this id was never a job of this customer."
           }
         },
         {
