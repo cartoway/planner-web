@@ -31,7 +31,7 @@ class OpenapiConverter
     promote_nullable!(out)
     rewrite_refs!(out)
     mark_deprecated_from_description!(out)
-    prune_unused_schemas!(out) if @scope == 'core'
+    prune_unused_schemas!(out) if @scope == 'core' || @scope == 'happy_path'
     out
   end
 
@@ -62,18 +62,24 @@ class OpenapiConverter
     paths.each_with_object({}) do |(path, item), acc|
       next unless item.is_a?(Hash)
 
-      tag = tag_for_path(path)
-      next if @scope == 'core' && tag != 'core'
+      category = tag_for_path(path)
+      next if @scope == 'core' && category != 'core'
+      next if @scope == 'happy_path' && category != 'core'
 
-      acc[path] = item.each_with_object({}) do |(method, operation), ops|
+      converted = item.each_with_object({}) do |(method, operation), ops|
         if HTTP_METHODS.include?(method)
           op = convert_operation(operation)
-          tag_operation!(op, tag) if op.is_a?(Hash)
+          if op.is_a?(Hash)
+            tag_operation!(op, category)
+            op['tags'] = ['happy_path', *op['tags']].uniq if happy_path_operation?(op)
+            next if @scope == 'happy_path' && !Array(op['tags']).include?('happy_path')
+          end
           ops[method] = op
         else
           ops[method] = operation
         end
       end
+      acc[path] = converted unless converted.empty?
     end
   end
 
@@ -88,6 +94,21 @@ class OpenapiConverter
     operation['tags'] = [tag, *Array(operation['tags'])].uniq
   end
 
+  def happy_path_operation?(operation)
+    # Numbered getting-started flow, plus DELETE job (a failed optimizer stays blocking).
+    %w[
+      getDeliverableUnits
+      getVehicles
+      getDestinations
+      createDestination
+      createPlanning
+      optimizeRoutes
+      getJob
+      deleteJob
+      getRoutes
+    ].include?(operation['operationId'])
+  end
+
   def document_tags(paths)
     used = paths.values.flat_map { |item|
       next [] unless item.is_a?(Hash)
@@ -95,6 +116,7 @@ class OpenapiConverter
       item.each_value.flat_map { |op| op.is_a?(Hash) ? Array(op['tags']) : [] }
     }.uniq
     descriptions = {
+      'happy_path' => 'Getting-started numbered flow: units, vehicles, destinations, planning, optimize, poll job, routes.',
       'core' => 'Integration surface: destinations, visits, plannings, routes, stops, jobs, …',
       'admin' => 'Admin api_key: customers, users, profiles, layers, routers.',
       'devices' => 'Telematics device connectors.'
