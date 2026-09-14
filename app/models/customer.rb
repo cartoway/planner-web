@@ -201,6 +201,44 @@ class Customer < ApplicationRecord
     rest_icon_size || Planner::Application.config.rest_icon_size_default
   end
 
+  LastAsyncJob = Struct.new(:id, :type, :status, :finished_at, keyword_init: true)
+
+  def self.record_last_async_job!(customer_id, id:, type:, kind:)
+    customer = find_by(id: customer_id)
+    return unless customer
+
+    jobs = (customer.last_async_jobs || {}).dup
+    jobs[kind.to_s] = {
+      'id' => id,
+      'type' => type,
+      'status' => 'succeeded',
+      'finished_at' => Time.now.utc.iso8601
+    }
+    customer.update_column(:last_async_jobs, jobs)
+  end
+
+  def live_async_jobs
+    [job_optimizer, job_destination_geocoding, job_store_geocoding].compact
+  end
+
+  def remembered_async_jobs
+    (last_async_jobs || {}).values.filter_map do |entry|
+      next unless entry.is_a?(Hash)
+
+      LastAsyncJob.new(
+        id: (entry['id'] || entry[:id]).to_i,
+        type: entry['type'] || entry[:type],
+        status: entry['status'] || entry[:status],
+        finished_at: entry['finished_at'] || entry[:finished_at]
+      )
+    end
+  end
+
+  def find_async_job(job_id)
+    live_async_jobs.find { |job| job.id == job_id } ||
+      remembered_async_jobs.find { |job| job.id == job_id }
+  end
+
   def duplicate
     customer_id = self.custom_duplicate
     Customer.find(customer_id)
@@ -212,7 +250,7 @@ class Customer < ApplicationRecord
     fallback_role_id = nil if fallback_role_id.blank? || !reseller_role_ids.include?(fallback_role_id)
 
     self.transaction_without_selects do
-      attributes = self.import_attributes.except('id', 'job_destination_geocoding_id', 'job_store_geocoding_id', 'job_optimizer_id')
+      attributes = self.import_attributes.except('id', 'job_destination_geocoding_id', 'job_store_geocoding_id', 'job_optimizer_id', 'last_async_jobs')
       attributes['name'] += " (#{I18n.l(Time.zone.now, format: :long)})"
       attributes['test'] = Planner::Application.config.customer_test_default
       attributes['ref'] = attributes['ref'] ? Time.new.to_i.to_s : nil
