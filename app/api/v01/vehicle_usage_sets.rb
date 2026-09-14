@@ -204,7 +204,7 @@ class V01::VehicleUsageSets < Grape::API
       if import && import.valid? && (vehicles_usages_with_conf = import.import)
         present vehicles_usages_with_conf, with: V01::Entities::Vehicle
       else
-        error!({error: import.errors.full_messages}, 422)
+        error! V01::Status.code_response(:code_422, message: Array(import.errors.full_messages).join(', ').presence, errors: import.errors.full_messages), 422
       end
     end
   end
