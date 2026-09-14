@@ -940,6 +940,13 @@ class RouteTest < ActiveSupport::TestCase
     assert_includes planning.routes.available, out_of_route
   end
 
+  test 'should update route when optimizer job has failed' do
+    route = routes(:route_one_one)
+    delayed_jobs(:job_optimizer).update!(handler: "planning_id: #{route.planning_id}", failed_at: Time.now.utc)
+
+    assert route.update!(ref: 'after-failed-optim')
+  end
+
   test 'should not update route while optimization job is running on planning' do
     route = routes(:route_one_one)
     delayed_jobs(:job_optimizer).update!(handler: "planning_id: #{route.planning_id}")

@@ -28,6 +28,22 @@ class CustomersControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'non-admin edit hides last_async_jobs' do
+    @customer.update_column(:last_async_jobs, {
+      'optimizer' => {
+        'id' => 42,
+        'type' => 'optimizer',
+        'status' => 'succeeded',
+        'finished_at' => '2026-09-14T10:00:00Z'
+      }
+    })
+
+    sign_in users(:user_one)
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select '.last-async-jobs', count: 0
+  end
+
   test 'admin customer edit users tab lists role column' do
     sign_in users(:user_admin)
     get :edit, params: { id: @customer }

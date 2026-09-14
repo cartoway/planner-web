@@ -206,6 +206,22 @@ class V01::CustomerTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should dismiss last failed optimizer when deleting the remembered job' do
+    @customer.update!(
+      job_optimizer_id: nil,
+      last_async_jobs: {
+        'optimizer' => { 'id' => 42, 'type' => 'optimizer', 'status' => 'failed', 'planning_id' => plannings(:planning_one).id }
+      }
+    )
+
+    delete api("#{@customer.id}/job/42")
+    assert_equal 204, last_response.status, last_response.body
+    remembered = @customer.reload.last_async_jobs['optimizer']
+    assert_equal true, remembered['dismissed']
+    assert_equal 'failed', remembered['status']
+    assert_nil @customer.last_failed_optimizer_job(plannings(:planning_one).id)
+  end
+
   test 'should duplicate customer' do
     assert_difference('Customer.count', +1) do
       patch api_admin(@customer.id.to_s + '/duplicate')
