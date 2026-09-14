@@ -35,6 +35,8 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     visit = swagger_definition(content, 'V01_Visit')
     assert visit, 'V01_Visit definition missing'
     assert visit[:properties][:force_position][:description].present?, 'V01_Visit.force_position should have a description'
+    refute visit[:properties].key?(:quantity)
+    refute visit[:properties].key?(:open1)
 
     operation_ids = content[:paths].values.flat_map { |path|
       path.values.filter_map { |op| op[:operationId] if op.is_a?(Hash) }
@@ -54,6 +56,7 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert_includes body, 'horaire début 1'
     assert_includes body, 'GET /plannings/:id/routes.json'
     assert_includes body, 'openapi.json'
+    assert_includes body, 'scope=core'
     assert_includes body, '/api/100'
 
     php = Rails.root.join('public/api/0.1/examples/php/example.php').read
@@ -118,6 +121,28 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert content[:paths].keys.any? { |path| path.to_s.include?('destinations') }
     assert content.dig(:servers, 0, :url).present?
     refute_match(/\/\z/, content.dig(:servers, 0, :url).to_s)
+    destination_op = content[:paths].values.find { |item| item[:get] && item[:get][:operationId].to_s.include?('getDestinations') }
+    assert destination_op, 'getDestinations missing from OpenAPI 3'
+    assert_includes destination_op[:get][:tags], 'core'
+    tag_names = Array(content[:tags]).map { |t| t[:name] }
+    assert_includes tag_names, 'core'
+    assert_includes tag_names, 'admin'
+    assert_includes tag_names, 'devices'
+  end
+
+  test 'OpenAPI 3 scope core drops admin and devices' do
+    get '/api/0.1/openapi.json?scope=core'
+    assert_response :success
+
+    content = JSON.parse(response.body, symbolize_names: true)
+    paths = content[:paths].keys.map(&:to_s)
+    assert paths.any? { |path| path.include?('destinations') }
+    refute paths.any? { |path| path.include?('/devices/') }
+    refute paths.any? { |path| path.match?(%r{/customers(\.json|/|\z)}) }
+    tag_names = Array(content[:tags]).map { |t| t[:name] }
+    assert_includes tag_names, 'core'
+    refute_includes tag_names, 'admin'
+    refute_includes tag_names, 'devices'
   end
 
   test 'should get OpenAPI 3 for 100' do
