@@ -294,6 +294,7 @@ REST API **0.1** (integrations):
 * Getting started: `public/api/0.1/getting-started.md` (served at `/api/0.1/getting-started.md`) — happy path, pitfalls, CSV
 * Machine-readable Swagger 2.0: `GET /api/0.1/swagger_doc` (generated dynamically from Grape)
 * Code samples: `public/api/0.1/examples/{curl,python,php,ruby}/`
+* Postman / Insomnia: `public/api/0.1/examples/postman/` (collection v2.1; Insomnia imports the same file)
 
 REST API **100** is a small additive surface (`GET /api/100/swagger_doc`). Combine it with 0.1; it does not replace it.
 

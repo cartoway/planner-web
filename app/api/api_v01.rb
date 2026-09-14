@@ -128,6 +128,7 @@ Several default profiles are available and can be listed with an admin `api_key`
 ## Code samples
 Workflows with curl: see [getting started](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/getting-started.md).
 Runnable samples: [cURL](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/curl/example.sh), [Python](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/python/example.py), [PHP](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/php/example.php), [Ruby](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/ruby/example.rb).
+Postman / Insomnia (happy path): [collection](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/postman/Planner-API-0.1.collection.json), [environment](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/postman/Planner-API-0.1.environment.json).
 You can import destinations/visits and create a planning at the same time if you already know the route for each visit (`importDestinations`). Creating a planning materializes routes and stops. Move stops between routes, or use zoning (automatic clustering) to assign many unassigned stops at once.
 '})
 end

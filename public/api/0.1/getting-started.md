@@ -169,7 +169,7 @@ Response excerpt:
 
 The unassigned route has `vehicle_usage_id: null`. Check stop flags (`out_of_window`, `out_of_capacity`, …) after optimize.
 
-Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python/example.py), [Ruby](./examples/ruby/example.rb), [PHP](./examples/php/example.php).
+Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python/example.py), [Ruby](./examples/ruby/example.rb), [PHP](./examples/php/example.php), [Postman / Insomnia](./examples/postman/Planner-API-0.1.collection.json).
 
 ---
 
@@ -392,3 +392,17 @@ curl -H "Api-Key: YOUR_API_KEY" \
 - [Python](./examples/python/example.py)
 - [Ruby](./examples/ruby/example.rb)
 - [PHP](./examples/php/example.php)
+
+### Postman / Insomnia
+
+Curated happy-path collection (not a dump of every Swagger operation):
+
+- [Planner-API-0.1.collection.json](./examples/postman/Planner-API-0.1.collection.json)
+- [Planner-API-0.1.environment.json](./examples/postman/Planner-API-0.1.environment.json)
+- Sample CSV: [destinations.en.csv](./examples/postman/destinations.en.csv)
+
+**Postman:** Import both JSON files, set `api_key`, run the Happy path folder in order. Optimize saves `job_id`; create planning saves `planning_id`. `base` follows `swagger_docs_base_path` without the trailing slash (default `http://localhost:8080`). Point it at your own host if you publish the API elsewhere.
+
+**Insomnia:** Import → From File → the collection (v2.1). Then set `api_key` (and `base` if it is not the default). Insomnia understands this format; there is no second file to maintain.
+
+Full endpoint catalog: import `GET /api/0.1/swagger_doc` (Swagger 2.0) in either tool.
