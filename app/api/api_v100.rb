@@ -54,6 +54,8 @@ class ApiV100 < Grape::API
       license_url: 'https://raw.githubusercontent.com/cartoway/planner-web/master/LICENSE',
       version: '100',
       description: '
+**API 100** adds endpoints whose contracts would be breaking on 0.1 (planning insert, relations, candidate insert, …). OpenAPI 3 at `GET /api/100/openapi.json`. Errors stay `{ message, status }`.
+[Getting started](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/getting-started.md).
 [Simplified view of domain model](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/Model-simpel.svg).
 ## Model
 Model is structured around four majors concepts: the Customer account, Destinations, Vehicles and Plannings.
