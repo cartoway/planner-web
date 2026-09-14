@@ -1,0 +1,2 @@
+reference,name,street,postalcode,city,country,visit duration,open 1,close 1,delivery,vehicle,plan
+CLIENT-12,Acme,12 avenue Thiers,33100,Bordeaux,France,00:10:00,08:00,12:00,1,VEH-1,Monday
