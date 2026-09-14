@@ -37,6 +37,7 @@ class V01::VehicleUsages < Grape::API
     segment '/:vehicle_usage_set_id' do
       resource :vehicle_usages do
         desc 'Fetch customer\'s vehicle_usages.',
+          detail: 'Returns vehicle usages of one vehicle_usage_set (shift times, stores, rest). Each usage is one vehicle in that context.',
           nickname: 'getVehicleUsages',
           is_array: true,
           success: V01::Status.success(:code_200, V01::Entities::VehicleUsageWithVehicle),
@@ -59,6 +60,7 @@ class V01::VehicleUsages < Grape::API
         end
 
         desc 'Fetch vehicle_usage.',
+          detail: 'Returns one vehicle usage (shift times, stores, rest) with the nested vehicle.',
           nickname: 'getVehicleUsage',
           success: V01::Status.success(:code_200, V01::Entities::VehicleUsageWithVehicle),
           failure: V01::Status.failures(override: {code_404: 'VehicleUsageSet or VehicleUsage not found.'})
@@ -78,6 +80,7 @@ class V01::VehicleUsages < Grape::API
         end
 
         desc 'Update vehicle_usage.',
+          detail: 'Updates shift times, stores, rest and duration coefficients for one vehicle in this set. Unset fields fall back to the vehicle_usage_set defaults. Existing plannings using this usage become outdated until refresh/compute.',
           nickname: 'updateVehicleUsage',
           success: V01::Status.success(:code_200, V01::Entities::VehicleUsageWithVehicle),
           failure: V01::Status.failures(override: {code_404: 'VehicleUsageSet or VehicleUsage not found.' })

@@ -25,9 +25,9 @@ class V01::Entities::StoreReload < Grape::Entity
     'V01_StoreReload'
   end
 
-  expose(:id, documentation: { type: Integer })
-  expose(:ref, documentation: { type: String })
-  expose(:duration, documentation: { type: String })
-  expose(:time_window_start, documentation: { type: String })
-  expose(:time_window_end, documentation: { type: String })
+  expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 10 })
+  expose(:ref, documentation: { type: String, desc: 'External unique reference. Upsert key on import.', example: 'PALLET' })
+  expose(:duration, documentation: { type: String, desc: 'Service duration at the reload stop (HH:MM or HH:MM:SS).', example: '00:15:00' })
+  expose(:time_window_start, documentation: { type: String, desc: 'Reload time window start (HH:MM).' })
+  expose(:time_window_end, documentation: { type: String, desc: 'Reload time window end (HH:MM).' })
 end

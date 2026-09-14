@@ -18,18 +18,18 @@ class V01::Entities::Job < Grape::Entity
     'V01_Job'
   end
 
-  expose(:message, documentation: { type: String }, if: lambda { |m, options| m || options[:message] }) { |m, options|
+  expose(:message, documentation: { type: String, desc: 'Optional status message (for example when the job is in transmission).' }, if: lambda { |m, options| m || options[:message] }) { |m, options|
     options.dig(:message) || m
   }
-  expose(:id, documentation: { type: Integer })
-  expose(:attempts, documentation: { type: Integer })
-  expose(:created_at, documentation: { type: Date })
-  expose(:failed_at, documentation: { type: Date })
-  expose(:locked_at, documentation: { type: Date })
-  expose(:progress, documentation: { type: JSON })
-  expose(:run_at, documentation: { type: Date })
+  expose(:id, documentation: { type: Integer, desc: 'Delayed job id. Poll GET /jobs/:id until the job disappears (success) or failed_at is set.', example: 88 })
+  expose(:attempts, documentation: { type: Integer, desc: 'Number of execution attempts.', example: 1 })
+  expose(:created_at, documentation: { type: Date, desc: 'When the job was enqueued.' })
+  expose(:failed_at, documentation: { type: Date, desc: 'Set when the job failed. Null while running or after success (job is then deleted).' })
+  expose(:locked_at, documentation: { type: Date, desc: 'Set while a worker is executing the job.' })
+  expose(:progress, documentation: { type: JSON, desc: 'Optimizer/geocoder progress payload (percent, phase, nested job_id). Shape depends on job type.' })
+  expose(:run_at, documentation: { type: Date, desc: 'Scheduled run time.' })
   # expose(:sanitized_error, documentation: { type: String })
-  expose(:type, documentation: { type: String }) { |m|
+  expose(:type, documentation: { type: String, desc: 'Job kind derived from the class name: optimizer, destination_geocoding, store_geocoding.', example: 'optimizer' }) { |m|
     m.name.underscore.parameterize(separator: '_').gsub(/_job$/, '')
   }
   # expose(:redirection, documentation: { type: String })
