@@ -110,7 +110,7 @@ Note you can import destinations/visits and create a planning at the same time i
 * With many unaffected (out-of-route) stops in a planning, you may create a zoning to move many stops in several routes. Create a zoning (you can generate zones in this zoning automatically from automatic clustering), if you apply zoning (containing zones linked to a vehicle) on your planning, all stops contained in different zones will be moved in dedicated routes.
 
 ### OpenAPI
-Import `GET /api/100/openapi.json?scope=core` (OpenAPI 3.0, tagged `core`). Omit `scope` for the full catalog. `GET /api/100/swagger_doc` remains Swagger 2.0.
+Import `GET /api/100/openapi.json?scope=core` (OpenAPI 3.0, tagged `core`). `scope=happy_path` is the 0.1 getting-started flow. Omit `scope` for the full catalog. `GET /api/100/swagger_doc` remains Swagger 2.0.
 '})
 
   include OpenapiJson
