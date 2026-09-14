@@ -26,7 +26,7 @@ $destinations_str = "
       \"time_window_end_1\": \"12:00\",
       \"time_window_start_2\": \"14:00\",
       \"time_window_end_2\": \"18:00\",
-      \"\": \"00:10:00\"
+      \"duration\": \"00:10:00\"
     }
   ]
 }]
@@ -62,7 +62,7 @@ $destinations_str_with_route = "
       \"time_window_end_1\": \"12:00\",
       \"time_window_start_2\": \"14:00\",
       \"time_window_end_2\": \"18:00\",
-      \"\": \"00:10:00\",
+      \"duration\": \"00:10:00\",
       \"route\": \"string\",
       \"active\": true
     }

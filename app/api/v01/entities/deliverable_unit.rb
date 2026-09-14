@@ -20,13 +20,13 @@ class V01::Entities::DeliverableUnit < Grape::Entity
     'V01_DeliverableUnit'
   end
 
-  expose(:id, documentation: { type: Integer })
-  expose(:label, documentation: { type: String })
-  expose(:ref, documentation: { type: String })
+  expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 3 })
+  expose(:label, documentation: { type: String, desc: 'Display name of the unit (pallets, kg, …).', example: 'Pallet' })
+  expose(:ref, documentation: { type: String, desc: 'External unique reference.', example: 'PAL' })
   expose(:icon, documentation: { type: String, desc: "Icon name from font-awesome. Default: #{::DeliverableUnit::ICON_DEFAULT}." })
-  expose(:default_quantity, documentation: { type: Float }) { |m| (m.default_delivery || 0) - (m.default_pickup || 0) }
-  expose(:default_pickup, documentation: { type: Float })
-  expose(:default_delivery, documentation: { type: Float })
-  expose(:default_capacity, documentation: { type: Float })
-  expose(:optimization_overload_multiplier, documentation: { type: Integer })
+  expose(:default_quantity, documentation: { type: Float, desc: 'Deprecated signed quantity (delivery minus pickup) when a single unit is used.' }) { |m| (m.default_delivery || 0) - (m.default_pickup || 0) }
+  expose(:default_pickup, documentation: { type: Float, desc: 'Default pickup quantity applied to visits that omit quantities for this unit.', example: 0.0 })
+  expose(:default_delivery, documentation: { type: Float, desc: 'Default delivery quantity applied to visits that omit quantities for this unit.', example: 1.0 })
+  expose(:default_capacity, documentation: { type: Float, desc: 'Default vehicle capacity for this unit when the vehicle has no override.', example: 48.0 })
+  expose(:optimization_overload_multiplier, documentation: { type: Integer, desc: 'Penalty multiplier when vehicle capacity is exceeded during optimization. 0 ignores overload.' })
 end
