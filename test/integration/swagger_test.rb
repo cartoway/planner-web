@@ -24,6 +24,7 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert_includes description, '/jobs/'
     assert_includes description, 'getting-started.md'
     assert_includes description, '404'
+    assert_includes description, 'openapi.json'
 
     destination = swagger_definition(content, 'V01_Destination')
     assert destination, 'V01_Destination definition missing'
@@ -52,6 +53,7 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert_includes body, 'Accept-Language: en'
     assert_includes body, 'horaire début 1'
     assert_includes body, 'GET /plannings/:id/routes.json'
+    assert_includes body, 'openapi.json'
 
     php = Rails.root.join('public/api/0.1/examples/php/example.php').read
     refute_match(/"quantity"\s*:/, php)
@@ -99,6 +101,33 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     content = JSON.parse(response.body, {:symbolize_names => true})
     assert_kind_of Hash, content
     assert_equal 'API', content[:info][:title]
+    description = content.dig(:info, :description).to_s
+    assert_includes description, 'openapi.json'
+    assert_includes description, '0.1'
+  end
+
+  test 'should get OpenAPI 3 for 0.1' do
+    get '/api/0.1/openapi.json'
+    assert_response :success
+
+    content = JSON.parse(response.body, symbolize_names: true)
+    assert_equal '3.0.3', content[:openapi]
+    refute content.key?(:swagger)
+    assert content.dig(:components, :schemas).present?
+    assert content[:paths].keys.any? { |path| path.to_s.include?('destinations') }
+    assert content.dig(:servers, 0, :url).present?
+    refute_match(/\/\z/, content.dig(:servers, 0, :url).to_s)
+  end
+
+  test 'should get OpenAPI 3 for 100' do
+    get '/api/100/openapi.json'
+    assert_response :success
+
+    content = JSON.parse(response.body, symbolize_names: true)
+    assert_equal '3.0.3', content[:openapi]
+    refute content.key?(:swagger)
+    assert content.dig(:components, :schemas).present?
+    assert content[:paths].keys.any? { |path| path.to_s.include?('destinations') }
   end
 
   private
