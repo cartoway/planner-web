@@ -130,5 +130,10 @@ Workflows with curl: see [getting started](' + Planner::Application.config.swagg
 Runnable samples: [cURL](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/curl/example.sh), [Python](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/python/example.py), [PHP](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/php/example.php), [Ruby](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/ruby/example.rb).
 Postman / Insomnia (happy path): [collection](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/postman/Planner-API-0.1.collection.json), [environment](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/postman/Planner-API-0.1.environment.json).
 You can import destinations/visits and create a planning at the same time if you already know the route for each visit (`importDestinations`). Creating a planning materializes routes and stops. Move stops between routes, or use zoning (automatic clustering) to assign many unassigned stops at once.
+
+### OpenAPI
+Codegen, Postman and Insomnia should import OpenAPI 3.0 at `GET /api/0.1/openapi.json`. `GET /api/0.1/swagger_doc` remains the Swagger 2.0 descriptor (grape-swagger source of truth).
 '})
+
+  include OpenapiJson
 end
