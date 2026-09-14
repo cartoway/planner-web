@@ -23,7 +23,11 @@ module PlanningStatisticsHelper
     sidebar = Array(sidebar_routes)
     return sidebar if user&.filter_planning_route_data
 
-    planning.routes.includes_vehicle_usages.to_a
+    if planning.association(:routes).loaded?
+      planning.routes.to_a
+    else
+      planning.routes.includes_vehicle_usages.to_a
+    end
   end
 
   # Cumulative total_duration (incl. rests) and work_duration (excl. rests) for assigned routes.
