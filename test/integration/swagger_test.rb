@@ -62,6 +62,33 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     refute_match(/quantity:\s*1/, ruby)
     assert_includes ruby, 'delivery:'
     assert_includes ruby, 'Api-Key'
+
+    assert_includes body, 'Planner-API-0.1.collection.json'
+  end
+
+  test 'postman collection covers the happy path' do
+    get '/api/0.1/examples/postman/Planner-API-0.1.collection.json'
+    assert_response :success
+    collection = JSON.parse(response.body)
+    assert_equal 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json', collection.dig('info', 'schema')
+    assert_equal 'apikey', collection.dig('auth', 'type')
+
+    urls = flatten_postman_urls(collection['item'])
+    %w[/deliverable_units.json /vehicles.json /destinations.json /plannings.json /optimize.json /jobs/ /routes.json].each do |fragment|
+      assert urls.any? { |u| u.include?(fragment) }, "Postman collection missing #{fragment}"
+    end
+
+    env = JSON.parse(Rails.root.join('public/api/0.1/examples/postman/Planner-API-0.1.environment.json').read)
+    keys = env['values'].map { |v| v['key'] }
+    assert_includes keys, 'base'
+    assert_includes keys, 'api_key'
+    base = env['values'].find { |v| v['key'] == 'base' }['value']
+    %w[development production].each do |env_name|
+      config = Rails.root.join("config/environments/#{env_name}.rb").read
+      swagger_base = config[/swagger_docs_base_path = ['"]([^'"]+)['"]/, 1]
+      assert swagger_base, "swagger_docs_base_path missing in #{env_name}.rb"
+      assert_equal swagger_base.chomp('/'), base, "Postman base should match swagger_docs_base_path in #{env_name}.rb"
+    end
   end
 
   test 'should get version 100 swagger api doc' do
@@ -81,5 +108,16 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     return unless defs
 
     defs[name.to_sym] || defs.values.find { |schema| schema[:title].to_s.end_with?(name.delete_prefix('V01_')) }
+  end
+
+  def flatten_postman_urls(items)
+    Array(items).flat_map do |item|
+      if item['item']
+        flatten_postman_urls(item['item'])
+      else
+        url = item.dig('request', 'url')
+        [url.is_a?(Hash) ? url['raw'] : url]
+      end
+    end.compact
   end
 end
