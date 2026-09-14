@@ -6,6 +6,9 @@
   - API 0.1: `GET /jobs` and `GET /jobs/:id` with `status` running/failed/succeeded (last finished job remembered on the customer)
   - API 0.1 and 100: optional pagination on `GET /destinations` (`page` / `per_page` envelope)
 
+  ### Changed
+  - REST API 0.1: unify error bodies: `{ message, status }` (import HTTP 422 may add `errors`)
+
 ## v110.0.1
   ### Fixed
   - Planning:
