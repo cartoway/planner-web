@@ -22,4 +22,5 @@ class V01::Entities::Status422 < Grape::Entity
 
   expose(:message, documentation: { type: String, desc: 'Server rendered messages.', values: ['Unprocessable entity.'] })
   expose(:status, documentation: {type: Integer, desc: 'Error code.', values: [422] })
+  expose(:errors, documentation: { type: String, is_array: true, desc: 'Validation details when several messages are returned (for example on import).' })
 end

@@ -137,7 +137,7 @@ curl -H "Api-Key: YOUR_API_KEY" "{base}/api/0.1/jobs/88.json"
 | HTTP **200**, `status: "running"` | Still running. Wait and poll again. |
 | HTTP **200**, `status: "failed"` (`failed_at` set) | Failed. Read `progress` / message; do not treat as success. |
 | HTTP **200**, `status: "succeeded"` | **Success.** The Delayed::Job row is gone; the last result is remembered. |
-| HTTP **404** (`{"error":"Job not found"}`) | This id was never a job of this customer. |
+| HTTP **404** (`{"message":"Job not found.","status":404}`) | This id was never a job of this customer. |
 | HTTP **409** | Another optimizer job is already running. |
 | HTTP **304** on optimize | Solver found no solution. |
 
@@ -181,7 +181,7 @@ Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python
 - **`GET /plannings/:id` has no stops.** Use `GET /plannings/:id/routes.json`.
 - **`visit.route` on import is a vehicle `ref` (or route index/name), not a route id.** Prefer `ref_vehicle` if you want to be explicit.
 - **Bulk `DELETE` with omitted or empty `ids` deletes all** destinations or visits of the customer. Always pass `ids`.
-- **Error bodies are not uniform.** Auth/status helpers return `{ "message": "Unauthorized.", "status": 401 }`. Import validation is `{ "error": ["…"] }` (HTTP 422). Unknown job is `{ "error": "Job not found" }` (HTTP 404).
+- **Error bodies are `{ "message": "…", "status": 401 }`.** Import validation (HTTP 422) adds `errors` (array of details) and repeats them joined in `message`.
 - **Date filters follow `Accept-Language`**, not ISO: `en` is `mm-dd-yyyy`, `fr` is `dd-mm-yyyy`. CSV headers follow the same header.
 - **`automatic_insert` is distance-only** (ignores time windows). Fine for a few stops; use zoning or optimize for batches.
 - **Pagination is opt-in.** Without `page`, lists return the whole customer scope. `GET /destinations?page=1` wraps `{ items, page, per_page, total }` (`per_page` default 100, max 500). Filter with `ids`, dates, tags, or `active`.
@@ -234,7 +234,7 @@ Typical auth/status body:
 Import validation (HTTP 422):
 
 ```json
-{ "error": ["\"name\" missing."] }
+{ "message": "\"name\" missing.", "status": 422, "errors": ["\"name\" missing."] }
 ```
 
 | Status | Meaning |

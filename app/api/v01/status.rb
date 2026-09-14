@@ -53,12 +53,16 @@ class V01::Status < Grape::API
     responses
   end
 
-  def self.code_response(code, params = { before: nil, after: nil })
-    message = params[:before] ? "#{params[:before]} #{status_codes[code][:message].downcase}" : status_codes[code][:message]
+  def self.code_response(code, params = {})
+    message = params[:message] || (
+      params[:before] ? "#{params[:before]} #{status_codes[code][:message].downcase}" : status_codes[code][:message]
+    )
     message = "#{message} #{params[:after]}" if params[:after]
-    {
-      'message': message,
-      'status': status_codes[code][:code]
+    body = {
+      message: message,
+      status: status_codes[code][:code]
     }
+    body[:errors] = params[:errors] if params[:errors].present?
+    body
   end
 end
