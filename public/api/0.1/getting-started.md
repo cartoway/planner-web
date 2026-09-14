@@ -1,6 +1,6 @@
 # REST API 0.1 — Getting started
 
-Machine-readable reference: `GET /api/0.1/openapi.json` (OpenAPI 3.0; import this in codegen, Postman or Insomnia). Swagger 2.0 remains at `GET /api/0.1/swagger_doc` (grape-swagger source of truth).
+Machine-readable reference: `GET /api/0.1/openapi.json?scope=core` (OpenAPI 3.0 for codegen, Postman, Insomnia — integration operations tagged `core`). Omit `scope` for the full catalog (`core` / `admin` / `devices`). Swagger 2.0 remains at `GET /api/0.1/swagger_doc` (grape-swagger source of truth).
 Simplified domain model: [Model-simpel.svg](./Model-simpel.svg).
 
 This guide covers conventions, a copy-paste happy path, pitfalls, and the core resources used to integrate a third-party system. It does not cover the iframe Web API (`/api-web`) or telematics device endpoints.
