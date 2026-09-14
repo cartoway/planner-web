@@ -290,5 +290,11 @@ Add cron every hour to historyze relevant data
 ```
 
 ## Documentation
-The Web API, providing views, is statically generated while rake precompile the project.
-The REST API is, on its side, dynamically generated.
+REST API **0.1** (integrations):
+* Getting started: `public/api/0.1/getting-started.md` (served at `/api/0.1/getting-started.md`)
+* Machine-readable Swagger 2.0: `GET /api/0.1/swagger_doc` (generated dynamically from Grape)
+* Code samples: `public/api/0.1/examples/{curl,python,php,ruby}/`
+
+REST API **100** is a small additive surface (`GET /api/100/swagger_doc`). Combine it with 0.1; it does not replace it.
+
+The Web API (`/api-web/0.1`, iframe views) is statically generated during `rake assets:precompile` (`GET /api-web/0.1/swagger_doc.json`).

@@ -20,8 +20,8 @@ class V01::Entities::DeliverableUnitQuantity < Grape::Entity
     'V01_DeliverableUnitQuantity'
   end
 
-  expose(:deliverable_unit_id, documentation: { type: Integer })
-  expose(:quantity, documentation: { type: Float })
-  expose(:pickup, documentation: { type: Float })
-  expose(:delivery, documentation: { type: Float })
+  expose(:deliverable_unit_id, documentation: { type: Integer, desc: 'Deliverable unit this quantity refers to.', example: 1 })
+  expose(:quantity, documentation: { type: Float, desc: 'Signed quantity: delivery minus pickup. Prefer pickup/delivery on input.', example: 1.0 })
+  expose(:pickup, documentation: { type: Float, desc: 'Quantity picked up at the visit/stop.', example: 0.0 })
+  expose(:delivery, documentation: { type: Float, desc: 'Quantity delivered at the visit/stop.', example: 1.0 })
 end
