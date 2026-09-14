@@ -12,9 +12,9 @@ module OpenapiJson
         end
       end
 
-      desc 'OpenAPI 3.0.3 descriptor converted from Swagger 2.0 (grape-swagger). Import this in codegen, Postman or Insomnia. GET swagger_doc remains the Swagger 2.0 source. Operations are tagged core, admin and devices. Pass scope=core to drop admin and devices.'
+      desc 'OpenAPI 3.0.3 descriptor converted from Swagger 2.0 (grape-swagger). Import this in codegen, Postman or Insomnia. GET swagger_doc remains the Swagger 2.0 source. Operations are tagged happy_path, core, admin and devices. Pass scope=happy_path or scope=core to drop the rest.'
       params do
-        optional :scope, type: String, values: ->(v) { v.nil? || v == 'core' }, desc: 'core keeps integration operations only (drops admin and devices). Omit for the full catalog.'
+        optional :scope, type: String, values: ->(v) { v.nil? || %w[core happy_path].include?(v) }, desc: 'happy_path is the getting-started numbered flow. core drops admin and devices. Omit for the full catalog.'
       end
       get :openapi do
         openapi_from_swagger
