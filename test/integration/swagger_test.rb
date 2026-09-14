@@ -23,6 +23,7 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert_includes description, 'ref:'
     assert_includes description, '/jobs/'
     assert_includes description, 'getting-started.md'
+    assert_includes description, '404'
 
     destination = swagger_definition(content, 'V01_Destination')
     assert destination, 'V01_Destination definition missing'
@@ -39,6 +40,28 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     }
     assert_includes operation_ids, 'getDestinations'
     assert_includes operation_ids, 'optimizeRoutes'
+  end
+
+  test 'getting started and samples document the happy path' do
+    get '/api/0.1/getting-started.md'
+    assert_response :success
+    body = response.body.force_encoding('UTF-8')
+    assert_includes body, '## Happy path'
+    assert_includes body, '## Pitfalls'
+    assert_includes body, 'Job not found'
+    assert_includes body, 'Accept-Language: en'
+    assert_includes body, 'horaire début 1'
+    assert_includes body, 'GET /plannings/:id/routes.json'
+
+    php = Rails.root.join('public/api/0.1/examples/php/example.php').read
+    refute_match(/"quantity"\s*:/, php)
+    assert_includes php, "'delivery'"
+    assert_includes php, 'Api-Key'
+
+    ruby = Rails.root.join('public/api/0.1/examples/ruby/example.rb').read
+    refute_match(/quantity:\s*1/, ruby)
+    assert_includes ruby, 'delivery:'
+    assert_includes ruby, 'Api-Key'
   end
 
   test 'should get version 100 swagger api doc' do
