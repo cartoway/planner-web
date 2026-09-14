@@ -590,10 +590,12 @@ class Planning < ApplicationRecord
 
   def precompute_traces(all_segments, options = {})
     if all_segments.any?
+      in_optimizer_context = optimizer_context
       threads = []
       all_segments.each_slice(5) do |batch|
         batch.each do |route_data|
           threads << Thread.new do
+            Planning.optimizer_context = in_optimizer_context
             route = route_data[:route]
             begin
               ActiveRecord::Base.connection_pool.with_connection do
@@ -1700,7 +1702,7 @@ class Planning < ApplicationRecord
   end
 
   def unlink_job_optimizer
-    customer.job_optimizer.destroy if Job.on_planning(customer.job_optimizer, id)
+    customer.job_optimizer.destroy if Job.on_planning(customer.job_optimizer, id, ignore_failed: false)
   end
 
   def update_vehicle_usage_set
