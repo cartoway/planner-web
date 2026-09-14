@@ -1,5 +1,9 @@
 # Changelog
 
+## V111.0.0
+  ### Added
+  - REST API: OpenAPI 3.0 at `GET /api/0.1/openapi.json` and `GET /api/100/openapi.json` (converted from grape-swagger Swagger 2.0)
+
 ## v110.0.1
   ### Fixed
   - Planning:
