@@ -1,6 +1,6 @@
 'use strict';
 
-import { stops_edit } from '../../assets/javascripts/stops';
+import { stops_edit, loadPendingPhotos, savePendingPhoto, syncPendingPhotos, applyPhotoSync } from '../../assets/javascripts/stops';
 import {
   beforeSendWaiting,
   ajaxError,
@@ -80,6 +80,24 @@ const tracking = function(params) {
         });
       }
 
+      if (event.data.type === 'PHOTO_SYNCED') {
+        applyPhotoSync(event.data.data).then(function() {
+          return loadPendingPhotos();
+        }).then(function(items) {
+          if (!items.length) {
+            $('#mobile-sync-pending').fadeOut(500, function() {
+              $(this).addClass('d-none').show();
+            });
+          }
+        });
+      }
+
+      if (event.data.type === 'STORE_PHOTOS') {
+        event.data.data.forEach(function(item) {
+          savePendingPhoto(item);
+        });
+      }
+
       if (event.data.type === 'SYNC_ERROR') {
         $('#mobile-sync-failed').removeClass('d-none');
         setTimeout(() => {
@@ -105,7 +123,8 @@ const tracking = function(params) {
         const data = {
           positions: [],
           stops: [],
-          routes: []
+          routes: [],
+          photos: []
         };
 
         for (let i = 0; i < localStorage.length; i++) {
@@ -125,14 +144,20 @@ const tracking = function(params) {
           }
         }
 
-        if (data.stops.length === 0 && data.positions.length === 0 && data.routes.length === 0) {
-          $('#mobile-sync-pending').addClass('d-none');
-        }
+        const reply = function() {
+          if (data.stops.length === 0 && data.positions.length === 0 && data.routes.length === 0 && data.photos.length === 0) {
+            $('#mobile-sync-pending').addClass('d-none');
+          }
+          event.source.postMessage({
+            type: 'PENDING_DATA',
+            data: data
+          });
+        };
 
-        event.source.postMessage({
-          type: 'PENDING_DATA',
-          data: data
-        });
+        loadPendingPhotos().then(function(photos) {
+          data.photos = photos;
+          reply();
+        }).catch(reply);
       }
     };
 
@@ -283,6 +308,7 @@ const tracking = function(params) {
           registration.sync.register('sync-positions');
           registration.sync.register('sync-stops');
           registration.sync.register('sync-routes');
+          registration.sync.register('sync-photos');
         });
       } else {
         if (hasPendingData('position_')) {
@@ -294,6 +320,9 @@ const tracking = function(params) {
         if (hasPendingData('route_update_')) {
           syncRoutesWithoutServiceWorker();
         }
+        loadPendingPhotos().then(function(photos) {
+          if (photos.length) syncPendingPhotos();
+        });
       }
     }
   }

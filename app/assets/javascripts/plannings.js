@@ -453,6 +453,12 @@ export const plannings_edit = function(params) {
 
   var prefered_unit = (!params.prefered_unit ? "km" : params.prefered_unit),
     planning_id = params.planning_id,
+    planningStopFocus = (function() {
+      var stopMatch = window.location.search.match(/[?&]stop_id=(\d+)/);
+      if (!stopMatch) return null;
+      var routeMatch = window.location.search.match(/[?&]route_id=(\d+)/);
+      return { stopId: stopMatch[1], routeId: routeMatch ? routeMatch[1] : null };
+    })(),
     planning_ref = params.planning_ref,
     user_api_key = params.user_api_key,
     zoning_ids = params.zoning_ids,
@@ -1079,6 +1085,15 @@ export const plannings_edit = function(params) {
     });
     autoLoadRoutesQueue.push.apply(autoLoadRoutesQueue, priorityOutRouteIds);
     autoLoadRoutesQueue.push.apply(autoLoadRoutesQueue, restRouteIds);
+    if (planningStopFocus && planningStopFocus.routeId) {
+      var focusRouteId = String(planningStopFocus.routeId);
+      autoLoadRoutesQueue = autoLoadRoutesQueue.filter(function(rid) {
+        return String(rid) !== focusRouteId;
+      });
+      if (pendingById[focusRouteId] && !autoLoadRouteIds[focusRouteId]) {
+        autoLoadRoutesQueue.unshift(focusRouteId);
+      }
+    }
     if (!autoLoadRoutesQueue.length) {
       return;
     }
@@ -1820,6 +1835,66 @@ export const plannings_edit = function(params) {
         }
       }
     }
+  };
+
+  var revealPlanningRouteStops = function(routeId) {
+    if (!routeId) return $();
+    var $route = $('li.route[data-route-id="' + routeId + '"]');
+    if (!$route.length) return $route;
+    $route.find('ul.stops, ol.stops').show();
+    $route.find('.toggle i').removeClass('fa-eye-slash').addClass('fa-eye');
+    $route.find('.center_view').removeAttr('disabled');
+    if ($route.hasClass('out_route')) {
+      $('#div_out_list_next_link').show();
+    }
+    if (planningDragScrollActive) {
+      positionPlanningDragScrollZones();
+    }
+    refreshPlanningRouteSortables();
+    return $route;
+  };
+
+  var enlightenPlanningStopFromQuery = function(attempts) {
+    if (!planningStopFocus) return;
+    var stopId = planningStopFocus.stopId;
+    var routeId = planningStopFocus.routeId;
+    attempts = typeof attempts === 'number' ? attempts : 40;
+
+    var $route = revealPlanningRouteStops(routeId);
+    if (attempts === 40 && routeId && routesLayer && typeof routesLayer.showRoutes === 'function') {
+      routesLayer.showRoutes([parseInt(routeId, 10)]);
+    }
+
+    if ($("[data-stop-id='" + stopId + "']").length) {
+      enlightenStop({ id: stopId, routeId: routeId });
+      planningStopFocus = null;
+      return;
+    }
+
+    if (routeId && $route.length && $route.find('.load-stops').length && attempts === 40) {
+      var rid = String(routeId);
+      autoLoadRoutesQueue = autoLoadRoutesQueue.filter(function(id) { return String(id) !== rid; });
+      if (!autoLoadRouteIds[rid]) {
+        refreshSidebarRoute(planning_id, routeId, {
+          background: true,
+          skipCallbacks: true,
+          onComplete: function() {
+            enlightenPlanningStopFromQuery(attempts - 1);
+          }
+        });
+        return;
+      }
+    }
+
+    if (attempts <= 0) {
+      enlightenStop({ id: stopId, routeId: routeId });
+      planningStopFocus = null;
+      return;
+    }
+
+    setTimeout(function() {
+      enlightenPlanningStopFromQuery(attempts - 1);
+    }, 150);
   };
 
   var locateStopInPlanningData = function(data, stopId) {
@@ -3787,11 +3862,13 @@ export const plannings_edit = function(params) {
   var initPlanningDisplay = function(planning_id, options) {
     $.ajax({
       type: 'GET',
-      url: '/plannings/' + planning_id + '/sidebar.js',
+      url: '/plannings/' + planning_id + '/sidebar.js' +
+        (planningStopFocus && planningStopFocus.routeId ? ('?route_id=' + planningStopFocus.routeId) : ''),
       beforeSend: beforeSendWaiting,
       error: ajaxError,
       success: function() {
         updateSuccess(locals.summary, map, locals.routes);
+        enlightenPlanningStopFromQuery();
       },
       complete: completeAjaxMap
     });

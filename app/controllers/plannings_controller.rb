@@ -332,11 +332,17 @@ class PlanningsController < ApplicationController
 
   def sidebar
     assign_stops_preload_from_planning!(@planning)
+    routes_scope = @planning.routes.includes_vehicle_usages
+    routes_scope = routes_scope.includes_destinations_and_stores if @with_stops
+    focus_route_id = Integer(params[:route_id], exception: false) if params[:route_id].present?
     @routes =
-      if @with_stops
-        @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.available
+      if focus_route_id
+        routes_scope.where(
+          "NOT (COALESCE(locked, false) AND COALESCE(hidden, false)) OR routes.id = ?",
+          focus_route_id
+        )
       else
-        @planning.routes.includes_vehicle_usages.available
+        routes_scope.available
       end
     external_callback_locals =
       if planning_external_callback_json_partial?

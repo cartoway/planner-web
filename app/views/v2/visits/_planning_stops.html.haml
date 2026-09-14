@@ -1,0 +1,60 @@
+-# locals: visit
+- stops = visit_planning_stops(visit)
+- if stops.any?
+  - stop_visit_cas = visit_stop_visit_custom_attributes(visit)
+  .visit-planning-stops
+    %h6.visit-planning-stops-title= t('visits.form.plannings')
+    - stops.each do |stop|
+      - planning = stop.route.planning
+      - filled_cas = visit_stop_filled_custom_attributes(stop, stop_visit_cas)
+      .visit-planning-stop
+        .d-flex.justify-content-between.align-items-start.gap-2
+          .visit-planning-stop-body.min-w-0
+            .visit-planning-stop-name
+              = planning.name
+              - if planning.date
+                %span.text-muted= l(planning.date.to_date)
+            .visit-planning-stop-meta.small
+              %span.visit-planning-stop-color{class: ('is-unassigned' unless stop.route.vehicle_usage), style: "background: #{visit_stop_vehicle_color(stop)}"}
+                = stop.index
+              %span.text-muted= visit_stop_vehicle_name(stop)
+              - if stop.time
+                %span.text-muted
+                  ·
+                  = stop.time_time
+                  - days = number_of_days(stop.time)
+                  - if days
+                    = "(+#{days})"
+              - status = visit_stop_status_label(stop)
+              - status_code = visit_stop_status_code(stop)
+              - if status && status_code
+                %span.badge.visit-planning-stop-status{class: "stop-status-#{status_code}"}
+                  = status
+              - if stop.status_updated_at
+                %span.text-muted
+                  ·
+                  = l(stop.status_updated_at, format: :hour_minute)
+            - if filled_cas.any?
+              %ul.visit-planning-stop-attrs
+                - filled_cas.each do |custom_attribute|
+                  %li
+                    %span.visit-planning-stop-attr-name= custom_attribute.name
+                    %span.visit-planning-stop-attr-value= mobile_custom_attribute_value(custom_attribute, stop)
+          = link_to edit_planning_path(planning, stop_id: stop.id, route_id: stop.route_id),
+            class: 'btn btn-light btn-xs flex-shrink-0',
+            target: '_blank',
+            rel: 'noopener noreferrer',
+            title: t('visits.form.open_in_planning'),
+            'aria-label': t('visits.form.open_in_planning') do
+            %i.fa.fa-calendar.fa-fw
+        - if stop.photos.attached?
+          - photos_id = "visit-#{visit.id}-stop-#{stop.id}-photos"
+          %button.visit-planning-photos-toggle.btn.btn-light.btn-xs{type: 'button', data: { 'bs-toggle': 'collapse', 'bs-target': "##{photos_id}" }, 'aria-expanded': 'false', 'aria-controls': photos_id}
+            %i.fa.fa-camera.fa-fw
+            = t('visits.form.photos')
+            %span.badge.text-bg-secondary= stop.photos.size
+          .collapse.visit-planning-photos{id: photos_id}
+            .visit-planning-photos-list
+              - stop.serialized_photos.each do |photo|
+                %a.visit-planning-photo{href: photo[:url], target: '_blank', rel: 'noopener noreferrer'}
+                  %img{src: photo[:url], alt: photo[:filename]}

@@ -363,4 +363,13 @@
     {{{html}}}
   {{/custom_attributes}}
 </ul>
+{{#photos_present}}
+<div class="stop-photos">
+  {{#photos}}
+  <div class="stop-photo">
+    <a href="{{url}}" target="_blank" rel="noopener noreferrer"><img src="{{url}}" alt="{{filename}}"/></a>
+  </div>
+  {{/photos}}
+</div>
+{{/photos_present}}
 </div>

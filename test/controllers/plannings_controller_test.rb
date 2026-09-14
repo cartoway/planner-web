@@ -258,6 +258,21 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_match(/"routes":\[/, response.body)
   end
 
+  test 'sidebar includes a hidden locked route when focusing it' do
+    route = route_one_for_planning
+    route.update_columns(hidden: true, locked: true)
+
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    assert_response :success
+    locals = JSON.parse(response.body.match(/var locals = (.*);/)[1])
+    refute_includes locals['routes'].map { |r| r['route_id'] }, route.id
+
+    get :sidebar, params: { planning_id: @planning.id, route_id: route.id }, xhr: true
+    assert_response :success
+    locals = JSON.parse(response.body.match(/var locals = (.*);/)[1])
+    assert_includes locals['routes'].map { |r| r['route_id'] }, route.id
+  end
+
   test 'should get index as csv' do
     get :index, params: { format: :csv, summary: true }
     assert_response :success
