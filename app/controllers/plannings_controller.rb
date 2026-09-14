@@ -332,12 +332,9 @@ class PlanningsController < ApplicationController
 
   def sidebar
     assign_stops_preload_from_planning!(@planning)
-    @routes =
-      if @with_stops
-        @planning.routes.includes_vehicle_usages.includes_destinations_and_stores.available
-      else
-        @planning.routes.includes_vehicle_usages.available
-      end
+    # Routes + vehicle_usages already loaded by set_planning_without_stops; only add stops.
+    @routes = @planning.routes.reject { |route| route.locked && route.hidden }
+    Preloaders::RouteBatchPreload.preload!(@routes, summary: false) if @with_stops
     external_callback_locals =
       if planning_external_callback_json_partial?
         {
@@ -875,7 +872,7 @@ class PlanningsController < ApplicationController
 
   def set_available_store_reloads
     @available_store_reloads =
-      current_user.customer.stores.flat_map { |store|
+      current_user.customer.stores.includes(:store_reloads).flat_map { |store|
         store.store_reloads.map.with_index { |store_reload, index|
           {
             id: store_reload.id,
