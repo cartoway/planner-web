@@ -148,10 +148,12 @@ class Route < ApplicationRecord
   end
 
   def size_active_destinations
-    return route_data.size_active_destinations if use_persisted_route_metrics? && association(:stops).loaded? && stops.empty?
-
     if association(:stops).loaded?
+      return route_data.size_active_destinations if use_persisted_route_metrics? && stops.empty?
+
       stops.select { |s| s.is_a?(StopVisit) && s.active? }.filter_map { |s| s.visit&.destination_id }.uniq.size
+    elsif route_data
+      route_data.size_active_destinations
     elsif id.present?
       StopVisit.joins(:visit).where(route_id: id, active: true).distinct.count('visits.destination_id')
     else

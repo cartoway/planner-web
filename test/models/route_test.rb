@@ -406,9 +406,22 @@ class RouteTest < ActiveSupport::TestCase
     route.stops.where(type: 'StopVisit').update_all(active: false)
     route.stops.order(:index).find_by(type: 'StopVisit').update!(active: true)
     route.reload
-    route.association(:stops).reset
+    route.stops.load
 
     assert_equal 1, route.size_active_destinations
+  end
+
+  test 'size_active_destinations uses persisted route_data when stops are not loaded' do
+    route = routes(:route_one_one)
+    route_data = route.route_data
+    original = { size_active_destinations: route_data.size_active_destinations, stops_size: route_data.stops_size }
+    route_data.update_columns(size_active_destinations: 42, stops_size: 3)
+    route.reload
+    route.association(:stops).reset
+
+    assert_equal 42, route.size_active_destinations
+  ensure
+    route_data&.update_columns(original) if original
   end
 
   test 'should reverse stops' do
