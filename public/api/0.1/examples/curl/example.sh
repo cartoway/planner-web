@@ -2,7 +2,7 @@
 # REST API 0.1 examples. Replace the placeholders, then run:
 #   chmod +x example.sh && ./example.sh
 #
-# See ../../getting-started.md for conventions and workflows.
+# See ../../getting-started.md for the happy path, pitfalls, and CSV headers.
 
 set -eu
 
@@ -11,8 +11,9 @@ URL='http://localhost:3000'
 AUTH="Api-Key: ${API_KEY}"
 JSON='Content-Type: application/json'
 
-# EXAMPLE 1 — list destinations
-curl -sS -H "$AUTH" "${URL}/api/0.1/destinations.json"
+# EXAMPLE 1 — bootstrap: deliverable unit ids and vehicle refs
+curl -sS -H "$AUTH" "${URL}/api/0.1/deliverable_units.json"
+curl -sS -H "$AUTH" "${URL}/api/0.1/vehicles.json"
 
 # EXAMPLE 2 — create one destination with a nested visit (geocoded if lat/lng are omitted)
 curl -sS -X POST -H "$AUTH" -H "$JSON" "${URL}/api/0.1/destinations.json" -d '{
@@ -31,7 +32,7 @@ curl -sS -X POST -H "$AUTH" -H "$JSON" "${URL}/api/0.1/destinations.json" -d '{
   }]
 }'
 
-# EXAMPLE 3 — bulk upsert and create a planning when visits have a route ref
+# EXAMPLE 3 — bulk upsert and create a planning when visits have a vehicle ref
 curl -sS -X PUT -H "$AUTH" -H "$JSON" "${URL}/api/0.1/destinations.json" -d '{
   "planning": {"name": "Monday", "ref": "PLAN-MON"},
   "destinations": [{
@@ -58,9 +59,13 @@ curl -sS -X POST -H "$AUTH" -H "$JSON" "${URL}/api/0.1/plannings.json" -d '{
   "date": "2026-09-14"
 }'
 
-# EXAMPLE 5 — start global optimization, then poll the job until it disappears or failed_at is set
+# EXAMPLE 5 — start global optimization, then poll until HTTP 404 (success) or failed_at
 # JOB=$(curl -sS -H "$AUTH" "${URL}/api/0.1/plannings/ref:PLAN-MON/optimize.json?global=true" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
 # curl -sS -H "$AUTH" "${URL}/api/0.1/jobs/${JOB}.json"
+# curl -sS -H "$AUTH" "${URL}/api/0.1/plannings/ref:PLAN-MON/routes.json"
 
-# EXAMPLE 6 — move stop 10 to index 3 on route 2 of planning 1 (-1 appends at the end)
+# EXAMPLE 6 — CSV import (English headers). Use Accept-Language: fr with French headers (see getting-started.md).
+# curl -sS -X PUT -H "$AUTH" -H "Accept-Language: en" "${URL}/api/0.1/destinations.json" -F "file=@destinations.csv"
+
+# EXAMPLE 7 — move stop 10 to index 3 on route 2 of planning 1 (-1 appends at the end)
 # curl -sS -X PATCH -H "$AUTH" "${URL}/api/0.1/plannings/1/routes/2/stops/10/move/3.json"

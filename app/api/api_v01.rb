@@ -71,7 +71,7 @@ class ApiV01 < Grape::API
       license_url: 'https://raw.githubusercontent.com/cartoway/planner-web/master/LICENSE',
       version: '0.1',
       description: '
-[Getting started (conventions, workflows, curl)](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/getting-started.md).
+[Getting started (happy path, pitfalls, workflows, curl)](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/getting-started.md).
 [Simplified view of domain model](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/Model-simpel.svg).
 
 ## Model
@@ -101,7 +101,7 @@ Input schedule fields use `HH:MM` or `HH:MM:SS`. Output times are DateTime value
 ### I18n
 Functional messages and CSV headers follow `Accept-Language`. HTTP error codes are not translated. Errors look like `{ "message": "...", "status": 401 }`.
 ### Asynchronous jobs
-Optimization and bulk geocoding return a `Job`. Poll `GET /jobs/:id` until the job disappears (success) or `failed_at` is set. HTTP **409** means another optimizer job is already running.
+Optimization and bulk geocoding return a `Job`. Poll `GET /jobs/:id`: HTTP **404** means success (the job is deleted); `failed_at` set means failure. HTTP **409** means another optimizer job is already running.
 
 ## Admin access
 Using an admin `api_key` unlocks advanced operations (on `Customer`, `User`, `Vehicle`, `Profile`). Most operations from the current API are usable either for a normal user `api_key` or an admin user `api_key` (not both).
