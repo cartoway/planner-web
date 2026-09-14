@@ -4,28 +4,34 @@ class OpenapiConverter
   OAS_VERSION = '3.0.3'
   REF_FROM = '#/definitions/'
   REF_TO = '#/components/schemas/'
+  HTTP_METHODS = %w[get put post delete options head patch trace].freeze
+  ADMIN_PATH = %r{\A/[^/]+/(customers|users|profiles|layers|routers)(?:/|\.|\z)}
 
-  def self.convert(swagger)
-    new(swagger).convert
+  def self.convert(swagger, scope: nil)
+    new(swagger, scope: scope).convert
   end
 
-  def initialize(swagger)
+  def initialize(swagger, scope: nil)
     @src = deep_stringify(swagger)
+    @scope = scope.to_s.presence
   end
 
   def convert
+    paths = convert_paths(@src['paths'] || {})
     info = @src['info'] || {}
     out = {
       'openapi' => OAS_VERSION,
       'info' => info,
       'servers' => servers,
-      'paths' => convert_paths(@src['paths'] || {}),
+      'tags' => document_tags(paths),
+      'paths' => paths,
       'components' => components
     }
-    out['tags'] = @src['tags'] if @src['tags']
     out['security'] = @src['security'] if @src['security']
     promote_nullable!(out)
     rewrite_refs!(out)
+    mark_deprecated_from_description!(out)
+    prune_unused_schemas!(out) if @scope == 'core'
     out
   end
 
@@ -56,14 +62,51 @@ class OpenapiConverter
     paths.each_with_object({}) do |(path, item), acc|
       next unless item.is_a?(Hash)
 
+      tag = tag_for_path(path)
+      next if @scope == 'core' && tag != 'core'
+
       acc[path] = item.each_with_object({}) do |(method, operation), ops|
-        if %w[get put post delete options head patch trace].include?(method)
-          ops[method] = convert_operation(operation)
+        if HTTP_METHODS.include?(method)
+          op = convert_operation(operation)
+          tag_operation!(op, tag) if op.is_a?(Hash)
+          ops[method] = op
         else
           ops[method] = operation
         end
       end
     end
+  end
+
+  def tag_for_path(path)
+    return 'devices' if path.include?('/devices/')
+    return 'admin' if path.match?(ADMIN_PATH)
+
+    'core'
+  end
+
+  def tag_operation!(operation, tag)
+    operation['tags'] = [tag, *Array(operation['tags'])].uniq
+  end
+
+  def document_tags(paths)
+    used = paths.values.flat_map { |item|
+      next [] unless item.is_a?(Hash)
+
+      item.each_value.flat_map { |op| op.is_a?(Hash) ? Array(op['tags']) : [] }
+    }.uniq
+    descriptions = {
+      'core' => 'Integration surface: destinations, visits, plannings, routes, stops, jobs, …',
+      'admin' => 'Admin api_key: customers, users, profiles, layers, routers.',
+      'devices' => 'Telematics device connectors.'
+    }
+    categories = descriptions.filter_map { |name, description|
+      { 'name' => name, 'description' => description } if used.include?(name)
+    }
+    extra = Array(@src['tags']).select { |tag|
+      name = tag.is_a?(Hash) ? tag['name'] : tag
+      used.include?(name)
+    }
+    categories + extra
   end
 
   def convert_operation(operation)
@@ -202,6 +245,49 @@ class OpenapiConverter
       node.each_value { |v| rewrite_refs!(v) }
     when Array
       node.each { |v| rewrite_refs!(v) }
+    end
+  end
+
+  def mark_deprecated_from_description!(node)
+    case node
+    when Hash
+      if node['properties'].is_a?(Hash)
+        node['properties'].each_value do |prop|
+          next unless prop.is_a?(Hash) && prop['description'].to_s.match?(/deprecated/i)
+
+          prop['deprecated'] = true
+        end
+      end
+      node.each_value { |v| mark_deprecated_from_description!(v) }
+    when Array
+      node.each { |v| mark_deprecated_from_description!(v) }
+    end
+  end
+
+  def prune_unused_schemas!(doc)
+    schemas = doc.dig('components', 'schemas')
+    return unless schemas.is_a?(Hash)
+
+    used = {}
+    scan_schema_refs(doc['paths'], used)
+    loop do
+      before = used.size
+      used.keys.each { |name| scan_schema_refs(schemas[name], used) if schemas[name] }
+      break if used.size == before
+    end
+    schemas.keep_if { |name, _| used.key?(name) }
+  end
+
+  def scan_schema_refs(node, used)
+    case node
+    when Hash
+      ref = node['$ref']
+      if ref.is_a?(String) && ref.start_with?(REF_TO)
+        used[ref.delete_prefix(REF_TO)] = true
+      end
+      node.each_value { |v| scan_schema_refs(v, used) }
+    when Array
+      node.each { |v| scan_schema_refs(v, used) }
     end
   end
 
