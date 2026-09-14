@@ -137,7 +137,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     end
     optional :ref, type: String, documentation: { example: 'RP' }
     optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{::DeliverableUnit::ICON_DEFAULT}.", example: ::DeliverableUnit::ICON_DEFAULT}
-    optional :default_quantity, type: Float, documentation: { example: '1.0' }
+    optional :default_quantity, type: Float, documentation: { hidden: true, deprecated: true, example: '1.0', desc: 'Deprecated, use default_pickup and default_delivery.' }
     optional :default_pickup, type: Float, documentation: { example: '1.0' }
     optional :default_delivery, type: Float, documentation: { example: '2.0' }
     optional :default_capacity, type: Float, documentation: { example: '48.5' }
@@ -273,8 +273,8 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :phone_number, type: String
     optional :emission, type: Float, coerce_with: CoerceFloatString
     optional :consumption, type: Float, coerce_with: CoerceFloatString
-    optional :capacity, type: Integer, documentation: { desc: 'Deprecated, use capacities instead.'}
-    optional :capacity_unit, type: String, documentation: { desc: 'Deprecated, use capacities and deliverable_unit entity instead.'}
+    optional :capacity, type: Integer, documentation: { hidden: true, deprecated: true, desc: 'Deprecated, use capacities instead.'}
+    optional :capacity_unit, type: String, documentation: { hidden: true, deprecated: true, desc: 'Deprecated, use capacities and deliverable_unit entity instead.'}
     optional :capacities, type: Array, documentation: { param_type: 'body' } do
       use :request_capacity
     end
@@ -285,7 +285,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :router_options, type: Hash do
       use :request_router_options
     end
-    optional :speed_multiplicator, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Deprecated, use speed_multiplier instead.' }
+    optional :speed_multiplicator, type: Float, coerce_with: CoerceFloatString, documentation: { hidden: true, deprecated: true, desc: 'Deprecated, use speed_multiplier instead.' }
     optional :speed_multiplier, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Speed multiplier applied to router times (1 is default).', example: 1.0 }
     optional :max_distance, type: Integer, documentation: { desc: 'Maximum achievable distance in meters' }
     optional :max_ride_distance, type: Integer, documentation: { desc: 'Maximum riding distance between two stops within a route in meters' }
@@ -361,7 +361,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
       end
       optional :pickup, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Quantity picked up at the visit.', example: 0.0 }
       optional :delivery, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Quantity delivered at the visit.', example: 1.0 }
-      optional :quantity, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Deprecated, use pickup and delivery instead.' }
+      optional :quantity, type: Float, coerce_with: CoerceFloatString, documentation: { hidden: true, deprecated: true, desc: 'Deprecated, use pickup and delivery instead.' }
       mutually_exclusive :quantity, :delivery
       mutually_exclusive :quantity, :pickup
       at_least_one_of :pickup, :delivery, :quantity
@@ -442,7 +442,8 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
         v[:type] = classes[0] if classes.size == 1 && v[:type] != classes[0]
       end
       v[:type] = Array[v[:type]] if v.key?(:is_array)
-      send(v[:required] ? :requires : :optional, k, v.except(:required, :is_array, :param_type))
+      # hidden/deprecated are swagger-entity keys, not Grape validators
+      send(v[:required] ? :requires : :optional, k, v.except(:required, :is_array, :param_type, :hidden, :deprecated))
     }
   end
 
