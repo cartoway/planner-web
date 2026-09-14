@@ -3,6 +3,7 @@
 ## V111.0.0
   ### Added
   - REST API: OpenAPI 3.0 at `GET /api/0.1/openapi.json` and `GET /api/100/openapi.json` (converted from grape-swagger Swagger 2.0)
+  - API 0.1: `GET /jobs` and `GET /jobs/:id` with `status` running/failed/succeeded (last finished job remembered on the customer)
 
 ## v110.0.0
   ### Added

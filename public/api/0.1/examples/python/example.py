@@ -5,7 +5,6 @@ See ../../getting-started.md for the happy path, pitfalls, and CSV headers.
 """
 import json
 import time
-import urllib.error
 import urllib.parse
 import urllib.request
 
@@ -82,19 +81,16 @@ planning = request('POST', '/api/0.1/plannings.json', {
 })
 print('Planning id=%s route_ids=%s' % (planning['id'], planning['route_ids']))
 
-# EXAMPLE 5 — start global optimization, then poll until HTTP 404 (success) or failed_at
+# EXAMPLE 5 — start global optimization, then poll until status succeeded or failed
 job = request('GET', '/api/0.1/plannings/%s/optimize.json' % planning['id'], query={'global': 'true'})
 if job and job.get('id'):
     print('Optimizer job id=%s' % job['id'])
     while True:
-        try:
-            status = request('GET', '/api/0.1/jobs/%s.json' % job['id'])
-        except urllib.error.HTTPError as exc:
-            if exc.code == 404:
-                print('Job finished')
-                break
-            raise
-        if status.get('failed_at'):
+        status = request('GET', '/api/0.1/jobs/%s.json' % job['id'])
+        if status.get('status') == 'succeeded':
+            print('Job finished')
+            break
+        if status.get('status') == 'failed' or status.get('failed_at'):
             print('Job failed: %s' % status)
             break
         time.sleep(2)
