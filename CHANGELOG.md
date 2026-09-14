@@ -2,6 +2,7 @@
 
 ##
   ### Added
+  - REST API: OpenAPI 3.0 at `GET /api/0.1/openapi.json` and `GET /api/100/openapi.json` (converted from grape-swagger Swagger 2.0)
   - Customers index: users list dropdown per customer
   - Planning: extract inactive stops from vehicle routes to unassigned via a dedicated modal
   - Destination import:
