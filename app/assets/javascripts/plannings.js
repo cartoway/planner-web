@@ -2983,14 +2983,35 @@ export const plannings_edit = function(params) {
     }
   };
 
+  // Failed jobs now arrive with routes (last_async_jobs). Still drive the optimizer
+  // modal, but keep rendering so the planning stays usable. After the error was
+  // shown once, ignore optimizer on later fetches so closing the modal does not reopen it.
+  var optimizerFailureShown = false;
+
+  var runOptimizerDialog = function(optimizer, options, hasRoutes) {
+    options = options || {};
+    if (optimizer && !optimizer.error) optimizerFailureShown = false;
+    // After the error modal was closed, skip reopening it — but still close a visible
+    // dialog when the live job is gone (success / applying finished).
+    if (!optimizer && optimizerFailureShown && !(dialog_optimizer && dialog_optimizer.is(':visible'))) return true;
+    if (optimizer && optimizer.error && optimizerFailureShown) return true;
+    if (optimizer && optimizer.error) optimizerFailureShown = true;
+
+    var url = '/plannings/' + planning_id + '.json' + (options.firstTime ? '?with_stops=' + withStopsInSidePanel : '');
+    if (!progressDialog(optimizer, dialog_optimizer, url, displayPlanning, options) && !(optimizer && optimizer.error && hasRoutes)) {
+      return false;
+    }
+    return true;
+  };
+
   var displayOptimModal = function(locals, options) {
-    if (locals.optimizer) {
+    if (locals.optimizer && locals.optimizer.dispatch_params_delayed_job) {
       optimizationTimer
         .setOptimDuration(locals.optimizer.dispatch_params_delayed_job.nb_route)
-        .displayOptimDuration(locals.optimizer.dispatch_params_delayed_job.error);
+        .displayOptimDuration(locals.optimizer.error);
     }
 
-    if (!progressDialog(locals.optimizer, dialog_optimizer, '/plannings/' + planning_id + '.json' + (options.firstTime ? '?with_stops=' + withStopsInSidePanel : ''), displayPlanning, options)) {
+    if (!runOptimizerDialog(locals.optimizer, options, locals.updated_routes)) {
       return;
     }
   }
@@ -2999,13 +3020,16 @@ export const plannings_edit = function(params) {
   var displayPlanning = function(data, options) {
 
     // Display optimization duration in modal on page reload
-    if (data.optimizer) {
+    if (data.optimizer && data.optimizer.dispatch_params_delayed_job) {
       var len = data.optimizer.dispatch_params_delayed_job.routes ?
         data.optimizer.dispatch_params_delayed_job.routes.length : data.optimizer.dispatch_params_delayed_job.nb_route;
       optimizationTimer.setOptimDuration(len).displayOptimDuration(data.optimizer.error);
     }
 
-    if (!progressDialog(data.optimizer, dialog_optimizer, '/plannings/' + planning_id + '.json' + (options.firstTime ? '?with_stops=' + withStopsInSidePanel : ''), displayPlanning, options)) {
+    if (!runOptimizerDialog(data.optimizer, options, data.routes)) {
+      return;
+    }
+    if (!data.routes) {
       return;
     }
 

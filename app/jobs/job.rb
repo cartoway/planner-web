@@ -20,6 +20,7 @@ class JobTimeout < StandardError; end
 class Job < Struct
   def before(job)
     @job = job
+    remember_async_job!(job, 'working')
   end
 
   def job_progress_save(progress)
@@ -35,7 +36,8 @@ class Job < Struct
     end
   end
 
-  # Delayed::Job calls this before destroying a successful job. Do not record cancelled destroys.
+  # Delayed::Job: success before destroy; optimizer failure records last_async_jobs then destroys the row.
+  # Destroy of a running job is killed. Destroy of an already-failed job keeps failed.
   ASYNC_KINDS = {
     'OptimizerJob' => 'optimizer',
     'GeocoderJob' => 'destination_geocoding',
@@ -44,15 +46,61 @@ class Job < Struct
   }.freeze
 
   def success(delayed_job)
+    remember_async_job!(delayed_job, 'succeeded')
+  end
+
+  def failure(delayed_job)
+    remember_async_job!(delayed_job, cancelled_outcome?(delayed_job) ? 'killed' : 'failed')
+  end
+
+  def cancelled_outcome?(delayed_job)
+    (defined?(OptimizerCancelled) && delayed_job.try(:error).is_a?(OptimizerCancelled)) ||
+      delayed_job.try(:last_error).to_s.include?('Optimization cancelled')
+  end
+
+  def remember_async_job!(delayed_job, status)
     kind = ASYNC_KINDS[self.class.name]
     return unless kind && respond_to?(:customer_id)
 
-    Customer.record_last_async_job!(
-      customer_id,
-      id: delayed_job.id,
-      type: self.class.name.underscore.parameterize(separator: '_').gsub(/_job$/, ''),
-      kind: kind
-    )
+    error = delayed_job.try(:last_error).to_s.lines.first&.strip
+    error = error.truncate(200) if error.present?
+
+    record = lambda {
+      Customer.record_last_async_job!(
+        customer_id,
+        id: delayed_job.id,
+        type: self.class.name.underscore.parameterize(separator: '_').gsub(/_job$/, ''),
+        kind: kind,
+        status: status,
+        error: status == 'failed' ? error : nil,
+        planning_id: (planning_id if respond_to?(:planning_id))
+      )
+    }
+    # working must be visible while the worker transaction is still open.
+    # queued uses this connection: Thread.new deadlocks if customers is already locked.
+    if status == 'working'
+      Thread.new { ActiveRecord::Base.connection_pool.with_connection { record.call } }.join
+    else
+      record.call
+      if %w[succeeded failed killed].include?(status) && delayed_job.respond_to?(:async_outcome_remembered=)
+        delayed_job.async_outcome_remembered = true
+      end
+    end
+  end
+
+  def self.remember_killed!(delayed_job)
+    return if delayed_job.try(:async_outcome_remembered)
+    return if delayed_job.try(:failed_at)
+
+    payload = delayed_job.payload_object
+    if payload.respond_to?(:customer_id)
+      remembered = Customer.uncached { Customer.where(id: payload.customer_id).pick(:last_async_jobs) }
+      entry = remembered.is_a?(Hash) ? remembered['optimizer'] : nil
+      return if entry.is_a?(Hash) && entry['id'].to_i == delayed_job.id.to_i && entry['status'] == 'succeeded'
+    end
+    payload.remember_async_job!(delayed_job, 'killed') if payload.respond_to?(:remember_async_job!)
+  rescue Delayed::DeserializationError
+    nil
   end
 
   def self.nb_routes(job)
@@ -62,8 +110,10 @@ class Job < Struct
     end
   end
 
-  def self.on_planning(job, planning_id)
-    if job && job.handler
+  def self.on_planning(job, planning_id, ignore_failed: true)
+    return if job.blank?
+    return if ignore_failed && job.respond_to?(:failed_at) && job.failed_at
+    if job.handler
       match = job.handler.match(/planning_id: ([0-9]+)/)
       !match || match[1].to_i == planning_id
     end

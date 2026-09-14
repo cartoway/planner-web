@@ -275,6 +275,24 @@ class OptimizerWrapperTest < ActionController::TestCase
     remove_request_stub(@stub_VrpSubmit)
   end
 
+  test 'should raise OptimizerCancelled when solver job is killed' do
+    begin
+      remove_request_stub(@stub_VrpJob)
+      uri_template = Addressable::Template.new('http://localhost:1791/0.1/vrp/jobs/{job_id}.json?api_key={api_key}')
+      stub_vrp_job = stub_request(:get, uri_template).to_return(
+        status: 200,
+        body: { job: { id: 'killed-job', status: 'killed' } }.to_json
+      )
+
+      assert_raises OptimizerCancelled do
+        @optim.optimize(@planning, @planning.routes, **{ optimize_minimal_time: 3 })
+      end
+    ensure
+      remove_request_stub(stub_vrp_job) if stub_vrp_job
+      remove_request_stub(@stub_VrpSubmit)
+    end
+  end
+
   test 'should return error if work time is not acceptable' do
     begin
       optim = OptimizerWrapper.new(ActiveSupport::Cache::NullStore.new, 'http://localhost:1791/0.1', 'demo')

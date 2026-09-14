@@ -120,7 +120,7 @@ class V01::Visits < Grape::API
           use :request_visit
         end
         post do
-          raise Exceptions::JobInProgressError if current_customer.job_optimizer
+          raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
           params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
           destination_id = ParseIdsRefs.read(params[:destination_id])
@@ -141,7 +141,7 @@ class V01::Visits < Grape::API
           use :request_visit
         end
         put ':id' do
-          raise Exceptions::JobInProgressError if current_customer.job_optimizer
+          raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
           params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
           destination_id = ParseIdsRefs.read(params[:destination_id])
@@ -162,7 +162,7 @@ class V01::Visits < Grape::API
           requires :id, type: String, desc: SharedParams::ID_DESC
         end
         delete ':id' do
-          raise Exceptions::JobInProgressError if current_customer.job_optimizer
+          raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
           destination_id = ParseIdsRefs.read(params[:destination_id])
           id = ParseIdsRefs.read(params[:id])
@@ -185,7 +185,7 @@ class V01::Visits < Grape::API
     end
     put do
       Visit.transaction do
-        raise Exceptions::JobInProgressError if current_customer.job_optimizer
+        raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
         visits = current_customer.visits.select{ |visit|
           params[:ids].any?{ |s| ParseIdsRefs.match(s, visit) }
@@ -205,7 +205,7 @@ class V01::Visits < Grape::API
       requires :tag_ids, type: Array[Integer], desc: 'Tag ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { param_type: 'form', example: '1,2,ref:vip' }
     end
     delete 'by_tags' do
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
       Visit.transaction do
         tag_ids = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer)
@@ -248,7 +248,7 @@ class V01::Visits < Grape::API
       optional :ids, type: Array[String], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
     end
     delete do
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
       Visit.transaction do
         if params[:ids] && !params[:ids].empty?

@@ -137,6 +137,7 @@ curl -H "Api-Key: YOUR_API_KEY" "{base}/api/0.1/jobs/88.json"
 | HTTP **200**, `status: "running"` | Still running. Wait and poll again. |
 | HTTP **200**, `status: "failed"` (`failed_at` set) | Failed. Read `progress` / message; do not treat as success. |
 | HTTP **200**, `status: "succeeded"` | **Success.** The Delayed::Job row is gone; the last result is remembered. |
+| HTTP **200**, `status: "killed"` | Cancelled (DELETE /jobs/:id or UI cancel). Remembered like success/failure. |
 | HTTP **404** (`{"message":"Job not found.","status":404}`) | This id was never a job of this customer. |
 | HTTP **409** | Another optimizer job is already running. |
 | HTTP **304** on optimize | Solver found no solution. |
@@ -176,7 +177,7 @@ Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python
 
 ## Pitfalls
 
-- **Job `status: succeeded` means success.** Poll until that (or `failed`). HTTP **404** means this id was never a job of this customer — do not treat 404 as success.
+- **Job `status: succeeded` means success.** Poll until that, `failed`, or `killed`. HTTP **404** means this id was never a job of this customer — do not treat 404 as success.
 - **No create-stop / create-route.** `POST /plannings` (or import with `planning` / `visit.route`) materializes them. Then move, lock, or activate stops.
 - **`GET /plannings/:id` has no stops.** Use `GET /plannings/:id/routes.json`.
 - **`visit.route` on import is a vehicle `ref` (or route index/name), not a route id.** Prefer `ref_vehicle` if you want to be explicit.

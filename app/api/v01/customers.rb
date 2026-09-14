@@ -290,6 +290,7 @@ class V01::Customers < Grape::API
         elsif customer.job_store_geocoding && customer.job_store_geocoding_id == params[:job_id]
           customer.job_store_geocoding.destroy
         end
+        Customer.dismiss_last_async_job!(customer.id, params[:job_id])
         status 204
       else
         error! V01::Status.code_response(:code_404, before: 'Customer'), 404

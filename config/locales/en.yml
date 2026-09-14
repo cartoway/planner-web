@@ -182,6 +182,7 @@ en:
         description_title: Description
         description_label: Specific account informations
         description_help: Account and users details
+        last_async_jobs: Last async jobs
         end_subscription: End subscription
         test: Test
         max_vehicles: Number vehicles
