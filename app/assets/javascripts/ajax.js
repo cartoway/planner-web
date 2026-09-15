@@ -185,6 +185,9 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
     }
 
     updateOptimizationDetails(dialog, progress);
+    var transmitted = !!(progress && (progress.job_id || progress['job_id']));
+    var optimizerFailed = !!delayedJob.error || !!(progress && progress['failed']);
+    $('.optim-cancel', dialog).toggle(transmitted && !optimizerFailed);
     $(".progress-bar", dialog).each(function(i, e) {
       // hide or show dialog-progress class
       if (!progress || !progress['completed'] && (!progress['status'] || progress['status'] == 'queued')) {
