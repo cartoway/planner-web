@@ -2,7 +2,13 @@ if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
   json.optimizer do
     json.extract! @planning.customer.job_optimizer, :id, :attempts
     progress = @planning.customer.job_optimizer.progress
-    progress = (JSON.parse(progress) rescue nil) if progress.is_a?(String)
+    if progress.is_a?(String)
+      begin
+        progress = JSON.parse(progress)
+      rescue JSON::ParserError
+        progress = nil
+      end
+    end
     json.progress progress
     json.error !!@planning.customer.job_optimizer.failed_at
     json.customer_id @planning.customer.id

@@ -110,6 +110,35 @@ class OpenapiConverterTest < ActiveSupport::TestCase
     refute_includes names, 'devices'
   end
 
+  test 'scope core prune follows nested schema refs' do
+    swagger = {
+      'swagger' => '2.0',
+      'info' => { 'title' => 'API' },
+      'paths' => {
+        '/0.1/destinations.json' => {
+          'get' => {
+            'responses' => { '200' => { 'description' => 'ok', 'schema' => { '$ref' => '#/definitions/V01_Destination' } } }
+          }
+        }
+      },
+      'definitions' => {
+        'V01_Destination' => {
+          'type' => 'object',
+          'properties' => {
+            'visits' => { 'type' => 'array', 'items' => { '$ref' => '#/definitions/V01_Visit' } }
+          }
+        },
+        'V01_Visit' => { 'type' => 'object' },
+        'V01_Unused' => { 'type' => 'object' }
+      }
+    }
+
+    core = OpenapiConverter.convert(swagger, scope: 'core')
+    assert core.dig('components', 'schemas').key?('V01_Destination')
+    assert core.dig('components', 'schemas').key?('V01_Visit')
+    refute core.dig('components', 'schemas').key?('V01_Unused')
+  end
+
   test 'happy_path tag and scope keep only the getting-started operations' do
     swagger = {
       'swagger' => '2.0',
