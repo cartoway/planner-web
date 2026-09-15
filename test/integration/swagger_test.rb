@@ -69,6 +69,7 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert_includes ruby, 'delivery:'
     assert_includes ruby, 'Api-Key'
 
+    assert_includes body, 'embed_tokens'
     assert_includes body, 'Planner-API-0.1.collection.json'
     assert_includes body, 'Model-simpel.svg'
     assert_includes body, '## Optimizer'
