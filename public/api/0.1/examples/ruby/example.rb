@@ -91,7 +91,7 @@ planning = api_json(:post, '/api/0.1/plannings.json', {
   ref: 'PLAN-MON',
   date: '2026-09-14'
 })
-puts 'Planning id=%s route_ids=%s' % [planning['id'], planning['route_ids'].inspect]
+puts "Planning id=#{planning['id']} route_ids=#{planning['route_ids'].inspect}"
 
 # EXAMPLE 5 — CSV import (English headers). Use Accept-Language: fr with French headers.
 csv = Tempfile.new(['destinations', '.csv'])
