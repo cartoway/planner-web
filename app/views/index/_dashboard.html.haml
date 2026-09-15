@@ -35,12 +35,11 @@
                         - emission = planning.routes.map(&:route_data).map(&:emission).compact.reduce(&:+)
                         - if emission
                           = "#{emission.round(2)} #{t('all.unit.kgco2e_html')}"
-                      %td.hide-md
+                      %td.hide-md.planning-tags
                         - planning.tags.each do |tag|
                           %span
                             = tag_icon tag
-                            %span
-                            = tag.label
+                            %span= tag.label
                       %td.text-right
                         .btn-group{ role: 'group'}
                           - if @customer.reseller.planning_dashboard_url && toolbar_operation_visible?(:planning, 'planning_dashboard')
