@@ -133,7 +133,7 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert content.dig(:components, :schemas).present?
     assert content[:paths].keys.any? { |path| path.to_s.include?('destinations') }
     assert content.dig(:servers, 0, :url).present?
-    refute_match(/\/\z/, content.dig(:servers, 0, :url).to_s)
+    refute_match(%r{/\z}, content.dig(:servers, 0, :url).to_s)
     destination_op = content[:paths].values.find { |item| item[:get] && item[:get][:operationId].to_s.include?('getDestinations') }
     assert destination_op, 'getDestinations missing from OpenAPI 3'
     assert_includes destination_op[:get][:tags], 'core'
