@@ -50,6 +50,7 @@
   - Planning duplicate: reset the customer `plannings_count` counter after duplication
   - Vehicle usage custom attributes description are now correctly displayed
   - Planning edit: enable the route optimize button after moving stops onto a previously empty route
+  - Dashboard plannings card was not responsive with tags
 
 ## V109.0.3
   ### Fixed
