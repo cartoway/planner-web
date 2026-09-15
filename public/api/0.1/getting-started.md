@@ -3,7 +3,7 @@
 Machine-readable reference: `GET /api/0.1/openapi.json?scope=happy_path` (OpenAPI 3.0 for the numbered flow below). `scope=core` is the rest of the integration surface (no admin/devices). Omit `scope` for the full catalog (`happy_path` / `core` / `admin` / `devices`). Swagger 2.0 remains at `GET /api/0.1/swagger_doc` (grape-swagger source of truth).
 Simplified domain model: [Model-simpel.svg](./Model-simpel.svg).
 
-This guide covers conventions, a copy-paste happy path, then guided **optimizer** and **zoning** flows, pitfalls, and the core resources used to integrate a third-party system. It does not cover the iframe Web API (`/api-web`) or telematics device endpoints.
+This guide covers conventions, a copy-paste happy path, then guided **optimizer** and **zoning** flows, pitfalls, and the core resources used to integrate a third-party system. Telematics device endpoints are out of scope. Iframe views (`/api-web`) are covered only for authentication.
 
 ## Versions
 
@@ -33,6 +33,24 @@ curl -H "Api-Key: YOUR_API_KEY" "{base}/api/0.1/destinations.json"
 - Admin keys unlock extra operations on `Customer`, `User`, `Vehicle` (depending on config) and `Profile`.
 - HTTP **402** means the customer subscription has expired.
 - HTTP **403** means the user is authenticated but not allowed to perform the action (CanCan).
+
+## Web embeds (`/api-web/0.1`)
+
+HTML views (planning, destinations map, zoning, print) for an iframe or an LLM fetch. Same `api_key` as REST, plus a short-lived embed token so the user key does not sit in the iframe URL.
+
+| Mode | How |
+|------|-----|
+| Query `api_key` | `GET /api-web/0.1/plannings/7/edit?api_key=YOUR_API_KEY` (existing) |
+| Header `Api-Key` | same as REST |
+| Embed token | `POST /api/0.1/embed_tokens` then `?embed_token=…`, header `Embed-Token`, or `Authorization: Bearer …` |
+
+```sh
+curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
+  "{base}/api/0.1/embed_tokens.json" \
+  -d '{"expires_in": 3600, "origin": "https://erp.example.com"}'
+```
+
+`origin` (optional) sets `Content-Security-Policy: frame-ancestors` on the view. Token lifetime is 60–86400 seconds (default 3600). For ChatGPT / Claude, mint a token with the API key then fetch the view with `Authorization: Bearer`.
 
 ---
 
