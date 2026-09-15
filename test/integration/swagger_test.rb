@@ -70,6 +70,15 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert_includes ruby, 'Api-Key'
 
     assert_includes body, 'Planner-API-0.1.collection.json'
+    assert_includes body, 'Model-simpel.svg'
+  end
+
+  test 'simplified domain model svg is served under the api docs path' do
+    get '/api/0.1/Model-simpel.svg'
+    assert_response :success
+    assert_match %r{\Aimage/svg\+xml}, response.media_type
+    assert_includes response.body, '<svg'
+    assert_includes response.body, 'Simplified domain model'
   end
 
   test 'postman collection covers the happy path' do
