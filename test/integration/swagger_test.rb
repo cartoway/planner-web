@@ -71,6 +71,10 @@ class SwaggerTest < ActionDispatch::IntegrationTest
 
     assert_includes body, 'Planner-API-0.1.collection.json'
     assert_includes body, 'Model-simpel.svg'
+    assert_includes body, '## Optimizer'
+    assert_includes body, '## Zoning'
+    assert_includes body, 'does **not** accept `zoning_ids`'
+    refute_includes body, 'apply_zonings.json?zoning_ids='
   end
 
   test 'simplified domain model svg is served under the api docs path' do
