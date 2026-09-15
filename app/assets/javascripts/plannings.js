@@ -3909,7 +3909,7 @@ export const plannings_edit = function(params) {
           + '<div id="min-optim-duration"></div>'
           + '<div id="max-optim-duration"></div>'
           + '</div>'
-          + '<button class="optim-cancel btn btn-warning">' + I18n.t('plannings.edit.dialog.optimization.cancel') + '</button>'
+          + '<button class="optim-cancel btn btn-warning" style="display: none">' + I18n.t('plannings.edit.dialog.optimization.cancel') + '</button>'
           + '<button type="button" class="btn btn-primary" data-dismiss="modal">' + I18n.t('web.dialog.close') + '</button>'
     });
     $('#default-modal').data('canceled', false);
