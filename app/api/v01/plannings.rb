@@ -251,7 +251,7 @@ class V01::Plannings < Grape::API
     end
 
     desc 'Apply zonings.',
-      detail: 'Apply zoning by assign stops to vehicles using the corresponding zones.',
+      detail: 'Assign unlocked stops to vehicles using zonings already linked on the planning (set zoning_ids on create/update — this endpoint does not take zoning_ids). Returns 204 unless details=true. Then optimize with global=false to sequence each route. HTTP 409 if an optimizer job is running.',
       nickname: 'applyZonings',
       http_codes: [
         V01::Status.success(:code_204),
@@ -287,7 +287,7 @@ class V01::Plannings < Grape::API
     end
 
     desc 'Optimize routes.',
-      detail: 'Starts an asynchronous optimization of unlocked routes. global=true allows moving visits between routes; false keeps visits on their current route. Returns a Job (poll GET /jobs/:id until the job disappears or failed_at is set). HTTP 409 if another optimizer job is already running. HTTP 304 if the solver finds no solution. Synchronous mode is deprecated and ignored for locking: optimization must run asynchronously.',
+      detail: 'Starts an asynchronous optimization of unlocked routes. global=true allows moving visits between routes; false (default) keeps visits on their current route (use after zoning or import with visit.route). Returns a Job; poll GET /jobs/:id until status is succeeded or failed. HTTP 409 if another optimizer job is already running. HTTP 304 if the solver finds no solution. Synchronous mode is deprecated.',
       nickname: 'optimizeRoutes',
       http_codes: [
         V01::Status.success(:code_200, V01::Entities::Job),
