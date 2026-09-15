@@ -2,6 +2,7 @@
 
 ## V111.0.0
   ### Added
+  - API-web: sign in with header `Api-Key` (same as REST) or a short-lived `embed_token` (`POST /api/0.1/embed_tokens`; query, `Embed-Token`, or `Authorization: Bearer`). Optional `origin` sets CSP `frame-ancestors`.
   - REST API: OpenAPI 3.0 at `GET /api/0.1/openapi.json` and `GET /api/100/openapi.json` (`?scope=happy_path` is the getting-started flow; `?scope=core` drops admin and devices; operations tagged `happy_path` / `core` / `admin` / `devices`)
   - API 0.1: `GET /jobs` and `GET /jobs/:id` with `status` running/queued/working/failed/succeeded/killed (last job remembered on the customer, including while queued or working)
   - API 0.1 and 100: optional pagination on `GET /destinations` (`page` / `per_page` envelope)
