@@ -33,6 +33,7 @@ class V01::VehicleUsageSets < Grape::API
 
   resource :vehicle_usage_sets do
     desc 'Fetch customer\'s vehicle_usage_sets. At least one vehicle_usage_set exists per customer.',
+      detail: 'Returns usage contexts (Morning, Evening, …) with default times and stores inherited by vehicle usages. One default set is created with the customer. Extra sets require the multi usage set option.',
       nickname: 'getVehicleUsageSets',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::VehicleUsageSet),
@@ -50,6 +51,7 @@ class V01::VehicleUsageSets < Grape::API
     end
 
     desc 'Fetch vehicle_usage_set.',
+      detail: 'Returns one usage context with default times and stores inherited by its vehicle usages.',
       nickname: 'getVehicleUsageSet',
       success: V01::Status.success(:code_200, V01::Entities::VehicleUsageSet),
       failure: V01::Status.failures
@@ -202,7 +204,7 @@ class V01::VehicleUsageSets < Grape::API
       if import && import.valid? && (vehicles_usages_with_conf = import.import)
         present vehicles_usages_with_conf, with: V01::Entities::Vehicle
       else
-        error!({error: import.errors.full_messages}, 422)
+        error! V01::Status.code_response(:code_422, message: Array(import.errors.full_messages).join(', ').presence, errors: import.errors.full_messages), 422
       end
     end
   end

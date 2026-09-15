@@ -63,6 +63,7 @@ class V01::Visits < Grape::API
 
       resource :visits do
         desc 'Fetch destination\'s visits.',
+        detail: 'Returns visits nested under one destination (numeric id or ref:VALUE). Filter with ids.',
         nickname: 'getVisits',
         is_array: true,
         success: V01::Status.success(:code_200, V01::Entities::Visit),
@@ -83,6 +84,7 @@ class V01::Visits < Grape::API
         end
 
         desc 'Fetch visit.',
+          detail: 'Returns one visit of the destination by numeric id or ref:VALUE.',
           nickname: 'getVisit',
           success: V01::Status.success(:code_200, V01::Entities::Visit),
           failure: V01::Status.failures
@@ -96,6 +98,7 @@ class V01::Visits < Grape::API
         end
 
         desc 'Fetch visit stops.',
+          detail: 'Returns all StopVisit occurrences of this visit across plannings (one stop per planning route that includes the visit).',
           nickname: 'getVisitStops',
           is_array: true,
           success: V01::Entities::Stop
@@ -109,6 +112,7 @@ class V01::Visits < Grape::API
         end
 
         desc 'Create visit.',
+          detail: 'Adds a visit to an existing destination. Rejected if an optimizer job is running. Existing plannings are not automatically updated: create a new planning or insert the stop afterwards.',
           nickname: 'createVisit',
           success: V01::Status.success(:code_201, V01::Entities::Visit),
           failure: V01::Status.failures
@@ -116,7 +120,7 @@ class V01::Visits < Grape::API
           use :request_visit
         end
         post do
-          raise Exceptions::JobInProgressError if current_customer.job_optimizer
+          raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
           params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
           destination_id = ParseIdsRefs.read(params[:destination_id])
@@ -128,7 +132,7 @@ class V01::Visits < Grape::API
         end
 
         desc 'Update visit.',
-          detail: 'If want to force geocoding for a new address, you have to send empty lat/lng with new address.',
+          detail: 'Updates time windows, quantities, tags, duration, force_position. Rejected if an optimizer job is running. Existing planning stops become outdated until refresh.',
           nickname: 'updateVisit',
           success: V01::Status.success(:code_200, V01::Entities::Visit),
           failure: V01::Status.failures
@@ -137,7 +141,7 @@ class V01::Visits < Grape::API
           use :request_visit
         end
         put ':id' do
-          raise Exceptions::JobInProgressError if current_customer.job_optimizer
+          raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
           params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
           destination_id = ParseIdsRefs.read(params[:destination_id])
@@ -150,6 +154,7 @@ class V01::Visits < Grape::API
         end
 
         desc 'Delete visit.',
+          detail: 'Deletes the visit and its stops on existing plannings. The destination is kept. Rejected if an optimizer job is running.',
           nickname: 'deleteVisit',
           success: V01::Status.success(:code_204),
           failure: V01::Status.failures
@@ -157,7 +162,7 @@ class V01::Visits < Grape::API
           requires :id, type: String, desc: SharedParams::ID_DESC
         end
         delete ':id' do
-          raise Exceptions::JobInProgressError if current_customer.job_optimizer
+          raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
           destination_id = ParseIdsRefs.read(params[:destination_id])
           id = ParseIdsRefs.read(params[:id])
@@ -172,6 +177,7 @@ class V01::Visits < Grape::API
 
   resource :visits do
     desc 'Update multiple visits.',
+      detail: 'Bulk-assigns tag_ids on the listed visits (numeric ids or ref:VALUE). Rejected if an optimizer job is running.',
       nickname: 'updateVisits'
     params do
       requires :ids, type: Array[String], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
@@ -179,7 +185,7 @@ class V01::Visits < Grape::API
     end
     put do
       Visit.transaction do
-        raise Exceptions::JobInProgressError if current_customer.job_optimizer
+        raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
         visits = current_customer.visits.select{ |visit|
           params[:ids].any?{ |s| ParseIdsRefs.match(s, visit) }
@@ -199,7 +205,7 @@ class V01::Visits < Grape::API
       requires :tag_ids, type: Array[Integer], desc: 'Tag ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { param_type: 'form', example: '1,2,ref:vip' }
     end
     delete 'by_tags' do
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
       Visit.transaction do
         tag_ids = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer)
@@ -234,6 +240,7 @@ class V01::Visits < Grape::API
     end
 
     desc 'Delete multiple visits.',
+      detail: 'Deletes visits listed in ids. WARNING: if ids is omitted or empty, ALL visits of the customer are deleted (destinations are kept). Rejected if an optimizer job is running.',
       nickname: 'deleteVisits',
       success: V01::Status.success(:code_204),
       failure: V01::Status.failures
@@ -241,7 +248,7 @@ class V01::Visits < Grape::API
       optional :ids, type: Array[String], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
     end
     delete do
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
       Visit.transaction do
         if params[:ids] && !params[:ids].empty?

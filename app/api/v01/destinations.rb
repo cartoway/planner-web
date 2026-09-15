@@ -130,6 +130,7 @@ class V01::Destinations < Grape::API
 
   resource :destinations do
     desc 'Fetch customer\'s destinations.',
+      detail: 'Returns all destinations of the customer, or a subset when ids is set (numeric ids or ref:VALUE). Use .geojson for a FeatureCollection of points; quantities adds pickup/delivery on features. Without page, returns a bare array. With page, returns { items, page, per_page, total }.',
       nickname: 'getDestinations',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Destination),
@@ -137,6 +138,7 @@ class V01::Destinations < Grape::API
     params do
       optional :ids, type: Array[String], desc: 'Select returned destinations by id separated with comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
       optional :quantities, type: Boolean, default: false, desc: 'Include the quantities when using geojson output.'
+      use :optional_pagination
     end
     get do
       if env['api.format'] == :geojson
@@ -148,13 +150,14 @@ class V01::Destinations < Grape::API
               params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
             }
           else
-            current_customer.destinations.includes_visits.load
+            current_customer.destinations.includes_visits
           end
-        present destinations, with: V01::Entities::Destination
+        present_paginated destinations, V01::Entities::Destination
       end
     end
 
     desc 'Fetch destination.',
+      detail: 'Returns one destination by numeric id or ref:VALUE, including nested visits.',
       nickname: 'getDestination',
       success: V01::Status.success(:code_200, V01::Entities::Destination),
       failure: V01::Status.failures
@@ -166,6 +169,7 @@ class V01::Destinations < Grape::API
     end
 
     desc 'Create destination.',
+      detail: 'Creates a destination and optional nested visits. Address is geocoded when lat/lng are omitted. Rejected with an error if an optimizer job is running. Prefer importDestinations (PUT /destinations) to upsert many records by ref.',
       nickname: 'createDestination',
       success: V01::Status.success(:code_201, V01::Entities::Destination),
       failure: V01::Status.failures
@@ -174,7 +178,7 @@ class V01::Destinations < Grape::API
     end
     post do
       authorize!(:create, Destination)
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
       params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
       destination = current_customer.destinations.build(destination_params)
@@ -184,7 +188,7 @@ class V01::Destinations < Grape::API
     end
 
     desc 'Import destinations by upload a CSV file, by JSON or from TomTom.',
-      detail: 'Import multiple destinations and visits. Use your internal and unique ids as a "reference" to automatically retrieve and update objects. If "route" key is provided for a visit or if a planning attribute is sent, a planning will be automatically created at the same time. If all "route" attibutes are blank or none attribute for planning is sent, only destinations and visits will be created/updated.',
+      detail: 'Import multiple destinations and visits. Use your internal and unique ids as a "reference" to automatically retrieve and update objects (upsert). If "route" or "ref_vehicle" is provided for a visit or if a planning attribute is sent, a planning will be automatically created at the same time. If all "route" attributes are blank and no planning attribute is sent, only destinations and visits will be created/updated. CSV headers follow Accept-Language. HTTP 202 when geocoding runs asynchronously (poll GET /jobs/:id); HTTP 200 when the import is synchronous.',
       nickname: 'importDestinations',
       is_array: true,
       http_codes: [
@@ -217,7 +221,7 @@ class V01::Destinations < Grape::API
     end
     put do
       authorize!(:create, Destination)
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
       if params[:destinations]
         d_params = declared(params, include_missing: false) # Filter undeclared parameters
@@ -259,7 +263,7 @@ class V01::Destinations < Grape::API
         else present destinations, with: V01::Entities::Destination
         end
       else
-        error!({error: import && import.errors.full_messages}, 422)
+        error! V01::Status.code_response(:code_422, message: Array(import&.errors&.full_messages).join(', ').presence, errors: import&.errors&.full_messages), 422
       end
     end
 
@@ -274,7 +278,7 @@ class V01::Destinations < Grape::API
     end
     put ':id' do
       authorize!(:update, Destination)
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
       params[:tag_ids] = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer) if params[:tag_ids]
       destination = current_customer.destinations.where(ParseIdsRefs.where_clause([params[:id]])).first!
@@ -292,7 +296,7 @@ class V01::Destinations < Grape::API
       requires :tag_ids, type: Array[Integer], desc: 'Tag ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { param_type: 'form', example: '1,2,ref:vip' }
     end
     delete 'by_tags' do
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
       authorize!(:destroy, Destination)
 
       Destination.transaction do
@@ -331,6 +335,7 @@ class V01::Destinations < Grape::API
     end
 
     desc 'Delete destination.',
+      detail: 'Deletes the destination and its visits. Stops on existing plannings are removed. Rejected if an optimizer job is running.',
       nickname: 'deleteDestination',
       success: V01::Status.success(:code_204),
       failure: V01::Status.failures
@@ -338,7 +343,7 @@ class V01::Destinations < Grape::API
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     delete ':id' do
-      raise Exceptions::JobInProgressError if current_customer.job_optimizer
+      raise Exceptions::JobInProgressError if current_customer.optimizer_running?
       authorize!(:destroy, Destination)
 
       current_customer.destinations.where(ParseIdsRefs.where_clause([params[:id]])).first!.destroy
@@ -346,6 +351,7 @@ class V01::Destinations < Grape::API
     end
 
     desc 'Delete multiple destinations.',
+      detail: 'Deletes destinations listed in ids (numeric ids or ref:VALUE). WARNING: if ids is omitted or empty, ALL destinations of the customer are deleted. HTTP 304 when the filter matches nothing.',
       nickname: 'deleteDestinations',
       success: V01::Status.success(:code_204),
       failure: V01::Status.failures
@@ -464,7 +470,7 @@ class V01::Destinations < Grape::API
     position = OpenStruct.new(lat: Float(params[:lat]), lng: Float(params[:lng]))
     vehicle_usage = VehicleUsage.joins(:vehicle_usage_set).where(vehicle_usage_sets: {customer_id: current_customer.id}, id: params[:vehicle_usage_id]).first
     if params.key?(:vehicle_usage_id) && vehicle_usage.nil?
-      error! 'VehicleUsage not found', 404
+      error! V01::Status.code_response(:code_404, before: 'VehicleUsage'), 404
     else
       destinations = current_customer.destinations_inside_time_distance(position, params[:distance], params[:time], vehicle_usage) || []
       present destinations, with: V01::Entities::DestinationId

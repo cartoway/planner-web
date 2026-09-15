@@ -2,6 +2,9 @@
 
 ##
   ### Added
+  - REST API: OpenAPI 3.0 at `GET /api/0.1/openapi.json` and `GET /api/100/openapi.json` (`?scope=happy_path` is the getting-started flow; `?scope=core` drops admin and devices; operations tagged `happy_path` / `core` / `admin` / `devices`)
+  - API 0.1: `GET /jobs` and `GET /jobs/:id` with `status` running/queued/working/failed/succeeded/killed (last job remembered on the customer, including while queued or working)
+  - API 0.1 and 100: optional pagination on `GET /destinations` (`page` / `per_page` envelope)
   - Customers index: users list dropdown per customer
   - Planning: extract inactive stops from vehicle routes to unassigned via a dedicated modal
   - Destination import:
@@ -32,24 +35,37 @@
     - Row selection, bulk delete, and highlight from map pin or `highlight_destination_id` deep link
     - Coordinate editing on the background map: crosshairs toggle, placement mode (hidden list, centred cancel button), sync with lat/lng fields
     - User preference to switch between classic (default) and v2 destinations list
+    - Per-page size dropdown and sticky list header
+    - Colorized geocoding accuracy in the list
+    - Vector overlay layers and map style / layers control
   - Planning optimization dialog: show the current resolution phases (independent sub-problems, splitting, dichotomous, resolution)
   - Vehicle usage visit/destination duration coefficients
+  - Custom attributes: optional visibility on mobile (visit, vehicle, and route)
+  - Extra dashboard for resellers
 
   ### Changed
+  - Planning optimizer dialog: hide cancel until the job is transmitted to the solver, and when it has failed
   - Sopac: migrate from api to message broker
   - the stop-tools map marker button bring the associated marker to the front
   - Move stops modal: None / Reverse / All selection buttons and improved list padding
   - Destination import: on a new empty planning, place the automatic rest at the end of the route when no rest stop is provided in the import
-  - Planning sidebar: unified `map_marker?` flag to decide when the map-marker button is shown for any stop
+  - REST API 0.1: unify error bodies: `{ message, status }` (import HTTP 422 may add `errors`)
 
   ### Fixed
   - Planning edit: `automatic_insert` on all unassigned stops no longer skips every other stop
   - Route compute: place unlocated rests on the driving leg at the latest feasible time when starting at the next stop would fall outside the rest window
-  - Route compute: `out_of_max_ride_distance` / `out_of_max_ride_duration` flags on `route_data` now reset correctly on recompute
+  - Route compute: `out_of_skill`, `out_of_max_reload`, `out_of_force_position`, `out_of_capacity`, `out_of_max_ride_distance`, and `out_of_max_ride_duration` flags on `route_data` now set and reset correctly on recompute
   - Planning map: recenter on the stop when its popup overflows the visible map area (including under the sidebar)
   - Planning duplicate: reset the customer `plannings_count` counter after duplication
   - Vehicle usage custom attributes description are now correctly displayed
   - Planning edit: enable the route optimize button after moving stops onto a previously empty route
+  - Vehicle usage form: inherited customer router options show the correct yes/no default
+  - Planning/route spreadsheet export no longer breaks when saved stop-type settings are scattered
+  - Route stop indices: duplicate or gapped indices are repaired on compute
+  - Optimization: send a time cost of 1 when all vehicle costs are zero
+  - Vehicle usage set: changing a default only outdates routes that still inherit that value
+  - Writes (API and UI) during an ongoing optimization are consistently rejected
+  - Customer form: non-admin router select lists only the profile routers
 
 ## V109.0.3
   ### Fixed

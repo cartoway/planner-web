@@ -20,10 +20,10 @@ class V01::Entities::Zone < Grape::Entity
     'V01_Zone'
   end
 
-  expose(:id, documentation: { type: Integer })
-  expose(:name, documentation: { type: String })
-  expose(:vehicle_id, documentation: { type: Integer })
-  expose(:polygon, documentation: { type: String }) # format: GeoJson
-  expose(:speed_multiplicator, documentation: { type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
-  expose(:speed_multiplier, documentation: { type: Float, desc: 'Speed multiplicator for this area. Taken into accound only for routers which support avoid_zones or speed_zones.' })
+  expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 9 })
+  expose(:name, documentation: { type: String, desc: 'Display name.', example: 'North sector' })
+  expose(:vehicle_id, documentation: { type: Integer, desc: 'Vehicle this zone is assigned to. Applying the zoning sends stops inside the polygon to that vehicle route.', example: 2 })
+  expose(:polygon, documentation: { type: String, desc: 'GeoJSON Feature (Polygon or MultiPolygon) describing the area.' })
+  expose(:speed_multiplicator, documentation: { hidden: true, deprecated: true, type: Float, desc: 'Deprecated, use speed_multiplier instead.' }) { |m| m.speed_multiplier }
+  expose(:speed_multiplier, documentation: { type: Float, desc: 'Speed multiplier for this area (1 is default). Taken into account only for routers which support avoid_zones or speed_zones.', example: 1.0 })
 end

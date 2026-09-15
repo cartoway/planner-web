@@ -35,6 +35,18 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert_equal @destination.customer.destinations.size, JSON.parse(last_response.body).size
   end
 
+  test 'GET destinations with page returns items envelope' do
+    total = @customer.destinations.size
+    get api(nil, page: 1, per_page: 2)
+    assert last_response.ok?, last_response.body
+    body = JSON.parse(last_response.body)
+    assert_equal 1, body['page']
+    assert_equal 2, body['per_page']
+    assert_equal total, body['total']
+    assert_equal 2, body['items'].size
+    assert body['items'].first['id'].present?
+  end
+
   test 'should return customer''s destinations by ids' do
     get api(nil, 'ids' => @destination.id)
     assert last_response.ok?, last_response.body
@@ -914,7 +926,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
             }]
           }]}.to_json, CONTENT_TYPE: 'application/json'
           assert !last_response.ok?, last_response.body
-          assert_not_nil JSON.parse(last_response.body)['error'], 'Bad response: ' + last_response.body.inspect
+          assert_not_nil JSON.parse(last_response.body)['errors'], 'Bad response: ' + last_response.body.inspect
         end
       end
     end
@@ -966,7 +978,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
           'CONTENT_TYPE' => 'application/json'
           assert_not last_response.ok?, last_response.body
           error_message = I18n.t('destinations.import_file.refs_duplicate', refs: "z | v1")
-          assert_equal error_message, JSON.parse(last_response.body)["error"][0].scan(error_message)[0]
+          assert_equal error_message, JSON.parse(last_response.body)['errors'][0].scan(error_message)[0]
         end
       end
     end

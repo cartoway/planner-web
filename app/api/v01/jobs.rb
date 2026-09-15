@@ -33,48 +33,34 @@ class V01::Jobs < Grape::API
 
   resource :jobs do
     desc 'Fetch customer\'s jobs.',
+         detail: 'Live optimizer/geocoding jobs plus the last finished job of each kind (succeeded, failed, or killed).',
          nickname: 'getJobs',
          is_array: true,
          success: V01::Entities::Job
-    params do
-    end
     get do
-      # with_completed_jobs
-      # From woop : To display only finished jobs (suceeded or failed) from the past 24 hours.
-      # Default value : false
-      jobs = [
-        current_customer.job_optimizer,
-        current_customer.job_destination_geocoding,
-        current_customer.job_store_geocoding
-      ].compact # .select{ |job| job.failed_at.nil? }
-      present jobs, with: V01::Entities::Job
+      live = current_customer.live_async_jobs
+      remembered = current_customer.remembered_async_jobs.reject { |job| live.any? { |live_job| live_job.id == job.id } }
+      present live + remembered, with: V01::Entities::Job
     end
 
     desc 'Return a job.',
-      detail: 'Return asynchronous job (like geocoding, optimizer) currently runned for the customer.',
+      detail: 'HTTP 200 with status running or failed while the job exists; succeeded, failed, or killed after completion. HTTP 404 if this id was never a job of this customer.',
       nickname: 'getJob',
       success: V01::Entities::Job
     params do
       requires :id, type: Integer, desc: ID_DESC
     end
     get ':id' do
-      customer = current_customer
-      job = if customer.job_optimizer && customer.job_optimizer_id == params[:id]
-        customer.job_optimizer
-      elsif customer.job_destination_geocoding && customer.job_destination_geocoding_id == params[:id]
-        customer.job_destination_geocoding
-      elsif customer.job_store_geocoding && customer.job_store_geocoding_id == params[:id]
-        customer.job_store_geocoding
-      end
+      job = current_customer.find_async_job(params[:id])
       if job
         present job, with: V01::Entities::Job
       else
-        error! 'Job not found', 404
+        error! V01::Status.code_response(:code_404, message: 'Job not found.'), 404
       end
     end
 
     desc 'Cancel job.',
-      detail: 'Cancel asynchronous job (like geocoding, optimizer) currently runned for the customer.',
+      detail: 'Cancels a running optimizer or geocoding job and remembers it as killed. HTTP 409 if the optimizer job is already in transmission to the solver. Returns 204 on success.',
       nickname: 'deleteJob'
     params do
       requires :id, type: Integer, desc: ID_DESC
@@ -92,6 +78,7 @@ class V01::Jobs < Grape::API
       elsif customer.job_store_geocoding && customer.job_store_geocoding_id == params[:id]
         customer.job_store_geocoding.destroy
       end
+      Customer.dismiss_last_async_job!(customer.id, params[:id])
       status 204
     rescue Exceptions::JobInTransmissionError
       status 409

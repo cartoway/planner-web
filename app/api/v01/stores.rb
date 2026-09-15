@@ -32,6 +32,7 @@ class V01::Stores < Grape::API
 
   resource :stores do
     desc 'Fetch customer\'s stores. At least one store exists per customer.',
+      detail: 'Returns depots (start/stop/reload). A default store is created with the customer. Use .geojson for a FeatureCollection of points.',
       nickname: 'getStores',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Store),
@@ -72,6 +73,7 @@ class V01::Stores < Grape::API
     end
 
     desc 'Fetch store.',
+      detail: 'Returns one store by numeric id or ref:VALUE.',
       nickname: 'getStore',
       success: V01::Status.success(:code_200, V01::Entities::Store),
       failure: V01::Status.failures
@@ -99,6 +101,7 @@ class V01::Stores < Grape::API
     end
 
     desc 'Import stores by upload a CSV file or by JSON.',
+      detail: 'Bulk create/update stores. Use ref as upsert key. CSV headers follow Accept-Language. JSON body uses stores[].',
       nickname: 'importStores',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Store),
@@ -122,7 +125,7 @@ class V01::Stores < Grape::API
       if import && import.valid? && (stores = import.import(true))
         present stores, with: V01::Entities::Store
       else
-        error!({error: import.errors.full_messages}, 422)
+        error! V01::Status.code_response(:code_422, message: Array(import.errors.full_messages).join(', ').presence, errors: import.errors.full_messages), 422
       end
     end
 
@@ -241,7 +244,7 @@ class V01::Stores < Grape::API
     if import && import.valid? && (stores = import.import(true))
       present stores, with: V01::Entities::Store
     else
-      error!({error: import.errors.full_messages}, 422)
+        error! V01::Status.code_response(:code_422, message: Array(import.errors.full_messages).join(', ').presence, errors: import.errors.full_messages), 422
     end
   end
 
@@ -259,7 +262,7 @@ class V01::Stores < Grape::API
     position = OpenStruct.new(lat: Float(params[:lat]), lng: Float(params[:lng]))
     vehicle_usage = VehicleUsage.joins(:vehicle_usage_set).where(vehicle_usage_sets: {customer_id: current_customer.id}, id: params[:vehicle_usage_id]).first
     if params.key?(:vehicle_usage_id) && vehicle_usage.nil?
-      error! 'VehicleUsage not found', 404
+      error! V01::Status.code_response(:code_404, before: 'VehicleUsage'), 404
     else
       stores = current_customer.stores_by_distance(position, Integer(params[:n]), vehicle_usage)
       present stores, with: V01::Entities::Store

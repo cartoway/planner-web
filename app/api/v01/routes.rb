@@ -75,6 +75,7 @@ class V01::Routes < Grape::API
     segment '/:planning_id' do
       resource :routes do
         desc 'Update route attributes.',
+          detail: 'Updates ref, hidden, locked, color, departure. Recomputes times after save. Color and departure may require extra user permissions (HTTP 403).',
           nickname: 'updateRoute',
           success: V01::Status.success(:code_200, V01::Entities::RouteProperties),
           failure: V01::Status.failures
@@ -150,7 +151,7 @@ class V01::Routes < Grape::API
         end
 
         desc 'Optimize a single route.',
-          detail: 'Get the shortest route in time or distance.',
+          detail: 'Asynchronous optimization of one unlocked route (visits stay on this route). Returns a Job (poll GET /jobs/:id). HTTP 409 if another optimizer job is running. HTTP 304 if no solution. Synchronous mode is deprecated.',
           nickname: 'optimizeRoute',
           http_codes: [
             V01::Status.success(:code_200, V01::Entities::Job),
@@ -167,7 +168,7 @@ class V01::Routes < Grape::API
         end
         patch ':id/optimize' do
           begin
-            raise Exceptions::JobInProgressError if current_customer.job_optimizer
+            raise Exceptions::JobInProgressError if current_customer.optimizer_running?
 
             Stop.includes_destinations_and_stores.scoping do
               authorize!(:optimize, get_route)

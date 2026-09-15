@@ -54,6 +54,7 @@ class V100::Destinations < Grape::API
 
   resource :destinations do
     desc 'Fetch customer\'s destinations.',
+      detail: 'Without `page`, returns a bare array (current v100 clients). With `page`, returns `{ items, page, per_page, total }` (`per_page` default 100, max 500).',
       nickname: 'getDestinations',
       is_array: true,
       success: V100::Status.success(:code_200, V100::Entities::Destination),
@@ -62,6 +63,7 @@ class V100::Destinations < Grape::API
       optional :ids, type: Array[String], desc: 'Select returned destinations by id separated with comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
       optional :quantities, type: Boolean, default: false, desc: 'Include the quantities when using geojson output.'
       optional :visits, type: Boolean, default: true, desc: 'Include the visits associated to the destinations'
+      use :optional_pagination
     end
     get do
       if env['api.format'] == :geojson
@@ -73,18 +75,14 @@ class V100::Destinations < Grape::API
           current_customer.destinations
         end
 
-        destinations = if params.key?(:ids)
-          destinations.select{ |destination|
+        if params.key?(:ids)
+          destinations = destinations.select{ |destination|
             params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
           }
-        else
-          destinations.load
         end
-        if params[:visits]
-          present destinations, with: V100::Entities::DestinationWithVisit
-        else
-          present destinations, with: V100::Entities::Destination
-        end
+
+        entity = params[:visits] ? V100::Entities::DestinationWithVisit : V100::Entities::Destination
+        present_paginated destinations, entity
       end
     end
   end

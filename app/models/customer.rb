@@ -201,6 +201,83 @@ class Customer < ApplicationRecord
     rest_icon_size || Planner::Application.config.rest_icon_size_default
   end
 
+  LastAsyncJob = Struct.new(:id, :type, :status, :finished_at, keyword_init: true)
+
+  def self.record_last_async_job!(customer_id, id:, type:, kind:, status: 'succeeded', error: nil, planning_id: nil)
+    customer = find_by(id: customer_id)
+    return unless customer
+
+    jobs = (customer.last_async_jobs || {}).dup
+    existing = jobs[kind.to_s]
+    if existing.is_a?(Hash) && existing['id'].to_i == id.to_i
+      # Same job: cancel vs worker-fail race. Keep failed over a later kill; keep killed over a later fail.
+      return if existing['status'] == 'succeeded'
+      return if existing['status'] == 'failed' && status == 'killed'
+      return if existing['status'] == 'killed' && status == 'failed'
+    end
+    entry = {
+      'id' => id,
+      'type' => type,
+      'status' => status
+    }
+    entry['finished_at'] = Time.now.utc.iso8601 unless %w[queued working].include?(status)
+    entry['error'] = error if error.present?
+    entry['planning_id'] = planning_id if planning_id
+    jobs[kind.to_s] = entry
+    customer.update_column(:last_async_jobs, jobs)
+  end
+
+  def live_async_jobs
+    [job_optimizer, job_destination_geocoding, job_store_geocoding].compact
+  end
+
+  def optimizer_running?
+    job_optimizer.present? && job_optimizer.failed_at.nil?
+  end
+
+  def last_failed_optimizer_job(planning_id = nil)
+    entry = (last_async_jobs || {})['optimizer']
+    return unless entry.is_a?(Hash) && entry['status'] == 'failed'
+    return if entry['dismissed']
+    return if planning_id && entry['planning_id'] && entry['planning_id'].to_i != planning_id.to_i
+
+    entry
+  end
+
+  def self.dismiss_last_async_job!(customer_id, job_id)
+    customer = find_by(id: customer_id)
+    return unless customer && job_id
+
+    jobs = (customer.last_async_jobs || {}).dup
+    changed = false
+    jobs.each do |kind, entry|
+      next unless entry.is_a?(Hash) && entry['id'].to_i == job_id.to_i
+      next if entry['dismissed']
+
+      jobs[kind] = entry.merge('dismissed' => true)
+      changed = true
+    end
+    customer.update_column(:last_async_jobs, jobs) if changed
+  end
+
+  def remembered_async_jobs
+    (last_async_jobs || {}).values.filter_map do |entry|
+      next unless entry.is_a?(Hash)
+
+      LastAsyncJob.new(
+        id: (entry['id'] || entry[:id]).to_i,
+        type: entry['type'] || entry[:type],
+        status: entry['status'] || entry[:status],
+        finished_at: entry['finished_at'] || entry[:finished_at]
+      )
+    end
+  end
+
+  def find_async_job(job_id)
+    live_async_jobs.find { |job| job.id == job_id } ||
+      remembered_async_jobs.find { |job| job.id == job_id }
+  end
+
   def duplicate
     customer_id = self.custom_duplicate
     Customer.find(customer_id)
@@ -212,7 +289,7 @@ class Customer < ApplicationRecord
     fallback_role_id = nil if fallback_role_id.blank? || !reseller_role_ids.include?(fallback_role_id)
 
     self.transaction_without_selects do
-      attributes = self.import_attributes.except('id', 'job_destination_geocoding_id', 'job_store_geocoding_id', 'job_optimizer_id')
+      attributes = self.import_attributes.except('id', 'job_destination_geocoding_id', 'job_store_geocoding_id', 'job_optimizer_id', 'last_async_jobs')
       attributes['name'] += " (#{I18n.l(Time.zone.now, format: :long)})"
       attributes['test'] = Planner::Application.config.customer_test_default
       attributes['ref'] = attributes['ref'] ? Time.new.to_i.to_s : nil

@@ -258,6 +258,25 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_match(/"routes":\[/, response.body)
   end
 
+  test 'sidebar reuses preloaded routes and preloads stops on available routes' do
+    hidden_locked = @planning.routes.find(&:vehicle_usage_id)
+    original_hidden = hidden_locked.hidden
+    original_locked = hidden_locked.locked
+    hidden_locked.update_columns(hidden: true, locked: true)
+
+    get :sidebar, params: { planning_id: @planning.id }, xhr: true
+
+    assert_response :success
+    routes = assigns(:routes)
+    assert routes.none? { |route| route.id == hidden_locked.id }
+    vehicle_route = routes.find(&:vehicle_usage_id)
+    assert vehicle_route, 'expected a visible vehicle route'
+    assert_equal true, assigns(:with_stops)
+    assert vehicle_route.association(:stops).loaded?
+  ensure
+    hidden_locked&.update_columns(hidden: original_hidden, locked: original_locked)
+  end
+
   test 'should get index as csv' do
     get :index, params: { format: :csv, summary: true }
     assert_response :success
@@ -905,6 +924,44 @@ class PlanningsControllerTest < ActionController::TestCase
     @planning.routes.select(&:vehicle_usage).each{ |vu|
       assert_not vu.outdated
     }
+  end
+
+  test 'show json includes last failed optimizer without blocking the planning' do
+    @planning.customer.update_column(:last_async_jobs, {
+      'optimizer' => {
+        'id' => 42,
+        'type' => 'optimizer',
+        'status' => 'failed',
+        'planning_id' => @planning.id,
+        'finished_at' => '2026-09-14T10:00:00Z'
+      }
+    })
+
+    get :show, params: { id: @planning.id, format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['routes'].present?
+    assert_equal true, body.dig('optimizer', 'error')
+    assert_equal 42, body.dig('optimizer', 'id')
+  end
+
+  test 'show json omits dismissed last failed optimizer' do
+    @planning.customer.update_column(:last_async_jobs, {
+      'optimizer' => {
+        'id' => 42,
+        'type' => 'optimizer',
+        'status' => 'failed',
+        'dismissed' => true,
+        'planning_id' => @planning.id,
+        'finished_at' => '2026-09-14T10:00:00Z'
+      }
+    })
+
+    get :show, params: { id: @planning.id, format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['routes'].present?
+    assert_nil body['optimizer']
   end
 
   test 'should not move stop while optimization job is running on planning' do

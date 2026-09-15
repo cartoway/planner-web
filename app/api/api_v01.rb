@@ -71,32 +71,42 @@ class ApiV01 < Grape::API
       license_url: 'https://raw.githubusercontent.com/cartoway/planner-web/master/LICENSE',
       version: '0.1',
       description: '
+[Getting started (happy path, pitfalls, workflows, curl)](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/getting-started.md).
 [Simplified view of domain model](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/Model-simpel.svg).
-## Model
-Model is structured around four majors concepts: the Customer account, Destinations/Visits, Vehicles and Plannings.
-* `Customers`: many of objects are linked to a customer account (relating to the user calling API).
-The customer has many `Users`, each user has his own `api_key`. Be carefull not to confuse with following model `Destination`, `Customer`can only be created by a admin `User`.
-* `Destinations` describes the geographical points or entity. `Visits` holds the actions to be performed and the constraints associated. `Visits` which might be directly nested in the destination definition. The same `Destination` can be visited several times. A `Visit` might have multiple pickup and delivery quantities and should be linked to a `DeliverableUnit`.
-* `Vehicles`: vehicles definition are splited in two parts:
- * the structural definition named `Vehicle` (car, truck, bike, consumption, etc.)
- * and the vehicle usage `VehicleUsage`, a specific usage of a physical vehicle in a specific context. Vehicles can be used in many contexts called `VehicleUsageSet` (set of all vehicles usages under a context). Multiple values are only available if dedicated option for customer is active. For instance, if customer needs to use its vehicle 2 times per day (morning and evening), he needs 2 `VehicleUsageSet` called "Morning" and "Evening" : each can have different values defined for stores, rest, etc... `VehicleUsageSet` defines default values for vehicle usage.
-* `Plannings`: `Planning` is a set of `Routes` to `Visit` `Destinations` with `Vehicle` within a `VehicleUsageSet` context.
-A route is a track between all destinations reached by a vehicle (a new route is created for each customer\'s vehicle and a route without vehicle is created for all out-of-route destinations). By default all customer\'s visites are used in a planning.
 
-## Technical access
-### Swagger descriptor
-This REST API is described with Swagger. The Swagger descriptor defines the request end-points, the parameters and the return values. The API can be addressed by HTTP request or with a generated client using the Swagger descriptor.
-### API key
-All access to the API are subject to an `api_key` parameter in order to authenticate the user.
-This parameter can be sent with a query string on each available operation: `https://planner.cartoway.com/api/0.1/{objects}?api_key={your_personal_api_key}`
-### Return
-The API supports several return formats: `json` and `xml` which depend of the requested extension used in url.
+## Model
+Model is structured around four major concepts: the Customer account, Destinations/Visits, Vehicles and Plannings.
+* `Customers`: many objects are linked to a customer account (relating to the user calling the API).
+The customer has many `Users`, each user has his own `api_key`. Be careful not to confuse with the following model `Destination`. A `Customer` can only be created by an admin `User`.
+* `Destinations` describe geographical points. `Visits` hold the actions to be performed and the associated constraints. Visits may be nested in the destination definition. The same `Destination` can be visited several times. A `Visit` might have multiple pickup and delivery quantities linked to a `DeliverableUnit`.
+* `Vehicles` are split in two parts:
+ * the structural definition named `Vehicle` (car, truck, bike, consumption, etc.)
+ * the vehicle usage `VehicleUsage`, a specific usage of a physical vehicle in a context. Vehicles can be used in many contexts called `VehicleUsageSet`. Multiple sets are only available if the dedicated customer option is active. For instance, two sets "Morning" and "Evening" can each have different stores, rest, etc. `VehicleUsageSet` defines default values for vehicle usages.
+* `Plannings`: a `Planning` is a set of `Routes` to `Visit` `Destinations` with `Vehicle` within a `VehicleUsageSet` context.
+There is no create-stop or create-route endpoint. Creating a planning automatically creates one unassigned (out-of-route) route, one route per vehicle, and one stop per matching visit.
+
+## Conventions
+### Authentication
+Send the user `api_key` as a query parameter **or** as header `Api-Key`:
+`https://planner.cartoway.com/api/0.1/destinations.json?api_key={your_personal_api_key}`
+`curl -H "Api-Key: {your_personal_api_key}" ...`
+All data is scoped to the user\'s `Customer`. HTTP **402** means the subscription has expired. HTTP **403** means the action is forbidden.
+### Identifiers
+Path and filter ids accept a numeric id (`42`) or an external reference (`ref:CLIENT-12`). References must not contain commas. `ref` is the upsert key on destination/visit/store import.
+### Formats
+URL extension selects the response: `.json` (default), `.xml`, `.geojson` (destinations, visits, plannings, routes), `.ics` (plannings, routes).
+`GET /destinations` without `page` returns a bare array. With `page` (and `per_page`, default 100, max 500) it returns `{ items, page, per_page, total }`.
+### Times
+Input schedule fields use `HH:MM` or `HH:MM:SS`. Output times are DateTime values, often based on the planning date.
 ### I18n
-Functionnal textual returns are subject to translation and depend of HTTP header `Accept-Language`. HTTP error codes are not translated.
-## Admin acces
-Using an admin `api_key` switches to advanced opperations (on `Customer`, `User`, `Vehicle`, `Profile`). Most of operations from the current api are usable either for normal user `api_key` or admin user `api_key` (not both).
+Functional messages and CSV headers follow `Accept-Language`. HTTP error codes are not translated. Errors look like `{ "message": "...", "status": 401 }`.
+### Asynchronous jobs
+Optimization and bulk geocoding return a `Job`. Poll `GET /jobs/:id` until `status` is `succeeded` or `failed` (`failed_at` set). HTTP **404** means this id was never a job of this customer. HTTP **409** means another optimizer job is already running.
+
+## Admin access
+Using an admin `api_key` unlocks advanced operations (on `Customer`, `User`, `Vehicle`, `Profile`). Most operations from the current API are usable either for a normal user `api_key` or an admin user `api_key` (not both).
 ## More concepts
-When a customer is created some objects are created by default with this new customer:
+When a customer is created some objects are created by default:
 * `Vehicle`: multiple, depending of the `max_vehicles` defined for customer
 * `DeliverableUnit`: one default
 * `VehicleUsageSet`: one default
@@ -104,24 +114,26 @@ When a customer is created some objects are created by default with this new cus
 * `Store`: one default
 
 ### Profiles, Layers, Routers
-`Profile` is a concept which allows to set several parameters for the customer:
-* `Layer`: which allows to choose the background map
-* `Router`: which allows to build route\'s information.
+`Profile` sets several parameters for the customer:
+* `Layer`: background map
+* `Router`: builds route geometry and travel times.
 
 Several default profiles are available and can be listed with an admin `api_key`.
 
 ### Tags
-`Tag` is a concept to filter visits and create planning only for a subset of visits. For instance, if some visits are tagged "Monday", it allows to create a new planning for "Monday" tag and use only dedicated visits.
+`Tag` filters visits when creating a planning. For instance, visits tagged "Monday" can be used to create a planning that only includes those visits (`tag_operation`: `and` or `or`).
 ### Zonings
-`Zoning` is a concept which allows to define multiple `Zones` (areas) around destinatons. A `Zone` can be affected to a `Vehicle` and if it is used into a `Planning`, all `Destinations` inside areas will be affected to the zone\'s vehicle (or `Route`). A polygon defining a `Zone` can be created outside the application or can be automatically generated from a planning.
+`Zoning` defines multiple `Zones` (areas). A `Zone` can be linked to a `Vehicle`. Applying the zoning on a `Planning` assigns destinations inside each area to that vehicle\'s route. Polygons can be provided or generated (clustering, isochrone, isodistance).
 
 ## Code samples
-* Create and display destinations or visits.
-Here some samples for these operations: [using PHP](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/php/example.php), [using Ruby](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/ruby/example.rb).
-Note you can import destinations/visits and create a planning at the same time if you know beforehand the route for each destination/visit. See the details of importDestinations operation to import your data and create a planning in only one call.
-* Same operations are available for stores (note you have an existing default store).
-* With created destinations/visits, you can create a planning (routes and stops are automatically created depending of yours vehicles and destinations/visits)
-* In existing planning, you have availability to move stops (which represent visits) on a dedicated route (which represent a dedicated vehicle).
-* With many unaffected (out-of-route) stops in a planning, you may create a zoning to move many stops in several routes. Create a zoning (you can generate zones in this zoning automatically from automatic clustering), if you apply zoning (containing zones linked to a vehicle) on your planning, all stops contained in different zones will be moved in dedicated routes.
+Workflows with curl: see [getting started](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/getting-started.md).
+Runnable samples: [cURL](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/curl/example.sh), [Python](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/python/example.py), [PHP](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/php/example.php), [Ruby](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/ruby/example.rb).
+Postman / Insomnia (happy path): [collection](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/postman/Planner-API-0.1.collection.json), [environment](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/examples/postman/Planner-API-0.1.environment.json).
+You can import destinations/visits and create a planning at the same time if you already know the route for each visit (`importDestinations`). Creating a planning materializes routes and stops. Move stops between routes, or use zoning (automatic clustering) to assign many unassigned stops at once.
+
+### OpenAPI
+Codegen, Postman and Insomnia should import OpenAPI 3.0 at `GET /api/0.1/openapi.json?scope=happy_path` (numbered getting-started flow). `scope=core` is the rest of the integration surface (no admin/devices). Omit `scope` for the full catalog (`happy_path` / `core` / `admin` / `devices`). `GET /api/0.1/swagger_doc` remains the Swagger 2.0 descriptor (grape-swagger source of truth).
 '})
+
+  include OpenapiJson
 end

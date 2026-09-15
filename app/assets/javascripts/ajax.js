@@ -180,8 +180,14 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
     dialog.modal(modal_options());
     freezeProgressDialog(dialog);
     var progress = delayedJob.progress;
+    if (typeof progress === 'string') {
+      try { progress = JSON.parse(progress); } catch (e) { progress = null; }
+    }
 
     updateOptimizationDetails(dialog, progress);
+    var transmitted = !!(progress && (progress.job_id || progress['job_id']));
+    var optimizerFailed = !!delayedJob.error || !!(progress && progress['failed']);
+    $('.optim-cancel', dialog).toggle(transmitted && !optimizerFailed);
     $(".progress-bar", dialog).each(function(i, e) {
       // hide or show dialog-progress class
       if (!progress || !progress['completed'] && (!progress['status'] || progress['status'] == 'queued')) {
@@ -217,6 +223,7 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
     if (delayedJob.error) {
       options && options.error && options.error();
       $(".dialog-progress", dialog).hide();
+      $(".dialog-inqueue", dialog).hide();
       $(".dialog-error", dialog).show();
       unfreezeProgressDialog(dialog, delayedJob, url, callback); // url should not contain dispatch_params_delayed_job
     } else {

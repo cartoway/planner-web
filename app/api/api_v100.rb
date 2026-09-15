@@ -54,6 +54,8 @@ class ApiV100 < Grape::API
       license_url: 'https://raw.githubusercontent.com/cartoway/planner-web/master/LICENSE',
       version: '100',
       description: '
+**API 100** adds endpoints whose contracts would be breaking on 0.1 (planning insert, relations, candidate insert, …). OpenAPI 3 at `GET /api/100/openapi.json`. Errors stay `{ message, status }`.
+[Getting started](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/getting-started.md).
 [Simplified view of domain model](' + Planner::Application.config.swagger_docs_base_path + '/api/0.1/Model-simpel.svg).
 ## Model
 Model is structured around four majors concepts: the Customer account, Destinations, Vehicles and Plannings.
@@ -106,5 +108,10 @@ Note you can import destinations/visits and create a planning at the same time i
 * With created destinations/visits, you can create a planning (routes and stops are automatically created depending of yours vehicles and destinations/visits)
 * In existing planning, you have availability to move stops (which represent visits) on a dedicated route (which represent a dedicated vehicle).
 * With many unaffected (out-of-route) stops in a planning, you may create a zoning to move many stops in several routes. Create a zoning (you can generate zones in this zoning automatically from automatic clustering), if you apply zoning (containing zones linked to a vehicle) on your planning, all stops contained in different zones will be moved in dedicated routes.
+
+### OpenAPI
+Import `GET /api/100/openapi.json?scope=core` (OpenAPI 3.0, tagged `core`). `scope=happy_path` is the 0.1 getting-started flow. Omit `scope` for the full catalog. `GET /api/100/swagger_doc` remains Swagger 2.0.
 '})
+
+  include OpenapiJson
 end

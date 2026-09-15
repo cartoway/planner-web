@@ -1,0 +1,242 @@
+{
+  "info": {
+    "_postman_id": "7c8e9f01-2a3b-4c5d-8e9f-0a1b2c3d4e5f",
+    "name": "Planner REST API 0.1",
+    "description": "Curated requests for the integration happy path (not a dump of every endpoint).\n\n1. Import this collection **and** `Planner-API-0.1.environment.json`.\n2. Set `api_key` (user form in the web UI). `base` matches `swagger_docs_base_path` without the trailing slash (default `http://localhost:8080`). Change it if your instance is published elsewhere.\n3. Run the **Happy path** folder in order.\n\nInsomnia: Import → From File → this collection, then set `base` and `api_key` on the environment.\n\nFull catalog: import `GET {{base}}/api/0.1/swagger_doc` (Swagger 2.0).\nGuide: `/api/0.1/getting-started.md`\n\nPitfall: polling `GET /jobs/:id` until `status` is **succeeded**. `status` failed / `failed_at` means failure. HTTP 404 means this id was never a job of this customer.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      { "key": "in", "value": "header", "type": "string" },
+      { "key": "key", "value": "Api-Key", "type": "string" },
+      { "key": "value", "value": "{{api_key}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "Happy path",
+      "item": [
+        {
+          "name": "1. List deliverable units",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base}}/api/0.1/deliverable_units.json",
+            "description": "Use `id` in visit quantities. A default unit exists per customer."
+          }
+        },
+        {
+          "name": "2. List vehicles",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base}}/api/0.1/vehicles.json",
+            "description": "Use `ref` as `visit.route` on import (vehicle ref, not a route id)."
+          }
+        },
+        {
+          "name": "3. Create destination with visit",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ref\": \"CLIENT-12\",\n  \"name\": \"Acme\",\n  \"street\": \"12 avenue Thiers\",\n  \"postalcode\": \"33100\",\n  \"city\": \"Bordeaux\",\n  \"country\": \"France\",\n  \"visits\": [{\n    \"ref\": \"V1\",\n    \"duration\": \"00:10:00\",\n    \"time_window_start_1\": \"08:00\",\n    \"time_window_end_1\": \"12:00\",\n    \"quantities\": [{ \"deliverable_unit_id\": 1, \"delivery\": 1.0 }]\n  }]\n}"
+            },
+            "url": "{{base}}/api/0.1/destinations.json",
+            "description": "Geocoded when lat/lng are omitted. Same `ref` on PUT upserts."
+          }
+        },
+        {
+          "name": "4. Create planning",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  if (j && j.id) pm.environment.set('planning_id', String(j.id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Monday\",\n  \"ref\": \"PLAN-MON\",\n  \"date\": \"2026-09-14\"\n}"
+            },
+            "url": "{{base}}/api/0.1/plannings.json",
+            "description": "Materializes one unassigned route, one route per vehicle, and one stop per matching visit. Saves `planning_id`. There is no create-route or create-stop endpoint. GET /plannings/:id has no nested stops."
+          }
+        },
+        {
+          "name": "5. Optimize planning",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const j = pm.response.json();",
+                  "  if (j && j.id) pm.environment.set('job_id', String(j.id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base}}/api/0.1/plannings/{{planning_id}}/optimize.json?global=true",
+            "description": "`global=true` allows moving visits between routes. HTTP 409 if another optimizer is running. HTTP 304 if no solution. Saves `job_id`."
+          }
+        },
+        {
+          "name": "6. Poll job",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base}}/api/0.1/jobs/{{job_id}}.json",
+            "description": "Repeat until `status` is **succeeded** (or **failed** / `failed_at`). HTTP 404 means this id was never a job of this customer."
+          }
+        },
+        {
+          "name": "7. List planning routes",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base}}/api/0.1/plannings/{{planning_id}}/routes.json",
+            "description": "Stops live here (`time`, `out_of_window`, `out_of_capacity`). Unassigned route has `vehicle_usage_id` null."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Import",
+      "item": [
+        {
+          "name": "Upsert destinations JSON (optional planning)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planning\": { \"name\": \"Monday\", \"ref\": \"PLAN-MON\" },\n  \"destinations\": [{\n    \"ref\": \"CLIENT-12\",\n    \"name\": \"Acme\",\n    \"street\": \"12 avenue Thiers\",\n    \"postalcode\": \"33100\",\n    \"city\": \"Bordeaux\",\n    \"country\": \"France\",\n    \"visits\": [{\n      \"duration\": \"00:10:00\",\n      \"time_window_start_1\": \"08:00\",\n      \"time_window_end_1\": \"12:00\",\n      \"route\": \"VEH-1\",\n      \"active\": true\n    }]\n  }]\n}"
+            },
+            "url": "{{base}}/api/0.1/destinations.json",
+            "description": "`visit.route` is a vehicle ref. A planning is created when visits have `route`/`ref_vehicle` or a `planning` object is sent."
+          }
+        },
+        {
+          "name": "Import destinations CSV (en)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Accept-Language", "value": "en" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": [],
+                  "description": "Pick destinations.en.csv from this folder (headers must match Accept-Language)."
+                }
+              ]
+            },
+            "url": "{{base}}/api/0.1/destinations.json",
+            "description": "Headers follow Accept-Language. Sample file: `examples/postman/destinations.en.csv`. French headers: use `Accept-Language: fr` (see getting-started.md)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Stops and zoning",
+      "item": [
+        {
+          "name": "Move stop",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base}}/api/0.1/plannings/{{planning_id}}/routes/{{route_id}}/stops/{{stop_id}}/move/3.json",
+            "description": "Index -1 appends at the end. Set `route_id` and `stop_id` from List planning routes."
+          }
+        },
+        {
+          "name": "Move visits (automatic insert)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base}}/api/0.1/plannings/{{planning_id}}/routes/{{route_id}}/visits/moves.json?visit_ids={{visit_ids}}&automatic_insert=true",
+            "description": "Cheapest index by distance only — ignores time windows. Prefer zoning or optimize for batches."
+          }
+        },
+        {
+          "name": "Create zoning",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code >= 200 && pm.response.code < 300) {",
+                  "  const j = pm.response.json();",
+                  "  if (j && j.id) pm.environment.set('zoning_id', String(j.id));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{ \"name\": \"City sectors\" }"
+            },
+            "url": "{{base}}/api/0.1/zonings.json"
+          }
+        },
+        {
+          "name": "Cluster zoning from planning",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base}}/api/0.1/zonings/{{zoning_id}}/automatic/{{planning_id}}.json",
+            "description": "Clears previous zones. Each zone is linked to a vehicle."
+          }
+        },
+        {
+          "name": "Apply zonings to planning",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Accept", "value": "application/json" }],
+            "url": "{{base}}/api/0.1/plannings/{{planning_id}}/apply_zonings.json?zoning_ids={{zoning_id}}",
+            "description": "Assigns stops to the zone vehicles."
+          }
+        }
+      ]
+    }
+  ]
+}
