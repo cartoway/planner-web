@@ -132,6 +132,7 @@ class V01::Api < Grape::API
   mount V01::CustomAttributes
   mount V01::DeliverableUnits
   mount V01::Destinations
+  mount V01::EmbedTokens
   mount V01::Jobs
   mount V01::Layers
   mount V01::Orders
