@@ -39,6 +39,17 @@ class ImporterDestinationsTest < ActionController::TestCase
     file
   end
 
+  def import_csv_string(content, replace: false)
+    file = Tempfile.new(['import', '.csv'])
+    file.write(content)
+    file.flush
+    uploaded = ActionDispatch::Http::UploadedFile.new(tempfile: File.new(file.path))
+    uploaded.original_filename = 'text.csv'
+    ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: replace, file: uploaded).import
+  ensure
+    file.close!
+  end
+
   def clear_customer_rest_configuration!(customer)
     customer.vehicle_usage_sets.each do |vus|
       vus.import_skip = true
@@ -381,6 +392,34 @@ class ImporterDestinationsTest < ActionController::TestCase
     assert_equal [[5]], destination.visits.map{ |v| v.deliveries.values }
     destination = Destination.find_by(ref:'d')
     assert_equal [[2], [4]], destination.visits.map{ |v| v.deliveries.values }
+  end
+
+  test 'should keep existing quantities when updating visit by ref without quantity columns' do
+    visit = visits(:visit_two)
+    visit.update!(pickups: { 2 => 6 }, deliveries: { 1 => 3, 999 => 1 })
+
+    csv = <<~CSV
+      référence,référence visite,durée visite,nom,voie,code postal,ville,lat,lng
+      c,c,00:10:00,destination_two_update,MyString,MyString,MyString,1.5,1.5
+    CSV
+    assert import_csv_string(csv)
+
+    visit.reload
+    assert_equal 'destination_two_update', visit.destination.name
+    assert_equal 6, visit.pickups[2]
+    assert_equal 3, visit.deliveries[1]
+    assert_equal 1, visit.deliveries[999]
+
+    csv = <<~CSV
+      référence,référence visite,quantité[L]
+      c,c,8
+    CSV
+    assert import_csv_string(csv)
+
+    visit.reload
+    assert_equal 6, visit.pickups[2]
+    assert_equal 8, visit.deliveries[1]
+    assert_equal 1, visit.deliveries[999]
   end
 
   test 'should import with route error in new planning' do

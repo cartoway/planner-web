@@ -359,7 +359,7 @@ class ImporterDestinations < ImporterBase
     convert_deprecated_quantities(row, @deliverable_units)
 
     # handle grape format
-    if row[:quantities]
+    if row[:quantities].present?
       row[:deliveries] ||= {}
       row[:pickups] ||= {}
       if row[:quantities].is_a?(Array)
@@ -375,6 +375,27 @@ class ImporterDestinations < ImporterBase
       end
       row.delete(:quantities)
     end
+  end
+
+  # When updating a visit by ref, keep existing pickups/deliveries for units
+  # not present in the import row. Imported values override matching units.
+  def merge_existing_visit_quantities!(attributes, dest_ref)
+    visit = @existing_visits_by_ref[dest_ref] && @existing_visits_by_ref[dest_ref][attributes[:ref]]
+    return unless visit
+
+    %i[pickups deliveries].each{ |field|
+      existing = visit.public_send(field)
+      imported = attributes[field]
+      next if imported.nil? && existing.blank?
+
+      merged = {}
+      existing.each{ |unit_id, value| merged[unit_id.to_i] = value } if existing.present?
+      (imported || {}).each{ |unit_id, value|
+        next if value.nil?
+        merged[unit_id.to_i] = value
+      }
+      attributes[field] = merged
+    }
   end
 
   def merge_visit_quantities(existing_visit, visit_attributes)
@@ -812,14 +833,23 @@ class ImporterDestinations < ImporterBase
   end
 
   def bulk_import_visits
-    # Every entry should have identical keys to be imported at the same time
-    (
+    @visits_attributes_with_destination_with_ref_visit.each{ |dest_ref, visits_by_ref|
+      visits_by_ref.each_value{ |_lines, attributes| merge_existing_visit_quantities!(attributes, dest_ref) }
+    }
+    @visits_attributes_with_destination_without_ref_visit.each{ |dest_ref, visits|
+      visits.each{ |_lines, attributes| merge_existing_visit_quantities!(attributes, dest_ref) }
+    }
+
+    visit_entries = (
       @visits_attributes_without_ref +
       @visits_attributes_without_destination_without_ref_visit.flat_map{ |k, dest_visits| dest_visits } +
       @visits_attributes_without_destination_with_ref_visit.flat_map{ |k, dest_visit_hash| dest_visit_hash.values } +
       @visits_attributes_with_destination_without_ref_visit.flat_map{ |k, dest_visits| dest_visits } +
       @visits_attributes_with_destination_with_ref_visit.flat_map{ |k, dest_visit_hash| dest_visit_hash.values }
-    ).group_by{ |lines, attributes|
+    )
+
+    # Every entry should have identical keys to be imported at the same time
+    visit_entries.group_by{ |lines, attributes|
       attributes.keys
     }.flat_map{ |keys, key_attributes|
       ids = []
