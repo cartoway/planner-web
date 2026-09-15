@@ -3,7 +3,7 @@
 Machine-readable reference: `GET /api/0.1/openapi.json?scope=happy_path` (OpenAPI 3.0 for the numbered flow below). `scope=core` is the rest of the integration surface (no admin/devices). Omit `scope` for the full catalog (`happy_path` / `core` / `admin` / `devices`). Swagger 2.0 remains at `GET /api/0.1/swagger_doc` (grape-swagger source of truth).
 Simplified domain model: [Model-simpel.svg](./Model-simpel.svg).
 
-This guide covers conventions, a copy-paste happy path, pitfalls, and the core resources used to integrate a third-party system. It does not cover the iframe Web API (`/api-web`) or telematics device endpoints.
+This guide covers conventions, a copy-paste happy path, then guided **optimizer** and **zoning** flows, pitfalls, and the core resources used to integrate a third-party system. It does not cover the iframe Web API (`/api-web`) or telematics device endpoints.
 
 ## Versions
 
@@ -171,6 +171,8 @@ Response excerpt:
 
 The unassigned route has `vehicle_usage_id: null`. Check stop flags (`out_of_window`, `out_of_capacity`, …) after optimize.
 
+`global=true` lets the solver move visits between unlocked routes. To keep the current vehicle assignment and only reorder, omit `global` or pass `global=false`. Per-route optimize, locks, and cancel: [Optimizer](#optimizer). Sector assignment before optimize: [Zoning](#zoning).
+
 Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python/example.py), [Ruby](./examples/ruby/example.rb), [PHP](./examples/php/example.php), [Postman / Insomnia](./examples/postman/Planner-API-0.1.collection.json).
 
 ---
@@ -184,7 +186,9 @@ Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python
 - **Bulk `DELETE` with omitted or empty `ids` deletes all** destinations or visits of the customer. Always pass `ids`.
 - **Error bodies are `{ "message": "…", "status": 401 }`.** Import validation (HTTP 422) adds `errors` (array of details) and repeats them joined in `message`.
 - **Date filters follow `Accept-Language`**, not ISO: `en` is `mm-dd-yyyy`, `fr` is `dd-mm-yyyy`. CSV headers follow the same header.
-- **`automatic_insert` is distance-only** (ignores time windows). Fine for a few stops; use zoning or optimize for batches.
+- **`automatic_insert` is distance-only** (ignores time windows). Fine for a few stops; use zoning then optimize for batches.
+- **Zoning assigns vehicles, optimize sequences stops.** `apply_zonings` uses zonings already linked on the planning (`zoning_ids` on create/update). It does **not** take `?zoning_ids=`. Then call optimize with `global=false`.
+- **`PATCH /zonings/:id/automatic/:planning_id` clears existing zones** in that zoning. `n` must be ≤ fleet size.
 - **Pagination is opt-in.** Without `page`, lists return the whole customer scope. `GET /destinations?page=1` wraps `{ items, page, per_page, total }` (`per_page` default 100, max 500). Filter with `ids`, dates, tags, or `active`.
 - **Deprecated field names still appear in some payloads:** `open`/`close` → `time_window_*`; `quantity` → `pickup`/`delivery`; `out_of_date` → `outdated`; `capacity` → `capacities`.
 
@@ -344,28 +348,110 @@ curl -X PATCH -H "Api-Key: YOUR_API_KEY" \
   "{base}/api/0.1/plannings/1/routes/2/visits/moves.json?visit_ids=11,12&automatic_insert=true"
 ```
 
-Heuristic insert of existing stops (not for large batches; use zoning instead):
+Heuristic insert of existing stops (not for large batches; use [zoning](#zoning) then optimize):
 
 ```sh
 curl -X PATCH -H "Api-Key: YOUR_API_KEY" \
   "{base}/api/0.1/plannings/1/automatic_insert.json?stop_ids=10,11"
 ```
 
-### Zoning then apply
+---
+
+## Optimizer
+
+Zoning (and import `visit.route`) put visits on vehicles. Optimize **orders** them, and with `global=true` may **reassign** them. One optimizer job per customer. Poll as in the [happy path](#4-optimize-then-poll-the-job). Then `GET /plannings/:id/routes.json`.
+
+| Goal | Call |
+|------|------|
+| Reassign between unlocked routes | `GET /plannings/:id/optimize.json?global=true` |
+| Keep current vehicles, only sequence | `GET /plannings/:id/optimize.json` (`global` defaults to `false`) |
+| One route only (visits stay on it) | `PATCH /plannings/:id/routes/:route_id/optimize.json` |
 
 ```sh
-# Empty zoning
+# After zoning or import with visit.route: do not pass global=true
+curl -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/plannings/ref:PLAN-MON/optimize.json"
+
+# Single unlocked route
+curl -X PATCH -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/plannings/ref:PLAN-MON/routes/21/optimize.json"
+```
+
+- Locked routes are skipped. Lock via `PUT /plannings/:id` with `routes: [{ "id": 21, "locked": true }]`.
+- `active_only=true` (default): inactive stops are ignored and stay inactive.
+- HTTP **409** if another optimizer job is running. HTTP **304** if the solver finds no solution.
+- Cancel with `DELETE /jobs/:id` once the job is transmitted (`progress.job_id` set). HTTP **409** during transmission.
+- Do not use `synchronous` (deprecated). Writes while an optimizer is running are rejected.
+
+---
+
+## Zoning
+
+A zoning is a named set of **zones** (polygons), each optionally linked to a `vehicle_id`. Applying it **assigns** unlocked stops to those vehicles. It does **not** order stops — call optimize with `global=false` afterwards.
+
+`GET /plannings/:id/apply_zonings` uses zonings already on the planning. It does **not** accept `zoning_ids` as a query parameter.
+
+### 1. Create an empty zoning
+
+```sh
 curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
   "{base}/api/0.1/zonings.json" -d '{"name": "City sectors"}'
-
-# Cluster visits into N zones (clears previous zones; each zone is linked to a vehicle)
-curl -X PATCH -H "Api-Key: YOUR_API_KEY" \
-  "{base}/api/0.1/zonings/5/automatic/1.json"
-
-# Assign stops of the planning to the zone vehicles
-curl -H "Api-Key: YOUR_API_KEY" \
-  "{base}/api/0.1/plannings/1/apply_zonings.json?zoning_ids=5"
 ```
+
+```json
+{ "id": 5, "name": "City sectors", "zones": [] }
+```
+
+### 2. Fill zones (pick one)
+
+**Automatic clustering** (usual integration path). Includes unassigned stops. **Clears previous zones.** Each new zone is linked to a vehicle. `n` defaults to the fleet size and must not exceed it.
+
+```sh
+curl -X PATCH -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/zonings/5/automatic/7.json"
+```
+
+`7` is the **planning id**. Optional `?n=3`.
+
+**From existing routes** — only stops already on a vehicle route (not the unassigned route):
+
+```sh
+curl -X PATCH -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/zonings/5/from_planning/7.json"
+```
+
+**Isochrone / isodistance** — coverage from each vehicle start store (`size` in seconds or metres). Also clears previous zones. Not a clustering of visits.
+
+Or `PUT /zonings/:id` with `zones: [{ "name": "North", "vehicle_id": 2, "polygon": { … GeoJSON… } }]`.
+
+### 3. Link the zoning on the planning, then apply
+
+```sh
+curl -X PUT -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
+  "{base}/api/0.1/plannings/ref:PLAN-MON.json" \
+  -d '{"zoning_ids": [5]}'
+
+curl -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/plannings/ref:PLAN-MON/apply_zonings.json"
+```
+
+HTTP **204**. Pass `?details=true` to get the planning body. You can also set `zoning_ids` on `POST /plannings`.
+
+Locked routes are not reassigned. Stops outside every zone go to the unassigned route (`vehicle_usage_id: null`).
+
+### 4. Sequence each route
+
+```sh
+curl -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/plannings/ref:PLAN-MON/optimize.json"
+
+curl -H "Api-Key: YOUR_API_KEY" "{base}/api/0.1/jobs/88.json"
+
+curl -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/plannings/ref:PLAN-MON/routes.json"
+```
+
+Do not pass `global=true` here unless you want the solver to undo the sectors.
 
 ---
 
