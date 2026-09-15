@@ -44,6 +44,7 @@
   - Extra dashboard for resellers
 
   ### Changed
+  - Planning optimizer dialog: hide cancel until the job is transmitted to the solver, and when it has failed
   - Sopac: migrate from api to message broker
   - the stop-tools map marker button bring the associated marker to the front
   - Move stops modal: None / Reverse / All selection buttons and improved list padding
