@@ -1,9 +1,9 @@
 # Converts a Grape-swagger Swagger 2.0 Hash into OpenAPI 3.0.3.
 # Drop this when grape-swagger emits OAS3 natively (PR ruby-grape/grape-swagger#969).
 class OpenapiConverter
-  OAS_VERSION = '3.0.3'
-  REF_FROM = '#/definitions/'
-  REF_TO = '#/components/schemas/'
+  OAS_VERSION = '3.0.3'.freeze
+  REF_FROM = '#/definitions/'.freeze
+  REF_TO = '#/components/schemas/'.freeze
   HTTP_METHODS = %w[get put post delete options head patch trace].freeze
   ADMIN_PATH = %r{\A/[^/]+/(customers|users|profiles|layers|routers)(?:/|\.|\z)}
 
@@ -53,9 +53,7 @@ class OpenapiConverter
   end
 
   def convert_security_schemes(defs)
-    defs.each_with_object({}) do |(name, scheme), acc|
-      acc[name] = scheme.dup
-    end
+    defs.transform_values(&:dup)
   end
 
   def convert_paths(paths)
@@ -241,7 +239,7 @@ class OpenapiConverter
         end
         r['content'] = content
       elsif examples.is_a?(Hash)
-        r['content'] = examples.each_with_object({}) { |(mime, example), c| c[mime] = { 'example' => example } }
+        r['content'] = examples.transform_values { |example| { 'example' => example } }
       end
       r['description'] ||= ''
       acc[code] = r
@@ -294,7 +292,7 @@ class OpenapiConverter
     scan_schema_refs(doc['paths'], used)
     loop do
       before = used.size
-      used.keys.each { |name| scan_schema_refs(schemas[name], used) if schemas[name] }
+      used.each_key { |name| scan_schema_refs(schemas[name], used) if schemas[name] }
       break if used.size == before
     end
     schemas.keep_if { |name, _| used.key?(name) }

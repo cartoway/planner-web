@@ -130,7 +130,7 @@ class JobSuccessTest < ActiveSupport::TestCase
     delayed_job = Delayed::Job.enqueue(OptimizerJob.new(customer.id, planning.id, nil, {}))
 
     payload = delayed_job.payload_object
-    def payload.perform; true; end
+    payload.define_singleton_method(:perform) { true }
     delayed_job.invoke_job
     delayed_job.destroy
 
