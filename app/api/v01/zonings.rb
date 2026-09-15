@@ -36,7 +36,7 @@ class V01::Zonings < Grape::API
     end
   end
 
-  resource :zonings do
+  resource :zonings do # rubocop:disable Metrics/BlockLength
     desc 'Fetch customer\'s zonings.',
       detail: 'Returns zonings (named sets of zones). Apply a zoning on a planning with GET /plannings/:id/apply_zonings to assign stops to zone vehicles.',
       nickname: 'getZonings',
