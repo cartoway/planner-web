@@ -3,7 +3,7 @@
 Machine-readable reference: `GET /api/0.1/openapi.json?scope=happy_path` (OpenAPI 3.0 for the numbered flow below). `scope=core` is the rest of the integration surface (no admin/devices). Omit `scope` for the full catalog (`happy_path` / `core` / `admin` / `devices`). Swagger 2.0 remains at `GET /api/0.1/swagger_doc` (grape-swagger source of truth).
 Simplified domain model: [Model-simpel.svg](./Model-simpel.svg).
 
-This guide covers conventions, a copy-paste happy path, then guided **optimizer** and **zoning** flows, pitfalls, and the core resources used to integrate a third-party system. Telematics device endpoints are out of scope. Iframe views (`/api-web`) are covered only for authentication.
+This guide covers conventions, a copy-paste happy path, then guided **optimizer**, **zoning**, and **field execution** (Cartoway Deliver) flows, pitfalls, and the core resources used to integrate a third-party system. Other telematics connectors are out of scope. Iframe views (`/api-web`) are covered only for authentication.
 
 ## Versions
 
@@ -51,6 +51,22 @@ curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
 ```
 
 `origin` (optional) sets `Content-Security-Policy: frame-ancestors` on the view. Token lifetime is 60–86400 seconds (default 3600). For ChatGPT / Claude, mint a token with the API key then fetch the view with `Authorization: Bearer`.
+
+---
+
+## Account setup
+
+Do this once per customer before the first daily import. A new account already has a default store, one deliverable unit, vehicles and a vehicle usage set — fetch those ids in the happy path. Add anything extra you need:
+
+| What | Why | How |
+|------|-----|-----|
+| Vehicles with a stable `ref` | Import assigns visits via `visit.route` / `visit.ref_vehicle`, which must match `vehicle.ref` | Admin creates vehicles. List: `GET /vehicles.json`. Set ref: `PUT /vehicles/:id.json` or `PUT /vehicles/ref:VEH-A.json`. Bulk fleet + hours: `PUT /vehicle_usage_sets.json` with `replace_vehicles: true` |
+| Extra deliverable units | Visit quantities and vehicle capacities refer to these | `POST /deliverable_units` `{ "label": "kg", "ref": "kg" }` |
+| Cartoway Deliver (admin) | Send routes to the driver app; statuses and GPS come back | Reserved to Cartoway / reseller |
+| Custom attributes on `stop_visit` | Driver-editable fields on the phone (comment, anomaly list, …) | `POST /custom_attributes.json` — see [Field execution](#field-execution) |
+| A stable `planning.ref` per operational day | Upsert the day's plan without duplicates | Sent on import (`planning.ref`) or `POST /plannings` |
+
+`planning.date` is the **operational** day of the routes, not an order date. Store an order date in a visit custom attribute or in `destination.comment` if you need it; the solver does not route on it.
 
 ---
 
@@ -189,7 +205,7 @@ Response excerpt:
 
 The unassigned route has `vehicle_usage_id: null`. Check stop flags (`out_of_window`, `out_of_capacity`, …) after optimize.
 
-`global=true` lets the solver move visits between unlocked routes. To keep the current vehicle assignment and only reorder, omit `global` or pass `global=false`. Per-route optimize, locks, and cancel: [Optimizer](#optimizer). Sector assignment before optimize: [Zoning](#zoning).
+`global=true` lets the solver move visits between unlocked routes. To keep the current vehicle assignment and only reorder, omit `global` or pass `global=false`. Per-route optimize, locks, and cancel: [Optimizer](#optimizer). Sector assignment before optimize: [Zoning](#zoning). Send to Cartoway Deliver and poll driver statuses: [Field execution](#field-execution).
 
 Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python/example.py), [Ruby](./examples/ruby/example.rb), [PHP](./examples/php/example.php), [Postman / Insomnia](./examples/postman/Planner-API-0.1.collection.json).
 
@@ -209,6 +225,13 @@ Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python
 - **`PATCH /zonings/:id/automatic/:planning_id` clears existing zones** in that zoning. `n` must be ≤ fleet size.
 - **Pagination is opt-in.** Without `page`, lists return the whole customer scope. `GET /destinations?page=1` wraps `{ items, page, per_page, total }` (`per_page` default 100, max 500). Filter with `ids`, dates, tags, or `active`.
 - **Deprecated field names still appear in some payloads:** `open`/`close` → `time_window_*`; `quantity` → `pickup`/`delivery`; `out_of_date` → `outdated`; `capacity` → `capacities`.
+- **`street` is one field** (`"12 rue de la Paix"`). There is no separate house-number column. Put building / floor / intercom in `detail` — stuffing that into `street` breaks geocoding.
+- **`destination.comment` is a note to the driver**, not the driver's feedback. Driver-entered text lives on a `stop_visit` custom attribute (see [Field execution](#field-execution)).
+- **No weekly calendar.** A visit has at most two windows for **that** day (`time_window_*_1` and `time_window_*_2`). If the source system has “Mon–Fri 8–12 / 14–18”, extract the slots for the delivery day before import.
+- **Visit upsert key is `destination.ref` + `visit.ref`.** Same destination can have several visits (several orders, several days). Omit `visit.ref` only when a destination never has more than one visit.
+- **`DELETE …/by_tags` keeps objects that miss any of the tags.** The destination or visit must have **all** provided tags. Empty result is HTTP **304**.
+- **Without `send_multiple`, the driver never receives the route** and no status comes back. `POST /devices/deliver/send_multiple` requires a numeric `planning_id` (not `ref:…`).
+- **No REST 0.1 webhook for stop status.** Poll `GET /plannings/:id/routes.json`. `?with_geojson=true` is the **planned** geometry, not the truck's real trace. `GET /vehicles/current_position.json` is a live snapshot; REST 0.1 does not keep GPS history.
 
 ---
 
@@ -295,40 +318,61 @@ A customer has at most one optimizer job, one destination-geocoding job and one 
 
 ### Import JSON (upsert + optional planning)
 
-If every visit has a `route` (or `ref_vehicle`) **or** you send a `planning` object, a planning is created in the same call:
+If every visit has a `route` (or `ref_vehicle`) **or** you send a `planning` object, a planning is created in the same call.
+
+JSON quantities use `deliverable_unit_id` (from `GET /deliverable_units`) or `deliverable_unit_label` (the unit's **label**, e.g. `"Pallet"`). There is no `deliverable_unit_ref` lookup — the unit `ref` (`PAL`) is unused here. CSV columns are `delivery[label]` / `livraison[label]`, still the label between brackets.
+
+A new planning created by import receives the **intersection** of destination/visit tags across the imported rows. Tag visits with the operational day if you want the plan to include only that day's work (`tag_operation` `and` / `or` on the planning). Planning tags then keep only compatible visits on the plan.
 
 ```sh
 curl -X PUT -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
   "{base}/api/0.1/destinations.json" \
   -d '{
-    "planning": {"name": "Monday", "ref": "PLAN-MON"},
+    "planning": {"name": "Monday", "ref": "PLAN-MON", "date": "2026-09-14"},
     "destinations": [{
       "ref": "CLIENT-12",
       "name": "Acme",
       "street": "12 avenue Thiers",
+      "detail": "Building B, 2nd floor",
       "postalcode": "33100",
       "city": "Bordeaux",
       "country": "France",
+      "phone_number": "+33556123456",
+      "comment": "Ring at the back, ask for invoice.",
       "visits": [{
+        "ref": "ORDER-88901",
         "duration": "00:10:00",
         "time_window_start_1": "08:00",
         "time_window_end_1": "12:00",
+        "time_window_start_2": "14:00",
+        "time_window_end_2": "18:00",
         "route": "VEH-1",
-        "active": true
+        "active": true,
+        "quantities": [{"deliverable_unit_label": "Pallet", "delivery": 1.0}],
+        "tags": ["2026-09-14"]
       }]
     }]
   }'
+```
+
+To drop a day's destinations or visits after the fact, pass tag **ids** (or the tag's `ref:` — that is the `ref` field, not the label). Import `tags: ["monday"]` creates/finds by **label**; `GET /tags.json` to resolve ids:
+
+```sh
+curl -X DELETE -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/destinations/by_tags.json?tag_ids=3"
+curl -X DELETE -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/visits/by_tags.json?tag_ids=3"
 ```
 
 ### Import CSV
 
 `PUT /destinations` with `multipart/form-data` field `file`. Headers must match `Accept-Language`. See `importDestinations` in Swagger for the full column list.
 
-English (`Accept-Language: en`). `vehicle` is the vehicle ref; `plan` creates/updates a planning:
+English (`Accept-Language: en`). `vehicle` is the vehicle ref; `reference plan` upserts a planning by `ref`. Date follows `Accept-Language` (`mm-dd-yyyy` in `en`). Bracket the unit **label** on quantity columns:
 
 ```
-reference,name,street,postalcode,city,country,visit duration,open 1,close 1,delivery,vehicle,plan
-CLIENT-12,Acme,12 avenue Thiers,33100,Bordeaux,France,00:10:00,08:00,12:00,1,VEH-1,Monday
+reference,name,street,detail,postalcode,city,country,phone,comment,visit duration,open 1,close 1,open 2,close 2,delivery[Pallet],vehicle,reference plan,date
+CLIENT-12,Acme,12 avenue Thiers,Building B,33100,Bordeaux,France,+33556123456,Ring at the back,00:10:00,08:00,12:00,14:00,18:00,1,VEH-1,PLAN-MON,09-14-2026
 ```
 
 ```sh
@@ -337,11 +381,11 @@ curl -X PUT -H "Api-Key: YOUR_API_KEY" -H "Accept-Language: en" \
   -F "file=@destinations.csv"
 ```
 
-French (`Accept-Language: fr`):
+French (`Accept-Language: fr`, dates `dd/mm/yyyy`):
 
 ```
-référence,nom,voie,code postal,ville,pays,durée visite,horaire début 1,horaire fin 1,livraison,véhicule,plan
-CLIENT-12,Acme,12 avenue Thiers,33100,Bordeaux,France,00:10:00,08:00,12:00,1,VEH-1,Lundi
+référence,nom,voie,complément,code postal,ville,pays,téléphone,commentaire,durée visite,horaire début 1,horaire fin 1,horaire début 2,horaire fin 2,livraison[Pallet],véhicule,référence plan,date
+CLIENT-12,Acme,12 avenue Thiers,Bâtiment B,33100,Bordeaux,France,+33556123456,Sonner à l'arrière,00:10:00,08:00,12:00,14:00,18:00,1,VEH-1,PLAN-MON,14/09/2026
 ```
 
 ```sh
@@ -372,6 +416,74 @@ Heuristic insert of existing stops (not for large batches; use [zoning](#zoning)
 curl -X PATCH -H "Api-Key: YOUR_API_KEY" \
   "{base}/api/0.1/plannings/1/automatic_insert.json?stop_ids=10,11"
 ```
+
+### Field execution (Cartoway Deliver)
+
+Prerequisites: Cartoway Deliver enabled on the account, plus customer options `enable_stop_status` and `enable_vehicle_position`.
+
+1. Import (or create) the planning so stops sit on vehicle routes.
+2. Optional: [optimize](#optimizer).
+3. Send to the phones — **numeric** planning id (resolve `ref:PLAN-MON` first):
+
+```sh
+curl -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/plannings/ref:PLAN-MON.json"
+# read "id", then:
+curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
+  "{base}/api/0.1/devices/deliver/send_multiple.json" \
+  -d '{"planning_id": 7}'
+```
+
+Without step 3 the driver does not receive the route, so **no status comes back**. There is no REST 0.1 webhook for stop status: poll (about every 60 s is enough):
+
+```sh
+curl -H "Api-Key: YOUR_API_KEY" -H "Accept-Language: en" \
+  "{base}/api/0.1/plannings/ref:PLAN-MON/routes.json"
+```
+
+For other telematics connectors, pull remote statuses first with `PATCH /plannings/:id/update_stops_status`. On Deliver the mobile app already writes into the planning; `GET …/routes` is enough.
+
+On each visit stop (`stops[]`):
+
+| Field | Role |
+|-------|------|
+| `status` | Localized label (`Accept-Language`) |
+| `status_code` | Raw code — store this, not the label |
+| `status_updated_at` | When the driver validated the status |
+| `destination_ref` / `visit_ref` | Join back to the ERP order |
+| `custom_attributes.*` | Driver-editable fields defined on the account |
+
+Deliver `status_code` values:
+
+| `status_code` | Typical meaning |
+|---------------|-----------------|
+| `intransit` | In transit / en route |
+| `delivered` | Delivered / completed |
+| `exception` | Exception / anomaly |
+| `undelivered` | Undelivered |
+
+**Custom attributes.** `object_class: visit` (and `vehicle` / `route`) can be shown read-only on the phone when `mobile_visible` is true. Fields the driver **edits** must be `object_class: stop_visit`. `object_type: array` is a dropdown; `default_value` is the list of choices, the stored value is one of those strings.
+
+```sh
+curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
+  "{base}/api/0.1/custom_attributes.json" \
+  -d '{"name": "driver_comment", "object_type": "string", "object_class": "stop_visit"}'
+
+curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
+  "{base}/api/0.1/custom_attributes.json" \
+  -d '{"name": "anomaly", "object_type": "array", "object_class": "stop_visit", "default_value": ["Broken", "Refused", "Absent"]}'
+```
+
+Read them back on `stops[].custom_attributes.driver_comment` / `.anomaly`. Store **status_code + list value + free text**, not a boolean.
+
+**Live GPS snapshot** (requires `enable_vehicle_position`):
+
+```sh
+curl -H "Api-Key: YOUR_API_KEY" \
+  "{base}/api/0.1/vehicles/current_position.json?ids=2"
+```
+
+Response items: `vehicle_id`, `lat`, `lng`, `direction`, `speed`, `time`, `device_name`. Pass `ids` (vehicle ids). REST 0.1 does not keep GPS history. `GET /plannings/:id.json?with_geojson=true` is the **planned** track, not the real one.
 
 ---
 
@@ -486,11 +598,13 @@ Do not pass `global=true` here unless you want the solver to undo the sectors.
 | **VehicleUsage** | One vehicle inside one set (overrides set defaults). | `/vehicle_usage_sets/:set_id/vehicle_usages/:id` |
 | **Plannings** | A day’s (or period’s) set of routes. Creating one materializes routes and stops. | `/plannings`, `.../optimize`, `.../refresh`, `.../automatic_insert`, `.../apply_zonings` |
 | **Routes** | Track of one vehicle in a planning (or the unassigned route when `vehicle_usage_id` is null). | `/plannings/:id/routes`, `.../visits/moves`, `.../optimize` |
-| **Stops** | Occurrence of a visit, store reload or rest on a route. Created with the planning; activate, lock, or move them. | `/plannings/:id/routes/:id/stops/:id` |
+| **Stops** | Occurrence of a visit, store reload or rest on a route. Created with the planning; activate, lock, or move them. Field `status` / `status_code` after Deliver (or after `update_stops_status`). | `/plannings/:id/routes/:id/stops/:id` |
 | **Tags** | Labels to subset visits when creating a planning (`tag_operation`: `and` / `or`). | `/tags` |
+| **Custom attributes** | Extra typed fields on visit, stop_visit, stop_store, vehicle or route. Driver-editable ones use `stop_visit`. | `/custom_attributes` |
 | **Zonings / Zones** | Polygons linked to vehicles; apply to a planning to assign stops. | `/zonings`, `.../automatic/:planning_id`, `/plannings/:id/apply_zonings` |
 | **Jobs** | Async optimizer / geocoding. Poll until `status` is `succeeded` or `failed`. | `GET /jobs`, `GET/DELETE /jobs/:id` |
 | **Geocoder** | Address search (not persisted). | `GET /geocoder/search?q=` |
+| **Devices / Deliver** | Send a planning to Cartoway Deliver; live GPS via `GET /vehicles/current_position`. | `POST /devices/deliver/send_multiple`, `GET /vehicles/current_position` |
 
 ## Code samples
 
