@@ -75,12 +75,10 @@ class V100::Destinations < Grape::API
           current_customer.destinations
         end
 
-        destinations = if params.key?(:ids)
-          destinations.select{ |destination|
+        if params.key?(:ids)
+          destinations = destinations.select{ |destination|
             params[:ids].any?{ |s| ParseIdsRefs.match(s, destination) }
           }
-        else
-          destinations
         end
 
         entity = params[:visits] ? V100::Entities::DestinationWithVisit : V100::Entities::Destination
