@@ -53,12 +53,15 @@ class ApplicationController < ActionController::Base
   end
 
   def api_key?
-    if params['api_key']
-      if (user = User.find_by(api_key: params['api_key']))
-        warden.set_user(user, run_callbacks: false)
-      else
-        redirect_to new_user_session_path, alert: t('web.key_not_found')
-      end
+    return false if params['embed_token'].present? || request.headers['Embed-Token'].present?
+
+    key = params['api_key'].presence || request.headers['Api-Key'].presence
+    return false if key.blank?
+
+    if (user = User.find_by(api_key: key))
+      warden.set_user(user, run_callbacks: false)
+    else
+      redirect_to new_user_session_path, alert: t('web.key_not_found')
     end
   end
 

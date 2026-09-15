@@ -298,4 +298,4 @@ REST API **0.1** (integrations):
 
 REST API **100** is a small additive surface (`GET /api/100/swagger_doc`). Combine it with 0.1; it does not replace it.
 
-The Web API (`/api-web/0.1`, iframe views) is statically generated during `rake assets:precompile` (`GET /api-web/0.1/swagger_doc.json`).
+The Web API (`/api-web/0.1`, iframe views) is statically generated during `rake assets:precompile` (`GET /api-web/0.1/swagger_doc.json`). Authenticate with `api_key` / `Api-Key`, or mint `POST /api/0.1/embed_tokens` and pass `embed_token` / `Authorization: Bearer`.
