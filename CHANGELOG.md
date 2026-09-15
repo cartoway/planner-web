@@ -7,6 +7,7 @@
   - API 0.1 and 100: optional pagination on `GET /destinations` (`page` / `per_page` envelope)
 
   ### Changed
+  - Planning optimizer dialog: hide cancel until the job is transmitted to the solver, and when it has failed
   - REST API 0.1: unify error bodies: `{ message, status }` (import HTTP 422 may add `errors`)
 
 ## v110.0.0
