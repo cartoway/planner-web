@@ -24,6 +24,11 @@ x-web: &web
     POSTGRES_USER: ${POSTGRES_USER:-planner}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-planner}
     POSTGRES_DB: ${POSTGRES_DB:-planner}
+    RUSTFS_ENDPOINT: ${RUSTFS_ENDPOINT:-}
+    RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-}
+    RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-}
+    RUSTFS_BUCKET: ${RUSTFS_BUCKET:-planner-photos}
+    RUSTFS_REGION: ${RUSTFS_REGION:-eu-west-3}
   volumes:
     - ./config/database.yml.docker:/srv/app/config/database.yml
     - ./docker/production.rb:/srv/app/config/environments/production.rb
