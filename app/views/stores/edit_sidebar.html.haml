@@ -1,0 +1,13 @@
+- form_mutable = current_user_store_form_submit_enabled?(@store)
+= turbo_frame_tag "form_sidebar" do
+  %header.mb-3
+    %h2.h5.mb-0= t("stores.edit.title")
+  - if flash[:error].present?
+    .alert.alert-danger.mb-2{ role: "alert" }= flash[:error]
+  - if form_mutable
+    .sidebar-form{ data: { controller: "v2--dirty-form-submit" } }
+      = render "v2/stores/form"
+      .form-submit-bar.is-hidden{ data: { "v2--dirty-form-submit-target": "bar" } }
+        %button.btn.btn-primary{ type: "submit", form: "store-form-sidebar" }= t("helpers.submit.update", model: @store.model_name.human)
+  - else
+    = render "v2/stores/form"
