@@ -190,6 +190,7 @@ gem 'csv' # missing dependency of ai4r
 gem 'nilify_blanks'
 gem 'auto_strip_attributes'
 gem 'carrierwave'
+gem 'aws-sdk-s3'
 
 gem 'charlock_holmes', '> 0.7.3'
 gem 'savon'

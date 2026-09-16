@@ -1,0 +1,60 @@
+services:
+  rustfs:
+    image: rustfs/rustfs:1.0.0
+    user: "10001:10001"
+    environment:
+      RUSTFS_VOLUMES: /data
+      RUSTFS_ADDRESS: ":9000"
+      RUSTFS_CONSOLE_ADDRESS: ":9001"
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-planner-photos}
+      RUSTFS_REGION: ${RUSTFS_REGION:-eu-west-3}
+      RUSTFS_OBS_LOGGER_LEVEL: info
+    volumes:
+      - rustfs_data:/data
+      - ./docker/rustfs-entrypoint.sh:/usr/local/bin/rustfs-with-bucket.sh:ro
+    entrypoint: ["/bin/sh", "/usr/local/bin/rustfs-with-bucket.sh"]
+    ports:
+      - 127.0.0.1:9001:9001
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:9000/health && test -f /tmp/bucket-ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    restart: unless-stopped
+
+  web:
+    environment:
+      RUSTFS_ENDPOINT: ${RUSTFS_ENDPOINT:-http://rustfs:9000}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-planner-photos}
+      RUSTFS_REGION: ${RUSTFS_REGION:-eu-west-3}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      rustfs:
+        condition: service_healthy
+
+  delayed-job:
+    environment:
+      RUSTFS_ENDPOINT: ${RUSTFS_ENDPOINT:-http://rustfs:9000}
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+      RUSTFS_BUCKET: ${RUSTFS_BUCKET:-planner-photos}
+      RUSTFS_REGION: ${RUSTFS_REGION:-eu-west-3}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      rustfs:
+        condition: service_healthy
+
+volumes:
+  rustfs_data:
