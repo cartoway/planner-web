@@ -1,0 +1,66 @@
+-# Copyright © Cartoway
+- content_for :form_sidebar do
+  = render "v2/layouts/form_sidebar_placeholder"
+- content_for :title, t('deliverable_units.index.title')
+- can_destroy = current_user_form_destroy_enabled?(:deliverable_units)
+- can_create = current_user_form_create?(:deliverable_units)
+.deliverable-units-index{data: { controller: 'v2--table-filter v2--table-selection' }}
+  .deliverable-units-toolbar.px-3.pt-3
+    .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
+      .d-flex.gap-2.align-items-center
+        = link_to new_deliverable_unit_path, class: 'btn btn-primary btn-sm', disabled: !can_create, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+          %i.fa.fa-plus.fa-fw
+          = t 'deliverable_units.index.new'
+      .d-flex.gap-2.align-items-center
+        = text_field_tag :deliverable_units_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control form-control-sm', data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
+        %span
+          %span{data: { v2__table_filter_target: 'count' }}= @deliverable_units.count
+          = t 'activerecord.models.deliverable_units', count: @deliverable_units.count
+  = form_tag deliverable_units_path, method: :delete, id: 'deliverable-units-destroy' do
+    %table#deliverable-units.table.table-striped.table-hover.table-sm.deliverable-units-table.mb-0
+      %thead
+        %tr
+          %th
+            %input{type: 'checkbox', disabled: !can_destroy, data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }, title: t('all.verb.toggle_selection')}
+          %th= t 'activerecord.attributes.deliverable_unit.label'
+          %th= t 'activerecord.attributes.deliverable_unit.ref'
+          %th= t 'activerecord.attributes.deliverable_unit.icon'
+          %th= t 'activerecord.attributes.deliverable_unit.default_pickup'
+          %th= t 'activerecord.attributes.deliverable_unit.default_delivery'
+          %th= t 'activerecord.attributes.deliverable_unit.default_capacity'
+          %th= t 'activerecord.attributes.deliverable_unit.optimization_overload_multiplier'
+          %th
+      %tbody
+        - @deliverable_units.each do |deliverable_unit|
+          %tr{data: { v2__table_filter_target: 'row' }}
+            %td
+              = check_box_tag "deliverable_units[#{deliverable_unit.id}]", '1', false, disabled: !can_destroy, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
+            %td= deliverable_unit.label
+            %td= deliverable_unit.ref
+            %td
+              %i.fa.fa-fw{class: deliverable_unit.default_icon}
+            %td= deliverable_unit.localized_default_pickup
+            %td= deliverable_unit.localized_default_delivery
+            %td= deliverable_unit.localized_default_capacity
+            %td
+              - if deliverable_unit.default_optimization_overload_multiplier == 0
+                = t('deliverable_units.form.optimization_overload_multiplier_no')
+              - elsif deliverable_unit.default_optimization_overload_multiplier == -1
+                = t('deliverable_units.form.optimization_overload_multiplier_ignore')
+              - else
+                = deliverable_unit.localized_optimization_overload_multiplier
+            %td.text-end.text-nowrap
+              .btn-group{role: 'group'}
+                = link_to edit_deliverable_unit_path(deliverable_unit), class: 'btn btn-primary btn-sm', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
+                  %i.fa.fa-pencil.fa-fw
+                - if can_destroy
+                  = link_to deliverable_unit, class: 'btn btn-danger btn-sm', method: :delete, data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do
+                    %i.fa.fa-trash.fa-fw
+                - else
+                  %button.btn.btn-danger.btn-sm{type: 'button', title: t('all.verb.destroy'), disabled: true}
+                    %i.fa.fa-trash.fa-fw
+    - unless @deliverable_units.empty?
+      .deliverable-units-bulk.px-3.py-2
+        = button_tag type: :submit, form: 'deliverable-units-destroy', class: 'btn btn-danger btn-sm', disabled: !can_destroy, data: { v2__table_selection_target: 'bulk', confirm: t('all.verb.destroy_confirm') } do
+          %i.fa.fa-trash.fa-fw
+          = t('all.verb.destroy_selection')

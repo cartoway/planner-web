@@ -1,4 +1,5 @@
-= bootstrap_form_for @vehicle_usage_set, layout: :horizontal, html: { class: 'number-to-percentage form-horizontal' } do |f|
+- form_html = { class: 'number-to-percentage form-horizontal' }
+= bootstrap_form_for @vehicle_usage_set, layout: :horizontal, html: form_html do |f|
   = render 'shared/error_messages', model: @vehicle_usage_set
   = f.text_field :name, required: true
   #vehicle_usage_set_store_input.row.form-group
