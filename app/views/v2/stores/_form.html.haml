@@ -1,0 +1,126 @@
+-# V2 sidebar store form (geocoding via Stimulus; map is the index background).
+- form_mutable = current_user_store_form_submit_enabled?(@store)
+- form_html = { class: 'form-horizontal', id: 'store-form-sidebar', 'data-turbo-frame' => 'form_sidebar', 'data-store_id' => (@store.id or 0), 'data-position-editable' => (form_mutable ? 'true' : 'false') }
+- form_html['data-v2--dirty-form-submit-target'] = 'form' if form_mutable
+- v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
+- v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
+- v2_control_col = 'col-md-10 offset-md-1 field'
+- df = ->(key, **opts) { I18n.t(key, scope: 'destinations.form', **opts) }
+- geocoding_level_labels = Store.geocoding_levels.keys.index_with { |level| t("destinations.form.geocoding_level.#{level}") }
+- geocoding_data = {}
+- if form_mutable
+  - geocoding_data[:controller] = 'v2--destination-geocoding'
+  - geocoding_data[:v2__destination_geocoding_resource_prefix_value] = 'store'
+  - geocoding_data[:v2__destination_geocoding_geocode_url_value] = '/api/0.1/stores/geocode.json'
+  - geocoding_data[:v2__destination_geocoding_confirm_overwrite_point_value] = t('destinations.form.dialog.confirm_overwrite_point')
+  - geocoding_data[:v2__destination_geocoding_geocode_in_progress_value] = df.call('geocode_in_progress')
+  - geocoding_data[:v2__destination_geocoding_accuracy_success_value] = Planner::Application.config.geocoder.accuracy_success
+  - geocoding_data[:v2__destination_geocoding_accuracy_warning_value] = Planner::Application.config.geocoder.accuracy_warning
+  - geocoding_data[:v2__destination_geocoding_geocoding_level_labels_value] = geocoding_level_labels.to_json
+= bootstrap_form_for(@store, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_bootstrap_label_col, control_col: v2_control_col, html: form_html) do |f|
+  = hidden_field_tag :v2_sidebar, '1'
+  = render 'shared/error_messages', model: @store
+  %fieldset#store-details{ data: geocoding_data }
+    - if @store.customer.enable_references
+      = f.text_field :ref, help: t('stores.form.ref_help')
+    = hidden_field_tag "store[geocoding_result]", @store.geocoding_result.to_json
+    - if form_mutable
+      = hidden_field_tag "store[geocode_on_save]", ""
+      = hidden_field_tag "store[geocode_on_save_fingerprint]", ""
+    = f.text_field :name, required: true
+    = f.text_field :street, help: t('web.form.helpers.street')
+    #store_city_input.mb-3.row
+      %label{class: v2_label_col}
+        = t 'activerecord.attributes.store.postalcode'
+        \/ #{t 'activerecord.attributes.store.city'}
+      %div{class: v2_control_col}
+        .input-group
+          = text_field :store, :postalcode, maxlength: 17, class: 'form-control'
+          = text_field :store, :city, class: 'form-control'
+          %span.input-group-text
+            %i.fa.fa-map.fa-fw
+    - if !@store.customer.with_state?
+      #store_country_input.mb-3.row
+        %label{class: v2_label_col}
+          = "#{t('activerecord.attributes.store.state')}/#{t('activerecord.attributes.store.country')}"
+        %div{class: v2_control_col}
+          .input-group
+            = text_field :store, :state, class: 'form-control'
+            = text_field :store, :country, placeholder: t('stores.form.country_default', n: @store.customer.default_country), class: 'form-control'
+            %span.input-group-text
+              %i.fa.fa-map.fa-fw
+    - else
+      = f.text_field :country, placeholder: t('stores.form.country_default', n: @store.customer.default_country)
+    .mb-3.row
+      %label{class: v2_label_col}= t 'activerecord.attributes.stores.geocoding_accuracy'
+      %div{class: v2_control_col}
+        - if form_mutable
+          #store-geocode-prompt.mb-2{ class: ('d-none' unless store_form_address_geocodable?(@store)), data: { v2__destination_geocoding_target: 'prompt' } }
+            %button.btn.btn-light.btn-xs.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeButton', action: 'click->v2--destination-geocoding#geocode' }}
+              %i.fa.fa-map-marker.fa-fw
+              %span{ data: { v2__destination_geocoding_target: 'geocodeButtonLabel' } }= df.call('geocode_prompt')
+        #geocoding_accuracy{ class: ('d-none' unless @store.geocoding_accuracy) }
+          #geocoding-progress.progress
+            %input{name: "store[geocoding_accuracy]", type: "hidden", value: @store.geocoding_accuracy}
+            .progress-bar{ class: "progress-bar-#{@store.geocode_progress_bar_class}", style: "width: #{((@store.geocoding_accuracy || 0) * 100).round}%"}
+              %span= @store.geocoding_accuracy ? ((@store.geocoding_accuracy || 0) * 100).round.to_s + '%' : ''
+        #geocoding_fail.d-none= df.call('geocoding_fail')
+        #no_geocoding_accuracy{ class: ('d-none' if @store.geocoding_accuracy)}= df.call('geocoding_accuracy_none')
+        #geocoding_level{ class: ('d-none' unless @store.geocoding_level)}
+          %input{name: "store[geocoding_level]", type: "hidden", value: @store.geocoding_level}
+          %span#geocoding-level-value
+            - if @store.geocoding_level
+              = t("destinations.form.geocoding_level.#{@store.geocoding_level}")
+      #geocoding_result_free.row{ class: ('d-none' if @store.geocoding_result.blank? || @store.geocoding_result['free'].blank?), data: { v2__destination_geocoding_target: 'geocodingResultRow' } }
+        %label{class: v2_label_col}= t 'activerecord.attributes.stores.geocoding_result'
+        %div{class: v2_control_col}
+          %input.form-control#displayed-geocoding-result{type: 'text', value: @store.geocoding_result.is_a?(Hash) ? @store.geocoding_result['free'] : '', disabled: true, tabindex: -1}
+      %div{class: v2_control_col}
+        #store-geocode-apply.d-none{ data: { v2__destination_geocoding_target: 'geocodeApplyPanel' } }
+          %button.btn.btn-light.btn-xs.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeApplyButton', action: 'click->v2--destination-geocoding#applyGeocodedAddress' }}
+            %i.fa.fa-check.fa-fw
+            = t('destinations.reverse_geocoding.apply')
+    .row
+      %div{class: v2_control_col}
+        .alert.alert-info.small.v2-destination-map-position-hint.mb-0{role: "status"}
+          %i.fa.fa-map.fa-fw
+          = df.call('v2_list_map_position_help')
+    #store_geoloc_input.mb-3.row
+      %label{class: v2_label_col}
+        = t 'activerecord.attributes.store.lat'
+        \/ #{t 'activerecord.attributes.store.lng'}
+      %div{class: v2_control_col}
+        .input-group
+          = number_field :store, :lat, step: 0.000001, class: 'form-control'
+          = number_field :store, :lng, step: 0.000001, class: 'form-control'
+          - show_map_drag_toggle = form_mutable && @store.persisted? && @store.lat.present? && @store.lng.present?
+          %span.input-group-text.p-0.d-flex.btn-container
+            - if show_map_drag_toggle
+              - drag_idle = df.call('v2_map_position_drag_enable')
+              - drag_active = df.call('v2_map_position_drag_disable')
+              %button.btn.btn-light.border-0.rounded-0.h-100{type: 'button', title: drag_idle, data: { v2_map_position_drag_toggle: true, title_idle: drag_idle, title_active: drag_active }, 'aria-pressed': 'false'}
+                %i.fa.fa-location-crosshairs.fa-fw{"aria-hidden": "true"}
+            - else
+              .d-flex.align-items-center.px-2
+                %i.fa.fa-globe.fa-fw
+    .mb-3.row
+      %label{class: v2_label_col}= t 'activerecord.attributes.store.color'
+      %div{class: v2_control_col}
+        = select_tag 'store[color]', options_for_select((COLORS_TABLE + [customised_color_verification(@store[:color])]).compact.uniq, @store.color), include_blank: '#000000', class: 'form-control'
+    .mb-3.row
+      %label{class: v2_label_col}= t 'activerecord.attributes.store.icon'
+      %div{class: v2_control_col}
+        .input-group
+          = select_tag 'store[icon]', grouped_options_for_select([[t('stores.form.prefered_icons'), @grouped_icons[0]], [t('stores.form.other_icons'), @grouped_icons[1]]], @store.icon), include_blank: t('web.form.default', n: @store.customer.default_store_icon), class: 'form-control', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true }
+          = select_tag 'store[icon_size]', options_for_select([[t('stores.form.icon_size.small'), :small], [t('stores.form.icon_size.medium'), :medium], [t('stores.form.icon_size.large'), :large]], @store.icon_size), include_blank: t('web.form.default', n: t("stores.form.icon_size.#{@store.customer.default_store_icon_size}")), class: 'form-control'
+    = hidden_field :store, :geocoder_version, value: @store.geocoder_version
+    = hidden_field :store, :geocoded_at, value: @store.geocoded_at
+  #store_reloads{data: { controller: 'v2--nested-fields' }}
+    %div{data: { v2__nested_fields_target: 'list' }}
+      - @store.store_reloads.each_with_index do |store_reload, i|
+        = render 'v2/store_reloads/form', store_reload: store_reload, i: i + 1, customer: @store.customer, form_mutable: form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
+    %button.btn.btn-light.btn-sm{type: 'button', data: { action: 'click->v2--nested-fields#add' }}
+      %i.fa.fa-plus.fa-fw
+      = t('stores.form.store_reload.new')
+    %template{data: { v2__nested_fields_target: 'template' }}
+      = render 'v2/store_reloads/form', store_reload: StoreReload.new, i: 0, customer: @store.customer, form_mutable: form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col

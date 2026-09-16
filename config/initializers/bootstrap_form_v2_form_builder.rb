@@ -42,7 +42,7 @@ module BootstrapForm
 
       output = render_haml <<-HAML, object: object, action: action, opts: opts
         %div{ id: "#{object}_div_input", class: "#{opts[:row_class] || 'row form-group'}" }
-          %div{ class: "#{opts[:col_class] || 'col-md-offset-2 col-md-6'}" }
+          %div{ class: "#{opts[:col_class] || 'offset-md-1 col-md-10'}" }
             %button{ name: 'button', type: 'submit', class: "#{opts[:button] || 'btn btn-primary'}", title: "#{opts[:title]}", disabled: opts[:disabled], data: opts[:disable_with] ? { disable_with:  "#{opts[:disable_with]}" } : {}}
               %i.fa{ class: "#{opts[:icon] || 'fa-floppy-disk'}" }
               = opts[:message] || I18n.t("helpers.submit.#{action}", model: I18n.t("activerecord.models.#{object.pluralize}.one"))

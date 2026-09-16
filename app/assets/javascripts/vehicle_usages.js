@@ -22,13 +22,16 @@ import { selectTag } from './tags';
 import { initRestTypeFields } from './rest_type_fields';
 
 const vehicle_usages_form = function(params) {
-  $("select#vehicle_usage_store_reload_ids").select2({
-    theme: 'bootstrap',
-    minimumResultsForSearch: 5,
-    width: '100%',
-    tags: true,
-    closeOnSelect: false,
-  });
+  var $storeReloads = $("select#vehicle_usage_store_reload_ids");
+  if ($storeReloads.length && !$storeReloads.is("[data-controller*='tom-select']")) {
+    $storeReloads.select2({
+      theme: 'bootstrap',
+      minimumResultsForSearch: 5,
+      width: '100%',
+      tags: true,
+      closeOnSelect: false,
+    });
+  }
 
   /* Speed Multiplier / duration coefficients */
   $('form.number-to-percentage').submit(function(e) {
@@ -48,11 +51,14 @@ const vehicle_usages_form = function(params) {
 
   initRestTypeFields('vehicle_usage');
 
-  $('#vehicle_usage_vehicle_color').simplecolorpicker({
-    theme: 'fontawesome'
-  });
-
-  customColorInitialize('#vehicle_usage_vehicle_color');
+  // Native <input type=color> on v2; simplecolorpicker only works on a <select>.
+  var $color = $('#vehicle_usage_vehicle_color');
+  if ($color.is('select')) {
+    $color.simplecolorpicker({
+      theme: 'fontawesome'
+    });
+    customColorInitialize('#vehicle_usage_vehicle_color');
+  }
 
   $('#capacity-unit-add').click(function(event) {
     $(this).hide();
@@ -64,7 +70,9 @@ const vehicle_usages_form = function(params) {
   /* API: Devices */
   devicesObserveVehicle.init(params);
 
-  routerOptionsSelect('#vehicle_usage_vehicle_router', params);
+  if (!document.querySelector('[data-controller*="router-options"]')) {
+    routerOptionsSelect('#vehicle_usage_vehicle_router', params);
+  }
 
   var noResults = I18n.t('vehicles.form.tags_empty');
   var tagCreateAllowed = params.vehicle_usage_tag_create_allowed !== false;
@@ -95,7 +103,8 @@ const vehicle_usages_form = function(params) {
     };
   }
 
-  var $tagSelects = $('#vehicle_usage_tag_ids_input, #vehicle_usage_vehicle_tag_ids_input').find('select[name$="[tag_ids][]"]');
+  var $tagSelects = $('#vehicle_usage_tag_ids_input, #vehicle_usage_vehicle_tag_ids_input').find('select[name$="[tag_ids][]"]').not("[data-controller*='tom-select']");
+  if (!$tagSelects.length) return;
   $tagSelects.select2(vehicleTagSelect2Opts).on('select2:open', function(e) {
     $(e.target).parent().find('.select2-search__field').attr('placeholder', I18n.t('web.select2.placeholder'));
   }).on('select2:close', function(e) {
@@ -188,3 +197,16 @@ Paloma.controller('VehicleUsages', {
     vehicle_usages_form(this.params);
   }
 });
+
+export function mountV2VehicleUsageSidebarForm(root) {
+  if (!root || typeof $ === 'undefined') return;
+  var form = root.querySelector('#vehicle-usage-form-sidebar');
+  if (!form) return;
+  var params = {};
+  try { params = JSON.parse(form.getAttribute('data-v2-js-config') || '{}'); } catch (e) { /* ignore */ }
+  vehicle_usages_form(params);
+}
+
+if (typeof window !== 'undefined') {
+  window.mountV2VehicleUsageSidebarForm = mountV2VehicleUsageSidebarForm;
+}

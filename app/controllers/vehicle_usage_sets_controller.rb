@@ -25,10 +25,12 @@ class VehicleUsageSetsController < ApplicationController
 
   include LinkBack
   include PreferencesAuthorization
+  include V2Layout
 
   def index
     @customer = current_user.customer
     @vehicle_usage_sets = @customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}])
+    render_v2_page 'v2/vehicle_usage_sets/index' if layout_v2?
   end
 
   def show
@@ -50,9 +52,11 @@ class VehicleUsageSetsController < ApplicationController
     @vehicle_usage_set = current_user.customer.vehicle_usage_sets.build
     @vehicle_usage_set.store_start = current_user.customer.stores[0]
     @vehicle_usage_set.store_stop = current_user.customer.stores[0]
+    render 'new_sidebar', layout: false if v2_form_sidebar_request?
   end
 
   def edit
+    render 'edit_sidebar', layout: false if v2_form_sidebar_request?
   end
 
   def create
@@ -62,9 +66,21 @@ class VehicleUsageSetsController < ApplicationController
       @vehicle_usage_set = current_user.customer.vehicle_usage_sets.build(p)
 
       if @vehicle_usage_set.save
-        format.html { redirect_to vehicle_usage_sets_path, notice: t('activerecord.successful.messages.created', model: @vehicle_usage_set.class.model_name.human) }
+        format.html do
+          if v2_sidebar_submit?
+            render_v2_close_sidebar
+          else
+            redirect_to vehicle_usage_sets_path, notice: t('activerecord.successful.messages.created', model: @vehicle_usage_set.class.model_name.human)
+          end
+        end
       else
-        format.html { render action: 'new' }
+        format.html do
+          if v2_sidebar_submit?
+            render 'new_sidebar', layout: false, status: :unprocessable_entity
+          else
+            render action: 'new'
+          end
+        end
       end
     end
   end
@@ -77,9 +93,21 @@ class VehicleUsageSetsController < ApplicationController
       @vehicle_usage_set.assign_attributes(p)
 
       if @vehicle_usage_set.save
-        format.html { redirect_to link_back || vehicle_usage_sets_path, notice: t('activerecord.successful.messages.updated', model: @vehicle_usage_set.class.model_name.human) }
+        format.html do
+          if v2_sidebar_submit?
+            render_v2_close_sidebar
+          else
+            redirect_to link_back || vehicle_usage_sets_path, notice: t('activerecord.successful.messages.updated', model: @vehicle_usage_set.class.model_name.human)
+          end
+        end
       else
-        format.html { render action: 'edit' }
+        format.html do
+          if v2_sidebar_submit?
+            render 'edit_sidebar', layout: false, status: :unprocessable_entity
+          else
+            render action: 'edit'
+          end
+        end
       end
     end
   end
@@ -117,7 +145,13 @@ class VehicleUsageSetsController < ApplicationController
     respond_to do |format|
       @vehicle_usage_set = @vehicle_usage_set.duplicate
       @vehicle_usage_set.save! validate: Planner::Application.config.validate_during_duplication
-      format.html { redirect_to edit_vehicle_usage_set_path(@vehicle_usage_set), notice: t('activerecord.successful.messages.updated', model: @vehicle_usage_set.class.model_name.human) }
+      format.html do
+        if layout_v2?
+          redirect_to vehicle_usage_sets_path, notice: t('activerecord.successful.messages.updated', model: @vehicle_usage_set.class.model_name.human)
+        else
+          redirect_to edit_vehicle_usage_set_path(@vehicle_usage_set), notice: t('activerecord.successful.messages.updated', model: @vehicle_usage_set.class.model_name.human)
+        end
+      end
     end
   end
 
@@ -142,6 +176,8 @@ class VehicleUsageSetsController < ApplicationController
   def import
     @customer = current_user.customer
     @import_csv = ImportCsv.new
+    @import_csv.replace_vehicles = @customer.default_max_vehicle_usage_sets <= 1
+    render_v2_page 'v2/vehicle_usage_sets/import' if layout_v2?
   end
 
   def upload_csv
@@ -151,7 +187,13 @@ class VehicleUsageSetsController < ApplicationController
       if @import_csv.valid? && @import_csv.import
         format.html { redirect_to action: 'index' }
       else
-        format.html { render action: 'import' }
+        format.html do
+          if layout_v2?
+            render_v2_page 'v2/vehicle_usage_sets/import'
+          else
+            render action: 'import'
+          end
+        end
       end
     end
   end
