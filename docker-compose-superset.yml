@@ -1,6 +1,8 @@
 services:
   superset:
     image: ghcr.io/cartoway/planner-web-superset:${CARTOWAY_VERSION:-dev}
+    build:
+      context: docker/superset
     depends_on:
       - db
       - superset_redis
@@ -29,7 +31,7 @@ services:
     restart: unless-stopped
 
   superset_nginx:
-    image: superset_nginx
+    image: ghcr.io/cartoway/planner-web-superset_nginx:${CARTOWAY_VERSION:-dev}
     build:
       context: docker/superset_nginx
     depends_on:
