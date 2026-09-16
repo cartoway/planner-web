@@ -1,0 +1,4 @@
+*
+!entrypoint.sh
+!history_live_routes.sql
+!superset-public-permissions.json
