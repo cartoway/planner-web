@@ -1,8 +1,9 @@
-FROM apache/superset:4.1.4
+FROM apache/superset:5.0.0
 
 USER root
 
-RUN pip install psycopg2-binary prophet duckdb==1.5.5 duckdb-engine==0.17.0 && \
+RUN . /app/.venv/bin/activate && \
+    uv pip install psycopg2-binary prophet duckdb==1.5.5 duckdb-engine==0.17.0 && \
     apt-get update && \
     apt-get install -y postgresql-client && \
     rm -rf /var/lib/apt/lists/*
