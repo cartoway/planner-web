@@ -1,5 +1,5 @@
 // Copyright © Cartoway
-// V2 right column: open when destination edit form is loaded in turbo-frame#form_sidebar, close with X.
+// V2 right column: open when a form is loaded in turbo-frame#form_sidebar, close with X.
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
@@ -7,29 +7,49 @@ export default class extends Controller {
 
   connect() {
     this.boundOnFrameLoad = this.onFrameLoad.bind(this)
+    this.boundOnMainFrameLoad = this.onMainFrameLoad.bind(this)
     if (this.hasFrameTarget) {
       this.frameTarget.addEventListener("turbo:frame-load", this.boundOnFrameLoad)
     }
+    this.mainFrame = document.getElementById("main")
+    if (this.mainFrame) {
+      this.mainFrame.addEventListener("turbo:frame-load", this.boundOnMainFrameLoad)
+    }
     this.refreshState()
-    this.mountDestinationFormIfPresent()
+    this.mountPackFormsIfPresent()
   }
 
   disconnect() {
     if (this.hasFrameTarget) {
       this.frameTarget.removeEventListener("turbo:frame-load", this.boundOnFrameLoad)
     }
+    if (this.mainFrame) {
+      this.mainFrame.removeEventListener("turbo:frame-load", this.boundOnMainFrameLoad)
+    }
+    this.mainFrame = null
+  }
+
+  onMainFrameLoad (event) {
+    if (event.target !== this.mainFrame) return
+    if (!this.hasFrameTarget || !this.frameTarget.querySelector("form")) return
+    this.close()
   }
 
   onFrameLoad() {
     this.refreshState()
-    this.mountDestinationFormIfPresent()
+    this.mountPackFormsIfPresent()
   }
 
-  mountDestinationFormIfPresent() {
-    if (typeof window.mountV2DestinationSidebarForm !== "function" || !this.hasFrameTarget) return
-    if (this.frameTarget.querySelector("#destination-form-sidebar")) {
-      window.mountV2DestinationSidebarForm(this.frameTarget)
-    }
+  mountPackFormsIfPresent() {
+    if (!this.hasFrameTarget) return
+    this.mountIfPresent("#destination-form-sidebar", window.mountV2DestinationSidebarForm)
+    this.mountIfPresent("#vehicle-usage-form-sidebar", window.mountV2VehicleUsageSidebarForm)
+    this.mountIfPresent("#vehicle-usage-set-form-sidebar", window.mountV2VehicleUsageSetSidebarForm)
+  }
+
+  mountIfPresent(selector, fn) {
+    if (typeof fn !== "function") return
+    if (this.frameTarget.querySelector(selector)) fn(this.frameTarget)
   }
 
   close(event) {
@@ -48,8 +68,8 @@ export default class extends Controller {
 
   refreshState() {
     if (!this.hasFrameTarget) return
-    const sidebarForm = this.frameTarget.querySelector("#destination-form-sidebar")
-    if (sidebarForm) {
+    const hasForm = !!this.frameTarget.querySelector("form")
+    if (hasForm) {
       this.element.classList.remove("form-sidebar--collapsed", "slide-panel--collapsed")
       this.element.classList.add("form-sidebar--open")
       if (this.hasChromeTarget) this.chromeTarget.classList.remove("d-none")

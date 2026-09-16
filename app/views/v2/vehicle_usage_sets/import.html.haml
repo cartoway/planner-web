@@ -1,0 +1,59 @@
+-# Copyright © Cartoway
+- content_for :title, t('vehicle_usage_sets.import.title')
+- can_import_vehicle_config = current_user_form_update?(:vehicle_usages)
+- v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
+- v2_control_col = 'col-md-10 offset-md-1 field'
+.p-3
+  %h1.h3.mb-3= t 'vehicle_usage_sets.import.title'
+  %p.help-block.offset-md-1.col-md-10.px-0.mb-3= t 'vehicle_usage_sets.import.csv.help'
+  = bootstrap_form_for(@import_csv, url: import_csv_vehicle_usage_sets_path, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_label_col, control_col: v2_control_col, html: { multipart: true }) do |f|
+    = render 'shared/error_messages', model: @import_csv
+    %fieldset{disabled: !can_import_vehicle_config}
+      = f.file_field :file, required: true, disabled: !can_import_vehicle_config
+      .mb-3.row
+        %div{class: v2_control_col}
+          %p.help-block
+            = t('vehicle_usage_sets.import.csv.file_help')
+            %a{href: '#', 'data-bs-toggle': 'modal', 'data-bs-target': '#import-help-modal'}
+              %i.fa.fa-info-circle.fa-fw
+              = t('vehicle_usage_sets.import.import_template_help')
+      - unless @customer.default_max_vehicle_usage_sets > 1
+        .mb-3.row
+          %div{class: v2_control_col}
+            %p.mb-0
+              %b= t('vehicle_usage_sets.import.default_configuration_replaced')
+      = f.check_box :replace_vehicles, label: t('vehicle_usage_sets.import.replace_vehicles'), help: t('vehicle_usage_sets.import.replace_vehicles_help')
+      = f.submit message: t('all.verb.import'), icon: 'fa-upload', disabled: !can_import_vehicle_config, col_class: v2_control_col
+      .mb-3.row
+        %div{class: v2_control_col}
+          = link_to import_template_vehicle_usage_sets_path(format: :excel), class: 'btn btn-light', data: { turbo: false } do
+            %i.fa.fa-download.fa-fw
+            = t 'import.template_excel'
+#import-help-modal.modal.fade{tabindex: '-1'}
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        %h4.modal-title= t 'vehicle_usage_sets.import.dialog.help.title'
+        %button.btn-close{type: 'button', 'data-bs-dismiss': 'modal', 'aria-label': t('web.dialog.close')}
+      .modal-body
+        = t 'vehicle_usage_sets.import.dialog.help.desc'
+        %table.table.table-sm
+          - [:columns_vehicle, :columns_vehicle_usage_set].each do |columns|
+            %tr
+              %td{colspan: 3}
+                %h5= t("vehicle_usage_sets.import.dialog.help.#{columns}")
+            - if columns == :columns_vehicle_usage_set
+              %tr
+                %td
+                  %b= t('vehicle_usage_sets.import.dialog.help.columns_vehicle_usage_set_default')
+            - ImporterVehicleUsageSets.new(current_user.customer).send(columns).values.each do |column|
+              %tr
+                %td
+                  %b= column[:title]
+                %td= column[:format]
+                %td= column[:required]
+              %tr
+                %td{colspan: 3}
+                  %p.help-block= column[:desc]
+      .modal-footer
+        %button.btn.btn-light{type: 'button', 'data-bs-dismiss': 'modal'}= t 'all.verb.dismiss'

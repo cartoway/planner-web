@@ -1,0 +1,49 @@
+-# Copyright © Cartoway
+- content_for :title, t('stores.import.title')
+- can_import_stores = current_user_form_create?(:stores)
+- v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
+- v2_control_col = 'col-md-10 offset-md-1 field'
+.p-3
+  %h1.h3.mb-3= t 'stores.import.title'
+  %p.help-block.offset-md-1.col-md-10.px-0.mb-3= t 'stores.import.csv.help'
+  = bootstrap_form_for(@import_csv, url: stores_import_csv_path, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_label_col, control_col: v2_control_col, html: { multipart: true }) do |f|
+    = render 'shared/error_messages', model: @import_csv
+    = f.file_field :file, required: true, disabled: !can_import_stores
+    .mb-3.row
+      %div{class: v2_control_col}
+        %p.help-block
+          = t('stores.import.csv.file_help')
+          %a{href: '#', 'data-bs-toggle': 'modal', 'data-bs-target': '#import-help-modal'}
+            %i.fa.fa-info-circle.fa-fw
+            = t('stores.import.import_template_help')
+    = f.form_group :stores, label: { text: t('stores.import.stores') } do
+      = f.radio_button :replace, 0, checked: !@import_csv.replace, label: t('stores.import.replace_no')
+      %p.help-block= t 'stores.import.replace_no_help'
+      = f.radio_button :replace, 1, checked: @import_csv.replace, label: t('stores.import.replace_yes')
+      %p.help-block= t 'stores.import.replace_yes_help'
+    = f.submit message: t('all.verb.import'), icon: 'fa-upload', disabled: !can_import_stores, col_class: v2_control_col
+    .mb-3.row
+      %div{class: v2_control_col}
+        = link_to store_import_template_path(format: :excel), class: 'btn btn-light', data: { turbo: false } do
+          %i.fa.fa-download.fa-fw
+          = t 'import.template_excel'
+#import-help-modal.modal.fade{tabindex: '-1'}
+  .modal-dialog.modal-lg
+    .modal-content
+      .modal-header
+        %h4.modal-title= t 'stores.import.dialog.help.title'
+        %button.btn-close{type: 'button', 'data-bs-dismiss': 'modal', 'aria-label': t('web.dialog.close')}
+      .modal-body
+        = t 'stores.import.dialog.help.desc'
+        %table.table.table-sm
+          - ImporterStores.new(current_user.customer).columns.values.each do |column|
+            %tr
+              %td
+                %b= column[:title]
+              %td= column[:format]
+              %td= column[:required]
+            %tr
+              %td{colspan: 3}
+                %p.help-block= column[:desc]
+      .modal-footer
+        %button.btn.btn-light{type: 'button', 'data-bs-dismiss': 'modal'}= t 'all.verb.dismiss'

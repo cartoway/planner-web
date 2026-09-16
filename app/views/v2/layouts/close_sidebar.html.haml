@@ -1,0 +1,7 @@
+-# After a successful v2 sidebar create/update: replace the form with the placeholder.
+= turbo_frame_tag 'form_sidebar' do
+  - if @v2_sidebar_saved_id.present?
+    .form-sidebar-after-save{ data: { v2_saved_id: @v2_sidebar_saved_id } }
+      = render 'v2/layouts/form_sidebar_placeholder'
+  - else
+    = render 'v2/layouts/form_sidebar_placeholder'

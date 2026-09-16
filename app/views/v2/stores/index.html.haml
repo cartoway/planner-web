@@ -1,0 +1,80 @@
+-# Copyright © Cartoway
+-# V2 stores index — map as background, collapsible list overlay (same chrome as destinations).
+- content_for :form_sidebar do
+  = render "v2/layouts/form_sidebar_placeholder"
+- content_for :title, t('stores.index.title')
+- can_destroy = current_user_form_destroy_enabled?(:stores)
+- can_create = current_user_form_create?(:stores)
+- customer = current_user.customer
+- layers = (customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: layer.url, vector_style_url: layer.vector_style_url, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
+- v2_js_cfg = { map_lat: customer.default_position[:lat], map_lng: customer.default_position[:lng], map_zoom: 12, geocoder: true, map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)], stores: @stores.map { |s| { id: s.id, name: s.name, lat: s.lat, lng: s.lng } }, index_url: stores_path }
+- v2_js_cfg[:geocoder_placeholder] = t('web.geocoder.search')
+- v2_js_cfg[:geocoder_empty] = t('web.geocoder.empty_result')
+- v2_js_cfg[:geocoder_tooltip] = t('web.geocoder.tooltip')
+- v2_js_cfg[:geocoder_submit] = t('web.geocoder.submit_search')
+- v2_js_cfg[:map_layers_title] = t('destinations.index.map_layers')
+- v2_js_cfg[:map_base_layers_title] = t('destinations.index.map_base_layers')
+- v2_js_cfg[:map_overlay_title] = t('destinations.index.map_overlay_layers')
+- v2_js_cfg[:highlight_store_id] = params[:highlight_store_id].to_i if params[:highlight_store_id].present?
+#stores-map-layout.destinations-map-layout{data: { controller: 'v2--stores-index', config: v2_js_cfg.to_json }}
+  #map.destinations-map.maplibre-host
+  .destinations-sidebar.slide-panel.slide-panel--from-left{data: { controller: 'v2--table-filter v2--table-selection' }}
+    .destinations-sidebar-header
+      %button.floating-btn.destinations-sidebar-toggle{type: "button", title: t('destinations.index.collapse_list'), 'aria-label': t('destinations.index.collapse_list')}
+        %i.fa.fa-chevron-left.fa-fw
+      %h1.mb-2= t 'stores.index.title'
+      - if current_user.customer.job_store_geocoding
+        .alert.alert-warning
+          %p.mb-0= t('stores.geocoding.geocoding_in_progress')
+      .d-flex.justify-content-between.align-items-center.mb-2.flex-wrap.gap-2
+        .d-flex.gap-2
+          = link_to new_store_path, class: 'btn btn-primary btn-xs', disabled: !can_create, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+            %i.fa.fa-plus.fa-fw
+            = t 'stores.index.new'
+          = button_tag type: 'submit', form: 'stores-destroy', class: 'btn btn-danger btn-xs', disabled: true, data: { v2__table_selection_target: 'bulk', confirm: t('all.verb.destroy_confirm') } do
+            %i.fa.fa-trash.fa-fw
+            = t('all.verb.destroy_selection')
+        %span
+          %span{data: { v2__table_filter_target: 'count' }}= @stores.count
+          = t 'activerecord.models.stores', count: @stores.count
+      = text_field_tag :stores_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control form-control-sm mb-2', data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
+    = form_tag stores_path, method: :delete, id: 'stores-destroy' do
+      #store_box.destinations-list-scroll
+        %table.table.table-striped.table-hover.table-sm.destinations-list-table
+          %thead
+            %tr
+              %th.destinations-selection-col
+                %input{type: 'checkbox', disabled: !can_destroy, data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }}
+              %th.destinations-list-col.stores-list-col--icon= t 'activerecord.attributes.store.icon'
+              %th.destinations-list-col.stores-list-col--name= t 'activerecord.attributes.store.name'
+              %th.destinations-list-col.stores-list-col--street= t 'activerecord.attributes.store.street'
+              %th.destinations-list-col.stores-list-col--city= t 'activerecord.attributes.store.city'
+              %th.destinations-list-actions-col
+          %tbody
+            - @stores.each do |store|
+              %tr.store-row{class: ('table-danger' unless store.position?), data: { store_id: store.id, lat: store.lat, lng: store.lng, v2__table_filter_target: 'row' }}
+                %td.destinations-selection-col
+                  = check_box_tag "stores[#{store.id}]", '1', false, disabled: !can_destroy, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
+                %td.destinations-list-col.stores-list-col--icon= store_icon store
+                %td.destinations-list-col.stores-list-col--name
+                  %span.destinations-list-cell-content
+                    - unless store.position?
+                      %i.fa.fa-map-marker.fa-fw
+                    = store.name
+                %td.destinations-list-col.stores-list-col--street
+                  %span.destinations-list-cell-content= store.street
+                %td.destinations-list-col.stores-list-col--city
+                  %span.destinations-list-cell-content= store.city
+                %td.destinations-list-actions-col.text-nowrap.btn-group
+                  %button.btn.btn-light.btn-xs.stores-row-center{type: 'button', disabled: !store.position?, title: t('destinations.index.center_view_help'), 'aria-label': t('destinations.index.center_view_help')}
+                    %i.fa.fa-expand.fa-fw
+                  = link_to edit_store_path(store), class: 'btn btn-light btn-xs', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+                    %i.fa.fa-pencil.fa-fw
+                  - if can_destroy
+                    = link_to store, class: 'btn btn-danger btn-xs', data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') } do
+                      %i.fa.fa-trash.fa-fw
+  %button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger{type: "button", title: t('destinations.index.expand_list'), 'aria-label': t('destinations.index.expand_list')}
+    %i.fa.fa-chevron-right.fa-fw
+  %button.floating-btn.xl-floating-button.destinations-position-drag-cancel.d-none{type: "button", title: t('destinations.index.cancel_position_drag'), 'aria-label': t('destinations.index.cancel_position_drag')}
+    %i.fa.fa-times{"aria-hidden": "true"}
+    %span.floating-label= t('destinations.index.cancel_position_drag')

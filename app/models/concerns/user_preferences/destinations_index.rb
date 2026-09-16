@@ -9,6 +9,11 @@ module UserPreferences::DestinationsIndex
     destinations_index_version == ::Preferences::Catalog::Headers::DESTINATIONS_INDEX_V2
   end
 
+  # Same preference gates Destinations v2 and Flotte v2 (layout chrome + pages).
+  def layout_v2?
+    destinations_index_v2?
+  end
+
   def destinations_index_per_page
     ::Preferences::Catalog::Headers.normalize_destinations_index_config(read_headers_hash['destinations_index'])['per_page']
   end

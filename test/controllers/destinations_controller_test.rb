@@ -68,10 +68,11 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'index uses v2 when user preference is set' do
     enable_destinations_index_legacy!
-    refute users(:user_one).reload.destinations_index_v2?
+    refute users(:user_one).reload.layout_v2?
 
     enable_destinations_index_v2!
     assert users(:user_one).reload.destinations_index_v2?
+    assert users(:user_one).reload.layout_v2?
 
     get :index
     assert_response :success
@@ -165,6 +166,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'script[src*="maplibre-gl"]', 1
     assert_select '.main > .main-primary', 1
     assert_select '.main > .main-primary turbo-frame#main', 1
+    assert_select 'a[href=?][data-turbo-frame=main][data-turbo-action=advance]', destinations_path
     assert_select 'aside.form-sidebar.slide-panel--from-right.form-sidebar--collapsed', 1
     assert_select 'aside.form-sidebar turbo-frame#form_sidebar', 1
     assert_select 'button.floating-btn.xl-floating-button.destinations-position-drag-cancel.d-none', 1
@@ -418,6 +420,8 @@ class DestinationsControllerTest < ActionController::TestCase
     n = @destination.visits.select(&:persisted?).size
     assert_operator n, :>, 0
     assert_select '#visits > fieldset button[data-controller~="v2--visit-delete"][data-controller~="confirm-click"]', n
+    assert_select '#visits > fieldset legend .destroy-block .btn.text-nowrap', n
+    assert_select '#visits > fieldset legend .destroy-block.row', 0
     assert_select '#visits > fieldset button[data-controller~="v2--visit-remove"]', 0
     assert_select 'template#visit-fieldset-template button[data-controller~="v2--visit-remove"]', 1
   end

@@ -1,0 +1,275 @@
+-# V2 sidebar fleet form (BS5). Paloma pack still mounts color/rest/router widgets.
+- form_html = { class: 'number-to-percentage form-horizontal', id: 'vehicle-usage-set-form-sidebar', 'data-turbo-frame' => 'form_sidebar', 'data-controller' => 'v2--rest-type-fields', 'data-action' => 'change->v2--rest-type-fields#change submit->v2--rest-type-fields#submit', 'data-v2--rest-type-fields-prefix-value' => 'vehicle_usage_set', 'data-v2--rest-type-fields-duration-must-be-filled-value' => t('vehicle_usages.form.rest_type.duration_must_be_filled'), 'data-v2--rest-type-fields-lapse-must-be-filled-value' => t('vehicle_usages.form.rest_type.lapse_must_be_filled'), 'data-v2--rest-type-fields-duration-must-be-smaller-value' => t('vehicle_usages.form.rest_type.duration_must_be_smaller') }
+- form_html['data-v2-js-config'] = local_assigns[:v2_js_config] if local_assigns[:v2_js_config]
+- v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
+- v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
+- v2_control_col = 'col-md-10 offset-md-1 field'
+= bootstrap_form_for @vehicle_usage_set, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_bootstrap_label_col, control_col: v2_control_col, html: form_html do |f|
+  = hidden_field_tag :v2_sidebar, '1'
+  = render 'shared/error_messages', model: @vehicle_usage_set
+  = f.text_field :name, required: true
+  #vehicle_usage_set_store_input.mb-3.row.fleet-split
+    %label.visually-hidden{for: "vehicle_usage_set_store_start_id"}
+      = t 'activerecord.attributes.vehicle_usage_set.store_start'
+    %label.visually-hidden{for: "vehicle_usage_set_store_stop_id"}
+      = t 'activerecord.attributes.vehicle_usage_set.store_stop'
+    %label{class: v2_label_col}
+      = t('vehicle_usage_sets.form.stores')
+    %div{class: v2_control_col}
+      .input-group.mb-2
+        %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usage_set.store_start'
+        = collection_select :vehicle_usage_set, :store_start_id,
+          @vehicle_usage_set.customer.stores, :id, :name,
+          { include_blank: t('vehicle_usage_sets.form.store.none') },
+          { class: 'form-control' }
+      .input-group
+        %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usage_set.store_stop'
+        = collection_select :vehicle_usage_set, :store_stop_id,
+          @vehicle_usage_set.customer.stores, :id, :name,
+          { include_blank: t('vehicle_usage_sets.form.store.none')},
+          { class: 'form-control' }
+        %span.input-group-text= content_tag('i', '', class: 'fa fa-store fa-fw')
+      %p.help-block= t 'vehicle_usage_sets.form.stores_help'
+  #vehicle_usage_set_time_window_start_time_window_end_input.mb-3.row.fleet-split
+    %label.visually-hidden{for: "vehicle_usage_set_time_window_start"}= t 'activerecord.attributes.vehicle_usage_set.time_window_start'
+    %label.visually-hidden{for: "vehicle_usage_set_time_window_end"}= t 'activerecord.attributes.vehicle_usage_set.time_window_end'
+    %label{class: v2_label_col}= t 'vehicle_usage_sets.form.time_window_start_end'
+    %div{class: v2_control_col}
+      .input-group.mb-2
+        %span.input-group-text.fleet-bound-label= t 'web.form.time_window_start_label'
+        = text_field :vehicle_usage_set, :time_window_start,
+          class: 'form-control',
+          placeholder: t('all.unit.hour_minute'),
+          value: @vehicle_usage_set.time_window_start_time,
+          required: true
+        %span.input-group-text.input-group-borderless= t 'web.form.days'
+        = number_field :vehicle_usage_set, :time_window_start_day,
+          class: 'form-control number-of-days',
+          placeholder: '0',
+          min: 0,
+          value: number_of_days(@vehicle_usage_set.time_window_start)
+      .input-group
+        %span.input-group-text.fleet-bound-label= t 'web.form.time_window_end_label'
+        = text_field :vehicle_usage_set, :time_window_end,
+          class: 'form-control',
+          placeholder: t('all.unit.hour_minute'),
+          value: @vehicle_usage_set.time_window_end_time,
+          required: true
+        %span.input-group-text.input-group-borderless= t 'web.form.days'
+        = number_field :vehicle_usage_set, :time_window_end_day,
+          class: 'form-control number-of-days',
+          placeholder: '0',
+          min: 0,
+          value: number_of_days(@vehicle_usage_set.time_window_end)
+        %span.input-group-text
+          %i.fa.fa-arrows-left-right.fa-fw
+      %p.help-block= t 'vehicle_usage_sets.form.time_window_start_end_help'
+  #vehicle_usage_set_service_time_input.mb-3.row.fleet-split
+    %label.visually-hidden{for: "vehicle_usage_set_service_time_start"}= t 'activerecord.attributes.vehicle_usage_set.service_time_start'
+    %label.visually-hidden{for: "vehicle_usage_set_service_time_end"}= t 'activerecord.attributes.vehicle_usage_set.service_time_end'
+    %label{class: v2_label_col}= t 'vehicle_usage_sets.form.service_times'
+    %div{class: v2_control_col}
+      .input-group.mb-2
+        %span.input-group-text.fleet-bound-label= t 'vehicle_usage_sets.form.service_time_start_addon'
+        = text_field :vehicle_usage_set, :service_time_start,
+          class: 'form-control',
+          placeholder: t('all.unit.hour_minute'),
+          value: @vehicle_usage_set.service_time_start_time
+      .input-group
+        %span.input-group-text.fleet-bound-label= t 'vehicle_usage_sets.form.service_time_end_addon'
+        = text_field :vehicle_usage_set, :service_time_end,
+          class: 'form-control',
+          placeholder: t('all.unit.hour_minute'),
+          value: @vehicle_usage_set.service_time_end_time
+        %span.input-group-text
+          %i.fa.fa-stopwatch.fa-fw
+      %p.help-block= t 'vehicle_usage_sets.form.service_times_help'
+  - if @vehicle_usage_set.customer.enable_store_stops
+    #vehicle_usage_set_max_reload_input.row
+      %label.visually-hidden{for: "vehicle_usage_set_max_reload"}
+        = t 'activerecord.attributes.vehicle_usage_set.max_reload'
+      %label{class: v2_label_col}
+        = t 'activerecord.attributes.vehicle_usage_set.max_reload'
+      %div{class: v2_control_col}
+        .input-group
+          = number_field :vehicle_usage_set,
+            :max_reload,
+            value: @vehicle_usage_set.max_reload,
+            placeholder: (@vehicle_usage_set.max_reload ? t('customers.form.field_default', n: @vehicle_usage_set.max_reload) : ''),
+            class: 'form-control', min: 0
+          %span.input-group-text
+            .fa.fa-rotate.fa-fw
+        %p.help-block= t('vehicle_usage_sets.form.max_reload_help')
+    #vehicle_usage_set_store_reload_ids_input.mb-3.row
+      %label{class: v2_label_col, for: "vehicle_usage_set_store_reload_ids"}
+        = t('activerecord.attributes.vehicle_usage_set.store_reload_ids')
+      %div{class: v2_control_col}
+        .input-group
+          = select_tag 'vehicle_usage_set[store_reload_ids]', options_for_select(@vehicle_usage_set.customer.store_reloads.map{ |sr| [sr.to_s, sr.id] }, @vehicle_usage_set.store_reloads.collect(&:id)),
+            { multiple: true, class: 'form-control', id: 'vehicle_usage_set_store_reload_ids', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true, v2__tom_select_placeholder_value: t('web.select2.placeholder') } }
+          %span.input-group-text
+            %i.fa.fa-rotate.fa-fw
+        %p.help-block= t('vehicle_usage_sets.form.store_reloads_help')
+  #vehicle_usage_set_work_time_input.mb-3.row
+    %label.visually-hidden{for: "vehicle_usage_set_work_time"}= t 'activerecord.attributes.vehicle_usage_set.work_time'
+    %label{class: v2_label_col}= t 'vehicle_usage_sets.form.work_time'
+    %div{class: v2_control_col}
+      .input-group
+        = text_field :vehicle_usage_set, :work_time,
+          value: @vehicle_usage_set.work_time_time,
+          placeholder: t('all.unit.hour_minute'),
+          class: 'form-control'
+        %span.input-group-text
+          %i.fa.fa-repeat.fa-fw
+      %p.help-block= t 'vehicle_usage_sets.form.work_time_help'
+  #vehicle_usage_set_display_costs.mb-3.row.fleet-split
+    %label{class: v2_label_col}
+      = t 'activerecord.attributes.vehicle_usage_set.costs'
+    %div{class: v2_control_col}
+      .input-group.mb-2
+        = number_field :vehicle_usage_set, :cost_fixed,
+          value: @vehicle_usage_set.cost_fixed,
+          step: 'any', class: 'form-control', min: 0
+        %span.input-group-text
+          = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
+      .input-group.mb-2
+        = number_field :vehicle_usage_set, :cost_time,
+          value: @vehicle_usage_set.cost_time,
+          step: 'any', class: 'form-control', min: 0
+        %span.input-group-text
+          = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
+          \/
+          = t('time.hour')
+      .input-group
+        = number_field :vehicle_usage_set, :cost_distance,
+          value: @vehicle_usage_set.cost_distance,
+          step: 'any', class: 'form-control', min: 0
+        %span.input-group-text
+          = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
+          \/
+          = current_user.prefered_unit == 'mi' ? t('all.unit.mile') : t('all.unit.kms')
+      %p.help-block
+        = t 'vehicle_usages.form.cost.help'
+  .row
+    %label{class: "#{v2_label_col}", for: "vehicle_usage_set_visit_duration_coef"}
+      = t('activerecord.attributes.vehicle_usage_set.visit_duration_coef')
+    %div{class: "#{v2_control_col} input-append"}
+      .input-group
+        = number_field_tag :visit_duration_coef, (@vehicle_usage_set.visit_duration_coef ? (@vehicle_usage_set.visit_duration_coef * 100).to_i : nil), { min: 10, max: 500, placeholder: t('vehicle_usage_sets.form.visit_duration_coef.default', n: 100), class: 'form-control number-to-percentage', data: { param_path: 'vehicle_usage_set[visit_duration_coef]' } }
+        %span.input-group-text %
+      %p.help-block
+        = t('vehicle_usage_sets.form.visit_duration_coef.help')
+  .row
+    %label{class: "#{v2_label_col}", for: "vehicle_usage_set_destination_duration_coef"}
+      = t('activerecord.attributes.vehicle_usage_set.destination_duration_coef')
+    %div{class: "#{v2_control_col} input-append"}
+      .input-group
+        = number_field_tag :destination_duration_coef, (@vehicle_usage_set.destination_duration_coef ? (@vehicle_usage_set.destination_duration_coef * 100).to_i : nil), { min: 10, max: 500, placeholder: t('vehicle_usage_sets.form.destination_duration_coef.default', n: 100), class: 'form-control number-to-percentage', data: { param_path: 'vehicle_usage_set[destination_duration_coef]' } }
+        %span.input-group-text %
+      %p.help-block
+        = t('vehicle_usage_sets.form.destination_duration_coef.help')
+  #vehicle_usage_vehicle_max_distance.mb-3.row
+    %label.visually-hidden{for: "vehicle_usage_vehicle_max_distance"}= t 'activerecord.attributes.vehicle.max_distance'
+    %label{class: v2_label_col}= t 'activerecord.attributes.vehicle.max_distance'
+    %div{class: v2_control_col}
+      .input-group
+        = number_field :vehicle_usage_set,
+          :max_distance,
+          value: distance_in_user_unit(@vehicle_usage_set.max_distance, @current_user.prefered_unit),
+          step: 'any',
+          class: 'form-control', min: 0
+        %span.input-group-text= current_user.prefered_unit == 'mi' ? t('all.unit.miles') : t('all.unit.kms')
+      %p.help-block= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_distance.help_miles') : t('vehicles.form.max_distance.help')
+  #vehicle_usage_vehicle_max_ride_distance_input.mb-3.row
+    %label.visually-hidden{for: "vehicle_usage_set_max_ride_distance"}= t 'activerecord.attributes.vehicle.max_ride_distance'
+    %label{class: v2_label_col}= t 'activerecord.attributes.vehicle.max_ride_distance'
+    %div{class: v2_control_col}
+      .input-group
+        = number_field :vehicle_usage_set,
+          :max_ride_distance,
+          value: distance_in_user_unit(@vehicle_usage_set.max_ride_distance, @current_user.prefered_unit),
+          class: 'form-control', min: 0, step: 0.1
+        %span.input-group-text= current_user.prefered_unit == 'mi' ? t('all.unit.miles') : t('all.unit.kms')
+      %p.help-block= current_user.prefered_unit == 'mi' ? t('vehicles.form.max_ride_distance.help_miles') : t('vehicles.form.max_ride_distance.help')
+  #vehicle_usage_vehicle_max_ride_duration_input.mb-3.row
+    %label.visually-hidden{for: "vehicle_usage_set_max_ride_duration"}= t 'activerecord.attributes.vehicle.max_ride_duration'
+    %label{class: v2_label_col}= t 'activerecord.attributes.vehicle.max_ride_duration'
+    %div{class: v2_control_col}
+      .input-group
+        = text_field :vehicle_usage_set, :max_ride_duration,
+          value: @vehicle_usage_set.max_ride_duration_time,
+          placeholder: t('all.unit.hour_minute'),
+          class: 'form-control'
+        %span.input-group-text
+          %i.fa.fa-stopwatch.fa-fw
+      %p.help-block= t('vehicles.form.max_ride_duration.help')
+  #vehicle_usage_set_rest_type_input.row
+    %label{class: v2_label_col}= t 'vehicle_usages.form.rest_type.label'
+    %div{class: v2_control_col}
+      = f.radio_button :rest_mode, 'window', checked: @vehicle_usage_set.rest_lapse.to_i <= 0, label: t('vehicle_usages.form.rest_type.window')
+      = f.radio_button :rest_mode, 'regulatory', checked: @vehicle_usage_set.rest_lapse.to_i > 0, label: t('vehicle_usages.form.rest_type.regulatory')
+  #vehicle_usage_set_rest_input.mb-3.row.fleet-split
+    %label.visually-hidden{for: "vehicle_usage_set_rest_duration"}= t 'activerecord.attributes.vehicle_usage_set.rest_duration'
+    %label.visually-hidden{for: "vehicle_usage_set_store_rest_id"}= t 'activerecord.attributes.vehicle_usage_set.store_rest'
+    %label{class: "#{v2_label_col} rest-duration-label-window"}= t 'vehicle_usage_sets.form.rest_duration_store'
+    %label{class: "#{v2_label_col} rest-duration-label-regulatory", style: 'display: none;'}= t 'vehicle_usages.form.rest_type.duration'
+    %div{class: v2_control_col}
+      .input-group.mb-2
+        = text_field :vehicle_usage_set, :rest_duration,
+          value: @vehicle_usage_set.rest_duration_time,
+          placeholder: t('all.unit.hour_minute'),
+          class: 'form-control'
+        %span.input-group-text= content_tag('i', '', class: 'fa fa-coffee fa-fw')
+      .rest-store-select
+        .input-group
+          = collection_select :vehicle_usage_set, :store_rest_id, @vehicle_usage_set.customer.stores, :id, :name,
+            { include_blank: t('vehicle_usage_sets.form.store.none') },
+            { class: 'form-control' }
+          %span.input-group-text= content_tag('i', '', class: 'fa fa-store fa-fw')
+      %p.help-block.rest-duration-help-window= t 'vehicle_usage_sets.form.rest_duration.help'
+  #vehicle_usage_set_rest_lapse_input.mb-3.row{style: 'display: none;'}
+    %label.visually-hidden{for: "vehicle_usage_set_rest_lapse"}= t 'activerecord.attributes.vehicle_usage_set.rest_lapse'
+    %label{class: v2_label_col}= t 'vehicle_usages.form.rest_type.lapse'
+    %div{class: v2_control_col}
+      .input-group
+        = text_field :vehicle_usage_set, :rest_lapse,
+          value: @vehicle_usage_set.rest_lapse_time,
+          placeholder: t('all.unit.hour_minute'),
+          class: 'form-control'
+        %span.input-group-text= t 'vehicle_usages.form.rest_type.lapse_suffix'
+        %span.input-group-text
+          %i.fa.fa-repeat.fa-fw
+      %p.help-block
+        = t 'vehicle_usages.form.rest_type.waiting_help'
+  #vehicle_usage_set_rest_start_stop_input.mb-3.row.fleet-split
+    %label.visually-hidden{for: "vehicle_usage_set_rest_start"}= t 'activerecord.attributes.vehicle_usage_set.rest_start'
+    %label.visually-hidden{for: "vehicle_usage_set_rest_stop"}= t 'activerecord.attributes.vehicle_usage_set.rest_stop'
+    %label{class: v2_label_col}= t 'vehicle_usage_sets.form.rest_start_stop'
+    %div{class: v2_control_col}
+      .input-group.mb-2
+        %span.input-group-text.fleet-bound-label= t 'web.form.time_window_start_label'
+        = text_field :vehicle_usage_set, :rest_start,
+          class: 'form-control',
+          placeholder: t('all.unit.hour_minute'),
+          value: @vehicle_usage_set.rest_start_time
+        %span.input-group-text.input-group-borderless= t 'web.form.days'
+        = number_field :vehicle_usage_set, :rest_start_day,
+          class: 'form-control number-of-days',
+          placeholder: '0',
+          min: 0,
+          value: number_of_days(@vehicle_usage_set.rest_start)
+      .input-group
+        %span.input-group-text.fleet-bound-label= t 'web.form.time_window_end_label'
+        = text_field :vehicle_usage_set, :rest_stop,
+          class: 'form-control',
+          placeholder: t('all.unit.hour_minute'),
+          value: @vehicle_usage_set.rest_stop_time
+        %span.input-group-text.input-group-borderless= t 'web.form.days'
+        = number_field :vehicle_usage_set, :rest_stop_day,
+          class: 'form-control number-of-days',
+          placeholder: '0',
+          min: 0,
+          value: number_of_days(@vehicle_usage_set.rest_stop)
+        %span.input-group-text
+          %i.fa.fa-arrows-left-right.fa-fw
+      %p.help-block= t 'vehicle_usage_sets.form.rest_start_stop_help'

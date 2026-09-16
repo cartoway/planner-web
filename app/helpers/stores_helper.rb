@@ -21,4 +21,8 @@ module StoresHelper
       class: 'fa fa-lg %s' % [store.default_icon],
       style: 'color: %s' % [store.default_color]
   end
+
+  def store_form_address_geocodable?(store)
+    %i[street postalcode city].any? { |field| store.public_send(field).present? }
+  end
 end

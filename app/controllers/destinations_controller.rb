@@ -21,6 +21,7 @@ require 'importer_destinations'
 class DestinationsController < ApplicationController
   include LinkBack
   include PreferencesAuthorization
+  include V2Layout
 
   before_action :authenticate_user!
   before_action :set_destination, only: [:show, :edit, :update, :destroy, :append_visit]
@@ -174,7 +175,7 @@ class DestinationsController < ApplicationController
 
       if @destination.save && current_user.customer.save
         format.html do
-          if v2_destinations_sidebar_submit?
+          if v2_sidebar_submit?
             render 'close_sidebar', layout: false
           else
             redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.created', model: @destination.class.model_name.human)
@@ -183,7 +184,7 @@ class DestinationsController < ApplicationController
       else
         flash.now[:error] = @destination.customer.errors.full_messages unless @destination.customer.errors.empty?
         format.html do
-          if v2_destinations_sidebar_submit?
+          if v2_sidebar_submit?
             render "new_sidebar", layout: false, status: :unprocessable_entity
           else
             render action: "new"
@@ -203,7 +204,7 @@ class DestinationsController < ApplicationController
 
         if @destination.save && @destination.customer.save
           format.html do
-            if v2_destinations_sidebar_submit?
+            if v2_sidebar_submit?
               render 'close_sidebar', layout: false
             else
               redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.updated', model: @destination.class.model_name.human)
@@ -212,7 +213,7 @@ class DestinationsController < ApplicationController
         else
           flash.now[:error] = @destination.customer.errors.full_messages unless @destination.customer.errors.empty?
           format.html do
-            if v2_destinations_sidebar_submit?
+            if v2_sidebar_submit?
               render "edit_sidebar", layout: false, status: :unprocessable_entity
             else
               render action: "edit"
@@ -551,13 +552,8 @@ class DestinationsController < ApplicationController
     params.require(:import_tomtom).permit(:replace)
   end
 
-  def v2_destinations_sidebar_submit?
-    ActiveModel::Type::Boolean.new.cast(params[:v2_sidebar]) ||
-      (turbo_frame_request? && turbo_frame_request_id == 'form_sidebar')
-  end
-
   def destination_save_redirect_path
-    if v2_destinations_sidebar_submit?
+    if v2_sidebar_submit?
       destinations_path(highlight_destination_id: @destination.id)
     else
       edit_destination_path(@destination)
