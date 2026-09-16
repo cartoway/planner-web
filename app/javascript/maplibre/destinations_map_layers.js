@@ -38,9 +38,10 @@ function featureKey (feature) {
 }
 
 export class DestinationsMapLayers {
-  constructor (map, { buildUrl, onPointClick, onClusterClick, onFeaturesUpdated, getMovePadding, signal }) {
+  constructor (map, { buildUrl, staticFeatures, onPointClick, onClusterClick, onFeaturesUpdated, getMovePadding, signal }) {
     this.map = map
     this.buildUrl = buildUrl
+    this.staticFeatures = Array.isArray(staticFeatures) ? staticFeatures : null
     this.onPointClick = onPointClick
     this.onClusterClick = onClusterClick
     this.onFeaturesUpdated = onFeaturesUpdated
@@ -196,6 +197,10 @@ export class DestinationsMapLayers {
   setDeclusterViewportActive (active) {
     if (active) this.declusterViewport()
     else this.reclusterViewport()
+  }
+
+  _isStatic () {
+    return Array.isArray(this.staticFeatures)
   }
 
   _onMoveEnd () {
@@ -414,6 +419,10 @@ export class DestinationsMapLayers {
   }
 
   _scheduleFetch (immediate = false) {
+    if (this._isStatic()) {
+      if (this._declusterViewportActive) this._pushSourceData()
+      return
+    }
     window.clearTimeout(this._fetchTimer)
     const run = () => {
       this._fetchTimer = null
@@ -423,7 +432,34 @@ export class DestinationsMapLayers {
     else this._fetchTimer = window.setTimeout(run, FETCH_DEBOUNCE_MS)
   }
 
+  _fitStaticBounds () {
+    const maplibregl = window.maplibregl
+    if (!maplibregl || !this.staticFeatures.length) return
+    const coords = this.staticFeatures
+      .map((f) => f.geometry && f.geometry.coordinates)
+      .filter((c) => Array.isArray(c) && c.length >= 2 && Number.isFinite(c[0]) && Number.isFinite(c[1]))
+    if (!coords.length) return
+    const padding = typeof this.getMovePadding === 'function' ? this.getMovePadding() : 48
+    if (coords.length === 1) {
+      this.map.setCenter(coords[0])
+      this.map.setZoom(12)
+      return
+    }
+    const bounds = coords.reduce((b, c) => b.extend(c), new maplibregl.LngLatBounds(coords[0], coords[0]))
+    this.map.fitBounds(bounds, { padding: padding || 48, maxZoom: 15, duration: 0 })
+  }
+
   async _fetchBoundsOnly (epoch = this._dataEpoch) {
+    if (this._isStatic()) {
+      if (!this._isCurrentEpoch(epoch)) return
+      this._fitStaticBounds()
+      this._loadedBounds = null
+      await new Promise((resolve) => {
+        if (this.map.isMoving()) this.map.once('idle', resolve)
+        else resolve()
+      })
+      return
+    }
     const url = this.buildUrl({ bounds_only: '1' })
     try {
       const res = await fetch(url, { credentials: 'same-origin', signal: this.signal })
@@ -448,6 +484,14 @@ export class DestinationsMapLayers {
   async _fetchViewport (options = {}) {
     const force = !!options.force
     const epoch = options.epoch != null ? options.epoch : this._dataEpoch
+    if (this._isStatic()) {
+      if (!this._isCurrentEpoch(epoch)) return
+      if (force) this._featureCache.clear()
+      this._mergeFeatures(this.staticFeatures)
+      this._pushSourceData()
+      if (this.onFeaturesUpdated) this.onFeaturesUpdated()
+      return
+    }
     const bounds = paddedBounds(this.map)
     if (!force && this._loadedBounds && this._containsBounds(this._loadedBounds, bounds)) return
 

@@ -2901,8 +2901,8 @@ en:
         destinations_list: Destination list columns
         destinations_list_help: Customize which columns appear in the destinations list. Drag columns between lists; at most %{max} columns can be active; order in “Active” is used left to right.
         destinations_index: Destinations list
-        destinations_index_v2: New destinations list
-        destinations_index_help: Enable the new destinations list. Disable to keep the classic list.
+        destinations_index_v2: New interface (destinations and fleet)
+        destinations_index_help: Enable the new layout (destinations list and Fleet menu). Disable to keep the classic interface.
         route_headers: Route data
         planning_toolbar: Planning toolbar
         route_toolbar: Route toolbar

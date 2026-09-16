@@ -54,7 +54,7 @@ module VehicleUsagesHelper
             concat span_tag('%s ' % [vehicle_usage.vehicle_usage_set.store_start.name])
           end
         else
-          concat icon('fa-solid', 'ban', title: t('vehicle_usages.index.store.no_start'))
+          concat span_tag(icon('fa-solid', 'ban', title: t('vehicle_usages.index.store.no_start')))
         end
         if vehicle_usage.default_store_start != vehicle_usage.default_store_stop
           concat icon('fa-solid', 'long-arrow-right')
@@ -64,7 +64,7 @@ module VehicleUsagesHelper
           elsif vehicle_usage.vehicle_usage_set.store_stop
             concat '%s ' % [vehicle_usage.vehicle_usage_set.store_stop.name]
           else
-            concat icon('fa-solid', 'ban', title: t('vehicle_usages.index.store.no_stop'))
+            concat span_tag(icon('fa-solid', 'ban', title: t('vehicle_usages.index.store.no_stop')))
           end
         elsif vehicle_usage.store_start
           concat icon('fa-solid', 'right-left', title: t('vehicle_usages.index.store.same_start_stop'))
