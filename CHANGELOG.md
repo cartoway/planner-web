@@ -1,6 +1,6 @@
 # Changelog
 
-##
+## v110.0.0
   ### Added
   - Customers index: users list dropdown per customer
   - Planning: extract inactive stops from vehicle routes to unassigned via a dedicated modal
