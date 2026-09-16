@@ -26,6 +26,80 @@ class StoresControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'index uses v2 when user preference is set' do
+    enable_layout_v2!
+    get :index
+    assert_response :success
+    assert_select 'body.cartoway-v2', 1
+    assert_select '#stores-map-layout[data-controller="v2--stores-index"]', 1
+    assert_select %(a[href="#{new_store_path}"][data-turbo-frame="form_sidebar"]), 1
+    assert_select '#store_box tr.store-row[data-store-id=?]', @store.id.to_s, 1
+    assert_select '#stores-map-layout.destinations-map-layout #map.destinations-map', 1
+    assert_select '#store_box thead .stores-list-col--name', 1
+    assert_select '.destinations-position-drag-cancel', 1
+    config = JSON.parse(css_select('#stores-map-layout').first['data-config'])
+    assert config['stores'].any? { |s| s['id'] == @store.id }
+  end
+
+  test 'v2 index embeds highlight_store_id in map config when requested' do
+    enable_layout_v2!
+    get :index, params: { highlight_store_id: @store.id }
+    assert_response :success
+    config = JSON.parse(css_select('#stores-map-layout').first['data-config'])
+    assert_equal @store.id, config['highlight_store_id']
+  end
+
+  test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @store }
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form#store-form-sidebar', 1
+    assert_select 'form#store-form-sidebar[data-position-editable=true]', 1
+    assert_select '[data-v2-map-position-drag-toggle]', 1
+    assert_select '#store_reloads [data-v2--nested-fields-target=list] .store-reload-fieldset', minimum: 1
+    assert_select '#store_reloads [data-v2--nested-fields-target=list] .accordion-toggle .accordion-chevron', minimum: 1
+    assert_select '#store_reloads [data-v2--nested-fields-target=list] .collapse.show', minimum: 1
+    assert_select '#store_reloads .collapse.in', 0
+    assert_select 'input.store-reload-destroy-flag[name*="[_destroy]"]', minimum: 1
+    assert_select '#store_reloads button[data-action*="v2--nested-fields#remove"]', minimum: 1
+    assert_select 'template[data-v2--nested-fields-target=template] .store-reload-fieldset', 1
+  end
+
+  test 'v2 edit does not invent a store_reload when the store has none' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: stores(:store_one_bis) }
+    assert_response :success
+    assert_equal 0, stores(:store_one_bis).store_reloads.size
+    assert_select '#store_reloads [data-v2--nested-fields-target=list] .store-reload-fieldset', 0
+    assert_select 'template[data-v2--nested-fields-target=template] .store-reload-fieldset', 1
+  end
+
+  test 'v2 create from sidebar closes the form frame' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    assert_difference('Store.count') do
+      post :create, params: { v2_sidebar: '1', store: { city: @store.city, lat: @store.lat, lng: @store.lng, name: 'v2-store', postalcode: @store.postalcode, street: @store.street, state: @store.state } }
+    end
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'form#store-form-sidebar', 0
+    assert_select '[data-v2-saved-id]', 1
+  end
+
+  test 'v2 update from sidebar closes the form frame' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    patch :update, params: { id: @store, v2_sidebar: '1', store: { name: 'v2-updated-store', city: @store.city, lat: @store.lat, lng: @store.lng, postalcode: @store.postalcode, street: @store.street, state: @store.state } }
+    assert_response :success
+    assert_equal 'v2-updated-store', @store.reload.name
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'form#store-form-sidebar', 0
+    assert_select '[data-v2-saved-id]', 1
+  end
+
   test 'should get one' do
     get :show, params: { id: @store, format: :json }
     assert_response :success
@@ -124,6 +198,16 @@ class StoresControllerTest < ActionController::TestCase
     get :import
     assert_response :success
     assert_valid response
+  end
+
+  test 'import uses v2 when user preference is set' do
+    enable_layout_v2!
+    get :import
+    assert_response :success
+    assert_select 'body.cartoway-v2', 1
+    assert_select 'form[action=?]', stores_import_csv_path, 1
+    assert_select 'form .offset-md-1.col-md-10', minimum: 1
+    assert_select 'form a.btn[href=?]', store_import_template_path(format: :excel), 1
   end
 
   test 'should upload' do

@@ -4,11 +4,6 @@ import { Controller } from '@hotwired/stimulus'
 
 const ADDRESS_FIELDS = ['street', 'postalcode', 'city', 'state', 'country']
 
-const SKIP_GEOCODE_REQUEST_NAMES = new Set([
-  'destination[geocode_on_save]',
-  'destination[geocode_on_save_fingerprint]'
-])
-
 export default class extends Controller {
   static targets = [
     'prompt',
@@ -20,6 +15,7 @@ export default class extends Controller {
   ]
 
   static values = {
+    resourcePrefix: { type: String, default: 'destination' },
     geocodeUrl: { type: String, default: '/api/0.1/destinations/geocode.json' },
     confirmOverwritePoint: String,
     geocodeInProgress: String,
@@ -53,8 +49,18 @@ export default class extends Controller {
     })
   }
 
+  _prefix () {
+    return this.resourcePrefixValue || 'destination'
+  }
+
+  _skipGeocodeNames () {
+    const p = this._prefix()
+    return new Set([`${p}[geocode_on_save]`, `${p}[geocode_on_save_fingerprint]`])
+  }
+
   _input (field) {
-    const name = field.startsWith('destination[') ? field : `destination[${field}]`
+    const prefix = this._prefix()
+    const name = field.startsWith(`${prefix}[`) ? field : `${prefix}[${field}]`
     return this.element.querySelector(`input[name="${name}"]`)
   }
 
@@ -236,8 +242,9 @@ export default class extends Controller {
   }
 
   _clearLatLng () {
-    const latInput = this.element.querySelector('#destination_lat, input[name="destination[lat]"]')
-    const lngInput = this.element.querySelector('#destination_lng, input[name="destination[lng]"]')
+    const p = this._prefix()
+    const latInput = this.element.querySelector(`#${p}_lat, input[name="${p}[lat]"]`)
+    const lngInput = this.element.querySelector(`#${p}_lng, input[name="${p}[lng]"]`)
     if (latInput) latInput.value = ''
     if (lngInput) lngInput.value = ''
   }
@@ -262,9 +269,11 @@ export default class extends Controller {
   async _fetchGeocode () {
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
     const params = new URLSearchParams()
-    this.element.querySelectorAll('input[name^="destination["]').forEach((input) => {
+    const skip = this._skipGeocodeNames()
+    const prefix = `${this._prefix()}[`
+    this.element.querySelectorAll(`input[name^="${prefix}"]`).forEach((input) => {
       if (input.type === 'checkbox' || input.type === 'radio') return
-      if (SKIP_GEOCODE_REQUEST_NAMES.has(input.name)) return
+      if (skip.has(input.name)) return
       params.append(input.name, input.value)
     })
 
@@ -391,17 +400,21 @@ export default class extends Controller {
     }
   }
 
-  _dispatchGeocodedEvent (destination) {
-    const form = this.element.closest('#destination-form-sidebar')
-    const destinationId = form?.getAttribute('data-destination_id') || '0'
-    this.element.dispatchEvent(new CustomEvent('v2:destination-geocoded', {
-      bubbles: true,
-      detail: {
-        destinationId: String(destinationId),
-        lat: destination.lat,
-        lng: destination.lng,
-        name: destination.name || ''
-      }
-    }))
+  _dispatchGeocodedEvent (record) {
+    const p = this._prefix()
+    const form = this.element.closest(`#${p}-form-sidebar`)
+    const recordId = form?.getAttribute(`data-${p}_id`) || form?.getAttribute('data-destination_id') || '0'
+    const detail = {
+      resourcePrefix: p,
+      id: String(recordId),
+      destinationId: String(recordId),
+      lat: record.lat,
+      lng: record.lng,
+      name: record.name || ''
+    }
+    this.element.dispatchEvent(new CustomEvent('v2:record-geocoded', { bubbles: true, detail }))
+    if (p === 'destination') {
+      this.element.dispatchEvent(new CustomEvent('v2:destination-geocoded', { bubbles: true, detail }))
+    }
   }
 }

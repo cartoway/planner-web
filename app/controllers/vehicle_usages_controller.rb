@@ -24,8 +24,10 @@ class VehicleUsagesController < ApplicationController
 
   include LinkBack
   include PreferencesAuthorization
+  include V2Layout
 
   def edit
+    render 'edit_sidebar', layout: false if v2_form_sidebar_request?
   end
 
   def update
@@ -36,16 +38,32 @@ class VehicleUsagesController < ApplicationController
       @vehicle_usage.assign_attributes(p)
 
       if @vehicle_usage.save
-        format.html { redirect_to link_back || edit_vehicle_usage_path(@vehicle_usage), notice: t('activerecord.successful.messages.updated', model: @vehicle_usage.class.model_name.human) }
+        format.html do
+          if v2_sidebar_submit?
+            render_v2_close_sidebar
+          else
+            redirect_to link_back || edit_vehicle_usage_path(@vehicle_usage), notice: t('activerecord.successful.messages.updated', model: @vehicle_usage.class.model_name.human)
+          end
+        end
       else
-        format.html { render action: 'edit' }
+        format.html do
+          if v2_sidebar_submit?
+            render 'edit_sidebar', layout: false, status: :unprocessable_entity
+          else
+            render action: 'edit'
+          end
+        end
       end
     end
   end
 
   def toggle
     if @vehicle_usage.update active: !@vehicle_usage.active?
-      redirect_to vehicle_usage_sets_path + "#collapseUsageSet#{@vehicle_usage.vehicle_usage_set_id}", notice: t('.success')
+      if layout_v2?
+        redirect_to vehicle_usage_sets_path, notice: t('.success')
+      else
+        redirect_to vehicle_usage_sets_path + "#collapseUsageSet#{@vehicle_usage.vehicle_usage_set_id}", notice: t('.success')
+      end
     else
       render action: :edit
     end

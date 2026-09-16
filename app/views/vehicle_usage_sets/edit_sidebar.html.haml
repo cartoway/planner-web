@@ -1,0 +1,14 @@
+= turbo_frame_tag "form_sidebar" do
+  %header.mb-3
+    %h2.h5.mb-0= t("vehicle_usage_sets.edit.title")
+  - if flash[:error].present?
+    .alert.alert-danger.mb-2{ role: "alert" }= flash[:error]
+  .sidebar-form
+    = render "v2/vehicle_usage_sets/form", v2_js_config: { customer_id: @vehicle_usage_set.customer.id }.to_json
+    .form-submit-bar
+      %button.btn.btn-primary{type: 'submit', form: 'vehicle-usage-set-form-sidebar', disabled: !current_user_form_update?(:vehicle_usages)}
+        %i.fa.fa-floppy-disk.fa-fw
+        = t('helpers.submit.update', model: VehicleUsageSet.model_name.human)
+  :javascript
+    window.Paloma = window.Paloma || { controller: function () {} };
+  = javascript_pack_tag "vehicle_usage_set", "data-turbolinks-track": "reload"

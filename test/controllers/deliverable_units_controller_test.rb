@@ -26,6 +26,52 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'index uses v2 when user preference is set' do
+    enable_layout_v2!
+    get :index
+    assert_response :success
+    assert_select 'body.cartoway-v2', 1
+    assert_select %(a[href="#{new_deliverable_unit_path}"][data-turbo-frame="form_sidebar"]), 1
+    assert_select '.deliverable-units-index', 1
+    assert_select 'table#deliverable-units', 1
+    assert_select 'table#deliverable-units td.text-end > .btn-group', minimum: 1
+    assert_select 'table#deliverable-units td.btn-group', 0
+    assert_select '.deliverable-units-bulk [data-v2--table-selection-target=bulk]', 1
+  end
+
+  test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @deliverable_unit }
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form#deliverable-unit-form-sidebar', 1
+    assert_select 'input.form-check-input[name=deliverable_unit_optimization_overload_multiplier]', 2
+    assert_select 'select#deliverable_unit_icon[data-controller~="v2--tom-select"]', 1
+    assert_select 'select#deliverable_unit_icon option[data-icon]', minimum: 1
+  end
+
+  test 'v2 create from sidebar closes the form frame' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    assert_difference('DeliverableUnit.count') do
+      post :create, params: { v2_sidebar: '1', deliverable_unit: { label: 'v2-sidebar-label', ref: 'v2-ref' } }
+    end
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'form#deliverable-unit-form-sidebar', 0
+  end
+
+  test 'v2 update from sidebar closes the form frame' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    patch :update, params: { id: @deliverable_unit, v2_sidebar: '1', deliverable_unit: { label: 'v2-updated-label' } }
+    assert_response :success
+    assert_equal 'v2-updated-label', @deliverable_unit.reload.label
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'form#deliverable-unit-form-sidebar', 0
+  end
+
   test 'should get new' do
     get :new
     assert_response :success
