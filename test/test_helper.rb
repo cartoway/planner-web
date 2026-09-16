@@ -195,6 +195,13 @@ end
 
 class ActionController::TestCase
   include Devise::Test::ControllerHelpers
+
+  def enable_layout_v2!(user = users(:user_one))
+    user.apply_self_service_display_ui!(
+      headers_params: { destinations_index: Preferences::Catalog::Headers::DESTINATIONS_INDEX_V2 }
+    )
+    user.save!
+  end
 end
 
 def suppress_output

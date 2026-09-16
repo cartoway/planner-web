@@ -1,0 +1,17 @@
+-# Copyright © Cartoway
+- content_for :title, t('reporting.index.title')
+.p-3{data: { controller: 'v2--reporting-download', v2__reporting_download_url_value: '/api/0.1/devices/fleet/reporting.csv', v2__reporting_download_customer_id_value: current_user.customer.id, v2__reporting_download_locale_value: I18n.locale, v2__reporting_download_no_content_value: t('reporting.download.no_content'), v2__reporting_download_success_value: t('reporting.download.success'), v2__reporting_download_fail_value: t('reporting.download.fail'), v2__reporting_download_retry_value: t('reporting.download.retry'), v2__reporting_download_downloading_value: t('reporting.index.downloading') }}
+  %h1.h3.mb-3= t 'reporting.index.title'
+  %p= t 'reporting.index.head'
+  = form_tag reporting_index_path, method: :get, class: 'reporting-form', data: { action: 'submit->v2--reporting-download#download' } do
+    .mb-3
+      %label.form-label{for: 'reporting_begin_date'}= t('reporting.index.begin_date')
+      %input.form-control#reporting_begin_date{type: 'date', name: 'begin_date', value: (Date.today - 8.days).iso8601, required: true, data: { v2__reporting_download_target: 'beginDate' }}
+    .mb-3
+      %label.form-label{for: 'reporting_end_date'}= t('reporting.index.end_date')
+      %input.form-control#reporting_end_date{type: 'date', name: 'end_date', value: Date.yesterday.iso8601, required: true, data: { v2__reporting_download_target: 'endDate' }}
+    .form-check.mb-3
+      %input.form-check-input#reporting_with_actions{type: 'checkbox', name: 'with_actions', data: { v2__reporting_download_target: 'withActions' }}
+      %label.form-check-label{for: 'reporting_with_actions'}= t('reporting.index.with_actions')
+    %button.btn.btn-primary{type: 'submit', data: { v2__reporting_download_target: 'submit' }}= t('reporting.index.submit')
+  .alert.mt-3.d-none{role: 'status', data: { v2__reporting_download_target: 'status' }}

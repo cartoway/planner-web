@@ -1,0 +1,14 @@
+-# Edit deliverable unit form loaded inside turbo-frame#form_sidebar
+- form_mutable = current_user_deliverable_unit_form_submit_enabled?(@deliverable_unit)
+= turbo_frame_tag "form_sidebar" do
+  %header.mb-3
+    %h2.h5.mb-0= t("deliverable_units.edit.title")
+  - if flash[:error].present?
+    .alert.alert-danger.mb-2{ role: "alert" }= flash[:error]
+  - if form_mutable
+    .sidebar-form{ data: { controller: "v2--dirty-form-submit" } }
+      = render "v2/deliverable_units/form"
+      .form-submit-bar.is-hidden{ data: { "v2--dirty-form-submit-target": "bar" } }
+        %button.btn.btn-primary{ type: "submit", form: "deliverable-unit-form-sidebar" }= t("helpers.submit.update", model: @deliverable_unit.model_name.human)
+  - else
+    = render "v2/deliverable_units/form"

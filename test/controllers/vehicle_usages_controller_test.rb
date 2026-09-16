@@ -24,11 +24,45 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     get :edit, params: { id: @vehicle_usage }
     assert_response :success
     assert_valid response
+    assert_select '.input-group-addon', minimum: 1
     assert_select '#vehicle_usage_rest_type_input .form-check', 0
     assert_select 'input.form-check-input[name=?]', 'vehicle_usage[rest_mode]', 0
     assert_select 'input[type=hidden][name=?][value=window]', 'vehicle_usage[rest_mode]', 1
     assert_select '#vehicle_usage_rest_type_input', text: /#{Regexp.escape(I18n.t('vehicle_usages.form.rest_type.window'))}/
     assert_select '#vehicle_usage_rest_type_input', text: /#{Regexp.escape(I18n.t('vehicle_usages.form.rest_type.locked_to_set'))}/
+  end
+
+  test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do
+    enable_layout_v2!
+    @vehicle_usage.vehicle.update!(router: routers(:router_osrm))
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @vehicle_usage }
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form#vehicle-usage-form-sidebar', 1
+    assert_select 'turbo-frame#form_sidebar .form-submit-bar button[type=submit][form=vehicle-usage-form-sidebar]', 1
+    assert_select 'form#vehicle-usage-form-sidebar input[name="v2_sidebar"][value="1"]', 1
+    assert_select 'form#vehicle-usage-form-sidebar .input-group-text', minimum: 1
+    assert_select 'form#vehicle-usage-form-sidebar .input-group-addon', 0
+    assert_select 'form#vehicle-usage-form-sidebar .offset-md-1', minimum: 1
+    assert_select '#vehicle_usage_time_window_start_time_window_end_input.fleet-split .input-group', 2
+    assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--rest-type-fields"]', 1
+    assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--router-options"]', 1
+    assert_select 'form#vehicle-usage-form-sidebar[data-v2--rest-type-fields-prefix-value="vehicle_usage"]', 1
+    assert_select 'input#vehicle_usage_vehicle_color[type=color][name="vehicle_usage[vehicle][color]"]', 1
+    assert_select 'select[name="vehicle_usage[vehicle][color]"]', 0
+    assert_select '#router_options_traffic_input.router-option-disabled', 1
+    assert_select 'select[name$="[tag_ids][]"][multiple][data-controller~="v2--tom-select"]', minimum: 1
+  end
+
+  test 'edit sidebar store reloads is a tom-select multi-select' do
+    enable_layout_v2!
+    @vehicle_usage.vehicle.customer.update!(enable_store_stops: true)
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @vehicle_usage }
+    assert_response :success
+    assert_select 'select#vehicle_usage_store_reload_ids[multiple][data-controller~="v2--tom-select"]', 1
+    assert_select 'select#vehicle_usage_store_reload_ids[data-v2--tom-select-simple-value="true"]', 1
   end
 
   test 'vehicle form should show updated customer router option defaults' do
@@ -54,6 +88,15 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert @vehicle_usage.vehicle.router_options['width'] = '3.55'
     assert @vehicle_usage.vehicle.router_options['hazardous_goods'] = 'gas'
     assert @vehicle_usage.vehicle['max_distance'] = '200'
+  end
+
+  test 'v2 update from sidebar closes the form frame' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    patch :update, params: { id: @vehicle_usage, v2_sidebar: '1', vehicle_usage: { vehicle: { name: @vehicle_usage.vehicle.name } } }
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'form#vehicle-usage-form-sidebar', 0
   end
 
   test 'should store max_distance as an integer by converting miles or kms into meters' do

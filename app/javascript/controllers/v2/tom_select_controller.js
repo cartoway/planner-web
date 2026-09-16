@@ -87,7 +87,11 @@ export default class extends Controller {
       hideSelected: !!el.multiple,
       placeholder: this.placeholderValue || "",
       create: false,
-      closeAfterSelect: !el.multiple
+      closeAfterSelect: !el.multiple,
+      render: {
+        option: (data, escape) => this.renderSimpleOption(data, escape),
+        item: (data, escape) => this.renderSimpleOption(data, escape)
+      }
     })
   }
 
@@ -145,12 +149,21 @@ export default class extends Controller {
 
   findOptionEl (value) {
     const sel = this.selectElement || this.element
-    if (!sel || value == null || value === "") return null
+    if (!sel || value == null) return null
+    if (value === "") return sel.querySelector('option[value=""]')
     const esc =
       typeof CSS !== "undefined" && typeof CSS.escape === "function"
         ? CSS.escape(String(value))
         : String(value).replace(/\\/g, "\\\\").replace(/"/g, '\\"')
     return sel.querySelector(`option[value="${esc}"]`)
+  }
+
+  renderSimpleOption (data, escape) {
+    const opt = this.findOptionEl(data.value)
+    const icon = (opt?.dataset?.icon || "").trim()
+    const label = escape(data.text || "")
+    if (!icon) return `<div>${label}</div>`
+    return `<div><i class="fa fa-fw ${escapeAttr(icon)}" aria-hidden="true"></i> ${label}</div>`
   }
 
   renderTagRow (opt, text, escape) {
