@@ -1,0 +1,36 @@
+-# V2 sidebar-only deliverable unit form
+- form_mutable = current_user_deliverable_unit_form_submit_enabled?(@deliverable_unit)
+- form_html = { class: 'form-horizontal', id: 'deliverable-unit-form-sidebar', 'data-turbo-frame' => 'form_sidebar' }
+- form_html['data-v2--dirty-form-submit-target'] = 'form' if form_mutable
+- v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
+- v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
+- v2_control_col = 'col-md-10 offset-md-1 field'
+- yes_checked = (@deliverable_unit.optimization_overload_multiplier && @deliverable_unit.optimization_overload_multiplier > 0) || Planner::Application.config.optimize_overload_multiplier > 0
+- no_checked = @deliverable_unit.optimization_overload_multiplier == 0 || (@deliverable_unit.optimization_overload_multiplier.nil? && Planner::Application.config.optimize_overload_multiplier == 0)
+- icon_options = ->(icons) { icons.map { |icon| [icon, icon, { 'data-icon' => icon }] } }
+= bootstrap_form_for(@deliverable_unit, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_bootstrap_label_col, control_col: v2_control_col, html: form_html) do |f|
+  = hidden_field_tag :v2_sidebar, '1'
+  = render 'shared/error_messages', model: @deliverable_unit
+  = f.text_field :ref, help: t('deliverable_units.form.ref_help')
+  = f.text_field :label, placeholder: t('deliverable_units.form.label_placeholder'), help: t('deliverable_units.form.label_help')
+  = f.number_field :default_pickup, step: 'any', help: t('deliverable_units.form.default_pickup_help')
+  = f.number_field :default_delivery, step: 'any', help: t('deliverable_units.form.default_delivery_help')
+  = f.number_field :default_capacity, step: 'any', min: '0', help: t('deliverable_units.form.default_capacity_help')
+  .mb-3.row{data: { controller: 'v2--overload-multiplier' }}
+    %label{class: v2_label_col}= t 'activerecord.attributes.deliverable_unit.optimization_overload_multiplier'
+    %div{class: v2_control_col}
+      %label.form-check
+        = radio_button_tag 'deliverable_unit_optimization_overload_multiplier', 'no', no_checked, id: 'deliverable_unit_optimization_overload_multiplier_no', class: 'form-check-input', data: { v2__overload_multiplier_target: 'no', action: 'change->v2--overload-multiplier#sync' }
+        = t('deliverable_units.form.optimization_overload_multiplier_no')
+      %label.form-check
+        = radio_button_tag 'deliverable_unit_optimization_overload_multiplier', 'yes', yes_checked, id: 'deliverable_unit_optimization_overload_multiplier_yes', class: 'form-check-input', data: { v2__overload_multiplier_target: 'yes', action: 'change->v2--overload-multiplier#sync' }
+        = t('deliverable_units.form.optimization_overload_multiplier_yes')
+      = number_field_tag 'deliverable_unit[optimization_overload_multiplier]', @deliverable_unit.optimization_overload_multiplier, step: 'any', min: '0', class: "form-control mt-2#{' d-none' unless yes_checked}", id: 'deliverable_unit_optimization_overload_multiplier', placeholder: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_overload_multiplier), data: { v2__overload_multiplier_target: 'input' }
+      %p.help-block= t('deliverable_units.form.optimization_overload_multiplier_help')
+  .mb-3.row
+    %label{class: v2_label_col, for: 'deliverable_unit_icon'}= t 'activerecord.attributes.deliverable_unit.icon'
+    %div{class: v2_control_col}
+      = select_tag 'deliverable_unit[icon]', options_for_select([[t('web.form.default', n: 'fa-dumpster'), '', { 'data-icon' => 'fa-dumpster' }]], @deliverable_unit.icon.presence || '') + grouped_options_for_select([[t('deliverable_units.form.prefered_icons'), icon_options.call(@grouped_icons[0])], [t('deliverable_units.form.other_icons'), icon_options.call(@grouped_icons[1])]], @deliverable_unit.icon), class: 'form-control', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true }
+      %p.help-block
+        %i.fa.fa-dumpster.fa-fw
+        = t('web.form.default', n: 'fa-dumpster')

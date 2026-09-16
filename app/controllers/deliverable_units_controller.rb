@@ -23,6 +23,7 @@ class DeliverableUnitsController < ApplicationController
   before_action :icons_table, except: [:index]
 
   include PreferencesAuthorization
+  include V2Layout
   before_action -> { deny_unless_form_create!(:deliverable_units) }, only: [:create]
   before_action -> { deny_unless_form_update!(:deliverable_units) }, only: [:update, :destroy, :destroy_multiple]
 
@@ -30,13 +31,16 @@ class DeliverableUnitsController < ApplicationController
 
   def index
     @deliverable_units = current_user.customer.deliverable_units
+    render_v2_page 'v2/deliverable_units/index' if layout_v2?
   end
 
   def new
     @deliverable_unit = current_user.customer.deliverable_units.build
+    render 'new_sidebar', layout: false if v2_form_sidebar_request?
   end
 
   def edit
+    render 'edit_sidebar', layout: false if v2_form_sidebar_request?
   end
 
   def create
@@ -44,9 +48,21 @@ class DeliverableUnitsController < ApplicationController
       DeliverableUnit.transaction do
         @deliverable_unit = current_user.customer.deliverable_units.build(deliverable_unit_params)
         if current_user.customer.save
-          format.html { redirect_to deliverable_units_path, notice: t('activerecord.successful.messages.created', model: @deliverable_unit.class.model_name.human) }
+          format.html do
+            if v2_sidebar_submit?
+              render_v2_close_sidebar
+            else
+              redirect_to deliverable_units_path, notice: t('activerecord.successful.messages.created', model: @deliverable_unit.class.model_name.human)
+            end
+          end
         else
-          format.html { render action: 'new' }
+          format.html do
+            if v2_sidebar_submit?
+              render 'new_sidebar', layout: false, status: :unprocessable_entity
+            else
+              render action: 'new'
+            end
+          end
         end
       end
     end
@@ -55,9 +71,21 @@ class DeliverableUnitsController < ApplicationController
   def update
     respond_to do |format|
       if @deliverable_unit.update(deliverable_unit_params) && @deliverable_unit.customer.save
-        format.html { redirect_to deliverable_units_path, notice: t('activerecord.successful.messages.updated', model: @deliverable_unit.class.model_name.human) }
+        format.html do
+          if v2_sidebar_submit?
+            render_v2_close_sidebar
+          else
+            redirect_to deliverable_units_path, notice: t('activerecord.successful.messages.updated', model: @deliverable_unit.class.model_name.human)
+          end
+        end
       else
-        format.html { render action: 'edit' }
+        format.html do
+          if v2_sidebar_submit?
+            render 'edit_sidebar', layout: false, status: :unprocessable_entity
+          else
+            render action: 'edit'
+          end
+        end
       end
     end
   end

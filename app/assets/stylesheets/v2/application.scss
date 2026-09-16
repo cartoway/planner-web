@@ -9,6 +9,7 @@
 @import "v2/searchable_checklist_dropdown";
 @import "v2/tags";
 @import "v2/destinations_index";
+@import "v2/vehicle_usage_sets";
 
 // Bootstrap 3 → 5 compatibility
 .form-group {
@@ -24,6 +25,17 @@
 
 .table-condensed {
   font-size: 0.875rem;
+}
+
+.default-color {
+  color: $grey-color;
+
+  i,
+  svg,
+  .fa,
+  .fa-solid {
+    color: inherit;
+  }
 }
 
 // V2 menu — match v1 (scaffolds) + neutralize Bootstrap 5 link / dropdown / button defaults inside .menu-left
@@ -186,6 +198,12 @@
       overflow-y: auto;
     }
 
+    .sidebar-form {
+      .form-horizontal {
+        padding-bottom: 0.75rem;
+      }
+    }
+
     // Overlay on the right; does not shrink .main-primary (map stays full width).
     .form-sidebar.slide-panel {
       position: absolute;
@@ -227,7 +245,7 @@
     .form-sidebar-inner {
       flex: 1 1 auto;
       min-height: 0;
-      padding: 1rem 1.25rem;
+      padding: 1rem 1.25rem 0.75rem;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -242,12 +260,14 @@
       overflow: hidden;
     }
 
+    turbo-frame#form_sidebar > header,
     turbo-frame#form_sidebar > .destination-form-sidebar-header,
     turbo-frame#form_sidebar > .alert {
       flex: 0 0 auto;
     }
 
-    turbo-frame#form_sidebar > .sidebar-destination-form {
+    turbo-frame#form_sidebar > .sidebar-destination-form,
+    turbo-frame#form_sidebar > .sidebar-form {
       flex: 1 1 auto;
       min-height: 0;
       display: flex;
@@ -255,8 +275,9 @@
       overflow: hidden;
     }
 
-    turbo-frame#form_sidebar > #destination-form-sidebar,
-    .sidebar-destination-form #destination-form-sidebar {
+    turbo-frame#form_sidebar > form,
+    .sidebar-destination-form > form,
+    .sidebar-form > form {
       flex: 1 1 auto;
       min-height: 0;
       overflow-x: hidden;
@@ -287,7 +308,8 @@
     }
 
     // Nested visit form: BS3-style horizontal grid → single column + wrapping groups (narrow sidebar).
-    .form-sidebar-inner #visits .visit-fieldset {
+    .form-sidebar-inner #visits .visit-fieldset,
+    .form-sidebar-inner #store_reloads .store-reload-fieldset {
       font-size: 0.9375rem;
       scroll-margin-top: 12px;
 
@@ -309,23 +331,42 @@
 
       legend.scheduler-border {
         display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        justify-content: space-between;
         gap: 0.5rem;
         width: 100%;
         max-width: 100%;
+        min-width: 0;
         padding-right: 0.25rem;
-      }
 
-      .destroy-block.row {
-        width: 100%;
-        margin-left: 0;
-        margin-right: 0;
+        > .accordion-toggle {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.35rem;
+          min-width: 0;
+          flex: 1 1 auto;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
 
-        > [class*="col-"] {
-          flex: 0 0 100%;
-          max-width: 100%;
-          width: 100%;
+          .accordion-chevron {
+            flex-shrink: 0;
+            line-height: 1;
+            transition: transform 0.15s ease;
+          }
+
+          &:not(.collapsed) .accordion-chevron {
+            transform: rotate(90deg);
+          }
+        }
+
+        .destroy-block {
+          flex: 0 0 auto;
+          margin: 0;
+          position: relative;
+          z-index: 1;
         }
       }
 
@@ -471,7 +512,7 @@
       }
     }
 
-    // Submit bar: full width of sidebar inner, flush to bottom; primary control spans full row.
+    // Submit bar: pinned under the scrolling form. Stay inside the padded inner
     .form-submit-bar {
       flex: 0 0 auto;
       position: relative;
@@ -484,11 +525,8 @@
       width: 100%;
       max-width: none;
       box-sizing: border-box;
-      margin-top: 0;
-      margin-left: -1.25rem;
-      margin-right: -1.25rem;
-      margin-bottom: -1rem;
-      padding: 0.75rem 1.25rem 1rem;
+      margin: 0;
+      padding: 0.75rem 0 0;
       background: var(--bs-body-bg, #fff);
       border-top: 1px solid var(--bs-border-color, #dee2e6);
       box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.08);

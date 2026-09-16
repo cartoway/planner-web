@@ -29,6 +29,7 @@ class StoresController < ApplicationController
 
   include LinkBack
   include PreferencesAuthorization
+  include V2Layout
 
   before_action -> { deny_unless_form_create!(:stores) }, only: [:create, :upload_csv]
   before_action -> { deny_unless_form_update!(:stores) }, only: [:update, :destroy, :destroy_multiple]
@@ -40,7 +41,9 @@ class StoresController < ApplicationController
 
     @stores = current_user.customer.stores
     respond_to do |format|
-      format.html
+      format.html do
+        render_v2_page 'v2/stores/index' if layout_v2?
+      end
     end
   end
 
@@ -66,9 +69,11 @@ class StoresController < ApplicationController
     @store = current_user.customer.stores.build
     @store.postalcode = current_user.customer.stores[0].postalcode
     @store.city = current_user.customer.stores[0].city
+    render 'new_sidebar', layout: false if v2_form_sidebar_request?
   end
 
   def edit
+    render 'edit_sidebar', layout: false if v2_form_sidebar_request?
   end
 
   def create
@@ -76,13 +81,27 @@ class StoresController < ApplicationController
     time_with_day_params(params, p, [:time_window_start, :time_window_end])
 
     @store = current_user.customer.stores.build(p)
+    apply_geocode_on_save!(@store)
 
     respond_to do |format|
       if current_user.customer.save
-        format.html { redirect_to link_back || edit_store_path(@store), notice: t('activerecord.successful.messages.created', model: @store.class.model_name.human) }
+        format.html do
+          if v2_sidebar_submit?
+            @v2_sidebar_saved_id = @store.id
+            render_v2_close_sidebar
+          else
+            redirect_to link_back || edit_store_path(@store), notice: t('activerecord.successful.messages.created', model: @store.class.model_name.human)
+          end
+        end
       else
         flash.now[:error] = @store.customer.errors.full_messages unless @store.customer.errors.empty?
-        format.html { render action: 'new' }
+        format.html do
+          if v2_sidebar_submit?
+            render 'new_sidebar', layout: false, status: :unprocessable_entity
+          else
+            render action: 'new'
+          end
+        end
       end
     end
   end
@@ -93,12 +112,26 @@ class StoresController < ApplicationController
         p = store_params
         time_with_day_params(params, p, [:time_window_start, :time_window_end])
         @store.assign_attributes(p)
+        apply_geocode_on_save!(@store)
 
         if @store.save && @store.customer.save
-          format.html { redirect_to link_back || edit_store_path(@store), notice: t('activerecord.successful.messages.updated', model: @store.class.model_name.human) }
+          format.html do
+          if v2_sidebar_submit?
+            @v2_sidebar_saved_id = @store.id
+            render_v2_close_sidebar
+          else
+            redirect_to link_back || edit_store_path(@store), notice: t('activerecord.successful.messages.updated', model: @store.class.model_name.human)
+            end
+          end
         else
           flash.now[:error] = @store.customer.errors.full_messages unless @store.customer.errors.empty?
-          format.html { render action: 'edit' }
+          format.html do
+            if v2_sidebar_submit?
+              render 'edit_sidebar', layout: false, status: :unprocessable_entity
+            else
+              render action: 'edit'
+            end
+          end
         end
       end
     end
@@ -143,6 +176,7 @@ class StoresController < ApplicationController
 
   def import
     @import_csv = ImportCsv.new
+    render_v2_page 'v2/stores/import' if layout_v2?
   end
 
   def upload_csv
@@ -151,7 +185,13 @@ class StoresController < ApplicationController
       if @import_csv.valid? && @import_csv.import
         format.html { redirect_to action: 'index' }
       else
-        format.html { render action: 'import' }
+        format.html do
+          if layout_v2?
+            render_v2_page 'v2/stores/import'
+          else
+            render action: 'import'
+          end
+        end
       end
     end
   end
@@ -190,6 +230,27 @@ class StoresController < ApplicationController
 
   def warnings
     flash[:warning] = @store.warnings.join(', ') if @store.warnings && @store.warnings.any?
+  end
+
+  def apply_geocode_on_save!(store)
+    store_p = params[:store]
+    return unless store_p
+    return unless ActiveModel::Type::Boolean.new.cast(store_p[:geocode_on_save])
+
+    fingerprint = store_p[:geocode_on_save_fingerprint].to_s
+    return if fingerprint.blank?
+    return unless helpers.store_form_address_geocodable?(store)
+
+    expected = helpers.destination_form_address_fingerprint(
+      street: store.street,
+      postalcode: store.postalcode,
+      city: store.city,
+      state: store.state,
+      country: store.country
+    )
+    return unless fingerprint == expected
+
+    store.geocode
   end
 
   def icons_table

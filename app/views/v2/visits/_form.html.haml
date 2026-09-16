@@ -15,17 +15,16 @@
         %span= vf.call('legend', n: i)
       - if !current_page?(action: 'new')
         - visit_delete_confirm_ready_label = %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{vf.call('delete_visit')})
-        .mb-3.row.destroy-block
-          .col-md-3
-            - if visit.persisted?
-              - vd = visit.destination
-              %button.btn.btn-outline-danger.btn-sm{type: "button", disabled: !destination_form_mutable, title: vf.call('delete_visit_help'), data: confirm_click_data(group: 'visits-destroy', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: vf.call('delete_visit_confirm'), ready_label: visit_delete_confirm_ready_label, base_class: 'btn-outline-danger').merge(controller: 'confirm-click v2--visit-delete', v2__visit_delete_visit_id_value: visit.id, v2__visit_delete_update_url_value: destination_path(vd), v2__visit_delete_frame_reload_url_value: edit_destination_path(vd), v2__visit_delete_error_validation_message_value: vf.call('delete_visit_error_validation'), v2__visit_delete_error_request_message_value: vf.call('delete_visit_error_request'), v2__visit_delete_error_network_message_value: vf.call('delete_visit_error_network'))}
-                %i.fa.fa-trash.fa-fw
-                = vf.call('delete_visit')
-            - else
-              %button.btn.btn-outline-danger.btn-sm{type: "button", disabled: !destination_form_mutable, title: vf.call('delete_visit_help'), data: confirm_click_data(group: 'visits-destroy', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: vf.call('delete_visit_confirm'), ready_label: visit_delete_confirm_ready_label, base_class: 'btn-outline-danger').merge(controller: 'confirm-click v2--visit-remove')}
-                %i.fa.fa-trash.fa-fw
-                = vf.call('delete_visit')
+        .destroy-block
+          - if visit.persisted?
+            - vd = visit.destination
+            %button.btn.btn-outline-danger.btn-sm.text-nowrap{type: "button", disabled: !destination_form_mutable, title: vf.call('delete_visit_help'), data: confirm_click_data(group: 'visits-destroy', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: vf.call('delete_visit_confirm'), ready_label: visit_delete_confirm_ready_label, base_class: 'btn-outline-danger').merge(controller: 'confirm-click v2--visit-delete', v2__visit_delete_visit_id_value: visit.id, v2__visit_delete_update_url_value: destination_path(vd), v2__visit_delete_frame_reload_url_value: edit_destination_path(vd), v2__visit_delete_error_validation_message_value: vf.call('delete_visit_error_validation'), v2__visit_delete_error_request_message_value: vf.call('delete_visit_error_request'), v2__visit_delete_error_network_message_value: vf.call('delete_visit_error_network'))}
+              %i.fa.fa-trash.fa-fw
+              = vf.call('delete_visit')
+          - else
+            %button.btn.btn-outline-danger.btn-sm.text-nowrap{type: "button", disabled: !destination_form_mutable, title: vf.call('delete_visit_help'), data: confirm_click_data(group: 'visits-destroy', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: vf.call('delete_visit_confirm'), ready_label: visit_delete_confirm_ready_label, base_class: 'btn-outline-danger').merge(controller: 'confirm-click v2--visit-remove')}
+              %i.fa.fa-trash.fa-fw
+              = vf.call('delete_visit')
     .collapse.show{id: "collapseVisit#{visit.id || 0}"}
       = f.hidden_field :id
 

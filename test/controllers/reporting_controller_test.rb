@@ -15,6 +15,16 @@ class ReportingControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test 'index uses v2 when user preference is set' do
+    sign_in(users(:user_one))
+    enable_layout_v2!
+    get :index
+    assert_response :success
+    assert_select 'body.cartoway-v2', 1
+    assert_select '[data-controller="v2--reporting-download"]', 1
+    assert_select 'input[type=date]#reporting_begin_date', 1
+  end
+
   test 'admin cannot get reporting' do
     sign_in(users(:user_admin))
 

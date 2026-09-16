@@ -190,13 +190,16 @@ const vehicle_usage_sets_index = function(params) {
 };
 
 const vehicle_usage_sets_edit = function(params) {
-  $("select#vehicle_usage_set_store_reload_ids").select2({
-    theme: 'bootstrap',
-    minimumResultsForSearch: 5,
-    width: '100%',
-    tags: true,
-    closeOnSelect: false
-  });
+  var $storeReloads = $("select#vehicle_usage_set_store_reload_ids");
+  if ($storeReloads.length && !$storeReloads.is("[data-controller*='tom-select']")) {
+    $storeReloads.select2({
+      theme: 'bootstrap',
+      minimumResultsForSearch: 5,
+      width: '100%',
+      tags: true,
+      closeOnSelect: false
+    });
+  }
 
   $('form.number-to-percentage').submit(function(e) {
     $.each($(e.target).find('input[type=\'number\'].number-to-percentage'), function(i, element) {
@@ -268,3 +271,16 @@ Paloma.controller('VehicleUsageSets', {
     vehicle_usage_sets_import(this.params);
   }
 });
+
+export function mountV2VehicleUsageSetSidebarForm(root) {
+  if (!root || typeof $ === 'undefined') return;
+  var form = root.querySelector('#vehicle-usage-set-form-sidebar');
+  if (!form) return;
+  var params = {};
+  try { params = JSON.parse(form.getAttribute('data-v2-js-config') || '{}'); } catch (e) { /* ignore */ }
+  vehicle_usage_sets_edit(params);
+}
+
+if (typeof window !== 'undefined') {
+  window.mountV2VehicleUsageSetSidebarForm = mountV2VehicleUsageSetSidebarForm;
+}

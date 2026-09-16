@@ -43,10 +43,14 @@
     @include destinations-list-col-width(7rem);
   }
 
-  .destinations-list-col--name { @include destinations-list-col-width(10rem); }
-  .destinations-list-col--street { @include destinations-list-col-width(16rem); }
+  .destinations-list-col--name,
+  .stores-list-col--name { @include destinations-list-col-width(10rem); }
+  .destinations-list-col--street,
+  .stores-list-col--street { @include destinations-list-col-width(16rem); }
+  .stores-list-col--icon { @include destinations-list-col-width(3rem); }
   .destinations-list-col--postalcode { @include destinations-list-col-width(7.5rem); }
-  .destinations-list-col--city { @include destinations-list-col-width(10rem); }
+  .destinations-list-col--city,
+  .stores-list-col--city { @include destinations-list-col-width(10rem); }
   .destinations-list-col--ref { @include destinations-list-col-width(9.5rem); }
   .destinations-list-col--geocoding { @include destinations-list-col-width(14rem); }
   .destinations-list-col--comment { @include destinations-list-col-width(9rem); }
@@ -339,7 +343,8 @@
 
 // Map as full background, collapsible list overlay on the left.
 // Page is not scrollable; only the destinations list scrolls.
-[data-controller~='destinations'][data-action='index'] {
+[data-controller~='destinations'][data-action='index'],
+[data-controller~='stores'][data-action='index'] {
   .main {
     overflow: hidden;
   }
@@ -357,7 +362,8 @@
   display: none !important;
 }
 
-#destinations-map-layout {
+#destinations-map-layout,
+#stores-map-layout {
   position: relative;
   height: 100%;
   min-height: 100vh;
@@ -415,6 +421,7 @@
     }
 
     // turbo-frame wraps list + toolbar; it must be a flex column so #destination_box flex:1 gets a bounded height and scrolls.
+    form#stores-destroy,
     turbo-frame#destinations_list {
       display: flex;
       flex-direction: column;
@@ -440,7 +447,8 @@
       }
     }
 
-    #destination_box.destinations-list-scroll {
+    #destination_box.destinations-list-scroll,
+    #store_box.destinations-list-scroll {
       flex: 1;
       min-height: 0;
       min-width: 0;
@@ -468,7 +476,8 @@
       }
 
       // List row highlight (list click, map pin, or ?highlight_destination_id=).
-      tr.destination.highlight td {
+      tr.destination.highlight td,
+      tr.store-row.highlight td {
         font-weight: inherit;
         background-color: rgba(var(--bs-warning-rgb), 0.2);
         transition: background-color 0.15s ease;
