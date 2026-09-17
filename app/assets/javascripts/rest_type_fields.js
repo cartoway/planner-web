@@ -20,7 +20,6 @@ const inheritedSeconds = function($field) {
 };
 
 export const initRestTypeFields = function(prefix) {
-  if (document.querySelector('[data-controller*="rest-type-fields"]')) return;
   var $form = $('form');
   var restMode = 'input[name="' + prefix + '[rest_mode]"]';
   var $duration = $('#' + prefix + '_rest_duration');

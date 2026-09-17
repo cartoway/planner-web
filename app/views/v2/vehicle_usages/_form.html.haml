@@ -1,5 +1,5 @@
--# V2 sidebar fleet form (BS5). Color is native, tags Tom Select, router options Stimulus.
-- form_html = { class: 'number-to-percentage form-horizontal', id: 'vehicle-usage-form-sidebar', 'data-turbo-frame' => 'form_sidebar', 'data-controller' => 'v2--rest-type-fields v2--router-options', 'data-action' => 'change->v2--rest-type-fields#change change->v2--router-options#change submit->v2--rest-type-fields#submit', 'data-v2--rest-type-fields-prefix-value' => 'vehicle_usage', 'data-v2--rest-type-fields-duration-must-be-filled-value' => t('vehicle_usages.form.rest_type.duration_must_be_filled'), 'data-v2--rest-type-fields-lapse-must-be-filled-value' => t('vehicle_usages.form.rest_type.lapse_must_be_filled'), 'data-v2--rest-type-fields-duration-must-be-smaller-value' => t('vehicle_usages.form.rest_type.duration_must_be_smaller') }
+-# V2 sidebar fleet form (BS5). No Paloma/jQuery — Stimulus + Tom Select only.
+- form_html = { class: 'number-to-percentage form-horizontal', id: 'vehicle-usage-form-sidebar', 'data-turbo-frame' => 'form_sidebar', 'data-controller' => 'v2--rest-type-fields v2--router-options v2--number-to-percentage v2--vehicle-devices', 'data-action' => 'change->v2--rest-type-fields#change change->v2--router-options#change submit->v2--rest-type-fields#submit submit->v2--number-to-percentage#submit', 'data-v2--rest-type-fields-prefix-value' => 'vehicle_usage', 'data-v2--number-to-percentage-prefix-value' => 'vehicle_usage[vehicle]', 'data-v2--rest-type-fields-duration-must-be-filled-value' => t('vehicle_usages.form.rest_type.duration_must_be_filled'), 'data-v2--rest-type-fields-lapse-must-be-filled-value' => t('vehicle_usages.form.rest_type.lapse_must_be_filled'), 'data-v2--rest-type-fields-duration-must-be-smaller-value' => t('vehicle_usages.form.rest_type.duration_must_be_smaller') }
 - form_html['data-v2-js-config'] = local_assigns[:v2_js_config] if local_assigns[:v2_js_config]
 - tom_select_data = { controller: 'v2--tom-select', v2__tom_select_create_value: current_user_form_create?(:tags), v2__tom_select_placeholder_value: t('web.select2.placeholder') }
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
@@ -298,7 +298,7 @@
           = t('activerecord.attributes.vehicle.speed_multiplier')
         %div{class: "#{v2_control_col} input-append"}
           .input-group
-            = number_field_tag :speed_multiplier, (@vehicle_usage.vehicle.speed_multiplier ? (@vehicle_usage.vehicle.speed_multiplier * 100).to_i : nil), { min: 50, max: 150, placeholder: t('vehicles.form.speed_multiplier.default', n: (@vehicle_usage.vehicle.customer.speed_multiplier ? (@vehicle_usage.vehicle.customer.speed_multiplier * 100).to_i : 75)), class: 'form-control number-to-percentage' }
+            = number_field_tag :speed_multiplier, (@vehicle_usage.vehicle.speed_multiplier ? (@vehicle_usage.vehicle.speed_multiplier * 100).to_i : nil), { min: 50, max: 150, placeholder: t('vehicles.form.speed_multiplier.default', n: (@vehicle_usage.vehicle.customer.speed_multiplier ? (@vehicle_usage.vehicle.customer.speed_multiplier * 100).to_i : 75)), class: 'form-control number-to-percentage', data: { param_path: 'vehicle_usage[vehicle][speed_multiplier]' } }
             %span.input-group-text %
           %p.help-block
             = t('vehicles.form.speed_multiplier.help')
