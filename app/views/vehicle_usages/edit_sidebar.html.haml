@@ -1,16 +1,13 @@
-- routers = @vehicle_usage.vehicle.customer.profile.routers
-- v2_js_config = { customer_id: @vehicle_usage.vehicle.customer.id, devices: @vehicle_usage.vehicle.devices && @vehicle_usage.vehicle.devices.select { |d, v| v && !v.empty? }, routers_options: Hash[routers.collect { |r| [r.id, r.options] }], vehicle_usage_tag_create_allowed: current_user_form_create?(:tags) }.to_json
 = turbo_frame_tag "form_sidebar" do
   %header.mb-3
     %h2.h5.mb-0= t("vehicle_usages.edit.title")
   - if flash[:error].present?
     .alert.alert-danger.mb-2{ role: "alert" }= flash[:error]
   .sidebar-form
+    - routers = @vehicle_usage.vehicle.customer.profile.routers
+    - v2_js_config = { customer_id: @vehicle_usage.vehicle.customer.id, devices: @vehicle_usage.vehicle.devices && @vehicle_usage.vehicle.devices.select { |d, v| v && !v.empty? }, routers_options: Hash[routers.collect { |r| [r.id, r.options] }], vehicle_usage_tag_create_allowed: current_user_form_create?(:tags) }.to_json
     = render "v2/vehicle_usages/form", v2_js_config: v2_js_config
     .form-submit-bar
       %button.btn.btn-primary{type: 'submit', form: 'vehicle-usage-form-sidebar', disabled: !current_user_form_update?(:vehicle_usages)}
         %i.fa.fa-floppy-disk.fa-fw
         = t('vehicle_usages.form.save')
-  :javascript
-    window.Paloma = window.Paloma || { controller: function () {} };
-  = javascript_pack_tag "vehicle_usage", "data-turbolinks-track": "reload"
