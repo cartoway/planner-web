@@ -13,6 +13,3 @@
         %button.btn.btn-primary{ type: "submit", form: "destination-form-sidebar" }= t("helpers.submit.create", model: @destination.model_name.human)
   - else
     = render "v2/destinations/form"
-  :javascript
-    window.Paloma = window.Paloma || { controller: function () {} };
-  = javascript_pack_tag "destination", "data-turbolinks-track": "reload"

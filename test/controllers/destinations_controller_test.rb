@@ -311,6 +311,9 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#form_sidebar .visit-planning-stops', minimum: 1
     assert_select 'turbo-frame#form_sidebar .visit-planning-stop', minimum: 1
     assert_select %(turbo-frame#form_sidebar a[href*="stop_id=#{stops(:stop_one_one).id}"][href*="route_id=#{stops(:stop_one_one).route_id}"][target="_blank"]), 1
+    assert_select 'script[src*="destination"]', 0
+    assert_select '#visits-attributes-change-bulk-modal[data-controller~="v2--visit-tags-bulk"]', 1
+    assert_select 'button[data-action*="v2--visit-tags-bulk#apply"]', 1
   end
 
   test 'v2 edit sidebar field labels are bold' do
