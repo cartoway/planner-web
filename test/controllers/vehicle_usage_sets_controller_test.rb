@@ -103,7 +103,9 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_select '#vehicle_usage_set_time_window_start_time_window_end_input.fleet-split .input-group', 2
     assert_select '#vehicle_usage_set_time_window_start_time_window_end_input .fleet-bound-label', 2
     assert_select 'form#vehicle-usage-set-form-sidebar[data-controller~="v2--rest-type-fields"]', 1
+    assert_select 'form#vehicle-usage-set-form-sidebar[data-controller~="v2--number-to-percentage"]', 1
     assert_select 'form#vehicle-usage-set-form-sidebar[data-action*="v2--rest-type-fields#change"]', 1
+    assert_select 'script[src*="vehicle_usage_set"]', 0
     assert_select 'input[type=radio][name="vehicle_usage_set[rest_mode]"]', 2
   end
 

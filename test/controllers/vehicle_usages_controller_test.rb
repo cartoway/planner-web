@@ -48,6 +48,9 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_select '#vehicle_usage_time_window_start_time_window_end_input.fleet-split .input-group', 2
     assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--rest-type-fields"]', 1
     assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--router-options"]', 1
+    assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--number-to-percentage"]', 1
+    assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--vehicle-devices"]', 1
+    assert_select 'script[src*="vehicle_usage"]', 0
     assert_select 'form#vehicle-usage-form-sidebar[data-v2--rest-type-fields-prefix-value="vehicle_usage"]', 1
     assert_select 'input#vehicle_usage_vehicle_color[type=color][name="vehicle_usage[vehicle][color]"]', 1
     assert_select 'select[name="vehicle_usage[vehicle][color]"]', 0

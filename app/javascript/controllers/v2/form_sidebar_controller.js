@@ -16,7 +16,6 @@ export default class extends Controller {
       this.mainFrame.addEventListener("turbo:frame-load", this.boundOnMainFrameLoad)
     }
     this.refreshState()
-    this.mountPackFormsIfPresent()
   }
 
   disconnect() {
@@ -37,19 +36,6 @@ export default class extends Controller {
 
   onFrameLoad() {
     this.refreshState()
-    this.mountPackFormsIfPresent()
-  }
-
-  mountPackFormsIfPresent() {
-    if (!this.hasFrameTarget) return
-    this.mountIfPresent("#destination-form-sidebar", window.mountV2DestinationSidebarForm)
-    this.mountIfPresent("#vehicle-usage-form-sidebar", window.mountV2VehicleUsageSidebarForm)
-    this.mountIfPresent("#vehicle-usage-set-form-sidebar", window.mountV2VehicleUsageSetSidebarForm)
-  }
-
-  mountIfPresent(selector, fn) {
-    if (typeof fn !== "function") return
-    if (this.frameTarget.querySelector(selector)) fn(this.frameTarget)
   }
 
   close(event) {

@@ -38,7 +38,7 @@ import {
 
 /**
  * Wire visit (and store-reload) fieldsets: destroy toggle, timeEntry, tag select2, priority slider.
- * Used by destinations_form (Paloma) and by v2 Turbo sidebar via mountV2DestinationSidebarForm.
+ * Used by destinations_form (Paloma / v1 layout only).
  * @param {JQuery} parent - form or fieldset subtree
  * @param {{tag_entity_create_allowed?: boolean}} opts
  */
@@ -1408,53 +1408,6 @@ const destinations_index = function(params, api) {
     error: ajaxError
   });
 };
-
-/**
- * V2 layout: destination edit/new in turbo-frame#form_sidebar — Paloma is stubbed, so destinations_form never runs.
- * Wire visits UI (same as initDestinationVisitsSection + visit-new + bulk modal) scoped under root (the frame).
- * Note: `#visits-expand` is handled by Stimulus `v2--visit-collapses` on v2 pages (hotwire entry does not import this bundle).
- */
-export function mountV2DestinationSidebarForm(root) {
-  if (!root || typeof $ === 'undefined') return;
-  var $root = $(root);
-  var $form = $root.find('#destination-form-sidebar');
-  if (!$form.length) return;
-
-  var tagEntityCreateAllowed = $form.data('tagEntityCreateAllowed') === true;
-  var visitOpts = { tag_entity_create_allowed: tagEntityCreateAllowed };
-
-  initDestinationVisitsSection($form, visitOpts);
-
-  $root.find('#from_visit_tags, #to_visit_tags').each(function() {
-    var $el = $(this);
-    if ($el.hasClass('select2-hidden-accessible')) {
-      try {
-        $el.select2('destroy');
-      } catch (e) { /* ignore */ }
-    }
-  });
-
-  $root.off('click.v2desvis', '[name="visits-attributes-change-bulk-apply"]').on('click.v2desvis', '[name="visits-attributes-change-bulk-apply"]', function() {
-    var fromTags = $root.find('#from_visit_tags').val(),
-      toTags = $root.find('#to_visit_tags').val(),
-      $visitTags = $root.find('#visits select[name$="[tag_ids][]"]');
-    for (var i in fromTags) {
-      $visitTags.each(function(j, elt) {
-        if ($('option[value=' + fromTags[i] + ']', elt).attr('selected')) {
-          $('option[value=' + fromTags[i] + ']', elt).removeAttr('selected');
-          $('option[value=' + toTags[i] + ']', elt).attr('selected', 'selected');
-          $(elt).change();
-        }
-      });
-    }
-  });
-
-  $("label[for$='destroy']", $form).hide();
-}
-
-if (typeof window !== 'undefined') {
-  window.mountV2DestinationSidebarForm = mountV2DestinationSidebarForm;
-}
 
 export const destinations_new = function(params, api) {
   destinations_form(params, api);
