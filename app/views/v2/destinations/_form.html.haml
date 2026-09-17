@@ -138,10 +138,10 @@
   - if @destination.persisted?
     .destination-visits{data: {controller: 'v2--visit-new'}}
       %template#visits-header-template{data: {v2__visit_new_target: 'headerTemplate'}}
-        = render 'v2/destinations/visits_header'
+        = render 'v2/destinations/visits_header', destination_form_mutable: dest_form_mutable
       #visits{data: visits_list_data}
         - if @destination.visits.size > 1
-          = render 'v2/destinations/visits_header'
+          = render 'v2/destinations/visits_header', destination_form_mutable: dest_form_mutable
         - @destination.visits.each_with_index do |visit, i|
           = render 'v2/visits/form', visit: visit, i: i+1, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
       - if dest_form_mutable
@@ -160,7 +160,7 @@
       = t('destinations.form.visit.new')
   = hidden_field :destination, :geocoder_version, :value => @destination.geocoder_version
   = hidden_field :destination, :geocoded_at, :value => @destination.geocoded_at
-#visits-attributes-change-bulk-modal.modal.fade{role: "dialog", tabindex: "-1", "aria-labelledby": "visits-attributes-change-bulk-modal-title"}
+#visits-attributes-change-bulk-modal.modal.fade{role: "dialog", tabindex: "-1", "aria-labelledby": "visits-attributes-change-bulk-modal-title", data: { controller: 'v2--visit-tags-bulk' }}
   .modal-dialog
     .modal-content
       .modal-header
@@ -174,15 +174,15 @@
             .col-md-10
               .form-inline
                 Remplacer
-                \#{select_tag 'from_visit_tags', options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder') }}}
+                \#{select_tag 'from_visit_tags', options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder'), v2__visit_tags_bulk_target: 'from' }}}
                 par
-                \#{select_tag 'to_visit_tags', options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder') }}}
+                \#{select_tag 'to_visit_tags', options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder'), v2__visit_tags_bulk_target: 'to' }}}
               %p.help-block
                 = t('destinations.form.dialog.attributes_change_bulk.tags_help')
       .modal-footer
         %button.btn.btn-light{type: "button", "data-bs-dismiss": "modal"}
           %i.fa.fa-undo.fa-fw
           = t 'all.verb.cancel'
-        %button.btn.btn-primary{type: "button", "data-bs-dismiss": "modal", name: "visits-attributes-change-bulk-apply", disabled: !dest_form_mutable}
+        %button.btn.btn-primary{type: "button", "data-bs-dismiss": "modal", name: "visits-attributes-change-bulk-apply", disabled: !dest_form_mutable, data: { action: 'click->v2--visit-tags-bulk#apply' }}
           %i.fa.fa-list.fa-fw
           = t 'all.verb.apply'
