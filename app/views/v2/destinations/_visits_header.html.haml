@@ -2,6 +2,9 @@
   .col-md-2
   #visits-tools.col-12.col-md-10
     .float-end
+      %button#visits-attributes-change-bulk.btn.btn-light.btn-sm{type: "button", title: t('destinations.form.visit.attributes_change_bulk_help'), "data-bs-toggle": "modal", "data-bs-target": "#visits-attributes-change-bulk-modal", disabled: !local_assigns.fetch(:destination_form_mutable, true)}
+        %i.fa.fa-list.fa-fw
+        = t('destinations.form.visit.attributes_change_bulk')
       %button#visits-expand.btn.btn-light.btn-sm{type: "button", title: "#{t('destinations.form.visit.collapse_all_help')}", data: {action: "v2--visit-collapses#toggleAll"}}
         %i.fa.fa-angle-double-down.fa-fw
         = t('destinations.form.visit.collapse_all')
