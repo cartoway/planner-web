@@ -83,6 +83,7 @@ class Ability
       can [:mobile, :update_position, :driver_update], Route
       can [:edit, :update], Stop
       can [:create, :destroy], :stop_photos
+      can [:create], :stop_signatures
     end
   end
 end
