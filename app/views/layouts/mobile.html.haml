@@ -35,5 +35,14 @@
       %button.stop-photo-modal-nav.stop-photo-modal-next.btn.btn-xs.btn-default{ type: 'button', 'aria-label': t('stops.mobile.next') }
         %i.fa.fa-chevron-right
 
+    #stop-signature-modal.stop-signature-modal.d-none{ role: 'dialog', 'aria-modal': 'true', 'aria-label': t('stops.mobile.signature') }
+      %button.stop-signature-modal-close.btn.btn-xs.btn-default{ type: 'button', 'aria-label': t('stops.mobile.signature_close') }
+        %i.fa.fa-times
+      .stop-signature-modal-pad
+        %canvas.stop-signature-canvas{ width: 800, height: 1200, 'aria-label': t('stops.mobile.signature') }
+      .stop-signature-modal-actions
+        %button.btn.btn-default.stop-signature-clear{ type: 'button' }= t('stops.mobile.signature_clear')
+        %button.btn.btn-primary.stop-signature-save{ type: 'button' }= t('stops.mobile.signature_save')
+
     = render partial: 'shared/flash_messages'
     = render 'layouts/javascript'

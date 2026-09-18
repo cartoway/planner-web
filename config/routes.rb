@@ -221,10 +221,13 @@ Rails.application.routes.draw do
   resources :stops, only: [:show, :edit, :update, :destroy] do
     member do
       post :create_store_reload
+      get :delivery_note
     end
     resources :photos, only: [:create, :destroy], controller: 'stop_photos'
+    resource :signature, only: [:create], controller: 'stop_signatures'
   end
   get 'stop_photos/*signed_id', to: 'stop_photos#show', as: :signed_stop_photo, format: false
+  get 'stop_signatures/*signed_id', to: 'stop_signatures#show', as: :signed_stop_signature, format: false
 
   get 'routes_by_vehicles/:vehicle_id' => 'routes_by_vehicles#show'
   get 'plannings_by_destinations/:destination_id' => 'plannings_by_destinations#show'

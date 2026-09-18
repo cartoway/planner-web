@@ -130,3 +130,6 @@ json.duration duration if duration
 json.destination_duration destination_duration if destination_duration
 json.photos stop.serialized_photos
 json.photos_present stop.photos.attached?
+json.signature stop.serialized_signature
+json.signature_present stop.signature.attached?
+json.delivery_note stop.delivery_note_available?

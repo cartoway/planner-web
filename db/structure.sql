@@ -274,7 +274,13 @@ CREATE TABLE public.customers (
     store_icon_size character varying,
     rest_icon character varying,
     rest_icon_size character varying,
-    last_async_jobs jsonb DEFAULT '{}'::jsonb NOT NULL
+    last_async_jobs jsonb DEFAULT '{}'::jsonb NOT NULL,
+    company_name character varying,
+    company_street character varying,
+    company_postalcode character varying,
+    company_city character varying,
+    company_detail character varying,
+    company_phone character varying
 );
 
 
@@ -4150,6 +4156,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260904135351'),
 ('20260909160239'),
 ('20260910142720'),
-('20260914115500');
+('20260914115500'),
+('20260918161934');
 
 

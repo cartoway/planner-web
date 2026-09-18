@@ -28,6 +28,74 @@ class StopsControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'should render delivery note for a visit stop' do
+    @stop.update_columns(
+      status: 'delivered',
+      status_updated_at: Time.zone.parse('2026-09-18 14:35:00'),
+      custom_attributes: { 'stop_urgent' => true, 'stop_priority' => 1250 }
+    )
+    @stop.route.planning.customer.update_columns(
+      company_name: 'Transporteur SA',
+      company_street: '1 rue du Port',
+      company_postalcode: '75001',
+      company_city: 'Paris',
+      company_phone: '0102030405'
+    )
+    get :delivery_note, params: { id: @stop }
+    assert_response :success
+    assert_includes response.body, I18n.t('stops.delivery_note.title')
+    assert_includes response.body, I18n.t('stops.delivery_note.unit')
+    assert_includes response.body, I18n.t('stops.delivery_note.label')
+    assert_includes response.body, I18n.t('stops.delivery_note.value')
+    assert_includes response.body, 'stop_urgent'
+    assert_includes response.body, '✓'
+    assert_includes response.body, 'stop_priority'
+    # boolean (0) before integer (2)
+    assert_match(/stop_urgent[\s\S]*stop_priority/, response.body)
+    assert_includes response.body, @stop.visit.destination.name
+    assert_includes response.body, 'Transporteur SA'
+    assert_includes response.body, '1 rue du Port'
+    assert_match(%r{Paris, le \d{2}/\d{2}/\d{4} \d{2}:\d{2}}, response.body)
+    assert_includes response.body, I18n.t('stops.delivery_note.signature')
+    assert_includes response.body, 'print-layout'
+    refute_includes response.body, 'menu-left'
+    refute_includes response.body, @planning.name
+    refute_includes response.body, @vehicle.name
+    refute_match(/<script[\s>]/i, response.body)
+    assert_includes response.body, @stop.visit.destination.street.to_s if @stop.visit.destination.street.present?
+  end
+
+  test 'should render delivery note when stop status is exception' do
+    @stop.update_columns(status: 'exception')
+    get :delivery_note, params: { id: @stop }
+    assert_response :success
+    assert_includes response.body, I18n.t('stops.delivery_note.title')
+  end
+
+  test 'should not render delivery note without delivered or exception status' do
+    @stop.update_columns(status: 'intransit')
+    get :delivery_note, params: { id: @stop }
+    assert_response :not_found
+  end
+
+  test 'should not render delivery note for a rest stop' do
+    rest = stops(:stop_one_four)
+    get :delivery_note, params: { id: rest }
+    assert_response :not_found
+  end
+
+  test 'should embed delivery note photos as data uris' do
+    @stop.update_columns(status: 'delivered')
+    photo = Rails.root.join('test/fixtures/files/stop_photo_print.jpg')
+    @stop.photos.attach(io: File.open(photo), filename: 'stop_photo_print.jpg', content_type: 'image/jpeg')
+
+    get :delivery_note, params: { id: @stop }
+    assert_response :success
+    assert_match %r{data:image/[^;]+;base64,[A-Za-z0-9+/=]+}, response.body
+  ensure
+    @stop.photos.purge if @stop.photos.attached?
+  end
+
   test 'should include rest timewindow duration and time in show json' do
     rest_stop = stops(:stop_one_four)
     route = rest_stop.route

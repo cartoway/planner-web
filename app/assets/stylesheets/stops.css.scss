@@ -145,9 +145,19 @@
     }
   }
 
-  .stop-photos {
+  .stop-documents {
     margin-top: 12px;
     margin-bottom: 12px;
+  }
+
+  .stop-photos,
+  .stop-signature {
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
+  .stop-signature-open {
+    width: 100%;
   }
 
   .stop-photos-actions {
@@ -170,14 +180,14 @@
     display: none;
   }
 
-  .stop-photos-accordion {
+  .stop-documents-accordion {
     margin-top: 8px;
     border: 1px solid #ccc;
     border-radius: 16px;
     overflow: hidden;
   }
 
-  .stop-photos-toggle {
+  .stop-documents-toggle {
     display: block;
     width: 100%;
     border: 0;
@@ -190,7 +200,7 @@
     }
   }
 
-  .stop-photos-badge {
+  .stop-documents-badge {
     display: inline-block;
     min-width: 24px;
     margin-left: 6px;
@@ -201,12 +211,12 @@
     text-align: center;
   }
 
-  .stop-photos-body {
+  .stop-documents-body {
     padding: 8px;
     border-top: 1px solid #ccc;
   }
 
-  .stop-photos-list {
+  .stop-documents-list {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 8px;
@@ -273,7 +283,8 @@
 
 .stop-photo-modal-close,
 .stop-photo-modal-delete,
-.stop-photo-modal-nav {
+.stop-photo-modal-nav,
+.stop-signature-modal-close {
   position: absolute;
   min-width: 28px;
   height: 28px;
@@ -286,9 +297,11 @@
   left: 12px;
 }
 
-.stop-photo-modal-close {
+.stop-photo-modal-close,
+.stop-signature-modal-close {
   top: 12px;
   right: 12px;
+  z-index: 1;
 }
 
 .stop-photo-modal-prev {
@@ -303,3 +316,314 @@
   margin-top: -14px;
 }
 
+.stop-signature-modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10000;
+  display: flex;
+  flex-direction: column;
+  background: #f5f5f5;
+  padding: 52px 12px 12px;
+}
+
+.stop-signature-modal-pad {
+  flex: 1 1 auto;
+  min-height: 0;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.stop-signature-modal .stop-signature-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.stop-signature-modal-actions {
+  display: flex;
+  gap: 8px;
+  flex: 0 0 auto;
+  margin-top: 12px;
+
+  .btn {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+
+[data-controller='stops'][data-action='delivery_note'] {
+  &.print-layout {
+    background: #fff;
+    margin: 0;
+    padding: 0;
+    color: $text-black;
+  }
+
+  .delivery-note {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem 0;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .delivery-note-top {
+    margin-bottom: 1.5rem;
+  }
+
+  .delivery-note-company {
+    p {
+      margin: 0 0 0.15rem;
+    }
+  }
+
+  .delivery-note-company-name {
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .delivery-note-title-block {
+    text-align: right;
+
+    h1 {
+      margin: 0 0 0.35rem;
+      font-size: 1.85rem;
+      font-weight: 700;
+      color: $primary-color;
+    }
+
+    p {
+      margin: 0 0 0.2rem;
+    }
+  }
+
+  .delivery-note-ref {
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  .delivery-note-place-date {
+    font-weight: 600;
+  }
+
+  .delivery-note-client-row {
+    margin-bottom: 1.75rem;
+  }
+
+  .delivery-note-client-box {
+    width: 280px;
+    max-width: 100%;
+    padding: 0.85rem 1rem;
+    border: 1px solid $grey-color;
+    border-radius: 8px;
+    background: #fafafa;
+
+    p {
+      margin: 0 0 0.15rem;
+    }
+  }
+
+  .delivery-note-client-name {
+    font-weight: 700;
+  }
+
+  .delivery-note-items {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1rem;
+
+    th,
+    td {
+      padding: 0.55rem 0.75rem;
+      vertical-align: top;
+    }
+
+    thead th {
+      background: $primary-color;
+      color: #fff;
+      font-weight: 600;
+      border: none;
+    }
+
+    tbody tr:not(:last-child) {
+      border-bottom: 1px solid #ddd;
+    }
+
+    tbody td {
+      background: #fff;
+    }
+  }
+
+  .delivery-note-qty {
+    text-align: right;
+    white-space: nowrap;
+    width: 30%;
+  }
+
+  .delivery-note-proofs {
+    margin-bottom: 1.25rem;
+
+    h2 {
+      margin: 0 0 0.65rem;
+      font-size: 1.05rem;
+      color: $primary-color;
+      font-weight: 700;
+    }
+  }
+
+  .delivery-note-doc {
+    width: 260px;
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      border: 1px solid #ccc;
+      background: #fff;
+    }
+  }
+
+  .delivery-note-signature {
+    margin-left: auto;
+    width: 220px;
+    max-width: 100%;
+    min-height: 140px;
+    padding: 0.75rem;
+    border: 1px solid $grey-color;
+    border-radius: 8px;
+    text-align: center;
+    background: #fff;
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin-top: 0.5rem;
+    }
+  }
+
+  .delivery-note-signature-label {
+    margin: 0;
+    color: $primary-color;
+    font-weight: 700;
+  }
+
+  @media screen {
+    .btn-print {
+      position: fixed;
+      right: 20px;
+      top: 20px;
+      z-index: 100;
+    }
+
+    .delivery-note-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 2rem;
+    }
+
+    .delivery-note-company {
+      flex: 1 1 45%;
+      min-width: 0;
+    }
+
+    .delivery-note-title-block {
+      flex: 0 1 45%;
+    }
+
+    .delivery-note-client-row {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .delivery-note-documents {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+  }
+
+  @media print {
+    // Float layout: Firefox print preview breaks with flex/gap + 100vh parents.
+    html,
+    body {
+      height: auto !important;
+      overflow: visible !important;
+    }
+
+    .btn-print {
+      display: none !important;
+    }
+
+    .delivery-note {
+      max-width: none;
+      padding: 1cm 1.5cm 0;
+    }
+
+    .delivery-note-top {
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .delivery-note-company {
+      float: left;
+      width: 48%;
+    }
+
+    .delivery-note-title-block {
+      float: right;
+      width: 48%;
+    }
+
+    .delivery-note-client-row {
+      clear: both;
+      text-align: right;
+      overflow: hidden;
+    }
+
+    .delivery-note-client-box {
+      display: inline-block;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    .delivery-note-items {
+      clear: both;
+
+      thead th {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+    }
+
+    .delivery-note-documents {
+      overflow: hidden;
+
+      .delivery-note-doc {
+        float: left;
+        margin: 0 0.75rem 0.75rem 0;
+      }
+    }
+
+    .delivery-note-signature {
+      clear: both;
+    }
+
+    .delivery-note-client-box,
+    .delivery-note-doc,
+    .delivery-note-signature,
+    .delivery-note-items tr {
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+  }
+}
