@@ -65,14 +65,15 @@
                   %span.destinations-list-cell-content= store.street
                 %td.destinations-list-col.stores-list-col--city
                   %span.destinations-list-cell-content= store.city
-                %td.destinations-list-actions-col.text-nowrap.btn-group
-                  %button.btn.btn-light.btn-xs.stores-row-center{type: 'button', disabled: !store.position?, title: t('destinations.index.center_view_help'), 'aria-label': t('destinations.index.center_view_help')}
-                    %i.fa.fa-expand.fa-fw
-                  = link_to edit_store_path(store), class: 'btn btn-light btn-xs', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
-                    %i.fa.fa-pencil.fa-fw
-                  - if can_destroy
-                    = link_to store, class: 'btn btn-danger btn-xs', data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') } do
-                      %i.fa.fa-trash.fa-fw
+                %td.destinations-list-actions-col.text-nowrap
+                  .btn-group.btn-group-sm{role: 'group'}
+                    %button.btn.btn-light.btn-xs.stores-row-center{type: 'button', disabled: !store.position?, title: t('destinations.index.center_view_help'), 'aria-label': t('destinations.index.center_view_help')}
+                      %i.fa.fa-expand.fa-fw
+                    = link_to edit_store_path(store), class: 'btn btn-light btn-xs', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+                      %i.fa.fa-pencil.fa-fw
+                    - if can_destroy
+                      = link_to store, class: 'btn btn-danger btn-xs', data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') } do
+                        %i.fa.fa-trash.fa-fw
   %button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger{type: "button", title: t('destinations.index.expand_list'), 'aria-label': t('destinations.index.expand_list')}
     %i.fa.fa-chevron-right.fa-fw
   %button.floating-btn.xl-floating-button.destinations-position-drag-cancel.d-none{type: "button", title: t('destinations.index.cancel_position_drag'), 'aria-label': t('destinations.index.cancel_position_drag')}
