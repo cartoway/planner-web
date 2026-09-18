@@ -13,8 +13,8 @@
   = render 'shared/error_messages', model: @deliverable_unit
   = f.text_field :ref, help: t('deliverable_units.form.ref_help')
   = f.text_field :label, placeholder: t('deliverable_units.form.label_placeholder'), help: t('deliverable_units.form.label_help')
-  = f.number_field :default_pickup, step: 'any', help: t('deliverable_units.form.default_pickup_help')
-  = f.number_field :default_delivery, step: 'any', help: t('deliverable_units.form.default_delivery_help')
+  = f.number_field :default_pickup, step: 'any', min: '0', help: t('deliverable_units.form.default_pickup_help')
+  = f.number_field :default_delivery, step: 'any', min: '0', help: t('deliverable_units.form.default_delivery_help')
   = f.number_field :default_capacity, step: 'any', min: '0', help: t('deliverable_units.form.default_capacity_help')
   .mb-3.row{data: { controller: 'v2--overload-multiplier' }}
     %label{class: v2_label_col}= t 'activerecord.attributes.deliverable_unit.optimization_overload_multiplier'
@@ -30,7 +30,5 @@
   .mb-3.row
     %label{class: v2_label_col, for: 'deliverable_unit_icon'}= t 'activerecord.attributes.deliverable_unit.icon'
     %div{class: v2_control_col}
-      = select_tag 'deliverable_unit[icon]', options_for_select([[t('web.form.default', n: 'fa-dumpster'), '', { 'data-icon' => 'fa-dumpster' }]], @deliverable_unit.icon.presence || '') + grouped_options_for_select([[t('deliverable_units.form.prefered_icons'), icon_options.call(@grouped_icons[0])], [t('deliverable_units.form.other_icons'), icon_options.call(@grouped_icons[1])]], @deliverable_unit.icon), class: 'form-control', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true }
-      %p.help-block
-        %i.fa.fa-dumpster.fa-fw
-        = t('web.form.default', n: 'fa-dumpster')
+      - selected_icon = @deliverable_unit.icon.presence
+      = select_tag 'deliverable_unit[icon]', options_for_select([[t('web.form.default', n: 'fa-dumpster'), '', { 'data-icon' => 'fa-dumpster' }]], selected_icon || '') + grouped_options_for_select([[t('deliverable_units.form.prefered_icons'), icon_options.call(@grouped_icons[0])], [t('deliverable_units.form.other_icons'), icon_options.call(@grouped_icons[1])]], selected_icon), class: 'form-select', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true }

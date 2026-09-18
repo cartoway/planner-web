@@ -3263,7 +3263,7 @@ fr:
         label: Type de pause
         window: Pause fixée
         regulatory: Pause par cumul
-        locked_to_set: Le type de pause se définit uniquement sur la configuration des véhicules.
+        locked_to_set: Le type de pause se définit uniquement sur la configuration de la flotte.
         duration: Durée de pause
         duration_placeholder: '0:45'
         lapse: Toutes les

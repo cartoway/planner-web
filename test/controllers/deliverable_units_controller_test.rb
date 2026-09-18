@@ -34,8 +34,9 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     assert_select %(a[href="#{new_deliverable_unit_path}"][data-turbo-frame="form_sidebar"]), 1
     assert_select '.deliverable-units-index', 1
     assert_select 'table#deliverable-units', 1
-    assert_select 'table#deliverable-units td.text-end > .btn-group', minimum: 1
+    assert_select 'table#deliverable-units td.deliverable-units-actions-col.text-end > .btn-group', minimum: 1
     assert_select 'table#deliverable-units td.btn-group', 0
+    assert_select 'table#deliverable-units .du-col-sidebar-hide', minimum: 1
     assert_select '.deliverable-units-bulk [data-v2--table-selection-target=bulk]', 1
   end
 
