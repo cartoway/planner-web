@@ -76,6 +76,10 @@ RUN apk add --no-cache \
     bash \
     geos \
     icu \
+    imagemagick \
+    imagemagick-heic \
+    imagemagick-jpeg \
+    imagemagick-webp \
     jemalloc \
     nodejs \
     postgresql-client \

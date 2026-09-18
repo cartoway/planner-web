@@ -66,6 +66,9 @@
       {{#visits}}{{#destination}}{{#manage_destination}}
           <a href="/destinations/{{destination_id}}/edit?back=true#collapseVisit{{visit_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_visit_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
           {{/manage_destination}}{{/destination}}
+      {{#delivery_note}}
+      <a href="/stops/{{stop_id}}/delivery_note" target="_blank" rel="noopener noreferrer" class="btn btn-default btn-xs" title="{{#i18n}}stops.delivery_note.title{{/i18n}}"><i class="fa fa-file-lines"></i></a>
+      {{/delivery_note}}
       {{/visits}}
       {{#store_reload}}{{#manage_destination}}
       <a href="/stores/{{store_id}}/edit?back=true#collapseVisit{{store_reload_id}}" class="marker_edit btn btn-default btn-xs" title="{{#i18n}}plannings.edit.edit_store_reload_help{{/i18n}}"><i class="fa fa-pencil"></i></a>
