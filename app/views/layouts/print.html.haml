@@ -1,0 +1,9 @@
+!!!
+%html{lang: I18n.locale.to_s}
+  %head
+    %meta{content: 'text/html; charset=UTF-8', 'http-equiv': 'Content-Type'}/
+    %meta{charset: 'utf-8'}/
+    %title= [content_for?(:title) ? yield(:title) : nil, @reseller&.name].compact.join(' – ')
+    = stylesheet_link_tag 'application', media: 'all'
+  %body.print-layout{'data-controller': controller.controller_path.tr('/', '_'), 'data-action': controller.action_name}
+    = yield
