@@ -18,6 +18,10 @@ RUN apk add --no-cache \
     geos-dev \
     git \
     icu-dev \
+    imagemagick \
+    imagemagick-heic \
+    imagemagick-jpeg \
+    imagemagick-webp \
     jemalloc-dev \
     libffi-dev \
     libxml2-dev \

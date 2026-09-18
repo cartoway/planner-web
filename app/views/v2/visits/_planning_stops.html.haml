@@ -40,21 +40,46 @@
                   %li
                     %span.visit-planning-stop-attr-name= custom_attribute.name
                     %span.visit-planning-stop-attr-value= mobile_custom_attribute_value(custom_attribute, stop)
-          = link_to edit_planning_path(planning, stop_id: stop.id, route_id: stop.route_id),
-            class: 'btn btn-light btn-xs flex-shrink-0',
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            title: t('visits.form.open_in_planning'),
-            'aria-label': t('visits.form.open_in_planning') do
-            %i.fa.fa-calendar.fa-fw
-        - if stop.photos.attached?
+          .d-flex.gap-1.flex-shrink-0
+            - if stop.delivery_note_available?
+              = link_to delivery_note_stop_path(stop),
+                class: 'btn btn-light btn-xs',
+                target: '_blank',
+                rel: 'noopener noreferrer',
+                title: t('visits.form.delivery_note'),
+                'aria-label': t('visits.form.delivery_note') do
+                %i.fa.fa-file-lines.fa-fw
+            = link_to edit_planning_path(planning, stop_id: stop.id, route_id: stop.route_id),
+              class: 'btn btn-light btn-xs',
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              title: t('visits.form.open_in_planning'),
+              'aria-label': t('visits.form.open_in_planning') do
+              %i.fa.fa-calendar.fa-fw
+        - if stop.photos.attached? || stop.signature.attached?
+          - docs_id = "visit-#{visit.id}-stop-#{stop.id}-docs"
           - photos_id = "visit-#{visit.id}-stop-#{stop.id}-photos"
-          %button.visit-planning-photos-toggle.btn.btn-light.btn-xs{type: 'button', data: { 'bs-toggle': 'collapse', 'bs-target': "##{photos_id}" }, 'aria-expanded': 'false', 'aria-controls': photos_id}
-            %i.fa.fa-camera.fa-fw
-            = t('visits.form.photos')
-            %span.badge.text-bg-secondary= stop.photos.size
-          .collapse.visit-planning-photos{id: photos_id}
-            .visit-planning-photos-list
-              - stop.serialized_photos.each do |photo|
-                %a.visit-planning-photo{href: photo[:url], target: '_blank', rel: 'noopener noreferrer'}
-                  %img{src: photo[:url], alt: photo[:filename]}
+          - signature_id = "visit-#{visit.id}-stop-#{stop.id}-signature"
+          .visit-planning-docs{id: docs_id}
+            .visit-planning-docs-toggles.d-flex.flex-wrap.gap-1
+              - if stop.photos.attached?
+                %button.visit-planning-photos-toggle.btn.btn-light.btn-xs{type: 'button', data: { 'bs-toggle': 'collapse', 'bs-target': "##{photos_id}" }, 'aria-expanded': 'false', 'aria-controls': photos_id}
+                  %i.fa.fa-camera.fa-fw
+                  = t('visits.form.photos')
+                  %span.badge.text-bg-secondary= stop.photos.size
+              - if stop.signature.attached?
+                %button.visit-planning-photos-toggle.btn.btn-light.btn-xs{type: 'button', data: { 'bs-toggle': 'collapse', 'bs-target': "##{signature_id}" }, 'aria-expanded': 'false', 'aria-controls': signature_id}
+                  %i.fa.fa-signature.fa-fw
+                  = t('visits.form.signature')
+            - if stop.photos.attached?
+              .collapse.visit-planning-photos{id: photos_id, data: { 'bs-parent': "##{docs_id}" }}
+                .visit-planning-photos-list
+                  - stop.serialized_photos.each do |photo|
+                    %a.visit-planning-photo{href: photo[:url], target: '_blank', rel: 'noopener noreferrer'}
+                      %img{src: photo[:url], alt: photo[:filename]}
+            - if stop.signature.attached?
+              - signature = stop.serialized_signature
+              .collapse.visit-planning-photos{id: signature_id, data: { 'bs-parent': "##{docs_id}" }}
+                .visit-planning-photos-list
+                  %a.visit-planning-photo{href: signature[:url], target: '_blank', rel: 'noopener noreferrer'}
+                    %img{src: signature[:url], alt: signature[:filename]}
