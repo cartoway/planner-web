@@ -237,6 +237,12 @@ fr:
         print_map: Inclure la carte
         print_stop_time: Inclure les horaires de passage
         print_barcode: Code barre
+        company_name: Nom de la société
+        company_street: Voie
+        company_postalcode: Code postal
+        company_city: Ville
+        company_detail: Complément d'adresse
+        company_phone: Téléphone
         speed_multiplier: Ajustement de la vitesse
         stop_max_upper_bound: Dépassement max créneaux horaires visites
         vehicle_max_upper_bound: Dépassement max amplitude chauffeur
@@ -685,6 +691,10 @@ fr:
               invalid_type: doit être une image
               too_large: est trop volumineuse (10 Mo max)
               too_many: dépasse la limite de 10 photos
+            signature:
+              blank: doit être jointe
+              invalid_type: doit être une image
+              too_large: est trop volumineuse (2 Mo max)
         location:
           missing_address_or_latlng: >-
             Le code postal et la ville ne peuvent pas être vides si lat/lng sont
@@ -1351,6 +1361,9 @@ fr:
         barcode:
           code128: Code 128
         barcode_help: Inclure la référence sous forme de code barre
+      company:
+        title: Société (bon de livraison)
+        help: Coordonnées de la société qui effectue les livraisons
       sms:
         title: SMS
       sms_character_count: 'Votre message comporte %{c} caractères'
@@ -2776,6 +2789,23 @@ fr:
   stops:
     default:
       name_rest: Pause
+    delivery_note:
+      title: Bon de livraison
+      print: Imprimer
+      company: Société
+      customer: Client
+      order: Commande
+      unit: Unité
+      quantity: Quantité
+      label: Libellé
+      value: Valeur
+      delivery: Livraison
+      proofs: Preuves de livraison
+      signature: Signature
+      place_date: '%{city}, le %{date} %{time}'
+      validated_at: 'Le %{date} %{time}'
+      no_order: Aucune quantité
+      no_delivery_info: Aucune information de livraison
     error_messages:
       update:
         failure: Echec de la mise à jour
@@ -2792,10 +2822,19 @@ fr:
       take_photo: Photo
       from_storage: Données
       photos_loaded: Photos chargées
+      documents_loaded: Documents chargés
       photos_empty: Aucune photo
+      documents_empty: Aucun document
       photos_delete_expired: Délai de suppression dépassé
       photo_close: Fermer
       photo_delete: Supprimer
+      signature: Signature
+      signature_open: Signer
+      signature_clear: Effacer
+      signature_save: Enregistrer
+      signature_close: Fermer
+      signature_empty: Aucune signature
+      signature_loaded: Signature enregistrée
   stores:
     default:
       name: Site numéro 1
@@ -3507,7 +3546,9 @@ fr:
       delete_visit_error_network: Erreur réseau. Veuillez réessayer.
       plannings: Plans
       open_in_planning: Voir l'arrêt dans le plan
+      delivery_note: Bon de livraison
       photos: Photos
+      signature: Signature
     priority_level:
       high: Haute
       medium: Normale

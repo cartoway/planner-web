@@ -39,6 +39,7 @@ module VisitsHelper
   def visit_planning_stops(visit)
     visit.stop_visits.includes(
       { photos_attachments: :blob },
+      { signature_attachment: :blob },
       { route: [:planning, { vehicle_usage: :vehicle }] }
     ).sort_by { |stop|
       planning = stop.route.planning
@@ -76,5 +77,10 @@ module VisitsHelper
 
       custom_attribute.boolean? || raw[key].present?
     end
+  end
+
+  def visit_filled_custom_attributes(visit)
+    definitions = visit.destination.customer.custom_attributes.for_visit.to_a
+    visit_stop_filled_custom_attributes(visit, definitions)
   end
 end
