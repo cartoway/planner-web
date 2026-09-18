@@ -46,6 +46,7 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_select 'form#vehicle-usage-form-sidebar .input-group-addon', 0
     assert_select 'form#vehicle-usage-form-sidebar .offset-md-1', minimum: 1
     assert_select '#vehicle_usage_time_window_start_time_window_end_input.fleet-split .input-group', 2
+    assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--time-fields"]', 1
     assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--rest-type-fields"]', 1
     assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--router-options"]', 1
     assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--number-to-percentage"]', 1
@@ -66,6 +67,15 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'select#vehicle_usage_store_reload_ids[multiple][data-controller~="v2--tom-select"]', 1
     assert_select 'select#vehicle_usage_store_reload_ids[data-v2--tom-select-simple-value="true"]', 1
+    assert_select 'select#vehicle_usage_store_reload_ids.form-select', 1
+  end
+
+  test 'edit sidebar router select uses form-select for caret' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @vehicle_usage }
+    assert_response :success
+    assert_select 'select#vehicle_usage_vehicle_router.form-select', 1
   end
 
   test 'vehicle form should show updated customer router option defaults' do
