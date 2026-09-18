@@ -261,6 +261,18 @@ body[data-controller*='-v2'] {
     opacity: 1;
   }
 
+  // v1 habit: many native <select>s still use `.form-control`. BS5 caret is on `.form-select`.
+  // Tom Select fields are covered in tom_select_controller (adds form-select before init).
+  // Sass 3.7 chokes on url(...) inside a custom property — set background-image directly.
+  select.form-control:not(.ts-hidden-accessible) {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+    padding-right: 2.25rem;
+  }
+
   // Tom Select + trailing `input-group-text` (bootstrap_form append). Keeps addon on the same row as the control.
   .input-group {
     flex-wrap: nowrap;
@@ -271,6 +283,7 @@ body[data-controller*='-v2'] {
       min-width: 0;
       width: auto;
       max-width: 100%;
+      white-space: nowrap;
     }
 
     > .form-control:focus,
@@ -313,5 +326,12 @@ body[data-controller*='-v2'] {
     max-width: 260px;
     overflow-wrap: anywhere;
     word-wrap: break-word;
+  }
+
+  .alert {
+    ul {
+      margin-bottom: 0;
+      margin-top: 0;
+    }
   }
 }
