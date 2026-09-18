@@ -132,6 +132,7 @@ class Stop < ApplicationRecord
       io = file.respond_to?(:tempfile) ? file.tempfile : file
       io.rewind if io.respond_to?(:rewind)
       blob = ActiveStorage::Blob.create_and_upload!(
+        key: photo_storage_key,
         io: io,
         filename: file.respond_to?(:original_filename) ? file.original_filename : File.basename(io.path),
         content_type: file.content_type
@@ -147,6 +148,16 @@ class Stop < ApplicationRecord
       )
     end
     photos_attachments.reset
+  end
+
+  # RustFS/S3 key layout for ops at high volume (thousands/day):
+  # customers/<customer_id>/<YYYY>/<MM>/<DD>/<token>
+  # App serving still uses Postgres blob id + signed URL; prefixes help LIST/purge/lifecycle.
+  def photo_storage_key
+    customer_id = route&.planning&.customer_id || 'unknown'
+    day = Time.current.utc.strftime('%Y/%m/%d')
+    token = ActiveStorage::Blob.generate_unique_secure_token
+    "customers/#{customer_id}/#{day}/#{token}"
   end
 
   def photo_deletable?(attachment)
