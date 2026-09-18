@@ -1,0 +1,109 @@
+- content_for :title do
+  = t('stops.delivery_note.title')
+  - if @destination.name.present?
+    = " — #{@destination.name}"
+
+- company_present = [@customer.company_name, @customer.company_street, @customer.company_postalcode, @customer.company_city, @customer.company_detail, @customer.company_phone].any?(&:present?)
+- order_lines = []
+- if @customer.enable_orders
+  - if @stop.order&.products&.any?
+    - stop_order_quantities(@stop).each do |code, quantity|
+      - order_lines << { unit: code, quantity_label: quantity }
+- elsif @visit.default_quantities?
+  - visit_quantities(@visit, nil).each do |units|
+    - amount = units[:delivery].to_f > 0 ? units[:delivery] : units[:pickup]
+    - amount = units[:quantity] if amount.blank? || amount.to_f.zero?
+    - unit = units[:label].presence || t('stops.delivery_note.quantity')
+    - quantity_label = number_with_precision(amount, precision: 2, delimiter: t('number.format.delimiter'), strip_insignificant_zeros: true)
+    - order_lines << { unit: unit, quantity_label: quantity_label }
+- filled_cas = visit_stop_visit_custom_attributes(@visit).select { |ca| delivery_note_custom_attribute_displayable?(ca, @stop) }
+- visit_cas = @customer.custom_attributes.for_visit.select { |ca| delivery_note_custom_attribute_displayable?(ca, @visit) }
+- attribute_sources = visit_cas.map { |ca| [ca, @visit] } + filled_cas.map { |ca| [ca, @stop] }
+- attribute_sources.sort_by! { |ca, _| [ca.object_type_before_type_cast, ca.name] }
+- attribute_lines = attribute_sources.map { |ca, object| { header: ca.name, value: delivery_note_custom_attribute_value(ca, object) } }
+
+.delivery-note
+  = button_tag type: 'button', class: 'btn btn-primary btn-print hidden-print', onclick: 'window.print()' do
+    %i.fa.fa-print.fa-fw
+    = t('stops.delivery_note.print')
+
+  .delivery-note-top
+    .delivery-note-company
+      - if company_present
+        - if @customer.company_name.present?
+          %p.delivery-note-company-name= @customer.company_name
+        - if @customer.company_street.present?
+          %p= [@customer.company_street, @customer.company_detail.presence].compact.join(', ')
+        - city_line = [@customer.company_postalcode, @customer.company_city].reject(&:blank?).join(' ')
+        - if city_line.present?
+          %p= city_line
+        - if @customer.company_phone.present?
+          %p= @customer.company_phone
+      - if @customer.print_header.present?
+        .delivery-note-print-header= raw(@customer.print_header)
+
+    .delivery-note-title-block
+      %h1= t('stops.delivery_note.title')
+      - ref = @visit.ref.presence || @destination.ref.presence
+      - if ref.present?
+        %p.delivery-note-ref=ref
+      - if @stop.status_updated_at
+        - place = @customer.company_city.presence
+        - date_label = l(@stop.status_updated_at.to_date, format: :date)
+        - time_label = l(@stop.status_updated_at, format: :hour_minute)
+        %p.delivery-note-place-date
+          - if place.present?
+            = t('stops.delivery_note.place_date', city: place, date: date_label, time: time_label)
+          - else
+            = t('stops.delivery_note.validated_at', date: date_label, time: time_label)
+
+  .delivery-note-client-row
+    .delivery-note-client-box
+      %p.delivery-note-client-name= @destination.name
+      - if @destination.street.present?
+        %p= [@destination.street, @destination.detail.presence].compact.join(', ')
+      - client_city = [@destination.postalcode, @destination.city].reject(&:blank?).join(' ')
+      - if client_city.present?
+        %p= client_city
+      - if @destination.phone_number.present?
+        %p= @destination.phone_number
+
+  %table.delivery-note-items
+    %thead
+      %tr
+        %th= t('stops.delivery_note.unit')
+        %th.delivery-note-qty= t('stops.delivery_note.quantity')
+    %tbody
+      - if order_lines.any?
+        - order_lines.each do |line|
+          %tr
+            %td= line[:unit]
+            %td.delivery-note-qty= line[:quantity_label]
+      - else
+        %tr
+          %td{colspan: 2}= t('stops.delivery_note.no_order')
+
+  - if attribute_lines.any?
+    %table.delivery-note-items
+      %thead
+        %tr
+          %th= t('stops.delivery_note.label')
+          %th.delivery-note-qty= t('stops.delivery_note.value')
+      %tbody
+        - attribute_lines.each do |line|
+          %tr
+            %td= line[:header]
+            %td.delivery-note-qty= line[:value]
+
+  - if @photos.any?
+    %section.delivery-note-proofs
+      %h2= t('stops.delivery_note.proofs')
+      .delivery-note-documents
+        - @photos.each do |photo|
+          .delivery-note-doc
+            %img{src: photo[:url], alt: photo[:filename]}
+
+  .delivery-note-signature
+    %p.delivery-note-signature-label= t('stops.delivery_note.signature')
+    - if @signature
+      %img{src: @signature[:url], alt: @signature[:filename]}

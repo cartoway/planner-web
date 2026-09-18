@@ -23,9 +23,13 @@ class StopsController < ApplicationController
   before_action :authenticate_user!, except: [:edit, :update]
   before_action :set_route_context, only: [:create_store_reload, :create_regulatory_rest, :destroy]
   before_action :authenticate_driver!, only: [:edit, :update]
-  before_action :set_stop, only: [:show, :edit, :update] # Before load_and_authorize_resource
+  before_action :set_stop, only: [:show, :edit, :update, :delivery_note] # Before load_and_authorize_resource
 
   load_and_authorize_resource # Load resource except for show action
+
+  # Cap print embeds: display is ~220px, keep ~4x for sharpness without shipping phone-res originals.
+  PRINT_IMAGE_MAX_EDGE = 880
+  PRINT_IMAGE_JPEG_QUALITY = 70
 
   def create_store_reload
     if @route && params[:store_reload_id]
@@ -98,6 +102,22 @@ class StopsController < ApplicationController
     respond_to do |format|
       @show_isoline = true
       format.json
+    end
+  end
+
+  def delivery_note
+    raise ActiveRecord::RecordNotFound unless @stop.delivery_note_available?
+
+    @visit = @stop.visit
+    @destination = @visit.destination
+    @route = @stop.route
+    @planning = @route.planning
+    @customer = @planning.customer
+    # Embed media as data URIs so Firefox print preview does not wait on network/JS.
+    @photos = @stop.photos.map { |photo| print_embedded_image(photo) }
+    @signature = @stop.signature.attached? ? print_embedded_image(@stop.signature) : nil
+    respond_to do |format|
+      format.html { render layout: 'print' }
     end
   end
 
@@ -182,5 +202,28 @@ class StopsController < ApplicationController
 
   def load_planning_with_scope
     @planning = current_user.customer.plannings.where(id: params[:planning_id]).preload_route_details.first!
+  end
+
+  def print_embedded_image(attachment)
+    bytes, content_type = print_image_bytes(attachment)
+    {
+      filename: attachment.blob.filename.to_s,
+      url: "data:#{content_type};base64,#{Base64.strict_encode64(bytes)}"
+    }
+  end
+
+  def print_image_bytes(attachment)
+    blob = attachment.blob
+    return [blob.download, blob.content_type] unless attachment.variable?
+
+    processed = attachment.variant(
+      resize_to_limit: [PRINT_IMAGE_MAX_EDGE, PRINT_IMAGE_MAX_EDGE],
+      format: :jpeg,
+      saver: { quality: PRINT_IMAGE_JPEG_QUALITY, strip: true }
+    ).processed
+    [processed.download, 'image/jpeg']
+  rescue StandardError => e
+    Rails.logger.warn("delivery_note image resize failed (#{e.class}): #{e.message}")
+    [blob.download, blob.content_type]
   end
 end

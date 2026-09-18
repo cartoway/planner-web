@@ -68,4 +68,7 @@ class V01::Entities::Stop < V01::Entities::StopStatus
   expose(:photos, documentation: { type: Hash, is_array: true, desc: 'Stop photos with temporary signed URLs (expire after 15 minutes).' }) { |stop, options|
     stop.serialized_photos(host: Stop.photo_host_from_env(options[:env]))
   }
+  expose(:signature, documentation: { type: Hash, desc: 'Stop signature with temporary signed URL, or null.' }) { |stop, options|
+    stop.serialized_signature(host: Stop.photo_host_from_env(options[:env]))
+  }
 end

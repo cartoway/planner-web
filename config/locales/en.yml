@@ -231,6 +231,12 @@ en:
         print_map: Include map
         print_stop_time: Include stop time
         print_barcode: Barcode
+        company_name: Company name
+        company_street: Street
+        company_postalcode: Postal code
+        company_city: City
+        company_detail: Address complement
+        company_phone: Phone
         speed_multiplier: Speed multiplier
         stop_max_upper_bound: Visit overtime
         vehicle_max_upper_bound: Driver shift overtime
@@ -679,6 +685,10 @@ en:
               invalid_type: must be an image
               too_large: is too large (10 MB max)
               too_many: exceeds the maximum of 10 photos
+            signature:
+              blank: must be attached
+              invalid_type: must be an image
+              too_large: is too large (2 MB max)
         location:
           missing_address_or_latlng: Postalcode and city cannot be empty if lat/lng are empty
           lat_outside_range: must be inside range -90..90
@@ -1317,6 +1327,9 @@ en:
         barcode:
           code128: Code 128
         barcode_help: Include the Reference as Barcode
+      company:
+        title: Company (delivery note)
+        help: Details of the company performing the deliveries
       sms:
         title: SMS
       sms_character_count: 'Your message contains %{c} characters'
@@ -2660,6 +2673,23 @@ en:
   stops:
     default:
       name_rest: Rest
+    delivery_note:
+      title: Delivery note
+      print: Print
+      company: Company
+      customer: Customer
+      order: Order
+      unit: Unit
+      quantity: Quantity
+      label: Label
+      value: Value
+      delivery: Delivery
+      proofs: Proof of delivery
+      signature: Signature
+      place_date: '%{city}, %{date} %{time}'
+      validated_at: '%{date} %{time}'
+      no_order: No quantities
+      no_delivery_info: No delivery information
     error_messages:
       update:
         failure: Fails to update
@@ -2676,10 +2706,19 @@ en:
       take_photo: Photo
       from_storage: Files
       photos_loaded: Loaded photos
+      documents_loaded: Loaded documents
       photos_empty: No photos
+      documents_empty: No documents
       photos_delete_expired: Deletion time has expired
       photo_close: Close
       photo_delete: Delete
+      signature: Signature
+      signature_open: Sign
+      signature_clear: Clear
+      signature_save: Save
+      signature_close: Close
+      signature_empty: No signature
+      signature_loaded: Signature saved
   stores:
     default:
       name: Depot number 1
@@ -3370,7 +3409,9 @@ en:
       delete_visit_error_network: Network error. Please try again.
       plannings: Plans
       open_in_planning: Open stop in the plan
+      delivery_note: Delivery note
       photos: Photos
+      signature: Signature
     priority_level:
       high: High
       medium: Normal

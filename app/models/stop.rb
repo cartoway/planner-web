@@ -40,6 +40,7 @@ class Stop < ApplicationRecord
   typed_attr :custom_attributes
 
   has_many_attached :photos
+  has_one_attached :signature
 
   PHOTO_SIGNED_ID_PURPOSE = :stop_photo
   PHOTO_URL_EXPIRES_IN = 60.minutes
@@ -48,15 +49,22 @@ class Stop < ApplicationRecord
   PHOTO_MAX_BYTE_SIZE = 10.megabytes
   PHOTO_CONTENT_TYPES = %w[image/jpeg image/png image/webp image/heic image/heif image/gif].freeze
 
+  SIGNATURE_SIGNED_ID_PURPOSE = :stop_signature
+  SIGNATURE_URL_EXPIRES_IN = 60.minutes
+  SIGNATURE_MAX_BYTE_SIZE = 2.megabytes
+  SIGNATURE_CONTENT_TYPES = %w[image/png image/jpeg image/webp].freeze
+  DELIVERY_NOTE_STATUSES = %w[delivered exception].freeze
+
   validates :route, presence: true
   validate :photos_must_be_valid_images, if: -> { photos.attached? }
+  validate :signature_must_be_valid_image, if: -> { signature.attached? }
 
   scope :only_stop_visits, -> { where(type: StopVisit.name) }
   scope :only_stop_stores, -> { where(type: StopStore.name) }
   scope :only_active, -> { where(active: true) }
   scope :only_active_stop_visits, -> { only_stop_visits.where(active: true) }
   scope :includes_destinations_and_stores, -> {
-    with_attached_photos.includes(
+    with_attached_photos.with_attached_signature.includes(
       :route_data,
       visit: [
         :tags,
@@ -107,6 +115,10 @@ class Stop < ApplicationRecord
 
   def default_color
     (self.visit && visit.color) || route.default_color
+  end
+
+  def delivery_note_available?
+    is_a?(StopVisit) && DELIVERY_NOTE_STATUSES.include?(status&.downcase)
   end
 
   def outdate_route
@@ -207,7 +219,109 @@ class Stop < ApplicationRecord
     "#{scheme}://#{host}"
   end
 
+  def attach_signature(file)
+    return unless signature_attachable?(file)
+
+    # Replace existing signature without touching the stop (STI + lock_version).
+    purge_signature_blob! if signature.attached?
+
+    io = file.respond_to?(:tempfile) ? file.tempfile : file
+    io.rewind if io.respond_to?(:rewind)
+    blob = ActiveStorage::Blob.create_and_upload!(
+      key: photo_storage_key,
+      io: io,
+      filename: file.respond_to?(:original_filename) ? file.original_filename : File.basename(io.path),
+      content_type: file.content_type
+    )
+    ActiveStorage::Attachment.insert!(
+      {
+        name: 'signature',
+        record_type: self.class.base_class.name,
+        record_id: id,
+        blob_id: blob.id,
+        created_at: Time.current
+      }
+    )
+    association(:signature_attachment).reset
+    association(:signature_blob).reset
+    true
+  end
+
+  def serialized_signature(host: nil)
+    return nil unless signature.attached?
+
+    {
+      id: signature.id,
+      filename: signature.filename.to_s,
+      content_type: signature.content_type,
+      url: signature_signed_url(signature.blob, host: host)
+    }
+  end
+
+  def self.signature_verifier
+    Rails.application.message_verifier('stop_signatures')
+  end
+
+  def self.find_signature_blob!(signed_id)
+    blob_id = signature_verifier.verify(signed_id, purpose: SIGNATURE_SIGNED_ID_PURPOSE)
+    ActiveStorage::Blob.find(blob_id)
+  end
+
   private
+
+  def purge_signature_blob!
+    attachment = signature_attachment
+    return unless attachment
+
+    blob = attachment.blob
+    ActiveStorage::Attachment.delete(attachment.id)
+    key = blob.key
+    service = blob.service
+    ActiveStorage::Blob.delete(blob.id)
+    service.delete(key)
+    association(:signature_attachment).reset
+    association(:signature_blob).reset
+  end
+
+  def signature_signed_url(blob, host: nil)
+    signed_id = self.class.signature_verifier.generate(blob.id, expires_in: SIGNATURE_URL_EXPIRES_IN, purpose: SIGNATURE_SIGNED_ID_PURPOSE)
+    if host.present?
+      uri = URI.parse(host)
+      Rails.application.routes.url_helpers.signed_stop_signature_url(
+        signed_id,
+        host: uri.host,
+        port: uri.port,
+        protocol: uri.scheme || 'http'
+      )
+    else
+      Rails.application.routes.url_helpers.signed_stop_signature_path(signed_id)
+    end
+  end
+
+  def signature_attachable?(file)
+    if file.blank?
+      errors.add(:signature, :blank)
+      return false
+    end
+    unless SIGNATURE_CONTENT_TYPES.include?(file.content_type)
+      errors.add(:signature, :invalid_type)
+      return false
+    end
+    if file.size > SIGNATURE_MAX_BYTE_SIZE
+      errors.add(:signature, :too_large)
+      return false
+    end
+    true
+  end
+
+  def signature_must_be_valid_image
+    unless SIGNATURE_CONTENT_TYPES.include?(signature.content_type)
+      errors.add(:signature, :invalid_type)
+    end
+    if signature.byte_size > SIGNATURE_MAX_BYTE_SIZE
+      errors.add(:signature, :too_large)
+    end
+  end
 
   def photo_signed_url(blob, host: nil)
     signed_id = self.class.photo_verifier.generate(blob.id, expires_in: PHOTO_URL_EXPIRES_IN, purpose: PHOTO_SIGNED_ID_PURPOSE)
