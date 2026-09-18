@@ -1,5 +1,5 @@
 -# V2 sidebar fleet form (BS5). No Paloma/jQuery — Stimulus + Tom Select only.
-- form_html = { class: 'number-to-percentage form-horizontal', id: 'vehicle-usage-form-sidebar', 'data-turbo-frame' => 'form_sidebar', 'data-controller' => 'v2--rest-type-fields v2--router-options v2--number-to-percentage v2--vehicle-devices', 'data-action' => 'change->v2--rest-type-fields#change change->v2--router-options#change submit->v2--rest-type-fields#submit submit->v2--number-to-percentage#submit', 'data-v2--rest-type-fields-prefix-value' => 'vehicle_usage', 'data-v2--number-to-percentage-prefix-value' => 'vehicle_usage[vehicle]', 'data-v2--rest-type-fields-duration-must-be-filled-value' => t('vehicle_usages.form.rest_type.duration_must_be_filled'), 'data-v2--rest-type-fields-lapse-must-be-filled-value' => t('vehicle_usages.form.rest_type.lapse_must_be_filled'), 'data-v2--rest-type-fields-duration-must-be-smaller-value' => t('vehicle_usages.form.rest_type.duration_must_be_smaller') }
+- form_html = { class: 'number-to-percentage form-horizontal', id: 'vehicle-usage-form-sidebar', 'data-turbo-frame' => 'form_sidebar', 'data-controller' => 'v2--rest-type-fields v2--router-options v2--number-to-percentage v2--vehicle-devices v2--time-fields', 'data-action' => 'change->v2--rest-type-fields#change change->v2--router-options#change submit->v2--rest-type-fields#submit submit->v2--number-to-percentage#submit', 'data-v2--rest-type-fields-prefix-value' => 'vehicle_usage', 'data-v2--number-to-percentage-prefix-value' => 'vehicle_usage[vehicle]', 'data-v2--time-fields-invalid-message-value' => t('schedule_type.invalid'), 'data-v2--rest-type-fields-duration-must-be-filled-value' => t('vehicle_usages.form.rest_type.duration_must_be_filled'), 'data-v2--rest-type-fields-lapse-must-be-filled-value' => t('vehicle_usages.form.rest_type.lapse_must_be_filled'), 'data-v2--rest-type-fields-duration-must-be-smaller-value' => t('vehicle_usages.form.rest_type.duration_must_be_smaller') }
 - form_html['data-v2-js-config'] = local_assigns[:v2_js_config] if local_assigns[:v2_js_config]
 - tom_select_data = { controller: 'v2--tom-select', v2__tom_select_create_value: current_user_form_create?(:tags), v2__tom_select_placeholder_value: t('web.select2.placeholder') }
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
@@ -36,7 +36,7 @@
           \/ #{t 'activerecord.attributes.vehicle.consumption'}
         %div{class: v2_control_col}
           .input-group.mb-2
-            = select 'vehicle_usage[vehicle]', :emission, Vehicle.emissions_hash.values, { include_blank: t('web.form.empty_entry'), selected: @vehicle_usage.vehicle.emission }, class: 'form-control'
+            = select 'vehicle_usage[vehicle]', :emission, Vehicle.emissions_hash.values, { include_blank: t('web.form.empty_entry'), selected: @vehicle_usage.vehicle.emission }, class: 'form-select'
             %span.input-group-text
               = t 'all.unit.kgco2e_l_html'
           .input-group
@@ -122,7 +122,7 @@
           .input-group
             - router_dimension_label = "activerecord.attributes.router.router_dimensions.#{@vehicle_usage.vehicle.customer.router_dimension}"
             - routers = @vehicle_usage.vehicle.customer.profile.routers
-            = select_tag 'vehicle_usage[vehicle][router]', router_grouped_options(routers, @vehicle_usage), include_blank: "#{t('vehicles.form.router.default')} (#{@vehicle_usage.vehicle.customer.router.translated_name} - #{t(router_dimension_label)})", class: 'form-control', id: 'vehicle_usage_vehicle_router'
+            = select_tag 'vehicle_usage[vehicle][router]', router_grouped_options(routers, @vehicle_usage), include_blank: "#{t('vehicles.form.router.default')} (#{@vehicle_usage.vehicle.customer.router.translated_name} - #{t(router_dimension_label)})", class: 'form-select', id: 'vehicle_usage_vehicle_router'
             %span.input-group-text
               %i.fa.fa-gear.fa-fw
           %p.help-block= t 'vehicles.form.router.help'
@@ -256,7 +256,7 @@
           = t('activerecord.attributes.customer.router_options_hazardous_goods')
         %div{class: v2_control_col}
           - hazardous_label = !!@vehicle_usage.vehicle.customer.hazardous_goods ? t("activerecord.attributes.router.options.hazardous_goods.#{@vehicle_usage.vehicle.customer.hazardous_goods}") : t('activerecord.attributes.router.options.hazardous_goods_none')
-          = select_tag 'vehicle_usage[vehicle][router_options][hazardous_goods]', options_for_select(t('activerecord.attributes.router.options.hazardous_goods').invert, current_router_options(@vehicle_usage.vehicle)['hazardous_goods']), include_blank: "#{t('vehicles.form.router.default')} (#{"activerecord.attributes.router.options.hazardous_goods.#{@vehicle_usage.vehicle.customer.hazardous_goods}"})", class: 'form-control'
+          = select_tag 'vehicle_usage[vehicle][router_options][hazardous_goods]', options_for_select(t('activerecord.attributes.router.options.hazardous_goods').invert, current_router_options(@vehicle_usage.vehicle)['hazardous_goods']), include_blank: "#{t('vehicles.form.router.default')} (#{"activerecord.attributes.router.options.hazardous_goods.#{@vehicle_usage.vehicle.customer.hazardous_goods}"})", class: 'form-select'
 
       #router_options_max_walk_distance_input.mb-3.row{ class: (@vehicle_usage.vehicle.default_router.max_walk_distance? ? '' : 'router-option-disabled')}
         %label{class: "#{v2_label_col}", for: "vehicle_usage_vehicle_router_options_max_walk_distance"}
@@ -272,7 +272,7 @@
           = t('activerecord.attributes.customer.router_options_approach')
         %div{class: v2_control_col}
           - approach_label = !!@vehicle_usage.vehicle.customer.approach ? t("activerecord.attributes.router.options.approach.#{@vehicle_usage.vehicle.customer.approach}") : t('activerecord.attributes.router.options.approach_none')
-          = select_tag 'vehicle_usage[vehicle][router_options][approach]', options_for_select(t('activerecord.attributes.router.options.approach').invert, @vehicle_usage.vehicle.router_options['approach']), include_blank: "#{t('vehicles.form.router.default')} (#{approach_label})", class: 'form-control'
+          = select_tag 'vehicle_usage[vehicle][router_options][approach]', options_for_select(t('activerecord.attributes.router.options.approach').invert, @vehicle_usage.vehicle.router_options['approach']), include_blank: "#{t('vehicles.form.router.default')} (#{approach_label})", class: 'form-select'
           %p.help-block
             = t('customers.form.router_options_approach_help')
 
@@ -342,38 +342,46 @@
         - end_label = "#{t('vehicle_usages.form.store.default')} (#{@vehicle_usage.vehicle_usage_set.store_stop ? @vehicle_usage.vehicle_usage_set.store_stop.name : t('vehicle_usages.form.store.none')})"
         .input-group.mb-2
           %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usage.store_start'
-          = collection_select :vehicle_usage, :store_start_id, @vehicle_usage.vehicle.customer.stores, :id, :name, { include_blank: start_label }, { class: 'form-control' }
+          = collection_select :vehicle_usage, :store_start_id, @vehicle_usage.vehicle.customer.stores, :id, :name, { include_blank: start_label }, { class: 'form-select' }
+          %span.input-group-text
+            %i.fa.fa-arrow-right.fa-fw
+            %i.fa.fa-store.fa-fw
         .input-group
           %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usage.store_stop'
-          = collection_select :vehicle_usage, :store_stop_id, @vehicle_usage.vehicle.customer.stores, :id, :name, { include_blank: end_label }, { class: 'form-control' }
-          %span.input-group-text= content_tag('i', '', class: 'fa fa-store fa-fw')
+          = collection_select :vehicle_usage, :store_stop_id, @vehicle_usage.vehicle.customer.stores, :id, :name, { include_blank: end_label }, { class: 'form-select' }
+          %span.input-group-text
+            %i.fa.fa-store.fa-fw
+            %i.fa.fa-arrow-right.fa-fw
         %p.help-block= t 'vehicle_usages.form.stores_help'
     #vehicle_usage_display_costs.mb-3.row.fleet-split
       %label{class: v2_label_col}
         = t 'activerecord.attributes.vehicle_usages.costs'
       %div{class: v2_control_col}
         .input-group.mb-2
+          %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usages.cost_fixed'
           = number_field :vehicle_usage, :cost_fixed,
             value: @vehicle_usage.cost_fixed,
             placeholder: @vehicle_usage.default_cost_fixed && t('customers.form.field_default', n: @vehicle_usage.default_cost_fixed),
             step: 'any', class: 'form-control', min: 0
-          %span.input-group-text
+          %span.input-group-text.fleet-cost-unit
             = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
         .input-group.mb-2
+          %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usages.cost_time'
           = number_field :vehicle_usage, :cost_time,
             value: @vehicle_usage.cost_time,
             placeholder: @vehicle_usage.default_cost_time && t('customers.form.field_default', n: @vehicle_usage.default_cost_time),
             step: 'any', class: 'form-control', min: 0
-          %span.input-group-text
+          %span.input-group-text.fleet-cost-unit
             = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
             \/
             = t('time.hour')
         .input-group
+          %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usages.cost_distance'
           = number_field :vehicle_usage, :cost_distance,
             value: @vehicle_usage.cost_distance,
             placeholder: @vehicle_usage.default_cost_distance && t('customers.form.field_default', n: @vehicle_usage.default_cost_distance),
             step: 'any', class: 'form-control', min: 0
-          %span.input-group-text
+          %span.input-group-text.fleet-cost-unit
             = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
             \/
             = current_user.prefered_unit == 'mi' ? t('all.unit.mile') : t('all.unit.kms')
@@ -419,6 +427,8 @@
             placeholder: @vehicle_usage.time_window_start.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.time_window_start) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.time_window_start)) : 0,
             min: 0,
             value: number_of_days(@vehicle_usage.time_window_start)
+          %span.input-group-text
+            %i.fa.fa-arrows-left-right.fa-fw
         .input-group
           %span.input-group-text.fleet-bound-label= t 'web.form.time_window_end_label'
           = text_field :vehicle_usage, :time_window_end,
@@ -475,7 +485,7 @@
           - placeholder_text = @vehicle_usage.vehicle_usage_set.store_reloads.any? ? t('customers.form.field_default', n: @vehicle_usage.vehicle_usage_set.store_reloads.map(&:to_s).join(', ')) : t('web.select2.placeholder')
           .input-group
             = select_tag 'vehicle_usage[store_reload_ids]', options_for_select(@vehicle_usage.vehicle.customer.store_reloads.map{ |sr| [sr.to_s, sr.id] }, @vehicle_usage.default_store_reload_ids),
-              { multiple: true, class: 'form-control', id: 'vehicle_usage_store_reload_ids', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true, v2__tom_select_placeholder_value: placeholder_text } }
+              { multiple: true, class: 'form-select', id: 'vehicle_usage_store_reload_ids', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true, v2__tom_select_placeholder_value: placeholder_text } }
             %span.input-group-text
               %i.fa.fa-rotate.fa-fw
           %p.help-block= t('vehicle_usages.form.store_reloads_help')
@@ -518,7 +528,7 @@
           .input-group
             = collection_select :vehicle_usage, :store_rest_id, @vehicle_usage.vehicle.customer.stores, :id, :name,
             { include_blank: t('vehicle_usages.form.store.default') + ' (' + (@vehicle_usage.vehicle_usage_set.store_rest ? @vehicle_usage.vehicle_usage_set.store_rest.name : t('vehicle_usages.form.store.none')) + ')'},
-            { class: 'form-control' }
+            { class: 'form-select' }
             %span.input-group-text= content_tag('i', '', class: 'fa fa-store fa-fw')
         %p.help-block.rest-duration-help-window
           = t 'vehicle_usages.form.rest_duration.help'
@@ -556,6 +566,8 @@
             placeholder: @vehicle_usage.rest_start.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.rest_start) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.rest_start)) : 0,
             min: 0,
             value: number_of_days(@vehicle_usage.rest_start)
+          %span.input-group-text
+            %i.fa.fa-arrows-left-right.fa-fw
         .input-group
           %span.input-group-text.fleet-bound-label= t 'web.form.time_window_end_label'
           = text_field :vehicle_usage, :rest_stop,

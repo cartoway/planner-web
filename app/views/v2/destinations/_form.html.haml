@@ -1,7 +1,7 @@
 -# V2 sidebar-only: same fields as destinations/_form; relative i18n keys resolved via destinations.form scope
 - df = ->(key, **opts) { I18n.t(key, scope: 'destinations.form', **opts) }
 - dest_form_mutable = current_user_destination_form_submit_enabled?(@destination)
-- form_html = { class: "form-horizontal", "data-destination_id" => (@destination.id or 0), id: "destination-form-sidebar", "data-turbo-frame" => "form_sidebar", "data-position-editable" => (dest_form_mutable ? "true" : "false"), "data-tag-entity-create-allowed" => (current_user_form_create?(:tags) ? "true" : "false") }
+- form_html = { class: "form-horizontal", "data-destination_id" => (@destination.id or 0), id: "destination-form-sidebar", "data-turbo-frame" => "form_sidebar", "data-position-editable" => (dest_form_mutable ? "true" : "false"), "data-tag-entity-create-allowed" => (current_user_form_create?(:tags) ? "true" : "false"), "data-controller" => "v2--time-fields", "data-v2--time-fields-invalid-message-value" => t('schedule_type.invalid') }
 - form_html["data-v2--dirty-form-submit-target"] = "form" if dest_form_mutable
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
 - v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
@@ -174,9 +174,9 @@
             .col-md-10
               .form-inline
                 Remplacer
-                \#{select_tag 'from_visit_tags', options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder'), v2__visit_tags_bulk_target: 'from' }}}
+                \#{select_tag 'from_visit_tags', options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }), {multiple: true, include_blank: true, class: 'form-select visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder'), v2__visit_tags_bulk_target: 'from' }}}
                 par
-                \#{select_tag 'to_visit_tags', options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }), {multiple: true, include_blank: true, class: 'form-control visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder'), v2__visit_tags_bulk_target: 'to' }}}
+                \#{select_tag 'to_visit_tags', options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }), {multiple: true, include_blank: true, class: 'form-select visit-tags-change-bulk', data: { controller: 'v2--tom-select', v2__tom_select_create_value: false, v2__tom_select_placeholder_value: t('web.select2.placeholder'), v2__visit_tags_bulk_target: 'to' }}}
               %p.help-block
                 = t('destinations.form.dialog.attributes_change_bulk.tags_help')
       .modal-footer

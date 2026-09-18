@@ -28,8 +28,8 @@
           %th= t 'activerecord.attributes.deliverable_unit.default_pickup'
           %th= t 'activerecord.attributes.deliverable_unit.default_delivery'
           %th= t 'activerecord.attributes.deliverable_unit.default_capacity'
-          %th= t 'activerecord.attributes.deliverable_unit.optimization_overload_multiplier'
-          %th
+          %th.du-col-sidebar-hide= t 'activerecord.attributes.deliverable_unit.optimization_overload_multiplier'
+          %th.deliverable-units-actions-col
       %tbody
         - @deliverable_units.each do |deliverable_unit|
           %tr{data: { v2__table_filter_target: 'row' }}
@@ -39,17 +39,17 @@
             %td= deliverable_unit.ref
             %td
               %i.fa.fa-fw{class: deliverable_unit.default_icon}
-            %td= deliverable_unit.localized_default_pickup
-            %td= deliverable_unit.localized_default_delivery
+            %td.du-col-sidebar-hide= deliverable_unit.localized_default_pickup
+            %td.du-col-sidebar-hide= deliverable_unit.localized_default_delivery
             %td= deliverable_unit.localized_default_capacity
-            %td
+            %td.du-col-sidebar-hide
               - if deliverable_unit.default_optimization_overload_multiplier == 0
                 = t('deliverable_units.form.optimization_overload_multiplier_no')
               - elsif deliverable_unit.default_optimization_overload_multiplier == -1
                 = t('deliverable_units.form.optimization_overload_multiplier_ignore')
               - else
                 = deliverable_unit.localized_optimization_overload_multiplier
-            %td.text-end.text-nowrap
+            %td.deliverable-units-actions-col.text-end.text-nowrap
               .btn-group{role: 'group'}
                 = link_to edit_deliverable_unit_path(deliverable_unit), class: 'btn btn-primary btn-sm', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
                   %i.fa.fa-pencil.fa-fw
