@@ -47,7 +47,7 @@
   .stores-list-col--name { @include destinations-list-col-width(10rem); }
   .destinations-list-col--street,
   .stores-list-col--street { @include destinations-list-col-width(16rem); }
-  .stores-list-col--icon { @include destinations-list-col-width(3rem); }
+  .stores-list-col--icon { @include destinations-list-col-width(4rem); }
   .destinations-list-col--postalcode { @include destinations-list-col-width(7.5rem); }
   .destinations-list-col--city,
   .stores-list-col--city { @include destinations-list-col-width(10rem); }

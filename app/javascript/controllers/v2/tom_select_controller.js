@@ -54,6 +54,9 @@ export default class extends Controller {
       } catch (e) { /* ignore */ }
     }
     this.selectElement = el
+    // Bootstrap 5 caret lives on `.form-select`; many v2 selects still pass `.form-control` (v1 habit).
+    // Tom Select copies classes onto the wrapper — without form-select there is no chevron.
+    if (!el.classList.contains("form-select")) el.classList.add("form-select")
 
     const self = this
     const run = () => {
@@ -78,6 +81,8 @@ export default class extends Controller {
   initSimpleTomSelect (el) {
     const plugins = ["dropdown_input"]
     if (el.multiple) plugins.push("remove_button")
+    // Icon pickers use value="" for the customer/app default — Tom Select drops that unless allowEmptyOption.
+    const hasEmptyOption = Array.from(el.options).some((o) => o.value === "")
     this.instance = new TomSelect(el, {
       plugins,
       // Must be the string 'body' so Tom Select runs positionDropdown() (strict ===); document.body skips it and the menu misaligns.
@@ -85,6 +90,7 @@ export default class extends Controller {
       persist: false,
       maxItems: el.multiple ? null : 1,
       hideSelected: !!el.multiple,
+      allowEmptyOption: hasEmptyOption,
       placeholder: this.placeholderValue || "",
       create: false,
       closeAfterSelect: !el.multiple,
@@ -160,7 +166,12 @@ export default class extends Controller {
 
   renderSimpleOption (data, escape) {
     const opt = this.findOptionEl(data.value)
-    const icon = (opt?.dataset?.icon || "").trim()
+    let icon = (opt?.dataset?.icon || "").trim()
+    // Icon pickers use the FA class as value when data-icon is missing
+    if (!icon) {
+      const candidate = String(data.value || "").trim()
+      if (/^fa-[a-z0-9-]+$/i.test(candidate)) icon = candidate
+    }
     const label = escape(data.text || "")
     if (!icon) return `<div>${label}</div>`
     return `<div><i class="fa fa-fw ${escapeAttr(icon)}" aria-hidden="true"></i> ${label}</div>`
