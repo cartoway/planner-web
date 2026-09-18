@@ -128,6 +128,7 @@ export const stops_edit = function(params) {
   }
 
   initStopPhotos();
+  initStopSignature();
 };
 
 var PHOTO_DB = 'planner-mobile-photos';
@@ -218,9 +219,10 @@ function queuePhotoDelete(panel, url) {
 }
 
 function showPendingPhotos(panel, files, pendingId) {
+  var list = documentsRoot(panel).find('.stop-documents-list');
   files.forEach(function(file) {
     var url = URL.createObjectURL(file);
-    panel.find('.stop-photos-list').append(
+    list.append(
       '<div class="stop-photo stop-photo-pending" data-pending="' + pendingId + '">' +
         '<button type="button" class="stop-photo-open" data-url="' + url + '">' +
           '<img src="' + url + '" alt="">' +
@@ -228,10 +230,19 @@ function showPendingPhotos(panel, files, pendingId) {
       '</div>'
     );
   });
-  var count = panel.find('.stop-photo').length;
-  panel.find('.stop-photos-badge').text(count);
-  panel.find('.stop-photos-accordion').removeClass('d-none');
-  panel.find('.stop-photos-panel').removeClass('d-none');
+  updateDocumentsBadge(documentsRoot(panel));
+}
+
+function documentsRoot(el) {
+  return $(el).closest('.stop-documents');
+}
+
+function updateDocumentsBadge(root) {
+  if (!root || !root.length) return;
+  var count = root.find('.stop-documents-list .stop-photo').length;
+  root.find('.stop-documents-badge').text(count);
+  root.find('.stop-documents-accordion').toggleClass('d-none', count === 0);
+  root.find('.stop-documents-panel').removeClass('d-none');
 }
 
 export function syncPendingPhotos() {
@@ -333,11 +344,11 @@ function onStopPhotosClick(e) {
   if (el.nodeType !== 1) el = el.parentElement;
   if (!el || !el.closest) return;
 
-  var toggle = el.closest('.stop-photos-toggle');
+  var toggle = el.closest('.stop-documents-toggle');
   if (toggle) {
     e.preventDefault();
     e.stopPropagation();
-    var panel = toggle.closest('.stop-photos-accordion').querySelector('.stop-photos-panel');
+    var panel = toggle.closest('.stop-documents-accordion').querySelector('.stop-documents-panel');
     if (panel) panel.classList.toggle('d-none');
     return;
   }
@@ -378,7 +389,9 @@ function onStopPhotosClick(e) {
 
   e.preventDefault();
   e.stopPropagation();
-  removeStopPhoto(remove.closest('.stop-photos'), remove.getAttribute('data-url'));
+  var docs = remove.closest('.stop-documents');
+  var photosPanel = docs ? docs.querySelector('.stop-photos') : remove.closest('.stop-photos');
+  removeStopPhoto(photosPanel, remove.getAttribute('data-url'));
 }
 
 function removeStopPhoto(panelEl, url) {
@@ -388,9 +401,7 @@ function removeStopPhoto(panelEl, url) {
   function goneFromDom() {
     var btn = panelEl.querySelector('.stop-photo-remove[data-url="' + url + '"]');
     if (btn) $(btn.closest('.stop-photo')).remove();
-    var count = wrap.find('.stop-photo').length;
-    wrap.find('.stop-photos-badge').text(count);
-    wrap.find('.stop-photos-accordion').toggleClass('d-none', count === 0);
+    updateDocumentsBadge(documentsRoot(wrap));
     syncModalAfterPhotoChange();
   }
 
@@ -431,7 +442,7 @@ var photoModalTouchStartX = null;
 var photoModalSwiped = false;
 
 function photoItemsFromOpen(openBtn) {
-  var list = openBtn.closest('.stop-photos-list');
+  var list = openBtn.closest('.stop-documents-list');
   if (!list) return [{ url: openBtn.getAttribute('data-url'), deleteUrl: null }];
   return Array.prototype.map.call(list.querySelectorAll('.stop-photo'), function(el) {
     var open = el.querySelector('.stop-photo-open');
@@ -474,7 +485,9 @@ function openStopPhotoModal(openBtn) {
   var modal = document.getElementById('stop-photo-modal');
   var url = openBtn && openBtn.getAttribute('data-url');
   if (!modal || !url) return;
-  photoModalPanel = openBtn.closest('.stop-photos');
+  photoModalPanel = openBtn.closest('.stop-documents')
+    ? openBtn.closest('.stop-documents').querySelector('.stop-photos')
+    : openBtn.closest('.stop-photos');
   photoModalItems = photoItemsFromOpen(openBtn);
   var index = -1;
   for (var i = 0; i < photoModalItems.length; i++) {
@@ -537,25 +550,177 @@ function bindPhotoModalSwipe() {
 }
 
 export function renderStopPhotos(panel, photos) {
-  var list = panel.find('.stop-photos-list');
+  var root = documentsRoot(panel);
+  var list = root.find('.stop-documents-list');
   var baseUrl = panel.data('url');
   photos = photos || [];
-  list.empty();
+  list.find('.stop-photo').not('.stop-signature-doc').remove();
   photos.forEach(function(photo) {
     var remove = photo.deletable === false ? '' :
       '<button type="button" class="stop-photo-remove btn btn-xs btn-default" data-url="' + baseUrl + '/' + photo.id + '">' +
         '<i class="fa fa-trash"></i>' +
       '</button>';
-    list.append(
+    var html =
       '<div class="stop-photo">' +
         remove +
         '<button type="button" class="stop-photo-open" data-url="' + photo.url + '">' +
           '<img src="' + photo.url + '" alt="">' +
         '</button>' +
+      '</div>';
+    var signatureDoc = list.find('.stop-signature-doc');
+    if (signatureDoc.length) signatureDoc.before(html);
+    else list.append(html);
+  });
+  updateDocumentsBadge(root);
+}
+
+function renderStopSignature(wrap, signature) {
+  var root = documentsRoot(wrap);
+  var list = root.find('.stop-documents-list');
+  list.find('.stop-signature-doc').remove();
+  if (signature) {
+    list.append(
+      '<div class="stop-photo stop-signature-doc">' +
+        '<button type="button" class="stop-photo-open" data-url="' + signature.url + '">' +
+          '<img src="' + signature.url + '" alt="">' +
+        '</button>' +
       '</div>'
     );
+  }
+  updateDocumentsBadge(root);
+}
+
+function initStopSignature() {
+  var signaturePanel = null;
+
+  $(document).off('click.stopSignatureOpen').on('click.stopSignatureOpen', '.stop-signature-open', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    signaturePanel = $(this).closest('.stop-signature');
+    openStopSignatureModal();
   });
-  panel.find('.stop-photos-badge').text(photos.length);
-  panel.find('.stop-photos-accordion').toggleClass('d-none', photos.length === 0);
-  panel.find('.stop-photos-panel').removeClass('d-none');
+
+  $(document).off('click.stopSignatureClose').on('click.stopSignatureClose', '.stop-signature-modal-close', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    closeStopSignatureModal();
+  });
+
+  $(document).off('click.stopSignatureClear').on('click.stopSignatureClear', '.stop-signature-clear', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    clearSignatureCanvas(document.querySelector('#stop-signature-modal .stop-signature-canvas'));
+  });
+
+  $(document).off('click.stopSignatureSave').on('click.stopSignatureSave', '.stop-signature-save', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var canvas = document.querySelector('#stop-signature-modal .stop-signature-canvas');
+    if (!canvas || !canvas.dataset.dirty || !signaturePanel) return;
+
+    canvas.toBlob(function(blob) {
+      if (!blob) return;
+      var formData = new FormData();
+      formData.append('signature', blob, 'signature.png');
+      var csrf = stopPhotosCsrf();
+      if (csrf) formData.append('authenticity_token', csrf);
+
+      $.ajax({
+        type: 'POST',
+        url: signaturePanel.data('url'),
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: { 'X-CSRF-Token': csrf }
+      }).done(function(data) {
+        renderStopSignature(signaturePanel, data.signature);
+        closeStopSignatureModal();
+      });
+    }, 'image/png');
+  });
+
+}
+function openStopSignatureModal() {
+  var modal = document.getElementById('stop-signature-modal');
+  if (!modal) return;
+  var canvas = modal.querySelector('.stop-signature-canvas');
+  modal.classList.remove('d-none');
+  document.body.style.overflow = 'hidden';
+  resizeSignatureCanvas(canvas);
+  setupSignatureCanvas(canvas);
+  clearSignatureCanvas(canvas);
+}
+
+function closeStopSignatureModal() {
+  var modal = document.getElementById('stop-signature-modal');
+  if (!modal) return;
+  modal.classList.add('d-none');
+  document.body.style.overflow = '';
+  clearSignatureCanvas(modal.querySelector('.stop-signature-canvas'));
+}
+
+function resizeSignatureCanvas(canvas) {
+  if (!canvas) return;
+  var pad = canvas.parentElement;
+  if (!pad) return;
+  var width = Math.max(pad.clientWidth, 1);
+  var height = Math.max(pad.clientHeight, 1);
+  canvas.width = width * 2;
+  canvas.height = height * 2;
+}
+
+function setupSignatureCanvas(canvas) {
+  if (!canvas || canvas.dataset.bound) return;
+  canvas.dataset.bound = '1';
+  var ctx = canvas.getContext('2d');
+  var drawing = false;
+
+  function pos(e) {
+    var rect = canvas.getBoundingClientRect();
+    var src = e.touches && e.touches[0] ? e.touches[0] : e;
+    return {
+      x: (src.clientX - rect.left) * (canvas.width / rect.width),
+      y: (src.clientY - rect.top) * (canvas.height / rect.height)
+    };
+  }
+
+  function start(e) {
+    e.preventDefault();
+    drawing = true;
+    var p = pos(e);
+    ctx.beginPath();
+    ctx.moveTo(p.x, p.y);
+  }
+
+  function move(e) {
+    if (!drawing) return;
+    e.preventDefault();
+    var p = pos(e);
+    ctx.lineWidth = 3;
+    ctx.lineCap = 'round';
+    ctx.strokeStyle = '#111';
+    ctx.lineTo(p.x, p.y);
+    ctx.stroke();
+    canvas.dataset.dirty = '1';
+  }
+
+  function end() {
+    drawing = false;
+  }
+
+  canvas.addEventListener('mousedown', start);
+  canvas.addEventListener('mousemove', move);
+  canvas.addEventListener('mouseup', end);
+  canvas.addEventListener('mouseleave', end);
+  canvas.addEventListener('touchstart', start, { passive: false });
+  canvas.addEventListener('touchmove', move, { passive: false });
+  canvas.addEventListener('touchend', end);
+}
+
+function clearSignatureCanvas(canvas) {
+  if (!canvas) return;
+  var ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  delete canvas.dataset.dirty;
 }

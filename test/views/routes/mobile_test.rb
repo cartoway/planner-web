@@ -90,17 +90,33 @@ class RouteMobileTest < ActiveSupport::TestCase
     assert_match(/<label[^>]*stop-photos-pick[\s\S]*?stop-photos-camera-input/m, last_response.body)
     assert_includes last_response.body, 'stop-photos-gallery-input'
     assert_match(/capture=["']environment["']/, last_response.body)
-    assert_includes last_response.body, 'stop-photos-accordion d-none'
-    refute_match(/stop-photos-toggle[^>]*data-toggle/, last_response.body)
-    refute_match(/stop-photos-toggle[^>]*no-toggle/, last_response.body)
+    assert_includes last_response.body, 'stop-documents-accordion d-none'
+    refute_match(/stop-documents-toggle[^>]*data-toggle/, last_response.body)
     refute_includes last_response.body, 'stop-photo-remove'
     assert_includes last_response.body, I18n.t('stops.mobile.take_photo')
+    assert_includes last_response.body, I18n.t('stops.mobile.documents_loaded')
     assert_includes last_response.body, 'stop-photo-modal'
     assert_includes last_response.body, 'stop-photo-modal-prev'
     assert_includes last_response.body, 'stop-photo-modal-next'
     assert_includes last_response.body, 'stop-photo-modal-delete'
     assert_match(/stop-photo-modal-delete[^>]*btn-xs/, last_response.body)
     assert_match(/stop-photo-modal-close[^>]*btn-xs/, last_response.body)
+  end
+
+  test 'should show signature button and fullscreen modal controls' do
+    vehicle = @route.vehicle_usage.vehicle
+    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+
+    assert last_response.ok?
+    assert_includes last_response.body, 'stop-signature-open'
+    assert_includes last_response.body, 'stop-signature-modal'
+    assert_includes last_response.body, 'stop-signature-modal-close'
+    assert_match(/stop-signature-modal-close[^>]*btn-xs/, last_response.body)
+    assert_includes last_response.body, 'stop-signature-clear'
+    assert_includes last_response.body, 'stop-signature-save'
+    assert_includes last_response.body, I18n.t('stops.mobile.signature_open')
+    assert_includes last_response.body, I18n.t('stops.mobile.signature_clear')
+    assert_includes last_response.body, I18n.t('stops.mobile.signature_save')
   end
 
   test 'should list loaded photos with a delete button' do
@@ -121,10 +137,30 @@ class RouteMobileTest < ActiveSupport::TestCase
     assert_includes last_response.body, 'stop-photo-open'
     assert_includes last_response.body, 'stop-photo-modal'
     refute_match(/stop-photo-open[\s\S]*target="_blank"/, last_response.body)
-    assert_includes last_response.body, "photos-panel-#{stop.id}"
+    assert_includes last_response.body, "documents-panel-#{stop.id}"
     assert_includes last_response.body, stop_photo_path(stop, stop.photos.first.id)
+    assert_includes last_response.body, I18n.t('stops.mobile.documents_loaded')
   ensure
     stop&.photos&.purge
+  end
+
+  test 'should list signature inside loaded documents' do
+    stop = @route.stops.find { |s| s.is_a?(StopVisit) }
+    stop.attach_signature(
+      Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/stop_photo.jpg'), 'image/jpeg')
+    )
+
+    vehicle = @route.vehicle_usage.vehicle
+    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+
+    assert last_response.ok?
+    assert_includes last_response.body, 'stop-signature-doc'
+    refute_includes last_response.body, 'stop-signature-remove'
+    assert_includes last_response.body, "documents-panel-#{stop.id}"
+    assert_includes last_response.body, I18n.t('stops.mobile.documents_loaded')
+    assert_match(/stop-documents-badge['"]?>1</, last_response.body)
+  ensure
+    stop.signature.purge if stop&.signature&.attached?
   end
 
   test 'should hide photo delete button after one hour' do

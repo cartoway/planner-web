@@ -1,41 +1,6 @@
 require 'test_helper'
 
-class CustomAttributesHelperTest < ActionView::TestCase
-
-  test 'test render typed value boolean' do
-    object_type = 'boolean'
-    typed_default_value = true
-    custom_attribute_default_value_form_field(object_type, typed_default_value)
-    assert_template "shared/_check_box"
-  end
-
-  test 'test render typed value string' do
-    object_type = 'string'
-    typed_default_value = 'Ok'
-    assert_equal(
-      "<textarea name=\"custom_attribute[default_value]\" id=\"custom_attribute_default_value\" class=\"form-control\">\nOk</textarea>",
-      custom_attribute_default_value_form_field(object_type, typed_default_value)
-    )
-  end
-
-  test 'test render typed value integer' do
-    object_type = 'integer'
-    typed_default_value = 5
-    assert_equal(
-      "<input type=\"number\" name=\"custom_attribute[default_value]\" id=\"custom_attribute_default_value\" value=\"5\" stop=\"1\" class=\"form-control\" onkeypress=\"return event.charCode &gt;= 48 &amp;&amp; event.charCode &lt;= 57\" />",
-      custom_attribute_default_value_form_field(object_type, typed_default_value)
-    )
-  end
-
-  test 'test render typed value float' do
-    object_type = 'float'
-    typed_default_value = 6.0
-    assert_equal(
-      "<input type=\"number\" name=\"custom_attribute[default_value]\" id=\"custom_attribute_default_value\" value=\"6.0\" step=\"any\" class=\"form-control\" />",
-      custom_attribute_default_value_form_field(object_type, typed_default_value)
-    )
-  end
-
+class CustomAttributes::FormattingHelperTest < ActionView::TestCase
   test 'test array to object_type' do
     object_type = 'boolean'
     raw_default_value = ['hello'].to_json
@@ -88,14 +53,16 @@ class CustomAttributesHelperTest < ActionView::TestCase
     refute_includes result, custom_attributes(:custom_attribute_route_hidden)
   end
 
-  test 'custom_attribute_mobile_visible_configurable? requires cartoway deliver and mobile eligible object class' do
-    customer = customers(:customer_one)
-    customer.update!(devices: { deliver: { enable: true } })
+  test 'format_custom_attribute_value formats by object type' do
+    assert_equal I18n.t('all.value._yes'), format_custom_attribute_value(custom_attributes(:custom_attribute_stop_three), true)
+    assert_equal I18n.t('all.value._no'), format_custom_attribute_value(custom_attributes(:custom_attribute_stop_three), false)
 
-    assert custom_attribute_mobile_visible_configurable?(customer, 'visit')
-    refute custom_attribute_mobile_visible_configurable?(customer, 'stop_visit')
+    formatted_integer = format_custom_attribute_value(custom_attributes(:custom_attribute_stop_two), 1250)
+    assert_equal '1250', formatted_integer.to_s.gsub(/[^\d]/, '')
+    assert_includes formatted_integer.to_s, '1'
+    assert_includes formatted_integer.to_s, '250'
 
-    customer.update!(devices: {})
-    refute custom_attribute_mobile_visible_configurable?(customer, 'visit')
+    assert_equal '3,2', format_custom_attribute_value(custom_attributes(:custom_attribute_four), 3.2)
+    assert_equal 'default_stop_value', format_custom_attribute_value(custom_attributes(:custom_attribute_stop_one), 'default_stop_value')
   end
 end

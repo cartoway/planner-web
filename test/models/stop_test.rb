@@ -1,6 +1,7 @@
 require 'test_helper'
 
 class StopTest < ActiveSupport::TestCase
+  include ActiveSupport::Testing::TimeHelpers
 
   test 'should not save' do
     stop = Stop.new
@@ -111,5 +112,42 @@ class StopTest < ActiveSupport::TestCase
     end
   ensure
     stop.photos.purge
+  end
+
+  test 'attach_signature stores a single replaceable image' do
+    stop = stops(:stop_one_one)
+    file = Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/stop_photo.jpg'), 'image/jpeg')
+
+    assert stop.attach_signature(file)
+    assert stop.signature.attached?
+    first_blob_id = stop.signature.blob.id
+
+    travel 2.hours do
+      file2 = Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/stop_photo.jpg'), 'image/jpeg')
+      assert stop.attach_signature(file2)
+    end
+
+    assert stop.signature.attached?
+    assert_not_equal first_blob_id, stop.signature.blob.id
+    assert_match %r{\Acustomers/\d+/\d{4}/\d{2}/\d{2}/[a-z0-9]{28}\z}, stop.signature.blob.key
+  ensure
+    stop.signature.purge if stop.signature.attached?
+  end
+
+  test 'delivery_note_available? only for delivered or exception visit stops' do
+    stop = stops(:stop_one_one)
+    stop.update_columns(status: nil)
+    assert_not stop.delivery_note_available?
+
+    stop.update_columns(status: 'intransit')
+    assert_not stop.delivery_note_available?
+
+    stop.update_columns(status: 'delivered')
+    assert stop.delivery_note_available?
+
+    stop.update_columns(status: 'exception')
+    assert stop.delivery_note_available?
+
+    assert_not stops(:stop_one_four).delivery_note_available?
   end
 end

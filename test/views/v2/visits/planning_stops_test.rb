@@ -16,6 +16,16 @@ class VisitPlanningStopsPartialTest < ActionView::TestCase
     refute_includes rendered, 'n°'
     stop = stops(:stop_one_one)
     assert_select %(a[href*="stop_id=#{stop.id}"][href*="route_id=#{stop.route_id}"][target="_blank"][rel="noopener noreferrer"])
+    assert_select %(a[href="#{delivery_note_stop_path(stop)}"]), 0
+  end
+
+  test 'shows delivery note link when stop is delivered' do
+    stop = stops(:stop_one_one)
+    stop.update_columns(status: 'delivered')
+    visit = visits(:visit_one)
+    render partial: 'v2/visits/planning_stops', locals: { visit: visit }
+
+    assert_select %(a[href="#{delivery_note_stop_path(stop)}"][target="_blank"][rel="noopener noreferrer"])
   end
 
   test 'shows stop status as a colored badge' do
@@ -61,5 +71,27 @@ class VisitPlanningStopsPartialTest < ActionView::TestCase
     assert_select '.visit-planning-stops > .visit-planning-photos-toggle', 0
   ensure
     stop&.photos&.purge
+  end
+
+  test 'photos and signature collapses share a parent accordion' do
+    stop = stops(:stop_one_one)
+    stop.photos.attach(
+      io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')),
+      filename: 'stop_photo.jpg',
+      content_type: 'image/jpeg'
+    )
+    stop.attach_signature(
+      Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/stop_photo.jpg'), 'image/jpeg')
+    )
+    visit = visits(:visit_one)
+    render partial: 'v2/visits/planning_stops', locals: { visit: visit }
+
+    docs_id = "visit-#{visit.id}-stop-#{stop.id}-docs"
+    assert_select %(.visit-planning-docs[id="#{docs_id}"]), 1
+    assert_select '.visit-planning-docs-toggles .visit-planning-photos-toggle', 2
+    assert_select %(.visit-planning-photos[data-bs-parent="##{docs_id}"]), 2
+  ensure
+    stop&.photos&.purge
+    stop&.signature&.purge if stop&.signature&.attached?
   end
 end

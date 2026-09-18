@@ -405,6 +405,29 @@
         <%= render partial: 'shared/check_box', locals: { form: f, field: :print_map, label: t('activerecord.attributes.customer.print_map') } %>
         <%= render partial: 'shared/check_box', locals: { form: f, field: :print_planning_annotating, label: t('activerecord.attributes.customer.print_planning_annotating') } %>
         <%= f.text_area :print_header, help: t('.print_header_help') %>
+        <h3 class="h4"><%= t('.company.title') %></h3>
+        <p class="help-block"><%= t('.company.help') %></p>
+        <%= f.text_field :company_name %>
+        <%= f.text_field :company_street, help: t('web.form.helpers.street') %>
+        <%= f.text_field :company_detail, help: t('destinations.form.detail_help') %>
+        <div id="customer_company_city_input" class="mb-3 row">
+          <label class="sr-only" for="customer_company_postalcode"><%= t('activerecord.attributes.customer.company_postalcode') %></label>
+          <label class="sr-only" for="customer_company_city"><%= t('activerecord.attributes.customer.company_city') %></label>
+          <label class="col-md-offset-2 col-md-8 field">
+            <%= t('activerecord.attributes.customer.company_postalcode') %>
+            / <%= t('activerecord.attributes.customer.company_city') %>
+          </label>
+          <div class="col-md-offset-2 col-md-8 field">
+            <div class="input-group">
+              <%= text_field :customer, :company_postalcode, maxlength: 17, class: 'form-control width_1_2' %>
+              <%= text_field :customer, :company_city, class: 'form-control width_1_2' %>
+              <span class="input-group-addon">
+                <i class="fa fa-map fa-fw"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+        <%= f.text_field :company_phone, input_group: content_tag('i', '', class: 'fa fa-phone fa-fw') %>
       </div>
     </div>
   </div>
