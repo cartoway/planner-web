@@ -98,4 +98,18 @@ class StopTest < ActiveSupport::TestCase
     assert_nil stop.attach_photos([])
     assert stop.errors[:photos].present?
   end
+
+  test 'attach_photos stores blobs under customer/date prefix' do
+    stop = stops(:stop_one_one)
+    customer_id = stop.route.planning.customer_id
+    file = Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/stop_photo.jpg'), 'image/jpeg')
+
+    travel_to Time.utc(2026, 9, 18, 12, 0, 0) do
+      assert stop.attach_photos([file])
+      key = stop.photos.last.blob.key
+      assert_match %r{\Acustomers/#{customer_id}/2026/09/18/[a-z0-9]{28}\z}, key
+    end
+  ensure
+    stop.photos.purge
+  end
 end
