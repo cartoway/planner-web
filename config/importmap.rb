@@ -15,8 +15,12 @@ pin "turbo/frame_promoted_visit", to: "turbo/frame_promoted_visit.js", preload: 
 pin "turbo/frame_tracking_store", to: "turbo/frame_tracking_store.js", preload: true
 pin_all_from "app/javascript/maplibre", under: "maplibre"
 pin_all_from "app/javascript/controllers", under: "controllers"
+pin_all_from "app/javascript/lib", under: "lib"
 # Tom Select ESM pulls @orchidjs/* bare specifiers; map them for the browser importmap (see tom-select dist/esm/tom-select.js).
 pin "@orchidjs/sifter", to: "https://cdn.jsdelivr.net/npm/@orchidjs/sifter@1.1.0/+esm"
 pin "@orchidjs/unicode-variants", to: "https://cdn.jsdelivr.net/npm/@orchidjs/unicode-variants@1.1.2/+esm"
 # Tom Select (ESM complete build: plugins resolve relative to this URL on the CDN)
 pin "tom-select", to: "https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/esm/tom-select.complete.js", preload: true
+# Maskito time masks for v2 schedule fields (@maskito/kit imports @maskito/core by bare name)
+pin "@maskito/core", to: "https://cdn.jsdelivr.net/npm/@maskito/core@5.4.0/index.esm.js", preload: true
+pin "@maskito/kit", to: "https://cdn.jsdelivr.net/npm/@maskito/kit@5.4.0/index.esm.js", preload: true

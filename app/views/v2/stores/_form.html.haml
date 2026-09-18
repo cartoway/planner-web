@@ -1,6 +1,6 @@
 -# V2 sidebar store form (geocoding via Stimulus; map is the index background).
 - form_mutable = current_user_store_form_submit_enabled?(@store)
-- form_html = { class: 'form-horizontal', id: 'store-form-sidebar', 'data-turbo-frame' => 'form_sidebar', 'data-store_id' => (@store.id or 0), 'data-position-editable' => (form_mutable ? 'true' : 'false') }
+- form_html = { class: 'form-horizontal', id: 'store-form-sidebar', 'data-turbo-frame' => 'form_sidebar', 'data-store_id' => (@store.id or 0), 'data-position-editable' => (form_mutable ? 'true' : 'false'), 'data-controller' => 'v2--time-fields', 'data-v2--time-fields-invalid-message-value' => t('schedule_type.invalid') }
 - form_html['data-v2--dirty-form-submit-target'] = 'form' if form_mutable
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
 - v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
@@ -104,15 +104,15 @@
               .d-flex.align-items-center.px-2
                 %i.fa.fa-globe.fa-fw
     .mb-3.row
-      %label{class: v2_label_col}= t 'activerecord.attributes.store.color'
-      %div{class: v2_control_col}
-        = select_tag 'store[color]', options_for_select((COLORS_TABLE + [customised_color_verification(@store[:color])]).compact.uniq, @store.color), include_blank: '#000000', class: 'form-control'
-    .mb-3.row
       %label{class: v2_label_col}= t 'activerecord.attributes.store.icon'
       %div{class: v2_control_col}
-        .input-group
-          = select_tag 'store[icon]', grouped_options_for_select([[t('stores.form.prefered_icons'), @grouped_icons[0]], [t('stores.form.other_icons'), @grouped_icons[1]]], @store.icon), include_blank: t('web.form.default', n: @store.customer.default_store_icon), class: 'form-control', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true }
-          = select_tag 'store[icon_size]', options_for_select([[t('stores.form.icon_size.small'), :small], [t('stores.form.icon_size.medium'), :medium], [t('stores.form.icon_size.large'), :large]], @store.icon_size), include_blank: t('web.form.default', n: t("stores.form.icon_size.#{@store.customer.default_store_icon_size}")), class: 'form-control'
+        - icon_options = ->(icons) { icons.map { |icon| [icon, icon, { 'data-icon' => icon }] } }
+        - default_icon = @store.customer.default_store_icon
+        - store_color = @store.color.presence || DEFAULT_COLOR
+        .input-group.store-icon-group
+          = color_field_tag 'store[color]', store_color, id: 'store_color', class: 'form-control form-control-color', title: t('activerecord.attributes.store.customised_color')
+          = select_tag 'store[icon]', options_for_select([[t('web.form.default', n: default_icon), '', { 'data-icon' => default_icon }]], @store.icon.presence || '') + grouped_options_for_select([[t('stores.form.prefered_icons'), icon_options.call(@grouped_icons[0])], [t('stores.form.other_icons'), icon_options.call(@grouped_icons[1])]], @store.icon), class: 'form-select', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true }
+          = select_tag 'store[icon_size]', options_for_select([[t('stores.form.icon_size.small'), :small], [t('stores.form.icon_size.medium'), :medium], [t('stores.form.icon_size.large'), :large]], @store.icon_size), include_blank: t('web.form.default', n: t("stores.form.icon_size.#{@store.customer.default_store_icon_size}")), class: 'form-select'
     = hidden_field :store, :geocoder_version, value: @store.geocoder_version
     = hidden_field :store, :geocoded_at, value: @store.geocoded_at
   #store_reloads{data: { controller: 'v2--nested-fields' }}

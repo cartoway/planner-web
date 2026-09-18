@@ -65,6 +65,14 @@ class StoresControllerTest < ActionController::TestCase
     assert_select 'input.store-reload-destroy-flag[name*="[_destroy]"]', minimum: 1
     assert_select '#store_reloads button[data-action*="v2--nested-fields#remove"]', minimum: 1
     assert_select 'template[data-v2--nested-fields-target=template] .store-reload-fieldset', 1
+    assert_select 'select#store_icon[data-controller~="v2--tom-select"]', 1
+    assert_select 'select#store_icon option[data-icon]', minimum: 1
+    assert_select 'select#store_icon option[value=""][data-icon]', 1
+    assert_select 'input#store_color[type=color][name="store[color]"]', 1
+    assert_select 'select#store_color', 0
+    assert_select '.store-icon-group input#store_color', 1
+    assert_select '.store-icon-group select#store_icon', 1
+    assert_select '.store-icon-group select#store_icon_size', 1
   end
 
   test 'v2 edit does not invent a store_reload when the store has none' do

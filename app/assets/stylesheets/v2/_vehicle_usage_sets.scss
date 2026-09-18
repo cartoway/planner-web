@@ -172,6 +172,19 @@
   }
 }
 
+// Sidebar overlays main — reserve space + drop secondary columns so row actions stay visible.
+.main.main--form-sidebar:has(.form-sidebar--open) {
+  .deliverable-units-index {
+    // Match .form-sidebar.slide-panel width in application.scss
+    padding-right: clamp(300px, 38vw, 560px);
+    box-sizing: border-box;
+
+    .du-col-sidebar-hide {
+      display: none;
+    }
+  }
+}
+
 // Fleet sidebar forms: wrap multi-control input-groups in the narrow BS5 column.
 #vehicle-usage-set-form-sidebar,
 #vehicle-usage-form-sidebar,
@@ -235,18 +248,50 @@
   }
 
   .fleet-split .fleet-bound-label {
-    flex: 0 0 7rem;
-    width: 7rem;
+    flex: 0 0 9rem;
+    width: 9rem;
     justify-content: center;
     text-align: center;
     white-space: nowrap;
   }
 
-  .form-control-color {
-    width: 3rem;
-    height: 2.25rem;
-    padding: 0.15rem;
-    cursor: pointer;
+  // Trailing cost units (€, €/h, €/km) — same width so inputs line up.
+  .fleet-split .fleet-cost-unit {
+    flex: 0 0 80px;
+    justify-content: center;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  // Store icon row: color / icon / size — fixed flex shares (content-independent, scales with sidebar).
+  .store-icon-group {
+    flex-wrap: nowrap !important;
+
+    > .form-control-color {
+      flex: 0 0 18%;
+      width: 18% !important;
+      min-width: 2.5rem;
+      max-width: none;
+      padding: 0.25rem;
+    }
+
+    > .ts-wrapper {
+      flex: 1 1 47%;
+      width: auto !important;
+      min-width: 0;
+      max-width: none;
+
+      .ts-control {
+        overflow: hidden;
+      }
+    }
+
+    > select.form-select {
+      flex: 0 0 35%;
+      width: 35% !important;
+      min-width: 0;
+      max-width: none;
+    }
   }
 
   .router-option-disabled {

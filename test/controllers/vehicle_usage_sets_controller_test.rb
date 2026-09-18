@@ -102,8 +102,12 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_select 'form#vehicle-usage-set-form-sidebar .offset-md-1', minimum: 1
     assert_select '#vehicle_usage_set_time_window_start_time_window_end_input.fleet-split .input-group', 2
     assert_select '#vehicle_usage_set_time_window_start_time_window_end_input .fleet-bound-label', 2
+    assert_select '#vehicle_usage_set_display_costs.fleet-split .input-group', 3
+    assert_select '#vehicle_usage_set_display_costs .fleet-bound-label', 3
+    assert_select '#vehicle_usage_set_display_costs .fleet-cost-unit', 3
     assert_select 'form#vehicle-usage-set-form-sidebar[data-controller~="v2--rest-type-fields"]', 1
     assert_select 'form#vehicle-usage-set-form-sidebar[data-controller~="v2--number-to-percentage"]', 1
+    assert_select 'form#vehicle-usage-set-form-sidebar[data-controller~="v2--time-fields"]', 1
     assert_select 'form#vehicle-usage-set-form-sidebar[data-action*="v2--rest-type-fields#change"]', 1
     assert_select 'script[src*="vehicle_usage_set"]', 0
     assert_select 'input[type=radio][name="vehicle_usage_set[rest_mode]"]', 2
@@ -117,7 +121,17 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'select#vehicle_usage_set_store_reload_ids[multiple][data-controller~="v2--tom-select"]', 1
     assert_select 'select#vehicle_usage_set_store_reload_ids[data-v2--tom-select-simple-value="true"]', 1
+    assert_select 'select#vehicle_usage_set_store_reload_ids.form-select', 1
     assert_select 'select#vehicle_usage_set_store_reload_ids option', minimum: 1
+  end
+
+  test 'edit sidebar native selects use form-select for caret' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @vehicle_usage_set }
+    assert_response :success
+    assert_select 'select#vehicle_usage_set_store_start_id.form-select', 1
+    assert_select 'select#vehicle_usage_set_store_stop_id.form-select', 1
   end
 
   test 'v2 create from sidebar closes the form frame' do
