@@ -307,7 +307,7 @@ class V01::Plannings < Grape::API
       Route.includes_destinations_and_stores.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
         authorize!(:optimize, planning)
-        raise Exceptions::JobInProgressError if planning.customer.optimizer_running?
+        raise Exceptions::JobInProgressError if planning.customer.blocking_job
 
         begin
           Optimizer.optimize(planning, nil, { global: params[:global], synchronous: params[:synchronous], active_only: params[:all_stops].nil? ? params[:active_only] : !params[:all_stops], ignore_overload_multipliers: params[:ignore_overload_multipliers] })
@@ -324,7 +324,7 @@ class V01::Plannings < Grape::API
         end
       rescue Exceptions::JobInProgressError
         status 409
-        present planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
+        present planning.customer.blocking_job, with: V01::Entities::Job, message: I18n.t('errors.planning.job_in_progress')
       end
     end
 
@@ -436,7 +436,7 @@ class V01::Plannings < Grape::API
     patch ':id/update_stops_status' do
       Route.includes_destinations_and_stores.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-        if Job.on_planning(planning.customer.job_optimizer, planning.id)
+        if planning.customer.blocking_job(planning_id: planning.id)
           status 204
         else
           service = DeviceService.new customer: @customer

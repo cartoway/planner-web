@@ -7,8 +7,8 @@ class DestinationsImport
     # source: 'csv' | 'json' | 'tomtom'
     # Returns Delayed::Job when enqueued, import result when run synchronously, false when refused.
     def enqueue(customer, source:, blob: nil, options: {}, synchronous: false)
-      if customer.destination_import_running?
-        customer.errors.add(:base, I18n.t('errors.destination.already_importing'))
+      if customer.blocking_job
+        customer.errors.add(:base, I18n.t('errors.planning.job_in_progress'))
         return false
       end
 
