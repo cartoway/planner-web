@@ -259,6 +259,8 @@ class V01::Customers < Grape::API
           customer.job_destination_geocoding
         elsif customer.job_store_geocoding && customer.job_store_geocoding_id == params[:job_id]
           customer.job_store_geocoding
+        elsif customer.job_destination_import && customer.job_destination_import_id == params[:job_id]
+          customer.job_destination_import
         end
       else
         error! V01::Status.code_response(:code_404, before: 'Customer'), 404
@@ -289,6 +291,8 @@ class V01::Customers < Grape::API
           customer.job_destination_geocoding.destroy
         elsif customer.job_store_geocoding && customer.job_store_geocoding_id == params[:job_id]
           customer.job_store_geocoding.destroy
+        elsif customer.job_destination_import && customer.job_destination_import_id == params[:job_id]
+          customer.job_destination_import.destroy
         end
         Customer.dismiss_last_async_job!(customer.id, params[:job_id])
         status 204

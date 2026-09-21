@@ -40,9 +40,9 @@ class Job < Struct
   # Destroy of a running job is killed. Destroy of an already-failed job keeps failed.
   ASYNC_KINDS = {
     'OptimizerJob' => 'optimizer',
-    'GeocoderJob' => 'destination_geocoding',
     'GeocoderDestinationsJob' => 'destination_geocoding',
-    'GeocoderStoresJob' => 'store_geocoding'
+    'GeocoderStoresJob' => 'store_geocoding',
+    'ImporterDestinationsJob' => 'destination_import'
   }.freeze
 
   def success(delayed_job)
