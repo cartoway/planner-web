@@ -229,8 +229,12 @@ const iCalendarExport = function(planningId) {
   });
 };
 
-const spreadsheetModalExport = function(columns, planningId, export_settings, custom_columns) {
+const spreadsheetModalExport = function(columns, planningId, export_settings, custom_columns, summaryColumns) {
   custom_columns = custom_columns || {};
+  summaryColumns = summaryColumns || [];
+  var activeColumns = columns;
+  var isSummaryExport = false;
+
   $('#planning-spreadsheet-modal').on('show.bs.modal', function() {
     if ($('[name=spreadsheet-route]').val())
       $('[name=spreadsheet-out-of-route]').parent().parent().hide();
@@ -239,6 +243,8 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
   });
   $('#planning-spreadsheet-modal').on('hidden.bs.modal', function () {
     $('[name=spreadsheet-route]').val('');
+    $('#spreadsheet-summary').val('false');
+    isSummaryExport = false;
   });
 
   if (export_settings && Array.isArray(export_settings['stops'])) {
@@ -247,16 +253,20 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
     });
   }
 
-  var columnsExport = (export_settings && export_settings['export']) || [];
-  var columnsSkip = (export_settings && export_settings['skips']) || [];
-  if (columnsExport != []) {
-    $.each(columns, function(i, c) {
-      if (columnsExport.indexOf(c) < 0 && (!columnsSkip || columnsSkip.indexOf(c) < 0))
+  function buildColumnLists(availableColumns) {
+    var columnsExport = (export_settings && export_settings['export']) || [];
+    var columnsSkip = (export_settings && export_settings['skips']) || [];
+    // Keep only columns that exist for the current export mode (detail vs summary).
+    columnsExport = columnsExport.filter(function(c) { return availableColumns.indexOf(c) >= 0; });
+    columnsSkip = columnsSkip.filter(function(c) { return availableColumns.indexOf(c) >= 0; });
+    availableColumns.forEach(function(c) {
+      if (columnsExport.indexOf(c) < 0 && columnsSkip.indexOf(c) < 0)
         columnsExport.push(c);
     });
+    return { columnsExport: columnsExport, columnsSkip: columnsSkip };
   }
 
-  function renderSpreadsheetColumns(columnsExport, columnsSkip) {
+  function renderSpreadsheetColumns(columnsExport, columnsSkip, availableColumns) {
     const $export = $('#columns-export').empty();
     const $skip = $('#columns-skip').empty();
 
@@ -290,7 +300,7 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
     }
 
     columnsExport.forEach(function(col) {
-      if (columns.indexOf(col) >= 0) {
+      if (availableColumns.indexOf(col) >= 0) {
         $export.append(
           `<div class="draggable-item" data-value="${col}">
             <span class="item-order"></span>
@@ -300,7 +310,7 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
       }
     });
     columnsSkip.forEach(function(col) {
-      if (columns.indexOf(col) >= 0) {
+      if (availableColumns.indexOf(col) >= 0) {
         $skip.append(
           `<div class="draggable-item inactive" data-value="${col}">
             <span class="item-order"></span>
@@ -310,12 +320,33 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
       }
     });
   }
-  renderSpreadsheetColumns(columnsExport, columnsSkip);
 
-  var spreadsheetDndRoot = document.getElementById('spreadsheet-columns-container');
-  if (spreadsheetDndRoot && spreadsheetDndRoot._dragDropInstance) {
-    spreadsheetDndRoot._dragDropInstance.refresh();
+  function refreshSpreadsheetDnD() {
+    var spreadsheetDndRoot = document.getElementById('spreadsheet-columns-container');
+    if (spreadsheetDndRoot && spreadsheetDndRoot._dragDropInstance) {
+      spreadsheetDndRoot._dragDropInstance.refresh();
+    }
   }
+
+  function openSpreadsheetModal(summary) {
+    isSummaryExport = !!summary;
+    $('#spreadsheet-summary').val(isSummaryExport ? 'true' : 'false');
+    activeColumns = isSummaryExport ? summaryColumns : columns;
+    $('#spreadsheet-stops-group').toggle(!isSummaryExport);
+
+    var lists = buildColumnLists(activeColumns);
+    renderSpreadsheetColumns(lists.columnsExport, lists.columnsSkip, activeColumns);
+    refreshSpreadsheetDnD();
+
+    $('#planning-spreadsheet-modal').modal({
+      keyboard: true,
+      show: true
+    });
+  }
+
+  var initialLists = buildColumnLists(columns);
+  renderSpreadsheetColumns(initialLists.columnsExport, initialLists.columnsSkip, columns);
+  refreshSpreadsheetDnD();
 
   if (export_settings && export_settings['format']) {
     $('[name=spreadsheet-format][value=' + export_settings['format'] + ']').prop('checked', true);
@@ -336,22 +367,36 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
     var spreadsheetColumnsSkip = $('#spreadsheet-columns-container .inactive-zone .item-list .draggable-item').map(function(i, e) {
       return $(e).attr('data-value');
     }).get().join('|');
-    var spreadsheetFormat = $('[name=spreadsheet-format]:checked').val();
+    // Modal list can be empty (Turbolinks cache / DnD init race) — fall back to all known columns.
+    if (!spreadsheetColumnsExport && Array.isArray(activeColumns) && activeColumns.length) {
+      spreadsheetColumnsExport = activeColumns.join('|');
+      spreadsheetColumnsSkip = '';
+    }
+    var spreadsheetFormat = $('[name=spreadsheet-format]:checked').val() || 'excel';
     var basePath = $('[name=spreadsheet-route]').val() ? ('/routes/' + $('[name=spreadsheet-route]').val()) : (planningId) ? '/plannings/' + planningId : '/plannings';
+    var summary = $('#spreadsheet-summary').val() === 'true' || isSummaryExport;
 
     window.location.href = basePath + '.' + spreadsheetFormat +
       '?stops=' + encodeURIComponent(spreadsheetStops) +
       '&columns=' + encodeURIComponent(spreadsheetColumnsExport) +
-      '&ids=' + encodeURIComponent(planningsId) +
-      '&skips=' + encodeURIComponent(spreadsheetColumnsSkip);
+      '&ids=' + encodeURIComponent(planningsId.join(',')) +
+      '&skips=' + encodeURIComponent(spreadsheetColumnsSkip) +
+      (summary ? '&summary=true' : '');
 
     $('#planning-spreadsheet-modal').modal('toggle');
   });
-  $('.export_spreadsheet').off('click').on('click', function() {
-    $('#planning-spreadsheet-modal').modal({
-      keyboard: true,
-      show: true
-    });
+  $('.export_spreadsheet').off('click').on('click', function(e) {
+    e.preventDefault();
+    openSpreadsheetModal(false);
+  });
+  $('.export_summary_spreadsheet').off('click').on('click', function(e) {
+    e.preventDefault();
+    var planningsId = getPlanningsId();
+    if (!planningId && planningsId.length === 0) {
+      warning(I18n.t('plannings.index.export.none_planning'));
+      return;
+    }
+    openSpreadsheetModal(true);
   });
 };
 
@@ -4195,7 +4240,7 @@ export const plannings_edit = function(params) {
     });
   });
 
-  spreadsheetModalExport(params.spreadsheet_columns, params.planning_id, params.export_settings, params.spreadsheet_custom_columns);
+  spreadsheetModalExport(params.spreadsheet_columns, params.planning_id, params.export_settings, params.spreadsheet_custom_columns, params.spreadsheet_summary_columns);
 
   var devicesObservePlanning = (function() {
 
@@ -4365,7 +4410,7 @@ var plannings_index = function(params) {
   var requestPending = false;
 
   iCalendarExport();
-  spreadsheetModalExport(params.spreadsheet_columns, null, params.export_settings, params.spreadsheet_custom_columns);
+  spreadsheetModalExport(params.spreadsheet_columns, null, params.export_settings, params.spreadsheet_custom_columns, params.spreadsheet_summary_columns);
 
   var vehicle_id = $('#vehicle_id').val(),
     planning_ids;
