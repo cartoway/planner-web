@@ -335,6 +335,60 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :success
     assert_match 'r2;planning2;;;;1;0;;;;16:00;;;;;;;;;;;;;', response.body.split("\n")[1]
     assert_match 'r1;planning1;10/10/2015;route_one;001;4;4;;0.0;1.5;32:00;;;;;;;;;;;;;', response.body.split("\n").find{ |l| l.include?('r1') && l.include?('001') }
+    assert_match(/#{Regexp.escape(I18n.t('helpers.export.summary'))}/, response.headers['Content-Disposition'])
+  end
+
+  test 'should get index detail csv for selected planning ids' do
+    other = plannings(:planning_two)
+    get :index, params: { format: :excel, ids: "#{@planning.id},#{other.id}", **@export_settings_params }
+    assert_response :success
+    lines = response.body.split("\n")
+    assert lines.any?{ |l| l.include?('planning1') }
+    assert lines.any?{ |l| l.include?('planning2') }
+  end
+
+  test 'should get index detail csv when columns param is blank' do
+    # Modal can submit columns= when the DnD list was empty; must fall back to defaults.
+    get :index, params: { format: :excel, ids: @planning.id.to_s, columns: '', stops: 'out-of-route|store|rest|inactive', skips: '' }
+    assert_response :success
+    lines = response.body.split(/\r?\n/).reject(&:blank?)
+    assert_operator lines.size, :>=, 2
+    assert lines.any?{ |l| l.include?('planning1') }
+  end
+
+  test 'should get index summary csv for selected planning ids' do
+    other = plannings(:planning_two)
+    get :index, params: { format: :excel, summary: true, ids: "#{@planning.id},#{other.id}" }
+    assert_response :success
+    lines = response.body.split("\n")
+    assert lines.any?{ |l| l.include?('planning1') && l.include?('001') }
+    assert lines.any?{ |l| l.include?('planning2') }
+  end
+
+  test 'should get index summary csv with selected columns' do
+    get :index, params: {
+      format: :excel,
+      summary: true,
+      ids: @planning.id.to_s,
+      columns: 'planning_name|route|ref_vehicle|stop_size'
+    }
+    assert_response :success
+    header = response.body.split(/\r?\n/).first
+    # Only the requested columns, not the full summary set.
+    assert_equal 4, header.split(';').size
+    assert response.body.split(/\r?\n/).any?{ |l| l.include?('planning1') }
+  end
+
+  test 'summary export should not overwrite detail column preferences' do
+    user = users(:user_one)
+    user.update!(export_settings: { 'export' => ['ref', 'name'], 'skips' => ['city'], 'stops' => ['store'], 'format' => 'excel' })
+
+    get :index, params: { format: :excel, summary: true, ids: @planning.id.to_s }
+    assert_response :success
+
+    user.reload
+    assert_equal ['ref', 'name'], user.export_settings['export']
+    assert_equal ['city'], user.export_settings['skips']
   end
 
   test 'should get new' do
