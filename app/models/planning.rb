@@ -220,8 +220,8 @@ class Planning < ApplicationRecord
     self.class.optimizer_context
   end
 
-  # One-for-all write lock while OptimizerJob runs on this planning.
-  # OptimizerJob sets optimizer_context so it can still persist the solution.
+  # One-for-all write lock while a blocking job runs for this customer/planning.
+  # OptimizerJob / ImporterDestinationsJob set optimizer_context so they can still persist.
   def reject_writes_during_optimization!
     return if in_optimization_context?
     raise Exceptions::JobInProgressError if customer.blocking_job(planning_id: id)
