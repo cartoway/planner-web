@@ -77,6 +77,8 @@ class V01::Jobs < Grape::API
         customer.job_destination_geocoding.destroy
       elsif customer.job_store_geocoding && customer.job_store_geocoding_id == params[:id]
         customer.job_store_geocoding.destroy
+      elsif customer.job_destination_import && customer.job_destination_import_id == params[:id]
+        customer.job_destination_import.destroy
       end
       Customer.dismiss_last_async_job!(customer.id, params[:id])
       status 204

@@ -884,6 +884,8 @@ en:
       position_unavailable: Position is not available
       sync_failed: Synchronization failed
       unsupported_geolocation: Your browser does not support geolocation
+    destination:
+      already_importing: A destinations import is already in progress
     planning:
       import_too_many_routes: Tried to import more routes than available vehicles
       already_optimizing: A plan optimization is already in progress
@@ -1578,15 +1580,33 @@ en:
       click2call: Click to call
       quantity_small: Qty.
       dialog:
-        import:
-          title: Import
-          in_progress: 'Please wait, import in progress'
         geocoding:
           title: Geocoding
           in_progress: 'Please wait, geocoding in progress.'
           attempts: 'Attempts:'
           inqueue: Geocoding task queued
           error: Compute failed.
+        import:
+          title: Import
+          in_progress: 'Please wait, import in progress'
+          error: Import failed.
+          destinations: 'Destinations:'
+          visits: 'Visits:'
+          stores: 'Facilities:'
+          store_reloads: 'Store reloads:'
+          tags: 'Tags:'
+          plannings: 'Plans:'
+          geocoding: 'Geocoding:'
+          phase:
+            starting: Starting
+            destinations: Importing destinations
+            stores: Importing facilities
+            visits: Importing visits
+            tags: Importing tags
+            store_reloads: Importing store reloads
+            geocoding: Geocoding
+            plannings: Updating plans
+            done: Done
         geocoding_danger:
           title: Geocoding results without reliability
           infos: >-

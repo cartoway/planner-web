@@ -1182,7 +1182,7 @@ class DestinationsControllerTest < ActionController::TestCase
       end
     end
 
-    assert_redirected_to edit_planning_url(Planning.last)
+    assert_redirected_to destinations_url
   end
 
   test 'import shows vehicle usage set select when customer has several configurations' do
@@ -1299,21 +1299,14 @@ class DestinationsControllerTest < ActionController::TestCase
   test 'should redirect after upload_csv without geocoding job' do
     customers(:customer_one).update(job_destination_geocoding_id: nil)
     [
-      { redirect: 'last_planning', file: 'import_custom_destinations_one.csv', column_def: { route: 'tour' } },
-      { redirect: 'destinations', file: 'import_destinations_update.csv', column_def: nil },
-      { redirect: 'plannings', file: 'import_destinations_several_plans.csv', column_def: nil }
+      { file: 'import_custom_destinations_one.csv', column_def: { route: 'tour' } },
+      { file: 'import_destinations_update.csv', column_def: nil },
+      { file: 'import_destinations_several_plans.csv', column_def: nil }
     ].each do |test|
       file = fixture_file_upload("test/fixtures/files/#{test[:file]}")
       post :upload_csv, params: { import_csv: { replace: false, file: file, column_def: test[:column_def] ? test[:column_def] : nil } }
 
-      case test[:redirect]
-      when 'last_planning'
-        assert_redirected_to edit_planning_url(Planning.last)
-      when 'destinations'
-        assert_redirected_to destinations_url
-      when 'plannings'
-        assert_redirected_to plannings_url
-      end
+      assert_redirected_to destinations_url
     end
   end
 

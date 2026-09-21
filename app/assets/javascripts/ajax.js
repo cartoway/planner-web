@@ -185,6 +185,7 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
     }
 
     updateOptimizationDetails(dialog, progress);
+    updateImportCounters(dialog, progress);
     var transmitted = !!(progress && (progress.job_id || progress['job_id']));
     var optimizerFailed = !!delayedJob.error || !!(progress && progress['failed']);
     $('.optim-cancel', dialog).toggle(transmitted && !optimizerFailed);
@@ -397,6 +398,40 @@ const renderOptimizationResolutionSteps = function(dialog, progress) {
     '<p class="text-muted">' + phases.join(' · ') + '</p>'
   ).show();
   return true;
+};
+
+export const updateImportCounters = function(dialog, progress) {
+  if (!progress) {
+    return;
+  }
+
+  var counters = $('.dialog-import-counters', dialog);
+  if (!counters.length) {
+    return;
+  }
+
+  var any = false;
+  ['destinations', 'visits', 'stores', 'store_reloads', 'tags', 'plannings', 'geocoding'].forEach(function(key) {
+    var el = $('.dialog-import-' + key, dialog);
+    if (!el.length) {
+      return;
+    }
+    if (progress[key]) {
+      el.find('.dialog-import-count').text(progress[key]);
+      el.show();
+      any = true;
+    }
+  });
+  if (any) {
+    counters.show();
+  }
+
+  var phaseEl = $('.dialog-import-phase', dialog);
+  if (phaseEl.length && progress.phase) {
+    var key = 'destinations.index.dialog.import.phase.' + progress.phase;
+    var label = I18n.t(key);
+    phaseEl.text(label === key ? progress.phase : label).show();
+  }
 };
 
 export const updateOptimizationDetails = function(dialog, progress) {
