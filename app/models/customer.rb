@@ -243,6 +243,14 @@ class Customer < ApplicationRecord
     job_destination_import.present? && job_destination_import.failed_at.nil?
   end
 
+  # Job that must block mutating operations (customer-wide, or scoped to a planning for optimizer).
+  def blocking_job(planning_id: nil)
+    return job_destination_import if destination_import_running?
+    return job_optimizer if planning_id ? Job.on_planning(job_optimizer, planning_id) : optimizer_running?
+
+    nil
+  end
+
   def last_failed_optimizer_job(planning_id = nil)
     entry = (last_async_jobs || {})['optimizer']
     return unless entry.is_a?(Hash) && entry['status'] == 'failed'
