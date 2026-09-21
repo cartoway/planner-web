@@ -78,7 +78,7 @@ class V100::Stops < Grape::API
               status 204
             rescue Exceptions::JobInProgressError
               status 409
-              present planning.customer.job_optimizer, with: V100::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
+              present planning.customer.blocking_job(planning_id: planning.id), with: V100::Entities::Job, message: I18n.t('errors.planning.job_in_progress')
             end
           end
         end

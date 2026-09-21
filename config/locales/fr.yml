@@ -907,8 +907,8 @@ fr:
       already_optimizing: Une optimisation de plan est déjà en cours
       automatic_insert_no_result: Affectation des arrêts impossible
       job_in_progress: >-
-        Opération impossible pour le moment, une tâche de fond (optimisation)
-        est en cours d'execution
+        Opération impossible pour le moment, une tâche de fond (optimisation ou
+        import d'adresses) est en cours d'execution
       transmission_in_progress: L'optimisation est en cours de transmission
       router: 'Erreur de calcul des routes : %{error}'
     destination:
