@@ -43,7 +43,7 @@ class Ability
         can :index, :reporting
         can [:edit, :update, :password, :set_password], User, id: user.id
         can [:edit, :update, :external_callback], Customer, id: user.customer.id
-        can [:stop_job_optimizer, :stop_job_destination_geocoding, :stop_job_store_geocoding], Customer
+        can [:stop_job_optimizer, :stop_job_destination_geocoding, :stop_job_store_geocoding, :stop_job_destination_import], Customer
         can :manage, VehicleUsageSet, customer_id: user.customer.id
         can [:create, :edit, :update, :toggle], VehicleUsage, vehicle_usage_set: { customer_id: user.customer.id }
         can :manage, Tag, customer_id: user.customer.id
