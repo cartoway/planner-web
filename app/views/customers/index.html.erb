@@ -80,6 +80,7 @@
           customer.job_optimizer.present? ||
           customer.job_destination_geocoding.present? ||
           customer.job_store_geocoding.present? ||
+          customer.job_destination_import.present? ||
           customer.last_async_jobs.present?
         detail_rowspan = 1 + (detail_subrow ? 1 : 0)
         customer_row_classes = []
@@ -176,6 +177,7 @@
             <%= render 'job', customer: customer, job: customer.job_optimizer %>
             <%= render 'job', customer: customer, job: customer.job_destination_geocoding %>
             <%= render 'job', customer: customer, job: customer.job_store_geocoding %>
+            <%= render 'job', customer: customer, job: customer.job_destination_import %>
             <%= render 'last_async_jobs', customer: customer %>
             <% if customer.description.present? %>
               <span class="customer-detail-description"><%= customer.description %></span>
