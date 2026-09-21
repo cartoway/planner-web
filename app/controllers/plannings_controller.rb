@@ -968,7 +968,7 @@ class PlanningsController < ApplicationController
   end
 
   def check_no_existing_job
-    raise Exceptions::JobInProgressError if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
+    raise Exceptions::JobInProgressError if @planning.customer.blocking_job(planning_id: @planning.id)
   end
 
   def capture_planning_state_after_success!(trigger = nil)
