@@ -38,9 +38,9 @@ class Optimizer
       # Nothing to optimize
       route.compute_saved
     else
-      if planning.customer.optimizer_running?
-        # Customer already run an optimization
-        planning.errors.add(:base, I18n.t('errors.planning.already_optimizing'))
+      if planning.customer.blocking_job
+        # Customer already runs an optimization or destinations import
+        planning.errors.add(:base, I18n.t('errors.planning.job_in_progress'))
         false
       else
         planning.customer.job_optimizer.destroy if planning.customer.job_optimizer

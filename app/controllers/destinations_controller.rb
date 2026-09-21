@@ -255,8 +255,8 @@ class DestinationsController < ApplicationController
 
   def upload_csv
     customer = current_user.customer
-    if customer.destination_import_running?
-      redirect_to destinations_path, alert: I18n.t('errors.destination.already_importing')
+    if customer.blocking_job
+      redirect_to destinations_path, alert: I18n.t('errors.planning.job_in_progress')
       return
     end
 
@@ -296,8 +296,8 @@ class DestinationsController < ApplicationController
 
   def upload_tomtom
     customer = current_user.customer
-    if customer.destination_import_running?
-      redirect_to destinations_path, alert: I18n.t('errors.destination.already_importing')
+    if customer.blocking_job
+      redirect_to destinations_path, alert: I18n.t('errors.planning.job_in_progress')
       return
     end
 
