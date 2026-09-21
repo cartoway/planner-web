@@ -95,8 +95,9 @@ $(document).on('turbolinks:load', function() {
   };
 
   var onObjectSelected = function(selector) {
+    // data-keep-disabled: stay disabled even when a selection exists (e.g. destroy without permission).
     if ($('[type="checkbox"][data-toggle="disable-multiple-actions"][data-target="' + selector + '"]:checked').length) {
-      $(selector + ' button, ' + selector + ' select').attr('disabled', false).attr('title', '');
+      $(selector + ' button:not([data-keep-disabled]), ' + selector + ' select:not([data-keep-disabled])').attr('disabled', false).attr('title', '');
       $(selector).tooltip('disable');
     }
     else {

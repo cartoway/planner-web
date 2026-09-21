@@ -50,7 +50,7 @@
               %i.fa.fa-table.fa-fw
               = t('plannings.edit.export.spreadsheet')
           %li
-            = link_to planning_path(@planning, format: 'excel', summary: true), target: :_blank do
+            %a.export_summary_spreadsheet{href: '#'}
               %i.fa.fa-table.fa-fw
               = t('plannings.edit.export.summary_spreadsheet')
           %li.divider{role: "separator"}

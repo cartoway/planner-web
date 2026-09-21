@@ -101,7 +101,7 @@ class RoutesController < ApplicationController
         permitted_export_params = export_params
         @customer = current_user.customer
         @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
-        @columns = permitted_export_params[:columns]&.split('|') || export_columns
+        @columns = permitted_export_params[:columns].presence&.split('|') || export_columns
         @export_stop_categories = params.key?(:stops) ? Array(params[:stops]).flat_map { |value| value.to_s.split('|') }.reject(&:blank?) : nil
         current_user.save_export_settings(@columns, permitted_export_params[:skips]&.split('|'), @export_stop_categories, 'excel')
         send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
@@ -112,7 +112,7 @@ class RoutesController < ApplicationController
         permitted_export_params = export_params
         @customer = current_user.customer
         @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
-        @columns = permitted_export_params[:columns]&.split('|') || export_columns
+        @columns = permitted_export_params[:columns].presence&.split('|') || export_columns
         @export_stop_categories = params.key?(:stops) ? Array(params[:stops]).flat_map { |value| value.to_s.split('|') }.reject(&:blank?) : nil
         current_user.save_export_settings(@columns, permitted_export_params[:skips]&.split('|'), @export_stop_categories, 'csv')
         response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
