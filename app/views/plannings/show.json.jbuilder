@@ -1,4 +1,21 @@
-if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
+if @planning.customer.destination_import_running?
+  json.import do
+    job = @planning.customer.job_destination_import
+    json.extract! job, :id, :attempts
+    progress = job.progress
+    if progress.is_a?(String)
+      begin
+        progress = JSON.parse(progress)
+      rescue JSON::ParserError
+        progress = nil
+      end
+    end
+    json.progress progress
+    json.error false
+    json.message nil
+    json.customer_id @planning.customer.id
+  end
+elsif Job.on_planning(@planning.customer.job_optimizer, @planning.id)
   json.optimizer do
     json.extract! @planning.customer.job_optimizer, :id, :attempts
     progress = @planning.customer.job_optimizer.progress
@@ -70,7 +87,16 @@ else
 
   json.planning_route_errors RouteSidebarSerializer.merge_planning_route_errors_from_sidebar_routes(routes_data)
   json.routes routes_data
-  if (failed = @planning.customer.last_failed_optimizer_job(@planning.id))
+  if (failed = @planning.customer.last_failed_destination_import_job)
+    json.import do
+      json.id failed['id']
+      json.error true
+      json.attempts 1
+      json.progress nil
+      json.message failed['error']
+      json.customer_id @planning.customer.id
+    end
+  elsif (failed = @planning.customer.last_failed_optimizer_job(@planning.id))
     no_solution = failed['error'].to_s.include?('VRPNoSolution')
     json.optimizer do
       json.id failed['id']

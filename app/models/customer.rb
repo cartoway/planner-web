@@ -260,6 +260,14 @@ class Customer < ApplicationRecord
     entry
   end
 
+  def last_failed_destination_import_job
+    entry = (last_async_jobs || {})['destination_import']
+    return unless entry.is_a?(Hash) && entry['status'] == 'failed'
+    return if entry['dismissed']
+
+    entry
+  end
+
   def self.dismiss_last_async_job!(customer_id, job_id)
     customer = find_by(id: customer_id)
     return unless customer && job_id

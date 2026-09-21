@@ -222,9 +222,12 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
     }
 
     if (delayedJob.error) {
-      options && options.error && options.error();
+      options && options.error && options.error(delayedJob.message);
       $(".dialog-progress", dialog).hide();
       $(".dialog-inqueue", dialog).hide();
+      if (delayedJob.message) {
+        $(".dialog-error", dialog).text(delayedJob.message);
+      }
       $(".dialog-error", dialog).show();
       unfreezeProgressDialog(dialog, delayedJob, url, callback); // url should not contain dispatch_params_delayed_job
     } else {
@@ -419,6 +422,12 @@ export const updateImportCounters = function(dialog, progress) {
     if (progress[key]) {
       el.find('.dialog-import-count').text(progress[key]);
       el.show();
+      var info = el.find('.route-info');
+      if (progress.phase === key) {
+        info.removeClass('info').addClass('primary');
+      } else {
+        info.removeClass('primary').addClass('info');
+      }
       any = true;
     }
   });

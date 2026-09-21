@@ -1,0 +1,62 @@
+-# Copyright © Cartoway
+-# Destination import progress modal (polled via Stimulus while job_destination_import runs).
+- phase_labels = I18n.t('destinations.index.dialog.import.phase')
+#import-progress-modal.modal.fade{tabindex: '-1', 'aria-hidden': 'true', data: {controller: 'v2--destination-import-progress', 'v2--destination-import-progress-poll-url-value': destinations_path(format: :json), 'v2--destination-import-progress-labels-value': phase_labels.to_json, 'v2--destination-import-progress-target': 'modal'}}
+  .modal-dialog
+    .modal-content
+      .modal-header
+        %h4.modal-title
+          %i.fa.fa-upload.fa-fw
+          = t('destinations.index.dialog.import.title')
+        %button.btn-close.d-none{type: 'button', 'aria-label': t('web.dialog.close'), 'data-bs-dismiss': 'modal', data: {'v2--destination-import-progress-target': 'dismiss'}}
+      .modal-body
+        %p= t('destinations.index.dialog.import.in_progress')
+        .import-progress-counters.row.g-2.d-none{data: {'v2--destination-import-progress-target': 'counters'}}
+          .col-4.d-none{data: {counter: 'destinations'}, title: t('destinations.index.dialog.import.destinations')}
+            .route-info.info
+              %i.fa.fa-map-marker.fa-fw
+              %span{data: {count: true}}
+              = t('destinations.index.dialog.import.destinations')
+          .col-4.d-none{data: {counter: 'visits'}, title: t('destinations.index.dialog.import.visits')}
+            .route-info.info
+              %i.fa.fa-check-square.fa-fw
+              %span{data: {count: true}}
+              = t('destinations.index.dialog.import.visits')
+          .col-4.d-none{data: {counter: 'stores'}, title: t('destinations.index.dialog.import.stores')}
+            .route-info.info
+              %i.fa.fa-warehouse.fa-fw
+              %span{data: {count: true}}
+              = t('destinations.index.dialog.import.stores')
+          .col-4.d-none{data: {counter: 'store_reloads'}, title: t('destinations.index.dialog.import.store_reloads')}
+            .route-info.info
+              %i.fa.fa-rotate.fa-fw
+              %span{data: {count: true}}
+              = t('destinations.index.dialog.import.store_reloads')
+          .col-4.d-none{data: {counter: 'tags'}, title: t('destinations.index.dialog.import.tags')}
+            .route-info.info
+              %i.fa.fa-tags.fa-fw
+              %span{data: {count: true}}
+              = t('destinations.index.dialog.import.tags')
+          .col-4.d-none{data: {counter: 'plannings'}, title: t('destinations.index.dialog.import.plannings')}
+            .route-info.info
+              %i.fa.fa-calendar.fa-fw
+              %span{data: {count: true}}
+              = t('destinations.index.dialog.import.plannings')
+          .col-4.d-none{data: {counter: 'geocoding'}, title: t('destinations.index.dialog.import.geocoding')}
+            .route-info.info
+              %i.fa.fa-globe.fa-fw
+              %span{data: {count: true}}
+              = t('destinations.index.dialog.import.geocoding')
+        %p.text-muted.d-none{data: {'v2--destination-import-progress-target': 'phase'}}
+        .progress.d-none
+          .progress-bar.progress-bar-striped.progress-bar-animated{role: 'progressbar', style: 'width: 0%', data: {'v2--destination-import-progress-target': 'progressBar'}}
+        %p.d-none{data: {'v2--destination-import-progress-target': 'inqueue'}}
+          = t('destinations.index.dialog.geocoding.inqueue')
+        %p.d-none{data: {'v2--destination-import-progress-target': 'attempts'}}
+          = t('destinations.index.dialog.geocoding.attempts')
+          %span{data: {'v2--destination-import-progress-target': 'attemptsNumber'}}
+        %p.text-danger.d-none{style: 'overflow-wrap: anywhere; word-break: break-word; max-height: 40vh; overflow-y: auto;', data: {'v2--destination-import-progress-target': 'error'}}
+          = t('destinations.index.dialog.import.error')
+      .modal-footer
+        %button.btn.btn-primary.d-none{type: 'button', 'data-bs-dismiss': 'modal', data: {'v2--destination-import-progress-target': 'dismiss'}}
+          = t('web.dialog.close')
