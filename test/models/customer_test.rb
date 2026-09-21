@@ -116,8 +116,28 @@ class CustomerTest < ActiveSupport::TestCase
     )
 
     refute @customer.optimizer_running?
+    assert_nil @customer.blocking_job
     assert @customer.last_failed_optimizer_job(planning.id)
     assert_nil @customer.last_failed_optimizer_job(plannings(:planning_two).id)
+  end
+
+  test 'blocking_job returns destination import over optimizer' do
+    import_job = Delayed::Job.enqueue(ImporterDestinationsJob.new(@customer.id, 'tomtom', nil, {}))
+    @customer.update!(job_destination_import: import_job, job_optimizer: delayed_jobs(:job_optimizer))
+
+    assert_equal import_job, @customer.blocking_job
+    assert_equal import_job, @customer.blocking_job(planning_id: plannings(:planning_one).id)
+  end
+
+  test 'blocking_job scopes optimizer to planning' do
+    planning = plannings(:planning_one)
+    job = delayed_jobs(:job_optimizer)
+    job.update!(handler: "planning_id: #{planning.id}")
+    @customer.update!(job_destination_import: nil, job_optimizer: job)
+
+    assert_equal job, @customer.blocking_job
+    assert_equal job, @customer.blocking_job(planning_id: planning.id)
+    assert_nil @customer.blocking_job(planning_id: plannings(:planning_two).id)
   end
 
   test 'dismissed last failed optimizer is not returned for the planning modal' do

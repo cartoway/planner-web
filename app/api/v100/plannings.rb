@@ -75,7 +75,7 @@ class V100::Plannings < Grape::API
     patch ':id/optimized_insertion' do
       Route.includes_destinations_and_stores.scoping do
         planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-        raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
+        raise Exceptions::JobInProgressError if planning.customer.blocking_job(planning_id: planning.id)
 
         stops = planning.routes.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
         begin
@@ -94,7 +94,7 @@ class V100::Plannings < Grape::API
         end
       rescue Exceptions::JobInProgressError
         status 409
-        present planning.customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
+        present planning.customer.blocking_job(planning_id: planning.id), with: V01::Entities::Job, message: I18n.t('errors.planning.job_in_progress')
       end
     end
   end
