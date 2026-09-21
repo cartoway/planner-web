@@ -121,6 +121,22 @@ class CustomerTest < ActiveSupport::TestCase
     assert_nil @customer.last_failed_optimizer_job(plannings(:planning_two).id)
   end
 
+  test 'last_failed_destination_import_job reads remembered failure' do
+    @customer.update!(
+      job_destination_import: nil,
+      last_async_jobs: {
+        'destination_import' => { 'id' => 7, 'type' => 'importer_destinations', 'status' => 'failed', 'error' => 'boom' }
+      }
+    )
+
+    failed = @customer.last_failed_destination_import_job
+    assert_equal 7, failed['id']
+    assert_equal 'boom', failed['error']
+
+    Customer.dismiss_last_async_job!(@customer.id, 7)
+    assert_nil @customer.reload.last_failed_destination_import_job
+  end
+
   test 'blocking_job returns destination import over optimizer' do
     import_job = Delayed::Job.enqueue(ImporterDestinationsJob.new(@customer.id, 'tomtom', nil, {}))
     @customer.update!(job_destination_import: import_job, job_optimizer: delayed_jobs(:job_optimizer))

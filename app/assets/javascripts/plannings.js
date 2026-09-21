@@ -3182,6 +3182,16 @@ export const plannings_edit = function(params) {
 
   // Depending 'options.partial' this function is called for initialization or for pieces of planning
   var displayPlanning = function(data, options) {
+    options = options || {};
+    var planningJsonUrl = '/plannings/' + planning_id + '.json' + (options.firstTime ? '?with_stops=' + withStopsInSidePanel : '');
+
+    var importErrorCallback = function(message) {
+      stickyError(message || I18n.t('destinations.index.dialog.import.error'));
+    };
+    // Failed import from last_async_jobs arrives with routes: keep the planning usable.
+    if (!progressDialog(data.import, dialog_import, planningJsonUrl, displayPlanning, {error: importErrorCallback}) && !(data.import && data.import.error && data.routes)) {
+      return;
+    }
 
     // Display optimization duration in modal on page reload
     if (data.optimizer && data.optimizer.dispatch_params_delayed_job) {
@@ -4058,6 +4068,14 @@ export const plannings_edit = function(params) {
       });
     });
   }
+
+  var dialog_import = bootstrap_dialog({
+    title: I18n.t('destinations.index.dialog.import.title'),
+    icon: 'fa-upload',
+    message: SMT['modals/import']({
+      i18n: mustache_i18n
+    })
+  });
 
   var dialog_optimizer;
   var initOptimizerDialog = function() {

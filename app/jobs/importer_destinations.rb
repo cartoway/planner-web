@@ -633,7 +633,7 @@ class ImporterDestinations < ImporterBase
 
     geocoded = 0
     total = @destinations_to_geocode_count + @customer.stores.not_positioned.count
-    notify_progress!(phase: 'geocoding', geocoding: "0/#{total}", first_progression: 60)
+    notify_progress!(phase: 'geocoding', first_progression: 60, **progress_counter(:geocoding, 0, total))
     @customer.destinations.includes_visits.not_positioned.unscope(:order).find_in_batches(batch_size: 50) { |destinations|
       Destination.transaction do
         geocode_args = destinations.collect(&:geocode_args)
@@ -660,8 +660,8 @@ class ImporterDestinations < ImporterBase
       geocoded += destinations.size
       notify_progress!(
         phase: 'geocoding',
-        geocoding: "#{geocoded}/#{total}",
-        first_progression: 60 + (30.0 * geocoded / [total, 1].max).round
+        first_progression: 60 + (30.0 * geocoded / [total, 1].max).round,
+        **progress_counter(:geocoding, geocoded, total)
       )
     }
     @geocoding_done_count = geocoded
@@ -673,7 +673,7 @@ class ImporterDestinations < ImporterBase
 
     geocoded = @geocoding_done_count.to_i
     total = @destinations_to_geocode_count.to_i + @stores_to_geocode_count
-    notify_progress!(phase: 'geocoding', geocoding: "#{geocoded}/#{total}", first_progression: 60) if geocoded.zero?
+    notify_progress!(phase: 'geocoding', first_progression: 60, **progress_counter(:geocoding, geocoded, total)) if geocoded.zero?
     @customer.stores.not_positioned.unscope(:order).find_in_batches(batch_size: 50) { |stores|
       Store.transaction do
         geocode_args = stores.collect(&:geocode_args)
@@ -700,8 +700,8 @@ class ImporterDestinations < ImporterBase
       geocoded += stores.size
       notify_progress!(
         phase: 'geocoding',
-        geocoding: "#{geocoded}/#{total}",
-        first_progression: 60 + (30.0 * geocoded / [total, 1].max).round
+        first_progression: 60 + (30.0 * geocoded / [total, 1].max).round,
+        **progress_counter(:geocoding, geocoded, total)
       )
     }
   end
@@ -749,7 +749,7 @@ class ImporterDestinations < ImporterBase
   def progress_counter(key, done, total)
     return {} if total.to_i <= 0
 
-    { key => "#{done}/#{total}" }
+    { key => "#{done} / #{total}" }
   end
 
   def reload_plannings_hash!
@@ -1591,8 +1591,16 @@ class ImporterDestinations < ImporterBase
       failed_indices = grouped_failed_instances.flat_map{ |index, _object|
         slice_lines[index].map{ |slice_line| csv_line_number(slice_line) }
       }
-      I18n.t('import.data_erroneous.csv', s: failed_indices.join(',')) + ' - ' + errors.join(', ')
+      # Validation message first: long line lists must not push it past last_async_jobs truncation.
+      errors.join(', ') + ' - ' + I18n.t('import.data_erroneous.csv', s: format_failed_line_indices(failed_indices))
     }.join(';')
+  end
+
+  def format_failed_line_indices(indices)
+    indices = indices.map(&:to_i).sort.uniq
+    return indices.join(',') if indices.size <= 12
+
+    "#{indices.first(3).join(',')},…,#{indices.last} (#{indices.size})"
   end
 
   def csv_line_number(slice_line)

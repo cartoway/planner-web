@@ -6,7 +6,7 @@ require 'destinations_import'
 class DestinationsImportTest < ActiveSupport::TestCase
   setup do
     @customer = customers(:customer_one)
-    @customer.update!(job_destination_import: nil, job_destination_geocoding: nil)
+    @customer.update!(job_destination_import: nil, job_destination_geocoding: nil, job_optimizer: nil)
     @original_delayed_job_use = Planner::Application.config.delayed_job_use
   end
 
@@ -26,6 +26,15 @@ class DestinationsImportTest < ActiveSupport::TestCase
     @customer.reload
     assert @customer.job_destination_import
     assert_includes @customer.job_destination_import.handler, blob.id.to_s
+  end
+
+  test 'enqueue stores current locale in job options' do
+    Planner::Application.config.delayed_job_use = true
+    I18n.with_locale(:fr) do
+      result = DestinationsImport.enqueue(@customer, source: 'tomtom', options: { replace: false })
+      assert_kind_of Delayed::Backend::ActiveRecord::Job, result
+      assert_match(/locale: ["']?fr["']?/, result.handler)
+    end
   end
 
   test 'perform creates destinations synchronously when delayed_job_use is off' do
@@ -63,6 +72,34 @@ class DestinationsImportTest < ActiveSupport::TestCase
     @customer.reload
     assert_nil @customer.job_destination_import
     assert_nil Delayed::Job.find_by(id: job_id)
+  end
+
+  test 'failed import jobs are destroyed but remembered in last_async_jobs' do
+    assert_equal true, ImporterDestinationsJob.new(1, 'tomtom', nil, {}).destroy_failed_jobs?
+  end
+
+  test 'perform sets optimizer_context so import is not self-blocked by blocking_job' do
+    Planner::Application.config.delayed_job_use = true
+    file = Rack::Test::UploadedFile.new('test/fixtures/files/import_destinations_without_visit.csv', 'text/csv')
+    blob = DestinationsImport.persist_upload!(file)
+    job = ImporterDestinationsJob.new(@customer.id, 'csv', blob.id, { replace: false, locale: 'en' })
+    delayed = Delayed::Job.enqueue(job)
+    @customer.update!(job_destination_import: delayed)
+    assert @customer.blocking_job
+
+    route = routes(:route_one_one)
+    seen_context = nil
+    ImportCsv.stub_any_instance(:import, lambda { |*_args|
+      seen_context = Planning.optimizer_context
+      route.update!(ref: 'ok-during-import')
+      true
+    }) do
+      job.perform
+    end
+
+    assert_equal true, seen_context
+    refute Planning.optimizer_context
+    assert_equal 'ok-during-import', route.reload.ref
   end
 
   test 'import geocodes in-process and reports phase progress' do

@@ -15,7 +15,7 @@ class PlanningsControllerTest < ActionController::TestCase
                                 skips: '',
                                 stops: 'out-of-route|store|rest|inactive'}
     sign_in users(:user_one)
-    customers(:customer_one).update(job_optimizer_id: nil, job_destination_geocoding_id: nil)
+    customers(:customer_one).update(job_optimizer_id: nil, job_destination_geocoding_id: nil, job_destination_import_id: nil)
   end
 
   # planning_one vehicle routes: ordered_for_planning puts out-of-route first, then by vehicle_usage index.
@@ -1073,6 +1073,49 @@ class PlanningsControllerTest < ActionController::TestCase
     patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :json }
     assert_response :unprocessable_entity
     assert_equal 'job_in_progress', JSON.parse(response.body)['type']
+  end
+
+  test 'show json exposes destination import job over optimizer' do
+    customer = customers(:customer_one)
+    import_job = Delayed::Job.enqueue(ImporterDestinationsJob.new(customer.id, 'tomtom', nil, {}))
+    import_job.update!(progress: { 'status' => 'working', 'phase' => 'geocoding', 'first_progression' => 60 })
+    optimizer = delayed_jobs(:job_optimizer)
+    optimizer.update!(handler: "planning_id: #{@planning.id}")
+    customer.update!(job_destination_import: import_job, job_optimizer: optimizer)
+
+    get :show, params: { id: @planning.id, format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['import']
+    assert_equal import_job.id, body['import']['id']
+    assert_equal 'geocoding', body['import']['progress']['phase']
+    assert_nil body['optimizer']
+    assert_nil body['routes']
+  end
+
+  test 'show json exposes failed destination import with message' do
+    customer = customers(:customer_one)
+    customer.update!(
+      job_destination_import: nil,
+      job_optimizer: nil,
+      last_async_jobs: {
+        'destination_import' => {
+          'id' => 99,
+          'type' => 'importer_destinations',
+          'status' => 'failed',
+          'error' => 'ImportBaseError: invalid file'
+        }
+      }
+    )
+
+    get :show, params: { id: @planning.id, format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['import']
+    assert body['import']['error']
+    assert_equal 99, body['import']['id']
+    assert_equal 'ImportBaseError: invalid file', body['import']['message']
+    assert body['routes'].present?
   end
 
   test 'move returns not found when target route does not exist' do

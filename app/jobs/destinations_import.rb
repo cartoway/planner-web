@@ -14,7 +14,9 @@ class DestinationsImport
 
       customer.job_destination_import.destroy if customer.job_destination_import
 
-      job = ImporterDestinationsJob.new(customer.id, source.to_s, blob&.id, options)
+      opts = (options || {}).with_indifferent_access
+      opts[:locale] ||= I18n.locale.to_s
+      job = ImporterDestinationsJob.new(customer.id, source.to_s, blob&.id, opts.to_hash)
       if !synchronous && Planner::Application.config.delayed_job_use
         customer.job_destination_import = Delayed::Job.enqueue(job)
         customer.save!

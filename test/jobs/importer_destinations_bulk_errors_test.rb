@@ -48,4 +48,18 @@ class ImporterDestinationsBulkErrorsTest < ActiveSupport::TestCase
 
     assert_match(/lignes \[1\]/, message)
   end
+
+  test 'import_errors_with_indices puts validation message before compacted line list' do
+    destination = Destination.new
+    destination.errors.add(:name, "can't be blank")
+    slice_lines = (0...40).map{ |i| [i] }
+    failed = slice_lines.each_index.map{ |i| [i, destination] }
+
+    message = @importer.send(:import_errors_with_indices, slice_lines, failed)
+
+    assert_match(/\A.*can't be blank/, message)
+    assert_includes message, '…'
+    assert_match(/\(40\)/, message)
+    refute_includes message, ',13,'
+  end
 end

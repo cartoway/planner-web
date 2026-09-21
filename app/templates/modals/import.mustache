@@ -1,41 +1,62 @@
 <div class="dialog-progress">
   <p>{{#i18n}}destinations.index.dialog.import.in_progress{{/i18n}}</p>
-  <ul class="dialog-import-counters list-unstyled" style="display: none; margin-top: 8px;">
-    <li class="dialog-import-destinations" style="display: none;">
-      {{#i18n}}destinations.index.dialog.import.destinations{{/i18n}}
-      <span class="dialog-import-count"></span>
-    </li>
-    <li class="dialog-import-visits" style="display: none;">
-      {{#i18n}}destinations.index.dialog.import.visits{{/i18n}}
-      <span class="dialog-import-count"></span>
-    </li>
-    <li class="dialog-import-stores" style="display: none;">
-      {{#i18n}}destinations.index.dialog.import.stores{{/i18n}}
-      <span class="dialog-import-count"></span>
-    </li>
-    <li class="dialog-import-store_reloads" style="display: none;">
-      {{#i18n}}destinations.index.dialog.import.store_reloads{{/i18n}}
-      <span class="dialog-import-count"></span>
-    </li>
-    <li class="dialog-import-tags" style="display: none;">
-      {{#i18n}}destinations.index.dialog.import.tags{{/i18n}}
-      <span class="dialog-import-count"></span>
-    </li>
-    <li class="dialog-import-plannings" style="display: none;">
-      {{#i18n}}destinations.index.dialog.import.plannings{{/i18n}}
-      <span class="dialog-import-count"></span>
-    </li>
-    <li class="dialog-import-geocoding" style="display: none;">
-      {{#i18n}}destinations.index.dialog.import.geocoding{{/i18n}}
-      <span class="dialog-import-count"></span>
-    </li>
-  </ul>
+  <div class="dialog-import-counters row route-data" style="display: none; margin-top: 8px;">
+    <div class="col-xs-4 dialog-import-destinations" style="display: none;" title="{{#i18n}}destinations.index.dialog.import.destinations{{/i18n}}">
+      <div class="route-info info">
+        <i class="fa fa-map-marker fa-fw"></i>
+        <span class="dialog-import-count"></span>
+        {{#i18n}}destinations.index.dialog.import.destinations{{/i18n}}
+      </div>
+    </div>
+    <div class="col-xs-4 dialog-import-visits" style="display: none;" title="{{#i18n}}destinations.index.dialog.import.visits{{/i18n}}">
+      <div class="route-info info">
+        <i class="fa fa-check-square fa-fw"></i>
+        <span class="dialog-import-count"></span>
+        {{#i18n}}destinations.index.dialog.import.visits{{/i18n}}
+      </div>
+    </div>
+    <div class="col-xs-4 dialog-import-stores" style="display: none;" title="{{#i18n}}destinations.index.dialog.import.stores{{/i18n}}">
+      <div class="route-info info">
+        <i class="fa fa-warehouse fa-fw"></i>
+        <span class="dialog-import-count"></span>
+        {{#i18n}}destinations.index.dialog.import.stores{{/i18n}}
+      </div>
+    </div>
+    <div class="col-xs-4 dialog-import-store_reloads" style="display: none;" title="{{#i18n}}destinations.index.dialog.import.store_reloads{{/i18n}}">
+      <div class="route-info info">
+        <i class="fa fa-rotate fa-fw"></i>
+        <span class="dialog-import-count"></span>
+        {{#i18n}}destinations.index.dialog.import.store_reloads{{/i18n}}
+      </div>
+    </div>
+    <div class="col-xs-4 dialog-import-tags" style="display: none;" title="{{#i18n}}destinations.index.dialog.import.tags{{/i18n}}">
+      <div class="route-info info">
+        <i class="fa fa-tags fa-fw"></i>
+        <span class="dialog-import-count"></span>
+        {{#i18n}}destinations.index.dialog.import.tags{{/i18n}}
+      </div>
+    </div>
+    <div class="col-xs-4 dialog-import-plannings" style="display: none;" title="{{#i18n}}destinations.index.dialog.import.plannings{{/i18n}}">
+      <div class="route-info info">
+        <i class="fa fa-calendar fa-fw"></i>
+        <span class="dialog-import-count"></span>
+        {{#i18n}}destinations.index.dialog.import.plannings{{/i18n}}
+      </div>
+    </div>
+    <div class="col-xs-4 dialog-import-geocoding" style="display: none;" title="{{#i18n}}destinations.index.dialog.import.geocoding{{/i18n}}">
+      <div class="route-info info">
+        <i class="fa fa-globe fa-fw"></i>
+        <span class="dialog-import-count"></span>
+        {{#i18n}}destinations.index.dialog.import.geocoding{{/i18n}}
+      </div>
+    </div>
+  </div>
   <p class="dialog-import-phase text-muted" style="display: none; margin-top: 4px;"></p>
   <div class="progress progress-striped">
     <div class="progress-bar primary" style="width: 0%"></div>
   </div>
 </div>
-<p class="dialog-error" style="display: none">
+<p class="dialog-error" style="display: none; overflow-wrap: anywhere; word-break: break-word; max-height: 40vh; overflow-y: auto;">
   {{#i18n}}destinations.index.dialog.import.error{{/i18n}}
 </p>
 <p class="dialog-attempts" style="display: none">

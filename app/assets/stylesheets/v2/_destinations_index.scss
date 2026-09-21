@@ -1,6 +1,7 @@
 // Copyright © Cartoway
 // Destinations index (v2): map layout, list sidebar, filtered search, markers, table cells.
 
+@import "variables";
 @import "v2/maplibre_controls";
 
 // Compact checkbox column for multiple selection
@@ -619,5 +620,76 @@
   // Bring the active destination marker above siblings (stacking within map overlays)
   .maplibregl-marker:has(.destinations-marker--active) {
     z-index: 900 !important;
+  }
+}
+
+// Import progress modal
+#import-progress-modal {
+  --bs-modal-width: 600px;
+
+  .modal-content {
+    border-radius: 0;
+    border-left: 12px solid $primary-color;
+  }
+
+  .modal-header {
+    align-items: center;
+    border-bottom: 1px solid $grey-color;
+
+    .modal-title {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: $primary-color;
+      font-size: 1.125rem;
+    }
+  }
+
+  .modal-footer {
+    border-top: 1px solid $grey-color;
+  }
+
+  .btn-primary {
+    background-color: $primary-color;
+    border-color: $primary-color;
+
+    &:hover,
+    &:focus {
+      background-color: darken($primary-color, 6%);
+      border-color: darken($primary-color, 6%);
+    }
+  }
+
+  .progress-bar {
+    background-color: $primary-color;
+  }
+
+  .import-progress-counters {
+    margin-top: 0.5rem;
+  }
+
+  .route-info {
+    white-space: nowrap;
+    margin: 2px;
+    padding: 7px 6px 2px 6px;
+    height: 34px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #000;
+
+    .fa {
+      margin-right: 4px;
+      color: inherit;
+    }
+
+    &.info {
+      border: 1px solid $grey-color;
+      background-color: $lightgrey-color;
+    }
+
+    &.primary {
+      border: 1px solid $primary-border-color;
+      background-color: $primary-background-color;
+    }
   }
 }

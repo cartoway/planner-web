@@ -716,6 +716,7 @@ Lint/OrAssignmentToConstant:
   Exclude:
     - 'app/jobs/geocoder_destinations_job.rb'
     - 'app/jobs/geocoder_stores_job.rb'
+    - 'app/jobs/importer_destinations_job.rb'
     - 'app/jobs/optimizer_job.rb'
     - 'app/jobs/simplify_geojson_tracks_job.rb'
     - 'lib/devices/alyacom.rb'
