@@ -280,7 +280,8 @@ CREATE TABLE public.customers (
     company_postalcode character varying,
     company_city character varying,
     company_detail character varying,
-    company_phone character varying
+    company_phone character varying,
+    job_destination_import_id integer
 );
 
 
@@ -2746,6 +2747,13 @@ CREATE INDEX index_customers_on_job_destination_geocoding_id ON public.customers
 
 
 --
+-- Name: index_customers_on_job_destination_import_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_customers_on_job_destination_import_id ON public.customers USING btree (job_destination_import_id);
+
+
+--
 -- Name: index_customers_on_job_optimizer_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4157,6 +4165,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260909160239'),
 ('20260910142720'),
 ('20260914115500'),
-('20260918161934');
+('20260918161934'),
+('20260921153038');
 
 

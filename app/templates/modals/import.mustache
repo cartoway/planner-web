@@ -1,0 +1,47 @@
+<div class="dialog-progress">
+  <p>{{#i18n}}destinations.index.dialog.import.in_progress{{/i18n}}</p>
+  <ul class="dialog-import-counters list-unstyled" style="display: none; margin-top: 8px;">
+    <li class="dialog-import-destinations" style="display: none;">
+      {{#i18n}}destinations.index.dialog.import.destinations{{/i18n}}
+      <span class="dialog-import-count"></span>
+    </li>
+    <li class="dialog-import-visits" style="display: none;">
+      {{#i18n}}destinations.index.dialog.import.visits{{/i18n}}
+      <span class="dialog-import-count"></span>
+    </li>
+    <li class="dialog-import-stores" style="display: none;">
+      {{#i18n}}destinations.index.dialog.import.stores{{/i18n}}
+      <span class="dialog-import-count"></span>
+    </li>
+    <li class="dialog-import-store_reloads" style="display: none;">
+      {{#i18n}}destinations.index.dialog.import.store_reloads{{/i18n}}
+      <span class="dialog-import-count"></span>
+    </li>
+    <li class="dialog-import-tags" style="display: none;">
+      {{#i18n}}destinations.index.dialog.import.tags{{/i18n}}
+      <span class="dialog-import-count"></span>
+    </li>
+    <li class="dialog-import-plannings" style="display: none;">
+      {{#i18n}}destinations.index.dialog.import.plannings{{/i18n}}
+      <span class="dialog-import-count"></span>
+    </li>
+    <li class="dialog-import-geocoding" style="display: none;">
+      {{#i18n}}destinations.index.dialog.import.geocoding{{/i18n}}
+      <span class="dialog-import-count"></span>
+    </li>
+  </ul>
+  <p class="dialog-import-phase text-muted" style="display: none; margin-top: 4px;"></p>
+  <div class="progress progress-striped">
+    <div class="progress-bar primary" style="width: 0%"></div>
+  </div>
+</div>
+<p class="dialog-error" style="display: none">
+  {{#i18n}}destinations.index.dialog.import.error{{/i18n}}
+</p>
+<p class="dialog-attempts" style="display: none">
+  {{#i18n}}destinations.index.dialog.geocoding.attempts{{/i18n}}
+  <span class="dialog-attempts-number"></span>
+</p>
+<p class="dialog-inqueue" style="display: none">
+  {{#i18n}}destinations.index.dialog.geocoding.inqueue{{/i18n}}
+</p>

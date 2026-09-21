@@ -911,6 +911,8 @@ fr:
         est en cours d'execution
       transmission_in_progress: L'optimisation est en cours de transmission
       router: 'Erreur de calcul des routes : %{error}'
+    destination:
+      already_importing: Un import d'adresses est déjà en cours
     routes:
       bad_barcode_char: Les données du code barre contiennent un caractère non pris en charge
       expired: La tournée a expiré
@@ -1633,6 +1635,24 @@ fr:
         import:
           title: Import des adresses
           in_progress: 'Import des adresses en cours, merci de patienter'
+          error: Impossible d'effectuer l'import.
+          destinations: 'Adresses :'
+          visits: 'Visites :'
+          stores: 'Entrepôts :'
+          store_reloads: 'Rechargements :'
+          tags: 'Étiquettes :'
+          plannings: 'Plans :'
+          geocoding: 'Géocodage :'
+          phase:
+            starting: Démarrage
+            destinations: Import des adresses
+            stores: Import des entrepôts
+            visits: Import des visites
+            tags: Import des étiquettes
+            store_reloads: Import des rechargements
+            geocoding: Géocodage
+            plannings: Mise à jour des plans
+            done: Terminé
         geocoding:
           title: Géocodage
           in_progress: 'Géocodage en cours, merci de patienter.'
