@@ -42,6 +42,15 @@ class DestinationsControllerTest < ActionController::TestCase
     user.save!
   end
 
+  # Fixture customer_one has a live job_optimizer; upload_csv uses blocking_job.
+  def clear_blocking_jobs!(customer = customers(:customer_one))
+    customer.update!(
+      job_optimizer_id: nil,
+      job_destination_geocoding_id: nil,
+      job_destination_import_id: nil
+    )
+  end
+
   def around
     Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |url, mode, dimension, segments, options| segments.collect{ |i| [1000, 60, '_ibE_seK_seK_seK'] } } ) do
       yield
@@ -1166,7 +1175,7 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'should upload' do
-    customers(:customer_one).update(job_destination_geocoding_id: nil)
+    clear_blocking_jobs!
     file = fixture_file_upload('test/fixtures/files/import_destinations_one.csv')
     destinations_count = @destination.customer.destinations.count
     plannings_count = @destination.customer.plannings.select{ |planning| planning.tags_compatible? [tags(:tag_one)] }.count
@@ -1196,7 +1205,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'upload_csv uses vehicle usage set from form when csv has no column' do
     customer = customers(:customer_one)
-    customer.update!(job_destination_geocoding_id: nil)
+    clear_blocking_jobs!(customer)
     Planning.all.each(&:destroy)
     customer.delete_all_destinations
     customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| vu.update!(active: true) } }
@@ -1217,7 +1226,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'upload_csv without vehicle_usage_set_id creates planning with default vehicle usage set' do
     customer = customers(:customer_one)
-    customer.update!(job_destination_geocoding_id: nil)
+    clear_blocking_jobs!(customer)
     Planning.all.each(&:destroy)
     customer.delete_all_destinations
     customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| vu.update!(active: true) } }
@@ -1237,7 +1246,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'upload_csv without vehicle_usage_set_id keeps existing planning vehicle usage set' do
     customer = customers(:customer_one)
-    customer.update!(job_destination_geocoding_id: nil)
+    clear_blocking_jobs!(customer)
     planning = plannings(:planning_one)
     original_vus_id = planning.vehicle_usage_set_id
     assert_not_equal original_vus_id, vehicle_usage_sets(:vehicle_usage_set_three).id
@@ -1256,7 +1265,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'upload_csv with vehicle_usage_set_id updates existing planning vehicle usage set' do
     customer = customers(:customer_one)
-    customer.update!(job_destination_geocoding_id: nil)
+    clear_blocking_jobs!(customer)
     planning = plannings(:planning_one)
     other_vus = vehicle_usage_sets(:vehicle_usage_set_three)
     assert_not_equal planning.vehicle_usage_set_id, other_vus.id
@@ -1276,6 +1285,7 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'should not upload' do
+    clear_blocking_jobs!
     file = fixture_file_upload('test/fixtures/files/import_invalid.csv')
     assert_difference('Destination.count', 0) do
       post :upload_csv, params: { import_csv: { replace: false, file: file } }
@@ -1286,6 +1296,7 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'should display an error' do
+    clear_blocking_jobs!
     file = fixture_file_upload('import_malformed.csv', 'text/csv')
 
     assert_difference('Destination.count', 0) do
@@ -1297,7 +1308,7 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'should redirect after upload_csv without geocoding job' do
-    customers(:customer_one).update(job_destination_geocoding_id: nil)
+    clear_blocking_jobs!
     [
       { file: 'import_custom_destinations_one.csv', column_def: { route: 'tour' } },
       { file: 'import_destinations_update.csv', column_def: nil },
@@ -1311,6 +1322,7 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'should redirect after upload_csv with geocoding job' do
+    clear_blocking_jobs!
     [
       { redirect: 'destinations', file: 'import_custom_destinations_one.csv', column_def: { route: 'tour' } },
       { redirect: 'destinations', file: 'import_destinations_update.csv', column_def: nil },
@@ -1450,5 +1462,50 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :forbidden
   ensure
     user.update!(role_id: nil) if user.reload.role_id.present?
+  end
+
+  test 'index json exposes destination import job progress' do
+    customer = customers(:customer_one)
+    job = Delayed::Job.enqueue(ImporterDestinationsJob.new(customer.id, 'tomtom', nil, {}))
+    job.update!(progress: { 'status' => 'working', 'phase' => 'destinations', 'first_progression' => 12, 'destinations' => '3/10' })
+    customer.update!(job_destination_import: job, job_destination_geocoding: nil)
+
+    get :index, params: { format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['import']
+    assert_equal job.id, body['import']['id']
+    assert_equal 'destinations', body['import']['progress']['phase']
+    assert_nil body['destinations']
+  end
+
+  test 'index json exposes failed destination import with message' do
+    customer = customers(:customer_one)
+    customer.update!(
+      job_destination_import: nil,
+      job_destination_geocoding: nil,
+      last_async_jobs: {
+        'destination_import' => {
+          'id' => 42,
+          'type' => 'importer_destinations',
+          'status' => 'failed',
+          'error' => 'ImportBaseError: bad csv'
+        }
+      }
+    )
+
+    get :index, params: { format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['import']
+    assert body['import']['error']
+    assert_equal 42, body['import']['id']
+    assert_equal 'ImportBaseError: bad csv', body['import']['message']
+  end
+
+  test 'v2 index includes destination import progress modal' do
+    get :index
+    assert_response :success
+    assert_select '#import-progress-modal[data-controller~="v2--destination-import-progress"]'
   end
 end
