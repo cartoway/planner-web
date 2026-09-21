@@ -9,7 +9,8 @@
     .modal-body
       .container-fluid
         %input{name: "spreadsheet-route", type: "hidden", value: ""}/
-        .row.row.form-group
+        %input#spreadsheet-summary{name: "spreadsheet-summary", type: "hidden", value: "false"}/
+        .row.row.form-group#spreadsheet-stops-group
           %label.col-md-2.control-label= t 'plannings.edit.dialog.spreadsheet.stops'
           .col-md-10
             %div

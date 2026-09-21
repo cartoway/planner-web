@@ -189,6 +189,7 @@
     default_display_polylines: current_user.default_display_polylines,
     url_click2call: current_user.link_phone_number,
     spreadsheet_columns: @spreadsheet_columns,
+    spreadsheet_summary_columns: @spreadsheet_summary_columns,
     available_stop_status: @planning.customer.enable_stop_status && @planning.customer.device.available_stop_status?,
     update_stop_status: @planning.customer.enable_stop_status? && (@planning.date.nil? || @planning.date.between?(Time.now.beginning_of_day, Time.now.end_of_day)) && @planning.customer.device.available_stop_status?,
     callback_button: @callback_button,
