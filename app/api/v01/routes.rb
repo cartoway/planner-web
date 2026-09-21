@@ -168,7 +168,7 @@ class V01::Routes < Grape::API
         end
         patch ':id/optimize' do
           begin
-            raise Exceptions::JobInProgressError if current_customer.optimizer_running?
+            raise Exceptions::JobInProgressError if current_customer.blocking_job
 
             Stop.includes_destinations_and_stores.scoping do
               authorize!(:optimize, get_route)
@@ -187,7 +187,7 @@ class V01::Routes < Grape::API
             end
           rescue Exceptions::JobInProgressError
             status 409
-            present current_customer.job_optimizer, with: V01::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
+            present current_customer.blocking_job, with: V01::Entities::Job, message: I18n.t('errors.planning.job_in_progress')
           rescue VRPNoSolutionError
             error! V01::Status.code_response(:code_304), 304
           end

@@ -224,7 +224,7 @@ class Planning < ApplicationRecord
   # OptimizerJob sets optimizer_context so it can still persist the solution.
   def reject_writes_during_optimization!
     return if in_optimization_context?
-    raise Exceptions::JobInProgressError if Job.on_planning(customer.job_optimizer, id)
+    raise Exceptions::JobInProgressError if customer.blocking_job(planning_id: id)
   end
 
   def set_routes(routes_visits, recompute = true, ignore_errors = false)
