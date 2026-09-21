@@ -16,11 +16,40 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 require 'coerce'
+require 'destinations_import'
+require 'value_to_boolean'
 
 class V01::Destinations < Grape::API
   helpers SharedParams
   helpers ConvertDeprecatedHelper
   helpers do
+    def serialize_planning_opts(planning)
+      return {} if planning.blank?
+
+      {
+        name: planning[:name],
+        ref: planning[:ref],
+        date: planning[:date],
+        vehicle_usage_set_id: planning[:vehicle_usage_set_id],
+        zoning_ids: planning[:zoning_ids]
+      }.compact
+    end
+
+    def resolve_planning_attrs(planning)
+      return {} if planning.blank?
+
+      attrs = planning.dup
+      if attrs[:vehicle_usage_set_id]
+        attrs[:vehicle_usage_set] = current_customer.vehicle_usage_sets.find(attrs[:vehicle_usage_set_id])
+        attrs.delete(:vehicle_usage_set_id)
+      end
+      if attrs[:zoning_ids].present?
+        attrs[:zonings] = current_customer.zonings.find(attrs[:zoning_ids])
+        attrs.delete(:zoning_ids)
+      end
+      attrs
+    end
+
     # Never trust parameters from the scary internet, only allow the white list through.
     def destination_params
       visit_ref_ids = {}
@@ -188,15 +217,16 @@ class V01::Destinations < Grape::API
     end
 
     desc 'Import destinations by upload a CSV file, by JSON or from TomTom.',
-      detail: 'Import multiple destinations and visits. Use your internal and unique ids as a "reference" to automatically retrieve and update objects (upsert). If "route" or "ref_vehicle" is provided for a visit or if a planning attribute is sent, a planning will be automatically created at the same time. If all "route" attributes are blank and no planning attribute is sent, only destinations and visits will be created/updated. CSV headers follow Accept-Language. HTTP 202 when geocoding runs asynchronously (poll GET /jobs/:id); HTTP 200 when the import is synchronous.',
+      detail: 'Import multiple destinations and visits. Use your internal and unique ids as a "reference" to automatically retrieve and update objects (upsert). If "route" or "ref_vehicle" is provided for a visit or if a planning attribute is sent, a planning will be automatically created at the same time. If all "route" attributes are blank and no planning attribute is sent, only destinations and visits will be created/updated. CSV headers follow Accept-Language. HTTP 202 when import (and then geocoding) runs asynchronously (poll GET /jobs/:id); HTTP 200 when the import is synchronous.',
       nickname: 'importDestinations',
       is_array: true,
       http_codes: [
-        V01::Status.success(:code_202, V01::Entities::Destination),
+        V01::Status.success(:code_202, V01::Entities::Job),
         V01::Status.success(:code_200, V01::Entities::Destination)
       ].concat(V01::Status.failures(is_array: true, add: [:code_422]))
     params do
       optional(:replace, type: Boolean, documentation: {param_type: 'form'})
+      optional(:synchronous, type: Boolean, desc: 'Run import synchronously (default false when DelayedJob is enabled).', documentation: {param_type: 'form'})
       optional(:file, type: CSVFile, desc: 'CSV file, encoding, separator and line return automatically detected, with localized CSV header according to HTTP header Accept-Language.', documentation: {param_type: 'form'})
       optional(:remote, type: Symbol, values: [:tomtom], documentation: {param_type: 'form'})
       optional(:planning, type: Hash, documentation: { param_type: 'body' }, desc: 'Planning definition in case of planning created in the same time of destinations import. Planning is created if "route" field is provided in CVS or Json.') do
@@ -222,9 +252,13 @@ class V01::Destinations < Grape::API
     put do
       authorize!(:create, Destination)
       raise Exceptions::JobInProgressError if current_customer.optimizer_running?
+      raise Exceptions::JobInProgressError if current_customer.destination_import_running?
+
+      synchronous = ValueToBoolean.value_to_boolean(params[:synchronous], false)
+      planning_opts = serialize_planning_opts(params[:planning])
 
       if params[:destinations]
-        d_params = declared(params, include_missing: false) # Filter undeclared parameters
+        d_params = declared(params, include_missing: false)
         import_destination_params = d_params[:destinations].each{ |dest_params|
           normalize_destination_import_params!(dest_params)
           dest_params[:tag_ids] = filter_tag_ids_belong_to_customer(dest_params[:tag_ids], current_customer) if dest_params[:tag_ids]
@@ -234,37 +268,57 @@ class V01::Destinations < Grape::API
             hash[:tag_ids] = filter_tag_ids_belong_to_customer(hash[:tag_ids], current_customer) if hash[:tag_ids]
           }
         }
-      end
-      if params[:planning]
-        if params[:planning][:vehicle_usage_set_id]
-          params[:planning][:vehicle_usage_set] = current_customer.vehicle_usage_sets.find(params[:planning][:vehicle_usage_set_id])
-        end
-        params[:planning].delete(:vehicle_usage_set_id)
-        if params[:planning][:zoning_ids] && !params[:planning][:zoning_ids].empty?
-          params[:planning][:zonings] = current_customer.zonings.find(params[:planning][:zoning_ids])
-        end
-        params[:planning].delete(:zoning_ids)
-      end
-      import =
-        if params[:destinations]
-          # FIXME ImportJSON has its own conversion methods. It should be done at the API level
-          ImportJson.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], json: import_destination_params)
-        elsif params[:remote]
-          case params[:remote]
-          when :tomtom then ImportTomtom.new(importer: ImporterDestinations.new(current_customer, params[:planning]), customer: current_customer, replace: params[:replace])
-          end
-        else
-          ImportCsv.new(importer: ImporterDestinations.new(current_customer, params[:planning]), replace: params[:replace], file: params[:file])
-        end
+        # Validate via ImportJson before enqueue (no heavy I/O beyond parse)
+        import = ImportJson.new(importer: ImporterDestinations.new(current_customer, resolve_planning_attrs(params[:planning])), replace: params[:replace], json: import_destination_params)
+        error! V01::Status.code_response(:code_422, message: Array(import.errors.full_messages).join(', ').presence, errors: import.errors.full_messages), 422 unless import.valid?
 
-      if import && import.valid? && (destinations = import.import(true))
+        blob = DestinationsImport.persist_json!(import_destination_params)
+        result = DestinationsImport.enqueue(
+          current_customer,
+          source: 'json',
+          blob: blob,
+          options: { replace: params[:replace], planning: planning_opts },
+          synchronous: synchronous
+        )
+      elsif params[:remote]
         case params[:remote]
-        when :tomtom then status 202
-        else present destinations, with: V01::Entities::Destination
+        when :tomtom
+          import = ImportTomtom.new(importer: ImporterDestinations.new(current_customer, resolve_planning_attrs(params[:planning])), customer: current_customer, replace: params[:replace])
+          error! V01::Status.code_response(:code_422, message: Array(import.errors.full_messages).join(', ').presence, errors: import.errors.full_messages), 422 unless import.valid?
+
+          result = DestinationsImport.enqueue(
+            current_customer,
+            source: 'tomtom',
+            options: { replace: params[:replace], planning: planning_opts },
+            synchronous: synchronous
+          )
         end
       else
-        error! V01::Status.code_response(:code_422, message: Array(import&.errors&.full_messages).join(', ').presence, errors: import&.errors&.full_messages), 422
+        import = ImportCsv.new(importer: ImporterDestinations.new(current_customer, resolve_planning_attrs(params[:planning])), replace: params[:replace], file: params[:file])
+        error! V01::Status.code_response(:code_422, message: Array(import.errors.full_messages).join(', ').presence, errors: import.errors.full_messages), 422 unless import.valid?
+
+        blob = DestinationsImport.persist_upload!(params[:file])
+        result = DestinationsImport.enqueue(
+          current_customer,
+          source: 'csv',
+          blob: blob,
+          options: { replace: params[:replace], planning: planning_opts },
+          synchronous: synchronous
+        )
       end
+
+      if result == false
+        error! V01::Status.code_response(:code_409, message: current_customer.errors.full_messages.join(', ')), 409
+      elsif result.is_a?(Delayed::Backend::ActiveRecord::Job) || result.is_a?(Delayed::Job)
+        status 202
+        present result, with: V01::Entities::Job
+      elsif params[:remote] == :tomtom
+        status 202
+      else
+        present result, with: V01::Entities::Destination
+      end
+    rescue ImportBaseError => e
+      error! V01::Status.code_response(:code_422, message: e.message, errors: [e.message]), 422
     end
 
     desc 'Update destination.',
