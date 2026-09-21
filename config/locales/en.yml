@@ -1590,13 +1590,13 @@ en:
           title: Import
           in_progress: 'Please wait, import in progress'
           error: Import failed.
-          destinations: 'Destinations:'
-          visits: 'Visits:'
-          stores: 'Facilities:'
-          store_reloads: 'Store reloads:'
-          tags: 'Tags:'
-          plannings: 'Plans:'
-          geocoding: 'Geocoding:'
+          destinations: Destinations
+          visits: Visits
+          stores: Facilities
+          store_reloads: Store reloads
+          tags: Tags
+          plannings: Plans
+          geocoding: Geocoding
           phase:
             starting: Starting
             destinations: Importing destinations

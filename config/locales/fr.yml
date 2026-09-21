@@ -1636,13 +1636,13 @@ fr:
           title: Import des adresses
           in_progress: 'Import des adresses en cours, merci de patienter'
           error: Impossible d'effectuer l'import.
-          destinations: 'Adresses :'
-          visits: 'Visites :'
-          stores: 'Entrepôts :'
-          store_reloads: 'Rechargements :'
-          tags: 'Étiquettes :'
-          plannings: 'Plans :'
-          geocoding: 'Géocodage :'
+          destinations: Adresses
+          visits: Visites
+          stores: Entrepôts
+          store_reloads: Rechargements
+          tags: Étiquettes
+          plannings: Plans
+          geocoding: Géocodage
           phase:
             starting: Démarrage
             destinations: Import des adresses
