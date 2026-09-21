@@ -10,28 +10,37 @@ ImporterDestinationsJobStruct ||= Job.new(:customer_id, :source, :blob_id, :opti
 class ImporterDestinationsJob < ImporterDestinationsJobStruct
   def perform
     Delayed::Worker.logger.info('ImporterDestinationsJob perform', customer_id: customer_id, source: source)
-    job_progress_save(
-      'status' => 'working',
-      'phase' => 'starting',
-      'first_progression' => 0,
-      'completed' => false
-    )
-
-    customer = Customer.find(customer_id)
     opts = (options || {}).with_indifferent_access
-    planning_attrs = build_planning_attrs(customer, opts[:planning])
-    importer = ImporterDestinations.new(customer, planning_attrs)
-    importer.progress_callback = ->(progress) { job_progress_save(progress) }
-    import = build_import(customer, importer, opts)
+    locale = opts[:locale].presence || I18n.default_locale
 
-    result = import.import(false)
-    unless result
-      message = Array(import.errors.full_messages).join(', ').presence || 'Import failed'
-      raise ImportBaseError, message
+    I18n.with_locale(locale) do
+      Planning.optimizer_context = true
+      begin
+        job_progress_save(
+          'status' => 'working',
+          'phase' => 'starting',
+          'first_progression' => 0,
+          'completed' => false
+        )
+
+        customer = Customer.find(customer_id)
+        planning_attrs = build_planning_attrs(customer, opts[:planning])
+        importer = ImporterDestinations.new(customer, planning_attrs)
+        importer.progress_callback = ->(progress) { job_progress_save(progress) }
+        import = build_import(customer, importer, opts)
+
+        result = import.import(false)
+        unless result
+          message = Array(import.errors.full_messages).join(', ').presence || 'Import failed'
+          raise ImportBaseError, message
+        end
+
+        job_progress_save('status' => 'working', 'phase' => 'done', 'first_progression' => 100, 'completed' => true)
+        result
+      ensure
+        Planning.optimizer_context = false
+      end
     end
-
-    job_progress_save('status' => 'working', 'phase' => 'done', 'first_progression' => 100, 'completed' => true)
-    result
   ensure
     purge_blob!
   end
