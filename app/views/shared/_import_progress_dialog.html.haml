@@ -1,0 +1,48 @@
+-# Copyright © Cartoway
+-# Body for classic destination-import progressDialog (BS3).
+.dialog-progress
+  %p= t('destinations.index.dialog.import.in_progress')
+  .dialog-import-counters.row.route-data{style: 'display: none; margin-top: 8px;'}
+    .col-xs-4.dialog-import-destinations{style: 'display: none;', title: t('destinations.index.dialog.import.destinations')}
+      .route-info.info
+        %i.fa.fa-map-marker.fa-fw
+        %span.dialog-import-count
+        = t('destinations.index.dialog.import.destinations')
+    .col-xs-4.dialog-import-visits{style: 'display: none;', title: t('destinations.index.dialog.import.visits')}
+      .route-info.info
+        %i.fa.fa-check-square.fa-fw
+        %span.dialog-import-count
+        = t('destinations.index.dialog.import.visits')
+    .col-xs-4.dialog-import-stores{style: 'display: none;', title: t('destinations.index.dialog.import.stores')}
+      .route-info.info
+        %i.fa.fa-warehouse.fa-fw
+        %span.dialog-import-count
+        = t('destinations.index.dialog.import.stores')
+    .col-xs-4.dialog-import-store_reloads{style: 'display: none;', title: t('destinations.index.dialog.import.store_reloads')}
+      .route-info.info
+        %i.fa.fa-rotate.fa-fw
+        %span.dialog-import-count
+        = t('destinations.index.dialog.import.store_reloads')
+    .col-xs-4.dialog-import-tags{style: 'display: none;', title: t('destinations.index.dialog.import.tags')}
+      .route-info.info
+        %i.fa.fa-tags.fa-fw
+        %span.dialog-import-count
+        = t('destinations.index.dialog.import.tags')
+    .col-xs-4.dialog-import-plannings{style: 'display: none;', title: t('destinations.index.dialog.import.plannings')}
+      .route-info.info
+        %i.fa.fa-calendar.fa-fw
+        %span.dialog-import-count
+        = t('destinations.index.dialog.import.plannings')
+    .col-xs-4.dialog-import-geocoding{style: 'display: none;', title: t('destinations.index.dialog.import.geocoding')}
+      .route-info.info
+        %i.fa.fa-globe.fa-fw
+        %span.dialog-import-count
+        = t('destinations.index.dialog.import.geocoding')
+  %p.dialog-import-phase.text-muted{style: 'display: none; margin-top: 4px;'}
+  .progress.progress-striped
+    .progress-bar.primary{style: 'width: 0%'}
+%p.dialog-error{style: 'display: none; overflow-wrap: anywhere; word-break: break-word; max-height: 40vh; overflow-y: auto;'}= t('destinations.index.dialog.import.error')
+%p.dialog-attempts{style: 'display: none'}
+  = t('destinations.index.dialog.geocoding.attempts')
+  %span.dialog-attempts-number
+%p.dialog-inqueue{style: 'display: none'}= t('destinations.index.dialog.geocoding.inqueue')

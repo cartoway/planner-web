@@ -63,7 +63,7 @@ class Job < Struct
     return unless kind && respond_to?(:customer_id)
 
     error = delayed_job.try(:last_error).to_s.lines.first&.strip
-    error = error.truncate(200) if error.present?
+    error = error.truncate(1000) if error.present?
 
     record = lambda {
       Customer.record_last_async_job!(
