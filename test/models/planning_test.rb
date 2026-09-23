@@ -540,13 +540,14 @@ class PlanningTest < ActiveSupport::TestCase
     vehicle_route = planning.routes.find { |r| r == routes(:route_one_one) }
     stop = vehicle_route.stops.find { |s| s.is_a?(StopVisit) }
     stop.update!(active: false)
+    stop_id = stop.id
     source_size = vehicle_route.stops.size
     target_size = unassigned.stops.size
     unassigned.ensure_route_geojson
     points_before = (unassigned.route_geojson.points || []).size
     expected_color = stop.visit.color.presence || unassigned.default_color
 
-    planning.move_stop(unassigned, stop, -1)
+    planning.fast_move_inactive_stops_to_out_of_route!(unassigned, [stop], -1)
 
     refute vehicle_route.outdated?
     refute unassigned.outdated?
@@ -562,7 +563,7 @@ class PlanningTest < ActiveSupport::TestCase
     assert_equal expected_color, feature.dig('properties', 'color')
     refute_equal vehicle_route.default_color, feature.dig('properties', 'color') unless expected_color == vehicle_route.default_color
   ensure
-    stop&.reload&.update!(active: true)
+    StopVisit.find_by(id: stop_id)&.update!(active: true)
   end
 
   test 'moving inactive visit from vehicle route to unassigned accepts nil index' do
@@ -571,15 +572,16 @@ class PlanningTest < ActiveSupport::TestCase
     vehicle_route = planning.routes.find { |r| r == routes(:route_one_one) }
     stop = vehicle_route.stops.find { |s| s.is_a?(StopVisit) && s.position? }
     stop.update!(active: false)
+    stop_id = stop.id
 
     assert_nothing_raised do
-      planning.move_stop(unassigned, stop, nil)
+      planning.fast_move_inactive_stops_to_out_of_route!(unassigned, [stop], nil)
     end
 
     assert_equal unassigned.id, stop.route_id
     assert_not stop.active?
   ensure
-    stop&.reload&.update!(active: true)
+    StopVisit.find_by(id: stop_id)&.update!(active: true)
   end
 
   test 'should compute' do
@@ -1276,6 +1278,20 @@ class PlanningTestError < ActiveSupport::TestCase
     end
   end
 
+  test 'empty loaded stops association must not delete_all on route save' do
+    route = routes(:route_one_one)
+    route.stops.to_a
+    before = Stop.where(route_id: route.id).count
+    assert before > 0
+
+    route.association(:stops).target = []
+    route.association(:stops).loaded!
+    route.outdated = true
+    route.save!
+
+    assert_equal before, Stop.where(route_id: route.id).count
+  end
+
   test 'compute_saved does not StaleObjectError on dirty stops left outside computed routes' do
     planning = plannings(:planning_one)
     vehicle_route = planning.routes.find { |r| r.id == routes(:route_one_one).id }
@@ -1285,12 +1301,149 @@ class PlanningTestError < ActiveSupport::TestCase
     vehicle_route.stops.each { |stop| stop.distance = (stop.distance || 0) + 1 }
     Stop.where(route_id: vehicle_route.id).update_all('lock_version = lock_version + 1')
 
-    # No outdated routes → compute skips import/reload but planning.save! still autosaves
+    # No outdated routes → compute skips import/reload but must not autosave dirty stops
     planning.routes.each do |route|
       route.outdated = false
       route.update_columns(outdated: false) if route.persisted?
     end
 
     assert_nothing_raised { planning.compute_saved }
+  end
+
+  test 'compute_saved after move does not insert ghost StopVisit with null index' do
+    planning = plannings(:planning_one)
+    vehicle_route = planning.routes.find { |r| r.id == routes(:route_one_one).id }
+    out_of_route = planning.routes.find { |r| !r.vehicle_usage? }
+    planning.replace_routes_with_loaded([vehicle_route.id, out_of_route.id])
+    vehicle_route = planning.routes.find { |r| r.id == routes(:route_one_one).id }
+    out_of_route = planning.routes.find { |r| !r.vehicle_usage? }
+
+    stops = vehicle_route.stops.select { |s| s.is_a?(StopVisit) }.first(2)
+    assert stops.size >= 2
+    before_ids = Stop.where(route_id: [vehicle_route.id, out_of_route.id]).pluck(:id).sort
+
+    Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |_url, _mode, _dimension, segments, _options|
+      segments.collect { |_i| [1, 1, '_ibE_seK_seK_seK'] }
+    }) do
+      stops.each { |stop| planning.move_stop(out_of_route, stop, -1) }
+      assert planning.compute_saved
+    end
+
+    after_ids = Stop.where(route_id: [vehicle_route.id, out_of_route.id]).pluck(:id).sort
+    assert_equal before_ids, after_ids
+    assert_equal 0, Stop.where(route_id: [vehicle_route.id, out_of_route.id], index: nil).count
+  end
+
+  test 'compute_saved after move keeps stops in database' do
+    planning = plannings(:planning_one)
+    vehicle_route = planning.routes.find { |r| r.id == routes(:route_one_one).id }
+    out_of_route = planning.routes.find { |r| !r.vehicle_usage? }
+    planning.replace_routes_with_loaded([vehicle_route.id, out_of_route.id])
+    vehicle_route = planning.routes.find { |r| r.id == routes(:route_one_one).id }
+    out_of_route = planning.routes.find { |r| !r.vehicle_usage? }
+
+    stop = vehicle_route.stops.find { |s| s.is_a?(StopVisit) && s.active? }
+    assert stop, 'need an active stop visit'
+    stop_id = stop.id
+    before_count = Stop.where(route_id: [vehicle_route.id, out_of_route.id]).count
+
+    Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |_url, _mode, _dimension, segments, _options|
+      segments.collect { |_i| [1, 1, '_ibE_seK_seK_seK'] }
+    }) do
+      planning.move_stop(out_of_route, stop, nil)
+      assert planning.compute_saved
+    end
+
+    after_count = Stop.where(route_id: [vehicle_route.id, out_of_route.id]).count
+    assert_equal before_count, after_count, 'stops must not disappear after move+compute_saved'
+    assert Stop.exists?(stop_id), 'moved stop must still exist'
+    assert_equal out_of_route.id, Stop.find(stop_id).route_id
+  end
+
+  test 'move mixed active and inactive to out of route keeps all stops in DB' do
+    planning = plannings(:planning_one)
+    vehicle_route = planning.routes.find { |r| r.id == routes(:route_one_one).id }
+    out_of_route = planning.routes.find { |r| !r.vehicle_usage? }
+    planning.replace_routes_with_loaded([vehicle_route.id, out_of_route.id])
+    vehicle_route = planning.routes.find { |r| r.id == routes(:route_one_one).id }
+    out_of_route = planning.routes.find { |r| !r.vehicle_usage? }
+
+    visits = vehicle_route.stops.select { |s| s.is_a?(StopVisit) }
+    assert visits.size >= 3
+    # Force one inactive at end like after optim
+    inactive = visits.last
+    inactive.update_columns(active: false)
+    vehicle_route.stops.find { |s| s.id == inactive.id }.active = false
+
+    active_stops = vehicle_route.stops.select { |s| s.is_a?(StopVisit) && s.active? }
+    inactive_stops = vehicle_route.stops.select { |s| s.is_a?(StopVisit) && !s.active? }
+    assert active_stops.any?
+    assert inactive_stops.any?
+
+    moved = (active_stops.first(2) + inactive_stops).uniq
+    before_ids = moved.map(&:id).sort
+    total_before = Stop.where(route_id: [vehicle_route.id, out_of_route.id]).count
+
+    Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |_url, _mode, _dimension, segments, _options|
+      segments.collect { |_i| [1, 1, '_ibE_seK_seK_seK'] }
+    }) do
+      # Same as controller: not all inactive => normal path for each
+      refute moved.all? { |s| !s.active? }
+      moved.each { |stop| planning.move_stop(out_of_route, stop, -1) }
+      assert planning.compute_saved
+    end
+
+    after_ids = Stop.where(id: before_ids).pluck(:id).sort
+    assert_equal before_ids, after_ids, 'moved stops must still exist in DB'
+    after_ids.each do |id|
+      stop = Stop.find(id)
+      assert_equal out_of_route.id, stop.route_id, "stop #{id} should be on out_of_route"
+    end
+    assert_equal total_before, Stop.where(route_id: [vehicle_route.id, out_of_route.id]).count
+  end
+
+  test 'compute_saved after optim-like set_stops and move keeps all route stops' do
+    planning = plannings(:planning_one)
+    route = routes(:route_one_one)
+    out_of_route = planning.routes.find { |r| !r.vehicle_usage? }
+
+    visits = route.stops.select { |s| s.is_a?(StopVisit) }.sort_by(&:index)
+    assert visits.size >= 2
+    kept, dropped = visits[0..-2], visits[-1]
+    dropped_id = dropped.id
+
+    optimum = {
+      route.id => (route.stops.select { |s| s.is_a?(StopRest) } + kept).sort_by(&:index).reverse.map { |s| { id: s.id, type: s.optim_type } },
+      nil => [{ id: dropped_id, type: 'service' }]
+    }
+
+    planning.set_stops(optimum, global: false, active_only: true)
+    planning = Planning.find(planning.id)
+    planning.replace_routes_with_loaded(planning.routes.map(&:id))
+    route = planning.routes.find { |r| r.id == route.id }
+    out_of_route = planning.routes.find { |r| !r.vehicle_usage? }
+
+    inactive = route.stops.find { |s| s.id == dropped_id }
+    assert inactive
+    assert_equal false, inactive.active?
+
+    before_count = Stop.where(route_id: planning.routes.map(&:id)).count
+    active_to_move = route.stops.find { |s| s.is_a?(StopVisit) && s.active? }
+    assert active_to_move
+
+    Routers::RouterWrapper.stub_any_instance(:compute_batch, lambda { |_url, _mode, _dimension, segments, _options|
+      segments.collect { |_i| [1, 1, '_ibE_seK_seK_seK'] }
+    }) do
+      planning.move_stop(out_of_route, active_to_move, nil)
+      assert planning.compute_saved
+    end
+
+    after_count = Stop.where(route_id: planning.routes.map(&:id)).count
+    assert_equal before_count, after_count, 'stops must not disappear after optim+move+compute_saved'
+    planning.routes.each do |r|
+      db_count = Stop.where(route_id: r.id).count
+      r.association(:stops).reset
+      assert_equal db_count, r.stops.count, "route #{r.id} association vs DB mismatch"
+    end
   end
 end

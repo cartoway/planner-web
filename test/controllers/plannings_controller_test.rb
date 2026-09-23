@@ -1803,12 +1803,12 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should not move on unprocessable entity' do
-    Planning.stub_any_instance(:save!, lambda { |*a| raise ActiveRecord::RecordInvalid.new(self) }) do
+    Planning.stub_any_instance(:compute_saved, lambda { |*_a| raise ActiveRecord::RecordInvalid.new(Planning.new) }) do
       patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :json }
       assert_response :unprocessable_entity
     end
 
-    Planning.stub_any_instance(:compute_saved!, lambda { |*a| false }) do
+    Planning.stub_any_instance(:compute_saved, lambda { |*_a| false }) do
       patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :json }
       assert_response :unprocessable_entity
     end
