@@ -1275,4 +1275,22 @@ class PlanningTestError < ActiveSupport::TestCase
       end
     end
   end
+
+  test 'compute_saved does not StaleObjectError on dirty stops left outside computed routes' do
+    planning = plannings(:planning_one)
+    vehicle_route = planning.routes.find { |r| r.id == routes(:route_one_one).id }
+
+    vehicle_route.stops.to_a
+    # Simulate fast_move reindex: dirty in-memory stops while DB lock_version moved on
+    vehicle_route.stops.each { |stop| stop.distance = (stop.distance || 0) + 1 }
+    Stop.where(route_id: vehicle_route.id).update_all('lock_version = lock_version + 1')
+
+    # No outdated routes → compute skips import/reload but planning.save! still autosaves
+    planning.routes.each do |route|
+      route.outdated = false
+      route.update_columns(outdated: false) if route.persisted?
+    end
+
+    assert_nothing_raised { planning.compute_saved }
+  end
 end
