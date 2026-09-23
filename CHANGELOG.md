@@ -8,6 +8,7 @@
     - prevent duplicated stop markers (notably with clustering) when concurrent route geojson loads overlap
     - moving a stop onto a hidden route no longer reveals that route’s trace or points
     - moving a stop to a hidden / non-displayed route no longer puts every route panel in a loading spinner
+    - stop popup: "send to unassigned" keeps a valid out-of-route id after moving onto a hidden route
 
 ## v110.0.0
   ### Added

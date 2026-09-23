@@ -1385,19 +1385,10 @@ export const plannings_edit = function(params) {
     if (!summary || !summary.routes) return;
     planningPopoverSnapshot = summary;
     if (!routesLayer) return;
-    var colorsByRoute = routesLayer.options.colorsByRoute || {};
-    var withVehicle = summary.routes.filter(function(r) {
-      return r.vehicle_usage_id;
-    });
-    // Selector captures omit vehicle_usage_id — don't wipe the full move list
-    if (!withVehicle.length) return;
-    routesLayer.options.moveTargetRoutes = withVehicle.map(function(r) {
-      var color = r.route_color || r.color || colorsByRoute[r.route_id];
-      if (color && !r.route_color) {
-        r.route_color = color;
-      }
-      return r;
-    });
+    var resolvedId = routesLayer.syncMoveTargetsFromRoutes(summary.routes);
+    if (resolvedId) {
+      outOfRouteId = resolvedId;
+    }
   };
 
   if (vehicleLayer) map.addLayer(vehicleLayer);
@@ -2983,11 +2974,12 @@ export const plannings_edit = function(params) {
   };
 
   var syncRoutesLayerOptions = function() {
-    if (routesLayer) {
-      routesLayer.options.routes = routes;
-      // FIXME: use optional chaining and nullish coalescing operator
-      const outOfRoute = routes.find(route => !route.vehicle_usage_id);
-      routesLayer.options.outOfRouteId = outOfRoute ? outOfRoute.route_id : undefined;
+    if (!routesLayer) return;
+    routesLayer.options.routes = routes;
+    var resolvedOutOfRouteId = routesLayer._findOutOfRouteId(routes);
+    if (resolvedOutOfRouteId) {
+      outOfRouteId = resolvedOutOfRouteId;
+      routesLayer.options.outOfRouteId = resolvedOutOfRouteId;
     }
   };
 
@@ -3261,19 +3253,20 @@ export const plannings_edit = function(params) {
     if (stops.length === 0) {
       return;
     }
-    var routesWithVehicle = planningData.routes.filter(function(r) { return r.vehicle_usage_id; }).map(function(r) {
-      if (!r.route_color) {
-        r.route_color = r.color || (routesLayer && routesLayer.options.colorsByRoute && routesLayer.options.colorsByRoute[r.route_id]);
-      }
-      return r;
-    });
+    var routesWithVehicle = (routesLayer && routesLayer.options.moveTargetRoutes) || [];
+    if (!routesWithVehicle.length && routesLayer) {
+      routesLayer.syncMoveTargetsFromRoutes(planningData.routes);
+      routesWithVehicle = routesLayer.options.moveTargetRoutes || [];
+    }
     var mpPop = params.manage_planning || {};
+    var resolvedOutOfRouteId = outOfRouteId ||
+      (routesLayer && (routesLayer.options.outOfRouteId || routesLayer._findOutOfRouteId(planningData.routes)));
     var stopData = $.extend({}, stops[0], {
       number: $('.number', $li).text(),
       i18n: mustache_i18n,
       planning_id: planningData.planning_id != null ? planningData.planning_id : planning_id,
       routes: routesWithVehicle,
-      out_of_route_id: outOfRouteId,
+      out_of_route_id: resolvedOutOfRouteId,
       route_id: route.route_id,
       vehicle_name: route.vehicle_name,
       popover: true,
