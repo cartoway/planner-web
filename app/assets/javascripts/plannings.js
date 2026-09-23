@@ -163,6 +163,10 @@ $(function() {
 });
 
 export const panelLoading = function(route_id) {
+  // Explicit falsy id (e.g. dest route not in sidebar) must not fall back to "all panels"
+  if (arguments.length > 0 && (route_id === undefined || route_id === null || route_id === '')) {
+    return;
+  }
   var route_panel = route_id ? $('.stops.sortable', 'li[data-route-id="' + route_id + '"]') : $('.stops.sortable');
   route_panel.each(function(_idx, panel) {
     var $panel = $(panel);
@@ -2198,11 +2202,12 @@ export const plannings_edit = function(params) {
   });
 
   var sortLoading = function(route, origin_route_id) {
-    var route_id = route.attr('data-route-id');
-    if (route_id != origin_route_id || !route.hasClass('out_route')) {
+    // Dest panel may be missing when moving to a hidden / filtered-out route
+    var route_id = route && route.length ? route.attr('data-route-id') : null;
+    if (route_id && (route_id != origin_route_id || !route.hasClass('out_route'))) {
       panelLoading(route_id);
     }
-    if (route_id != origin_route_id) {
+    if (origin_route_id && route_id != origin_route_id) {
       panelLoading(origin_route_id);
     }
   };
