@@ -126,16 +126,15 @@ const popupModule = (function() {
         marker._popupLoadedUrl = url;
         data.i18n = mustache_i18n;
         // Prefer moveTargetRoutes (full planning) over options.routes (may be visible-only)
-        var routesForMove = _context.options.moveTargetRoutes || _context.options.routes;
-        data.routes = routesForMove.filter(function(route) {
-          return route.vehicle_usage_id;
-        }).map(function(route) {
+        var routesForMove = _context.options.moveTargetRoutes ||
+          _context._routesWithVehicle(_context.options.routes);
+        data.routes = routesForMove.map(function(route) {
           var color = _context.options.colorsByRoute[route.route_id] || route.route_color || route.color;
           route.color = color;
           route.route_color = color;
           return route;
         });
-        data.out_of_route_id = _context.options.outOfRouteId;
+        data.out_of_route_id = _context.options.outOfRouteId || _context._findOutOfRouteId(_context.options.routes);
         data.number = marker.properties.number;
         if (_context.options.url_click2call) {
           phoneNumberCall(data, _context.options.url_click2call);
@@ -574,6 +573,50 @@ export const RoutesLayer = L.FeatureGroup.extend({
     this._removeRoutesByIds(routeIds);
   },
 
+  // Out-of-route has no vehicle_usage_id (often omitted in JSON) or data.out_of_route.
+  _isOutOfRoute: function(route) {
+    return !route.vehicle_usage_id || !!(route.data && route.data.out_of_route);
+  },
+
+  // Prefer an explicit id; fall back to scanning routes; never wipe a known value.
+  _findOutOfRouteId: function(routes) {
+    var list = routes || this.options.routes || [];
+    for (var i = 0; i < list.length; i++) {
+      if (this._isOutOfRoute(list[i])) {
+        return list[i].route_id;
+      }
+    }
+    return this.options.outOfRouteId;
+  },
+
+  _routesWithVehicle: function(routes) {
+    return (routes || []).filter(function(r) {
+      return r.vehicle_usage_id;
+    });
+  },
+
+  // Sync out-of-route id + vehicle routes for stop popup / move dropdowns. Returns outOfRouteId.
+  syncMoveTargetsFromRoutes: function(routeList) {
+    var list = routeList || [];
+    var outId = this._findOutOfRouteId(list);
+    if (outId) {
+      this.options.outOfRouteId = outId;
+    }
+    var withVehicle = this._routesWithVehicle(list);
+    if (!withVehicle.length) {
+      return outId;
+    }
+    var colorsByRoute = this.options.colorsByRoute || {};
+    this.options.moveTargetRoutes = withVehicle.map(function(r) {
+      var color = r.route_color || r.color || colorsByRoute[r.route_id];
+      if (color && !r.route_color) {
+        r.route_color = color;
+      }
+      return r;
+    });
+    return outId;
+  },
+
   // True when the route must stay off the map (DB hidden or eye-slash in sidebar).
   _routeHiddenOnMap: function(routeId, routes) {
     var list = routes || this.options.routes || [];
@@ -594,9 +637,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
   refreshRoutes: function(routeIds, routes, geojson) {
     if (routes) {
       this.options.routes = routes;
-      // FIXME: use optional chaining and nullish coalescing operator
-      const outOfRoute = routes.find(route => !route.vehicle_usage_id);
-      this.options.outOfRouteId = outOfRoute ? outOfRoute.route_id : undefined;
+      this.options.outOfRouteId = this._findOutOfRouteId(routes);
     }
     var ids = routeIds || [];
     var visibleIds = [];
