@@ -873,7 +873,7 @@ export const plannings_edit = function(params) {
     var route = locals.route;
     updateRouteModel(0, route);
     var $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
-    planningPopoverSnapshot = locals.summary;
+    setPlanningPopoverSnapshot(locals.summary);
     var runWidgets = function() {
       applyRouteWidgetsForPanel($routePanel, route, locals.summary);
     };
@@ -1000,7 +1000,7 @@ export const plannings_edit = function(params) {
             return;
           }
           var summarySnapshot = payload.summary;
-          planningPopoverSnapshot = summarySnapshot;
+          setPlanningPopoverSnapshot(summarySnapshot);
           payload.routes.forEach(function(entry) {
             var route = entry.route;
             var routeIndex = routes.findIndex(function(r) { return r.route_id == route.route_id; });
@@ -1360,6 +1360,8 @@ export const plannings_edit = function(params) {
     unit: prefered_unit,
     outOfRouteId: outOfRouteId,
     routes: routes,
+    // Full planning routes for send_to_route dropdowns (not only visible/available)
+    moveTargetRoutes: routes.filter(function(r) { return r.vehicle_usage_id; }),
     colorsByRoute: params.colors_by_route,
     appBaseUrl: params.apiWeb ? '/api-web/0.1/' : '/',
     popupOptions: popupOptions,
@@ -1369,6 +1371,26 @@ export const plannings_edit = function(params) {
   }).on('clickStop', function(stop) {
     enlightenStop({index: stop.index, routeId: stop.routeId});
   }).addTo(map);
+
+  // Keep popover/map "send to route" lists on the full summary, never the visible subset.
+  var setPlanningPopoverSnapshot = function(summary) {
+    if (!summary || !summary.routes) return;
+    planningPopoverSnapshot = summary;
+    if (!routesLayer) return;
+    var colorsByRoute = routesLayer.options.colorsByRoute || {};
+    var withVehicle = summary.routes.filter(function(r) {
+      return r.vehicle_usage_id;
+    });
+    // Selector captures omit vehicle_usage_id — don't wipe the full move list
+    if (!withVehicle.length) return;
+    routesLayer.options.moveTargetRoutes = withVehicle.map(function(r) {
+      var color = r.route_color || r.color || colorsByRoute[r.route_id];
+      if (color && !r.route_color) {
+        r.route_color = color;
+      }
+      return r;
+    });
+  };
 
   if (vehicleLayer) map.addLayer(vehicleLayer);
 
@@ -2366,8 +2388,7 @@ export const plannings_edit = function(params) {
         r.name = displayName;
       }
     });
-    planningPopoverSnapshot = summary;
-    refreshRouteSelectorFromSummary(summary);
+    setPlanningPopoverSnapshot(summary);
   };
 
   var refreshRouteSelectorFromSummary = function(summary) {
@@ -3104,7 +3125,8 @@ export const plannings_edit = function(params) {
           route.devices = associated_route[0].devices;
 
         $.extend(route, params.manage_planning);
-        refreshSidebarRoute(route.planning_id, route.route_id, {skipCallbacks: true});
+        // skipMap: map is refreshed once below — parallel refreshRoutes races and doubles markers
+        refreshSidebarRoute(route.planning_id, route.route_id, {skipCallbacks: true, skipMap: true});
         const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
         initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
       });
@@ -3165,7 +3187,8 @@ export const plannings_edit = function(params) {
 
         $.extend(route, params.manage_planning);
 
-        refreshSidebarRoute(planning_id, route.route_id, {skipCallbacks: true});
+        // skipMap: map is refreshed once below — parallel refreshRoutes races and doubles markers
+        refreshSidebarRoute(planning_id, route.route_id, {skipCallbacks: true, skipMap: true});
         const $routePanel = $(`li.route[data-route-id="${route.route_id}"]`);
         initRoutes($routePanel, data, $.merge({skipCallbacks: true}, options));
         if (!options || !options.skipMap) {
@@ -3229,7 +3252,12 @@ export const plannings_edit = function(params) {
     if (stops.length === 0) {
       return;
     }
-    var routesWithVehicle = planningData.routes.filter(function(r) { return r.vehicle_usage_id; });
+    var routesWithVehicle = planningData.routes.filter(function(r) { return r.vehicle_usage_id; }).map(function(r) {
+      if (!r.route_color) {
+        r.route_color = r.color || (routesLayer && routesLayer.options.colorsByRoute && routesLayer.options.colorsByRoute[r.route_id]);
+      }
+      return r;
+    });
     var mpPop = params.manage_planning || {};
     var stopData = $.extend({}, stops[0], {
       number: $('.number', $li).text(),
@@ -3293,7 +3321,7 @@ export const plannings_edit = function(params) {
   var bindRouteStopHoverAndPopovers = function(route, planningData) {
     if (!planningData || !planningData.routes) return;
 
-    planningPopoverSnapshot = planningData;
+    setPlanningPopoverSnapshot(planningData);
 
     if (!bindRouteStopHoverAndPopovers._closePopoverDocBound) {
       bindRouteStopHoverAndPopovers._closePopoverDocBound = true;
@@ -3387,7 +3415,7 @@ export const plannings_edit = function(params) {
     }
     if (data && data.routes) {
       // Keep full planning routes for stop popovers / move (updatedRoutes may be a subset after optim)
-      planningPopoverSnapshot = $.extend({}, data);
+      setPlanningPopoverSnapshot(data);
     }
     var isBackgroundUpdate = !!(options && (options.skipCallbacks || options.background));
     var shouldBindRouteDelegates = !isBackgroundUpdate && !(options && options.skipCallbacks);
