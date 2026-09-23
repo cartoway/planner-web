@@ -885,7 +885,11 @@ export const plannings_edit = function(params) {
       runWidgets();
     }
     if (!opts.skipMap && routesLayer) {
-      routesLayer.refreshRoutes([route.route_id], routes);
+      // Prefer summary.routes (has `hidden`) over the in-memory routes model
+      routesLayer.refreshRoutes(
+        [route.route_id],
+        (locals.summary && locals.summary.routes) || routes
+      );
     }
   };
 
