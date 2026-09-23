@@ -1501,6 +1501,15 @@ class Planning < ApplicationRecord
 
     computed_routes.each{ |r| r.invalidate_route_cache }
 
+    routes.each do |route|
+      next unless route.association(:stops).loaded?
+
+      route.association(:stops).reset
+      route.clear_changes_information
+    end
+
+    self.save!(touch: false) && self.invalidate_planning_cache unless options[:skip_planning_save]
+
     if computed_routes.any?
       route_ids = computed_routes.map(&:id)
       reloaded_routes_hash = Route.where(id: route_ids).includes_vehicle_usages.includes_destinations_and_stores.index_by(&:id)
@@ -1513,8 +1522,6 @@ class Planning < ApplicationRecord
         routes_to_enqueue << r
       end
     end
-
-    self.save!(touch: false) && self.invalidate_planning_cache unless options[:skip_planning_save]
 
     true
   end
