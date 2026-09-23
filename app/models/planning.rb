@@ -679,10 +679,10 @@ class Planning < ApplicationRecord
 
   def move_stop(route, stop, index, force = false)
     reject_writes_during_optimization!
-    if fast_move_inactive_stop_to_out_of_route?(stop, route)
-      fast_move_inactive_stops_to_out_of_route!(route, [stop], index)
-      return true
-    end
+    # Do not fast-move inactive stops here. In a mixed batch (active + inactive),
+    # fast_move_inactive_stops_to_out_of_route! calls mark_computed_without_recompute!
+    # which skips compute_saved — active stops destroyed+rebuilt in memory are then lost.
+    # Bulk-only inactive moves go through fast_move_inactive_stops_to_out_of_route! in the controller.
 
     route, index = prefered_route_and_index([route], stop) unless index || !route.vehicle_usage? || !stop.position?
 
@@ -1375,11 +1375,6 @@ class Planning < ApplicationRecord
 
   private
 
-  def fast_move_inactive_stop_to_out_of_route?(stop, target_route)
-    stop.is_a?(StopVisit) && !stop.active? &&
-      stop.route.vehicle_usage? && !target_route.vehicle_usage?
-  end
-
   def tags_compatible_given_plan_tags?(combined_tags, plan_tags)
     if tag_operation == '_or'
       (combined_tags & plan_tags).present?
@@ -1501,15 +1496,6 @@ class Planning < ApplicationRecord
 
     computed_routes.each{ |r| r.invalidate_route_cache }
 
-    routes.each do |route|
-      next unless route.association(:stops).loaded?
-
-      route.association(:stops).reset
-      route.clear_changes_information
-    end
-
-    self.save!(touch: false) && self.invalidate_planning_cache unless options[:skip_planning_save]
-
     if computed_routes.any?
       route_ids = computed_routes.map(&:id)
       reloaded_routes_hash = Route.where(id: route_ids).includes_vehicle_usages.includes_destinations_and_stores.index_by(&:id)
@@ -1521,6 +1507,22 @@ class Planning < ApplicationRecord
         next unless Planner::Application.config.delayed_job_use
         routes_to_enqueue << r
       end
+    end
+
+    # Stops/routes are already persisted via import. Drop in-memory stop objects so later
+    # code does not see stale lock_versions or unsaved ghosts from move (destroy+build).
+    # Do not planning.save! here: autosave would re-INSERT new_record StopVisits (null index)
+    # or raise StaleObjectError on dirty stops.
+    routes.each do |route|
+      next unless route.association(:stops).loaded?
+
+      route.association(:stops).reset
+      route.clear_changes_information
+    end
+
+    unless options[:skip_planning_save]
+      self.update_columns(updated_at: Time.current)
+      invalidate_planning_cache
     end
 
     true
