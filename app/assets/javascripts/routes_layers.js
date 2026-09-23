@@ -125,10 +125,14 @@ const popupModule = (function() {
       success: function(data) {
         marker._popupLoadedUrl = url;
         data.i18n = mustache_i18n;
-        data.routes = _context.options.routes.filter(function(route) {
+        // Prefer moveTargetRoutes (full planning) over options.routes (may be visible-only)
+        var routesForMove = _context.options.moveTargetRoutes || _context.options.routes;
+        data.routes = routesForMove.filter(function(route) {
           return route.vehicle_usage_id;
         }).map(function(route) {
-          route.color = _context.options.colorsByRoute[route.route_id];
+          var color = _context.options.colorsByRoute[route.route_id] || route.route_color || route.color;
+          route.color = color;
+          route.route_color = color;
           return route;
         });
         data.out_of_route_id = _context.options.outOfRouteId;
