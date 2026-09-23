@@ -3062,8 +3062,11 @@ export const plannings_edit = function(params) {
     });
     backgroundTask();
 
+    // Optim poll may return only route_ids subset — keep the full in-memory routes for popups/move.
+    var polledRouteSubset = !!(data.dispatch_params_delayed_job && data.dispatch_params_delayed_job.route_ids && routes && routes.length);
+
     // 1st case: the whole planning needs to be initialized and displayed
-    if (typeof options !== 'object' || !options.partial) {
+    if ((typeof options !== 'object' || !options.partial) && !polledRouteSubset) {
       if (data.routes) {
         routes = $.map(data.routes, function(route, i) {
           return buildRouteModel(i, route);
@@ -3076,7 +3079,12 @@ export const plannings_edit = function(params) {
       initPlanningDisplay(planning_id, $.extend(options, {fitBounds: fitBounds}));
     }
     // 2nd case: several routes needs to be displayed (header and map), for instance by switching vehicles
-    else if (typeof options === 'object' && options.partial === 'routes') {
+    // Also used after optim when the poll only returned the impacted routes.
+    else if (polledRouteSubset || (typeof options === 'object' && options.partial === 'routes')) {
+      if (polledRouteSubset) {
+        syncRoutesLayerOptions();
+        updateDataHeader(planning_id);
+      }
       $.each(displayed_routes, function(i, route) {
         var vehicle_usage = {};
         $.each(vehicles_usages_map, function(i, v) {
@@ -3369,16 +3377,17 @@ export const plannings_edit = function(params) {
     }
   };
 
-  var updateSuccess = function(data, map, routes, options) {
+  var updateSuccess = function(data, map, updatedRoutes, options) {
     options = options || {};
-    if (routes && routes.length) {
-      $.each(routes, function(i, route) {
+    if (updatedRoutes && updatedRoutes.length) {
+      $.each(updatedRoutes, function(i, route) {
         updateRouteModel(i, route);
       });
       syncRoutesLayerOptions();
     }
     if (data && data.routes) {
-      planningPopoverSnapshot = $.extend({}, data, { routes: routes });
+      // Keep full planning routes for stop popovers / move (updatedRoutes may be a subset after optim)
+      planningPopoverSnapshot = $.extend({}, data);
     }
     var isBackgroundUpdate = !!(options && (options.skipCallbacks || options.background));
     var shouldBindRouteDelegates = !isBackgroundUpdate && !(options && options.skipCallbacks);
@@ -3452,7 +3461,7 @@ export const plannings_edit = function(params) {
     }
 
     checkLockAndActive();
-    $.each(routes, function(i, route) {
+    $.each(updatedRoutes, function(i, route) {
 
       const $routePanel = $(`.route[data-route-id="${route.route_id}"]`);
       initRoutes($routePanel, data, options);
@@ -3480,13 +3489,13 @@ export const plannings_edit = function(params) {
       checkLockAndActive();
     }
 
-    var updateOptimButton = function(routes) {
-      routes.forEach(function(route) {
+    var updateOptimButton = function(routesForButton) {
+      routesForButton.forEach(function(route) {
         $("li[data-route-id=\"" + route.route_id + "\"]").find('.optimize').toggleClass('btn-success', !!route.optimized_at_formatted);
       });
     };
 
-    updateOptimButton(routes);
+    updateOptimButton(updatedRoutes || []);
     initRouteDepartureTimeEntry();
 
     if (data && data.routes) {
@@ -3911,7 +3920,7 @@ export const plannings_edit = function(params) {
         }
         else if (locals.updated_routes) {
           updateSuccess(locals.summary, map, locals.updated_routes, { skipCallbacks: true, updateHeader: true });
-          routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.updated_routes);
+          routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
         }
       },
       complete: completeAjaxMap,

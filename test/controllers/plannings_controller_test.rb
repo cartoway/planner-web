@@ -1469,7 +1469,8 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :success
     body = JSON.parse(@response.body.match(/var locals = (.*);/)[1])
     assert_equal 1, body['updated_routes'].size
-    assert_equal 3, body.dig('summary', 'routes').size
+    # Popups/move must use summary.routes (full list), not the truncated updated_routes
+    assert_equal @planning.routes.size, body.dig('summary', 'routes').size
   end
 
   test 'should optimize all routes in planning' do
