@@ -7,6 +7,7 @@
     - stop popups / move dropdown list all planning vehicles after optimization (not only the updated or visible routes)
     - prevent duplicated stop markers (notably with clustering) when concurrent route geojson loads overlap
     - moving a stop onto a hidden route no longer reveals that route’s trace or points
+    - moving a stop to a hidden / non-displayed route no longer puts every route panel in a loading spinner
 
 ## v110.0.0
   ### Added
