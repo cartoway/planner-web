@@ -318,11 +318,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
     showStore: false,
   },
 
-  // Clusters for each route
-  clustersByRoute: {},
-
-  // Markers for each store
-  markerStores: {},
+  // Clusters / stores are instance state — initialized in initialize() (not on the prototype)
 
   // Store selected sub-tour indices per route
   subTourFilters: {},
@@ -407,6 +403,10 @@ export const RoutesLayer = L.FeatureGroup.extend({
     this.clickPopupId = undefined;
     this.subTourFilters = {};
     this.subTourColors = {};
+    // Instance-owned — prototype shared {} would accumulate markers across remounts/races
+    this.clustersByRoute = {};
+    this.markerStores = {};
+    this._pendingRouteLoads = {};
     this.options = $.extend({}, this.defaultOptions, options); // Don't modify defaultOptions which can be reinitialized by turbolinks
 
     if (this.options.disableClusters) {
@@ -421,6 +421,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
   onAdd: function(map) {
     L.FeatureGroup.prototype.onAdd.call(this, map);
     this.layersByRoute = {};
+    this.clustersByRoute = this.clustersByRoute || {};
     this.tracesByStopIndex = {};
     this.highlightedTraceRouteId = null;
     this.tracePopupMarker = null;
@@ -573,14 +574,47 @@ export const RoutesLayer = L.FeatureGroup.extend({
     this._removeRoutesByIds(routeIds);
   },
 
+  // True when the route must stay off the map (DB hidden or eye-slash in sidebar).
+  _routeHiddenOnMap: function(routeId, routes) {
+    var list = routes || this.options.routes || [];
+    for (var i = 0; i < list.length; i++) {
+      if (String(list[i].route_id) === String(routeId) && list[i].hidden) {
+        return true;
+      }
+    }
+    if (typeof document !== 'undefined') {
+      var icon = document.querySelector(
+        '.route[data-route-id="' + routeId + '"] .toggle i.fa-eye-slash'
+      );
+      if (icon) return true;
+    }
+    return false;
+  },
+
   refreshRoutes: function(routeIds, routes, geojson) {
-    this._removeRoutesByIds(routeIds);
-    this.options.routes = routes;
-    // FIXME: use optional chaining and nullish coalescing operator
-    const outOfRoute = routes.find(route => !route.vehicle_usage_id);
-    this.options.outOfRouteId = outOfRoute ? outOfRoute.route_id : undefined;
-    // FIXME: callback could be used to avoid blink
-    this.showRoutes(routeIds, geojson);
+    if (routes) {
+      this.options.routes = routes;
+      // FIXME: use optional chaining and nullish coalescing operator
+      const outOfRoute = routes.find(route => !route.vehicle_usage_id);
+      this.options.outOfRouteId = outOfRoute ? outOfRoute.route_id : undefined;
+    }
+    var ids = routeIds || [];
+    var visibleIds = [];
+    var hiddenIds = [];
+    ids.forEach(function(routeId) {
+      if (this._routeHiddenOnMap(routeId, routes)) {
+        hiddenIds.push(routeId);
+      } else {
+        visibleIds.push(routeId);
+      }
+    }.bind(this));
+    // Keep eye-hidden / filter-hidden routes off the map after move/refresh
+    if (hiddenIds.length) {
+      this.hideRoutes(hiddenIds);
+    }
+    if (visibleIds.length) {
+      this.showRoutes(visibleIds, geojson);
+    }
   },
 
   showAllRoutes: function(options, callback) {
@@ -1083,51 +1117,88 @@ export const RoutesLayer = L.FeatureGroup.extend({
     this._fitMapBounds(this.clustersByRoute[routeId].getBounds());
   },
 
+  // Drop in-flight geojson loads that touch the same route ids.
+  _abortPendingRouteLoads: function(routeIds) {
+    (routeIds || []).forEach(function(routeId) {
+      var prev = this._pendingRouteLoads[routeId];
+      if (prev && prev.readyState !== 4) {
+        prev.abort();
+      }
+    }.bind(this));
+  },
+
+  _trackPendingRouteLoads: function(routeIds, xhr) {
+    (routeIds || []).forEach(function(routeId) {
+      this._pendingRouteLoads[routeId] = xhr;
+    }.bind(this));
+  },
+
+  _clearPendingRouteLoads: function(routeIds, xhr) {
+    (routeIds || []).forEach(function(routeId) {
+      if (this._pendingRouteLoads[routeId] === xhr) {
+        delete this._pendingRouteLoads[routeId];
+      }
+    }.bind(this));
+  },
+
+  // Single place: clear then paint (polylines + cluster markers).
+  _replaceRoutesGeojson: function(routeIds, data, callback) {
+    if (this.options.withInactiveStops === false) removeInactiveStops(data);
+    if (routeIds && routeIds.length) {
+      this._removeRoutesByIds(routeIds);
+    }
+    this._addRoutes(data);
+    if (typeof callback === 'function') {
+      callback();
+    }
+  },
+
   _load: function(routeIds, includeStores, geojson, callback) {
-    if (!geojson) {
-      var requestData = (function() {
-        var dataParams = {
-          with_geojson: this.options.withPolylines ? 'polyline' : 'point',
-          ids: routeIds.join(','),
-          stores: includeStores
-        };
-        if (routeIds.length === 1) {
-          var normalizedRouteId = routeIds[0].toString();
-          if (Object.prototype.hasOwnProperty.call(this.subTourFilters, normalizedRouteId)) {
-            var filter = this.subTourFilters[normalizedRouteId];
-            if (Array.isArray(filter)) {
-              if (filter.length === 0) {
-                return null;
-              }
-              dataParams.sub_tour_indices = filter;
-            }
+    var requestedIds = (routeIds || []).slice();
+
+    if (geojson) {
+      this._replaceRoutesGeojson(requestedIds, geojson, callback);
+      return;
+    }
+
+    var requestData = {
+      with_geojson: this.options.withPolylines ? 'polyline' : 'point',
+      ids: requestedIds.join(','),
+      stores: includeStores
+    };
+    if (requestedIds.length === 1) {
+      var normalizedRouteId = requestedIds[0].toString();
+      if (Object.prototype.hasOwnProperty.call(this.subTourFilters, normalizedRouteId)) {
+        var filter = this.subTourFilters[normalizedRouteId];
+        if (Array.isArray(filter)) {
+          if (filter.length === 0) {
+            return;
           }
+          requestData.sub_tour_indices = filter;
         }
-        return dataParams;
-      }.bind(this))();
-
-      if (!requestData) { return; }
-
-      $.ajax({
-        url: '/api/0.1' + (this.planningId ? '/plannings/' + this.planningId : '') + '/routes.geojson',
-        data: requestData,
-        beforeSend: beforeSendWaiting,
-        success: function(data) {
-          if (this.options.withInactiveStops === false) removeInactiveStops(data);
-          this._addRoutes(data);
-          if (typeof callback === 'function') {
-            callback();
-          }
-        }.bind(this),
-        complete: completeAjaxMap,
-        error: ajaxError
-      });
-    } else {
-      this._addRoutes(geojson);
-      if (typeof callback === 'function') {
-        callback();
       }
     }
+
+    this._abortPendingRouteLoads(requestedIds);
+
+    var xhr = $.ajax({
+      url: '/api/0.1' + (this.planningId ? '/plannings/' + this.planningId : '') + '/routes.geojson',
+      data: requestData,
+      beforeSend: beforeSendWaiting,
+      success: function(data) {
+        this._replaceRoutesGeojson(requestedIds, data, callback);
+      }.bind(this),
+      complete: function() {
+        this._clearPendingRouteLoads(requestedIds, xhr);
+        completeAjaxMap();
+      }.bind(this),
+      error: function(jqXHR, textStatus) {
+        if (textStatus === 'abort') return;
+        ajaxError(jqXHR, textStatus);
+      }
+    });
+
+    this._trackPendingRouteLoads(requestedIds, xhr);
   },
 
   _loadAll: function(options, callback) {
@@ -1188,6 +1259,8 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
   _addRoutes: function(geojson) {
     var overlappingMarkers = {};
+    // Recreate cluster groups touched by this payload so a 2nd _addRoutes never stacks markers
+    var resetClusterForRoute = {};
 
     var globalLayer = L.geoJSON(geojson, {
       filter: function(feature) {
@@ -1339,8 +1412,13 @@ export const RoutesLayer = L.FeatureGroup.extend({
           marker.setZIndexOffset(100);
           marker.properties.defaultZIndex = 100;
         } else {
-          if (!this.clustersByRoute[routeId]) {
+          if (!resetClusterForRoute[routeId]) {
+            if (this.clustersByRoute[routeId]) {
+              this.removeLayer(this.clustersByRoute[routeId]);
+              delete this.clustersByRoute[routeId];
+            }
             this.clustersByRoute[routeId] = L.markerClusterGroup(this.markerOptions);
+            resetClusterForRoute[routeId] = true;
           }
           this.clustersByRoute[routeId].addLayer(marker);
         }
@@ -1351,13 +1429,11 @@ export const RoutesLayer = L.FeatureGroup.extend({
     // Add only route polylines to map
     this.addLayer(globalLayer);
 
-    // Add marker clusters
+    // Add marker clusters created in this pass
     nbRoutes = Object.keys(this.clustersByRoute).length;
-    for (var routeId in this.clustersByRoute) {
-      if (this.clustersByRoute.hasOwnProperty(routeId)) {
-        this.addLayer(this.clustersByRoute[routeId]);
-      }
-    }
+    Object.keys(resetClusterForRoute).forEach(function(routeId) {
+      this.addLayer(this.clustersByRoute[routeId]);
+    }.bind(this));
 
     // Add store markers
     for (var storeId in this.markerStores) {
