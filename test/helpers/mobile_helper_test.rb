@@ -58,4 +58,17 @@ class MobileHelperTest < ActionView::TestCase
     @controller = mock('controller')
     @controller.stubs(:request).returns(mock_request)
   end
+
+  test 'ios nav link tries benav then falls back to apple maps' do
+    attrs = mobile_nav_link_attrs(48.85, 2.35, :ios)
+    assert_equal 'http://maps.apple.com/?daddr=48.85,2.35', attrs[:href]
+    assert_includes attrs[:class], 'mobile-nav-link'
+    assert_equal 'benav://navigate?lat=48.85&lon=2.35', attrs[:data][:nav_primary]
+  end
+
+  test 'android nav link uses geo scheme' do
+    attrs = mobile_nav_link_attrs(48.85, 2.35, :mobile)
+    assert_equal 'geo:48.85,2.35?q=48.85,2.35', attrs[:href]
+    refute_includes attrs[:class], 'mobile-nav-link'
+  end
 end

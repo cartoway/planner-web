@@ -2836,6 +2836,7 @@ fr:
       next: Suivant
       previous: Précédent
       status: Status
+      status_reset_confirm: Confirmer la réinitialisation du statut ?
       tracking: Partage de position
       transfer: Transférer
       photos: Photos

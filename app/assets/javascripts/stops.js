@@ -1,6 +1,13 @@
 'use strict';
 
 export const stops_edit = function(params) {
+  var CONFIRM_ARMED = 'confirm-click-armed';
+  var CONFIRM_PENDING = 'confirm-click-pending';
+  var CONFIRM_ARMED_BTN = 'btn-warning';
+  var CONFIRM_BASE_BTN = 'btn-default';
+  var CONFIRM_DELAY = 200;
+  var CONFIRM_DISARM_AFTER = 4000;
+
   $.find('.no-toggle').forEach(function(button) {
     button.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -19,9 +26,112 @@ export const stops_edit = function(params) {
     });
   })
 
+  function clearConfirmTimers(btn) {
+    window.clearTimeout(btn._confirmReadyTimeout);
+    window.clearTimeout(btn._disarmTimeout);
+    btn._confirmReadyTimeout = null;
+    btn._disarmTimeout = null;
+  }
+
+  function statusResetFace(btn) {
+    return btn.querySelector('.stop-status-reset-face') || btn;
+  }
+
+  function disarmStatusReset(btn) {
+    if (!btn || !btn.classList.contains(CONFIRM_ARMED)) return;
+    clearConfirmTimers(btn);
+    var face = statusResetFace(btn);
+    btn.classList.remove(CONFIRM_ARMED, CONFIRM_PENDING);
+    face.classList.remove(CONFIRM_ARMED_BTN);
+    face.classList.add(CONFIRM_BASE_BTN);
+    face.style.opacity = '';
+    if (btn._originalHtml != null) btn.innerHTML = btn._originalHtml;
+    btn.title = btn._originalTitle || '';
+    btn._armedAt = null;
+  }
+
+  function disarmAllStatusResets(except) {
+    document.querySelectorAll('.stop-status-reset.' + CONFIRM_ARMED).forEach(function(btn) {
+      if (btn !== except) disarmStatusReset(btn);
+    });
+  }
+
+  function armStatusReset(btn) {
+    btn._originalHtml = btn.innerHTML;
+    btn._originalTitle = btn.title || '';
+    var face = statusResetFace(btn);
+    btn.classList.add(CONFIRM_ARMED, CONFIRM_PENDING);
+    face.classList.add(CONFIRM_ARMED_BTN);
+    face.classList.remove(CONFIRM_BASE_BTN);
+    face.style.opacity = '0.55';
+    btn.title = btn.getAttribute('data-wait-message') || '';
+    btn._armedAt = Date.now();
+
+    btn._confirmReadyTimeout = window.setTimeout(function() {
+      btn.classList.remove(CONFIRM_PENDING);
+      face.style.opacity = '';
+      var readyHtml = btn.getAttribute('data-ready-html');
+      if (readyHtml) face.innerHTML = readyHtml;
+      btn.title = btn.getAttribute('data-confirm-message') || '';
+    }, CONFIRM_DELAY);
+
+    btn._disarmTimeout = window.setTimeout(function() {
+      disarmStatusReset(btn);
+    }, CONFIRM_DISARM_AFTER);
+  }
+
+  $('.stop-status-reset').on('click', function(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    var btn = this;
+    if (!btn.classList.contains(CONFIRM_ARMED)) {
+      disarmAllStatusResets(btn);
+      armStatusReset(btn);
+      return;
+    }
+    if (btn.classList.contains(CONFIRM_PENDING) || Date.now() - (btn._armedAt || 0) < CONFIRM_DELAY) {
+      return;
+    }
+    disarmStatusReset(btn);
+    changeStatuses($(btn), '');
+  });
+
+  $(document).on('click.statusResetDisarm', function(e) {
+    if (!e.target.closest('.stop-status-reset.' + CONFIRM_ARMED)) {
+      disarmAllStatusResets();
+    }
+  });
+
+  // iOS: try BeNav deep link, fall back to Apple Maps (href) if the page stays visible
+  var NAV_FALLBACK_MS = 1200;
+  $('.mobile-nav-link').on('click', function(e) {
+    var primary = this.getAttribute('data-nav-primary');
+    if (!primary) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    var fallback = this.getAttribute('href');
+    var startedAt = Date.now();
+    var fallbackTimer = window.setTimeout(function() {
+      if (!document.hidden && Date.now() - startedAt < NAV_FALLBACK_MS + 500) {
+        window.location.href = fallback;
+      }
+    }, NAV_FALLBACK_MS);
+
+    var onVisibility = function() {
+      if (document.hidden) {
+        window.clearTimeout(fallbackTimer);
+        document.removeEventListener('visibilitychange', onVisibility);
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    window.location.href = primary;
+  });
+
   function changeStatuses(element, selected) {
     var panel = $(element).closest('.panel');
-    var toggled = $(element).data('toggle');
+    var toggled = $(element).data('toggle') || 'active_status';
     var form = panel.find('form');
     // Support both stop forms (stop[status]) and route driver_update forms (route_*_status by id)
     var statusInput = form.find('input[name="stop[status]"]').length
@@ -29,14 +139,18 @@ export const stops_edit = function(params) {
       : form.find('#' + toggled);
     if (!statusInput.length) return;
 
+    // Empty title = reset to default (nil) status; nilify_blanks on Stop clears ""
+    selected = selected || '';
     statusInput.val(selected);
     var updatedAtInput = form.find('input[name="stop[status_updated_at]"]');
     if (updatedAtInput.length) {
       updatedAtInput.val(new Date().toISOString());
     }
 
-    panel.find('.radiobtn a[data-toggle="'+toggled+'"]').not('[data-title="'+selected+'"]').removeClass('active');
-    panel.find('.radiobtn a[data-toggle="'+toggled+'"][data-title="'+selected+'"]').addClass('active');
+    panel.find('.radiobtn a[data-toggle="'+toggled+'"]').removeClass('active');
+    if (selected) {
+      panel.find('.radiobtn a[data-toggle="'+toggled+'"][data-title="'+selected+'"]').addClass('active');
+    }
 
     var label = panel.find('#label-index');
     var labelClasses = label.attr("class") || "";
@@ -54,10 +168,20 @@ export const stops_edit = function(params) {
     }
     heading.addClass('panel-heading-' + selected);
 
+    panel.find('.stop-status-reset').toggleClass('d-none', !selected);
+
     var stopType = panel.data('stop-type');
 
-    // Quick "delivered" shortcut only makes sense for StopVisits
-    if (stopType === 'visit' && selected == 'intransit') {
+    // Quick next-status shortcut after reset / status change
+    if (!selected) {
+      var nextAfterReset = element.data('next-status') || 'intransit';
+      var statusI18nPrefix = stopType === 'visit'
+        ? 'plannings.edit.stop_status.'
+        : 'plannings.edit.stop_store_status.';
+      panel.find('#quick-status').removeClass('d-none');
+      panel.find('#quick-status').data('title', nextAfterReset);
+      panel.find('#quick-status-text').text(I18n.t(statusI18nPrefix + nextAfterReset));
+    } else if (stopType === 'visit' && selected == 'intransit') {
       var next_status = 'delivered';
       panel.find('#quick-status').removeClass('d-none');
       panel.find('#quick-status').data('title', next_status);
