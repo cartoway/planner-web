@@ -379,10 +379,17 @@ export function syncPendingPhotos() {
           url: item.url,
           dataType: 'json',
           headers: { 'X-CSRF-Token': csrf, 'X-Requested-With': 'XMLHttpRequest' }
-        }).done(function(data) {
-          deletePendingPhoto(item.id);
-          var panel = findPhotoPanel(item.url.replace(/\/[^/]+$/, ''));
-          if (panel) renderStopPhotos(panel, data.photos);
+        }).then(function(data) {
+          return deletePendingPhoto(item.id).then(function() {
+            var panel = findPhotoPanel(item.panelUrl || item.url.replace(/\/[^/]+$/, ''));
+            if (panel && data && data.photos) renderStopPhotos(panel, data.photos);
+          });
+        }, function(xhr) {
+          // Already deleted on server (e.g. first DELETE succeeded but response was lost)
+          if (xhr && xhr.status === 404) {
+            return deletePendingPhoto(item.id);
+          }
+          // Keep pending for retriable / unknown errors; swallow rejection to avoid loop noise
         });
       }
       var formData = new FormData();
@@ -395,10 +402,13 @@ export function syncPendingPhotos() {
         processData: false,
         contentType: false,
         headers: { 'X-CSRF-Token': csrf }
-      }).done(function(data) {
-        deletePendingPhoto(item.id);
-        var panel = findPhotoPanel(item.url);
-        if (panel) renderStopPhotos(panel, data.photos);
+      }).then(function(data) {
+        return deletePendingPhoto(item.id).then(function() {
+          var panel = findPhotoPanel(item.url);
+          if (panel) renderStopPhotos(panel, data.photos);
+        });
+      }, function() {
+        // Keep pending for retry
       });
     }));
   });
@@ -547,6 +557,11 @@ function removeStopPhoto(panelEl, url) {
     if (xhr.status === 403 && xhr.responseJSON && xhr.responseJSON.photos) {
       renderStopPhotos(wrap, xhr.responseJSON.photos);
       syncModalAfterPhotoChange();
+      return;
+    }
+    // Photo already gone (previous DELETE succeeded without a response reaching us)
+    if (xhr.status === 404) {
+      goneFromDom();
       return;
     }
     queuePhotoDelete(wrap, url);
