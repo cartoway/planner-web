@@ -366,7 +366,8 @@ function syncPhotos() {
 
     const headers = {
       'X-CSRF-Token': csrfToken,
-      'X-Requested-With': 'XMLHttpRequest'
+      'X-Requested-With': 'XMLHttpRequest',
+      'Accept': 'application/json'
     };
     let request;
     if (item.method === 'DELETE') {

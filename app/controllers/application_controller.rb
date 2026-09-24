@@ -223,10 +223,11 @@ class ApplicationController < ActionController::Base
     log_error(exception, :error)
 
     respond_to do |format|
-      flash[:error] = [I18n.t('errors.management.status.title.404')]
+      # JSON before JS: XHR Accept often lists both; avoid stickyError for API 404s.
+      format.json { render json: { type: 'not_found', error: I18n.t('errors.management.status.title.404') }, status: 404 }
+      flash.now[:error] = [I18n.t('errors.management.status.title.404')]
       format.js { render partial: 'shared/error_messages.js.erb', status: :not_found }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 404 }, status: 404 }
-      format.json { render json: { type: 'not_found', error: I18n.t('errors.management.status.title.404') }, status: 404 }
       format.all { render body: nil, status: :not_found }
     end
   end
