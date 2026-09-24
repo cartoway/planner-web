@@ -1,0 +1,6 @@
+-# Navigate button: on iOS tries BeNav then falls back to Apple Maps (see mobile-nav-link in stops.js)
+-# locals: lat, lng, agent
+%a{ mobile_nav_link_attrs(lat, lng, agent) }
+  .d-flex.align-items-center
+    .fa.fa-diamond-turn-right.mr-2
+    = t('stops.mobile.navigate')

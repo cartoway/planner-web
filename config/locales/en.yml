@@ -2720,6 +2720,7 @@ en:
       next: Next
       previous: Previous
       status: Status
+      status_reset_confirm: Confirm status reset?
       tracking: Position sharing
       transfer: Transfer
       photos: Photos
