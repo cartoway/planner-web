@@ -24,3 +24,6 @@ pin "tom-select", to: "https://cdn.jsdelivr.net/npm/tom-select@2.4.3/dist/esm/to
 # Maskito time masks for v2 schedule fields (@maskito/kit imports @maskito/core by bare name)
 pin "@maskito/core", to: "https://cdn.jsdelivr.net/npm/@maskito/core@5.4.0/index.esm.js", preload: true
 pin "@maskito/kit", to: "https://cdn.jsdelivr.net/npm/@maskito/kit@5.4.0/index.esm.js", preload: true
+# Teritorio HTML clusters. The bundle imports "maplibre-gl"; reuse the CDN global (see maplibre_gl_global.js).
+pin "maplibre-gl", to: "maplibre/maplibre_gl_global.js"
+pin "@teritorio/maplibre-gl-teritorio-cluster", to: "https://unpkg.com/@teritorio/maplibre-gl-teritorio-cluster@0.1.4/dist/maplibre-gl-teritorio-cluster.js"
