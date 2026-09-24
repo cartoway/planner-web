@@ -51,8 +51,16 @@ class MobileHelperTest < ActionView::TestCase
     assert_equal :standard, detect_agent
   end
 
-  test 'benav guidance url encodes the startGuidance command' do
-    url = benav_guidance_url(43.2965, 5.3698)
+  def mock_user_agent(user_agent)
+    mock_request = mock('request')
+    mock_request.expects(:user_agent).at_least(1).returns(user_agent)
+
+    @controller = mock('controller')
+    @controller.stubs(:request).returns(mock_request)
+  end
+
+  test 'benav url encodes the startGuidance command' do
+    url = mobile_nav_benav_url(43.2965, 5.3698)
 
     assert_equal(
       'benav://?cmd=eyJqc29ucnBjIjoiMi4wIiwiaWQiOiIxIiwibWV0aG9kIjoic3RhcnRHdWlkYW5jZSIsInBhcmFtcyI6eyJkZXN0aW5hdGlvbiI6eyJpZCI6ImRlc3QiLCJsYXQiOjQzLjI5NjUsImxvbiI6NS4zNjk4fX19',
@@ -60,25 +68,16 @@ class MobileHelperTest < ActionView::TestCase
     )
   end
 
-  test 'ios navigation keeps apple maps as fallback and offers benav' do
-    href, benav = mobile_navigation_links(:ios, 43.2965, 5.3698)
-
-    assert_equal 'http://maps.apple.com/?daddr=43.2965,5.3698', href
-    assert_includes benav, 'benav://?cmd='
+  test 'ios nav link tries benav then falls back to apple maps' do
+    attrs = mobile_nav_link_attrs(48.85, 2.35, :ios)
+    assert_equal 'http://maps.apple.com/?daddr=48.85,2.35', attrs[:href]
+    assert_includes attrs[:class], 'mobile-nav-link'
+    assert_includes attrs[:data][:nav_primary], 'benav://?cmd='
   end
 
-  test 'non ios navigation has no benav url' do
-    href, benav = mobile_navigation_links(:mobile, 1.0, 2.0)
-
-    assert_equal 'geo:1.0,2.0?q=1.0,2.0', href
-    assert_nil benav
-  end
-
-  def mock_user_agent(user_agent)
-    mock_request = mock('request')
-    mock_request.expects(:user_agent).at_least(1).returns(user_agent)
-
-    @controller = mock('controller')
-    @controller.stubs(:request).returns(mock_request)
+  test 'android nav link uses geo scheme' do
+    attrs = mobile_nav_link_attrs(48.85, 2.35, :mobile)
+    assert_equal 'geo:48.85,2.35?q=48.85,2.35', attrs[:href]
+    refute_includes attrs[:class], 'mobile-nav-link'
   end
 end
