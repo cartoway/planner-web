@@ -1,6 +1,6 @@
 // Copyright © Cartoway
-// V2 stores index: same map interactions as destinations (GeoJSON circles, HTML pin on
-// focus, flyTo padding, layer switch, position drag). Features come from page JSON.
+// V2 stores index: same map interactions as destinations (HTML markers via Teritorio
+// clusters, flyTo padding, layer switch, position drag). Features come from page JSON.
 
 import { Controller } from '@hotwired/stimulus'
 import { visit } from 'turbo/frame_promoted_visit'
@@ -10,6 +10,7 @@ import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { DestinationsMapLayers, CLUSTER_LAYER_ID } from 'maplibre/destinations_map_layers'
+import { createDestinationMarkerElement } from 'maplibre/destination_markers'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 
 const DEFAULT_ZOOM = 12
@@ -47,25 +48,6 @@ function afterSlideTransition (el, fn) {
 
 function getMaplibre () {
   return typeof window !== 'undefined' && window.maplibregl ? window.maplibregl : null
-}
-
-function createMarkerElement (label) {
-  const el = document.createElement('div')
-  el.className = 'destinations-marker'
-  el.setAttribute('role', 'button')
-  if (label) el.setAttribute('aria-label', label)
-  const head = document.createElement('span')
-  head.className = 'destinations-marker__head'
-  const glint = document.createElement('span')
-  glint.className = 'destinations-marker__glint'
-  glint.setAttribute('aria-hidden', 'true')
-  head.appendChild(glint)
-  const pin = document.createElement('span')
-  pin.className = 'destinations-marker__pin'
-  pin.setAttribute('aria-hidden', 'true')
-  el.appendChild(head)
-  el.appendChild(pin)
-  return el
 }
 
 function storesToFeatures (stores) {
@@ -200,9 +182,9 @@ export default class extends Controller {
       return
     }
     this._removeDomMarker()
-    const el = createMarkerElement(name)
+    const el = createDestinationMarkerElement(name)
     if (active) el.classList.add('destinations-marker--active')
-    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+    const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
       .setLngLat(lngLat)
       .addTo(this._map)
     this._domMarker = marker
@@ -302,11 +284,13 @@ export default class extends Controller {
     if (rec) {
       this._showDomMarker(idStr, { name: rec.name, lngLat: rec.lngLat, active: true })
       if (flyToMap && this._map) {
-        this._map.flyTo({
-          center: rec.lngLat,
-          zoom: Math.max(this._map.getZoom(), 14),
-          padding: this._mapFlyToPadding(),
-          duration: 500
+        const map = this._map
+        const center = rec.lngLat
+        const zoom = Math.max(map.getZoom(), 14)
+        const padding = this._mapFlyToPadding()
+        requestAnimationFrame(() => {
+          if (this._map !== map) return
+          map.flyTo({ center, zoom, padding, duration: 500 })
         })
       }
     }
@@ -801,7 +785,13 @@ export default class extends Controller {
     if (this._mapLayers) this._mapLayers.updateDestinationCoords(storeId, lng, lat)
     this._showDomMarker(storeId, { name: detail.name || '', lngLat: [lng, lat], active: true })
     try {
-      this._map.flyTo({ center: [lng, lat], zoom: Math.max(this._map.getZoom(), 16), padding: this._mapFlyToPadding() })
+      const map = this._map
+      const zoom = Math.max(map.getZoom(), 16)
+      const padding = this._mapFlyToPadding()
+      requestAnimationFrame(() => {
+        if (this._map !== map) return
+        map.flyTo({ center: [lng, lat], zoom, padding })
+      })
     } catch (e) { /* ignore */ }
   }
 
