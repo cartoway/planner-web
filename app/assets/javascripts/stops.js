@@ -378,7 +378,7 @@ export function syncPendingPhotos() {
           type: 'DELETE',
           url: item.url,
           dataType: 'json',
-          headers: { 'X-CSRF-Token': csrf, 'X-Requested-With': 'XMLHttpRequest' }
+          headers: { 'X-CSRF-Token': csrf, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
         }).then(function(data) {
           return deletePendingPhoto(item.id).then(function() {
             var panel = findPhotoPanel(item.panelUrl || item.url.replace(/\/[^/]+$/, ''));
@@ -549,7 +549,7 @@ function removeStopPhoto(panelEl, url) {
     type: 'DELETE',
     url: url,
     dataType: 'json',
-    headers: { 'X-CSRF-Token': csrf, 'X-Requested-With': 'XMLHttpRequest' }
+    headers: { 'X-CSRF-Token': csrf, 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' }
   }).done(function(data) {
     renderStopPhotos(wrap, data.photos);
     syncModalAfterPhotoChange();
