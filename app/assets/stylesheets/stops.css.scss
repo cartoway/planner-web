@@ -41,6 +41,52 @@
     min-width: 32px;
   }
 
+  .stop-status-label-wrap {
+    position: relative;
+    display: inline-block;
+  }
+
+  // 44px hit target; visible chrome stays on .stop-status-reset-face
+  .stop-status-reset {
+    position: absolute;
+    top: -23px;
+    right: -23px;
+    z-index: 2;
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.confirm-click-armed {
+      background: transparent;
+      box-shadow: none;
+    }
+  }
+
+  .stop-status-reset-face {
+    pointer-events: none;
+    min-width: 18px;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    line-height: 18px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .label-default {
     background-color: $gray-200;
     color: $gray-700;

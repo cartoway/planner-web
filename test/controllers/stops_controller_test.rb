@@ -393,6 +393,22 @@ class StopsControllerTest < ActionController::TestCase
     assert_equal 'completed', @stop.status
   end
 
+  test 'should reset stop status to default' do
+    @stop.update!(status: 'delivered', status_updated_at: 1.hour.ago)
+    patch :update, params: {
+      id: @stop,
+      driver_token: @vehicle.driver_token,
+      stop: {
+        status: '',
+        status_updated_at: 1.hour.from_now.iso8601
+      },
+      format: :json
+    }
+    assert_response :success
+    @stop.reload
+    assert_nil @stop.status
+  end
+
   test 'should update stop with custom attributes' do
     patch :update, params: {
       id: @stop,

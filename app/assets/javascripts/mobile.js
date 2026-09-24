@@ -498,40 +498,9 @@ const tracking = function(params) {
   initServiceWorker();
 };
 
-// Try Benav first. A successful app switch suspends this page, so the Apple Maps
-// fallback only runs when the page is still visible after the attempt.
-const openBenavOrFallback = function(benavUrl, fallbackUrl) {
-  const startedAt = Date.now();
-  let leftPage = false;
-  const markLeft = () => { leftPage = true; };
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.hidden) markLeft();
-  }, { once: true });
-  window.addEventListener('pagehide', markLeft, { once: true });
-
-  window.location.href = benavUrl;
-
-  window.setTimeout(() => {
-    if (!leftPage && !document.hidden && Date.now() - startedAt < 2000) {
-      window.location.href = fallbackUrl;
-    }
-  }, 1000);
-};
-
-const bindBenavNavigation = function() {
-  document.querySelectorAll('a[data-benav-url]').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      event.preventDefault();
-      openBenavOrFallback(link.getAttribute('data-benav-url'), link.href);
-    });
-  });
-};
-
 Paloma.controller('Routes', {
   mobile: function() {
     tracking(this.params);
     stops_edit(this.params);
-    bindBenavNavigation();
   }
 });

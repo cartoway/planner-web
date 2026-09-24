@@ -28,7 +28,8 @@ class RouteMobileTest < ActiveSupport::TestCase
 
     assert last_response.ok?
     assert_includes last_response.body, "href='http://maps.apple.com/?daddr="
-    assert_includes last_response.body, "data-benav-url='benav://?cmd="
+    assert_includes last_response.body, 'mobile-nav-link'
+    assert_includes last_response.body, "data-nav-primary='benav://?cmd="
   end
 
   test 'should display the requested page if key is valid' do
@@ -89,6 +90,22 @@ class RouteMobileTest < ActiveSupport::TestCase
     assert_includes last_response.body, 'shown value'
     refute_includes last_response.body, 'visit_info_hidden'
     refute_includes last_response.body, 'secret value'
+  end
+
+  test 'should show reset status button for stops' do
+    stop = @route.stops.find { |s| s.is_a?(StopVisit) }
+    stop.update!(status: 'delivered')
+    @route.start_route_data.update!(status: 'atstore')
+    @route.stop_route_data.update!(status: 'finished')
+    vehicle = @route.vehicle_usage.vehicle
+    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+
+    assert last_response.ok?
+    assert_includes last_response.body, 'stop-status-reset'
+    assert_includes last_response.body, 'fa-xmark'
+    assert_includes last_response.body, I18n.t('stops.mobile.status_reset_confirm')
+    assert_match(/data-toggle=["']route_start_route_data_status["']/, last_response.body)
+    assert_match(/data-toggle=["']route_stop_route_data_status["']/, last_response.body)
   end
 
   test 'should show photo capture and gallery buttons for each stop' do
