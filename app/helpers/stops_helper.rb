@@ -113,4 +113,8 @@ module StopsHelper
     phone_number = stop.visit.destination.phone_number && service.format_phone_number(stop.visit.destination.phone_number, stop.visit.destination.country || customer.default_country)
     { phone_number: phone_number, content: content }
   end
+
+  def sms_uri_body(content)
+    ERB::Util.url_encode(content.to_s)
+  end
 end
