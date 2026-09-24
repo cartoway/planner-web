@@ -171,8 +171,8 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_match(/map_layers_title/, response.body)
     assert_match(/geocoder_placeholder/, response.body)
     assert_match(ERB::Util.html_escape(I18n.t('web.geocoder.search')), response.body)
-    assert_select 'link[href*="maplibre-gl"]', 1
-    assert_select 'script[src*="maplibre-gl"]', 1
+    assert_select 'link[rel="stylesheet"][href*="maplibre-gl"]', 1
+    assert_select 'script[src*="maplibre-gl.min.js"]', 1
     assert_select '.main > .main-primary', 1
     assert_select '.main > .main-primary turbo-frame#main', 1
     assert_select 'a[href=?][data-turbo-frame=main][data-turbo-action=advance]', destinations_path
