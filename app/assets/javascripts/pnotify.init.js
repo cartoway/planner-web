@@ -21,6 +21,8 @@
 // });
 
 PNotify.prototype.options.styling = 'fontawesome';
+// Touch has no hover: keep closer always visible (mobile stop/route views).
+PNotify.prototype.options.buttons.closer_hover = false;
 
 PNotify.prototype.options.buttons.labels = {
   close: I18n.t('web.dialog.close')
