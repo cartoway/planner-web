@@ -136,6 +136,7 @@ Rails.application.routes.draw do
   resources :destinations do
     collection do
       get :map
+      get :import_status
       patch :list_columns
     end
     member do
