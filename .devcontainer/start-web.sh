@@ -16,4 +16,4 @@ if [[ "${LOOKBOOK_VRT:-0}" == "1" ]]; then
 fi
 
 echo "==> Starting Puma on :8080"
-exec bundle exec puma -v -p 8080 --pidfile server.pid -t "${PUMA_WORKERS:-0:1}"
+exec bundle exec puma -v -p 8080 --pidfile server.pid -t "${PUMA_WORKERS:-0:4}"
