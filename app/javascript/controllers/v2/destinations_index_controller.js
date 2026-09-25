@@ -10,6 +10,7 @@ import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { DestinationsMapLayers, CLUSTER_LAYER_ID } from 'maplibre/destinations_map_layers'
+import { createDestinationMarkerElement } from 'maplibre/destination_markers'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 
 const DEFAULT_ZOOM = 12
@@ -51,29 +52,6 @@ function afterSlideTransition (el, fn) {
 
 function getMaplibre () {
   return typeof window !== 'undefined' && window.maplibregl ? window.maplibregl : null
-}
-
-function createMarkerElement (label) {
-  const el = document.createElement('div')
-  el.className = 'destinations-marker'
-  el.setAttribute('role', 'button')
-  if (label) el.setAttribute('aria-label', label)
-
-  const head = document.createElement('span')
-  head.className = 'destinations-marker__head'
-
-  const glint = document.createElement('span')
-  glint.className = 'destinations-marker__glint'
-  glint.setAttribute('aria-hidden', 'true')
-  head.appendChild(glint)
-
-  const pin = document.createElement('span')
-  pin.className = 'destinations-marker__pin'
-  pin.setAttribute('aria-hidden', 'true')
-
-  el.appendChild(head)
-  el.appendChild(pin)
-  return el
 }
 
 // Split only before the next key:value token, not on spaces inside a value.
@@ -240,9 +218,9 @@ export default class extends Controller {
     }
 
     this._removeDomMarker()
-    const el = createMarkerElement(name)
+    const el = createDestinationMarkerElement(name)
     if (active) el.classList.add('destinations-marker--active')
-    const marker = new maplibregl.Marker({ element: el, anchor: 'bottom' })
+    const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
       .setLngLat(lngLat)
       .addTo(this._map)
     this._domMarker = marker
@@ -367,11 +345,14 @@ export default class extends Controller {
       this._showDomMarker(idStr, { name: rec.name, lngLat: rec.lngLat, active: true })
       this._iconOverStack.push(idStr)
       if (flyToMap && this._map) {
-        this._map.flyTo({
-          center: rec.lngLat,
-          zoom: Math.max(this._map.getZoom(), 14),
-          padding: this._mapFlyToPadding(),
-          duration: 500
+        const map = this._map
+        const center = rec.lngLat
+        const zoom = Math.max(map.getZoom(), 14)
+        const padding = this._mapFlyToPadding()
+        // Let the yellow disc paint in place before the camera moves.
+        requestAnimationFrame(() => {
+          if (this._map !== map) return
+          map.flyTo({ center, zoom, padding, duration: 500 })
         })
       }
     }
@@ -1034,8 +1015,13 @@ export default class extends Controller {
     this._showDomMarker(destinationId, { name: detail.name || '', lngLat: [lng, lat], active: true })
 
     try {
-      const zoom = Math.max(this._map.getZoom(), 16)
-      this._map.flyTo({ center: [lng, lat], zoom, padding: this._mapFlyToPadding() })
+      const map = this._map
+      const zoom = Math.max(map.getZoom(), 16)
+      const padding = this._mapFlyToPadding()
+      requestAnimationFrame(() => {
+        if (this._map !== map) return
+        map.flyTo({ center: [lng, lat], zoom, padding })
+      })
     } catch (e) { /* ignore */ }
   }
 

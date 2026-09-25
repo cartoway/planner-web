@@ -16,19 +16,21 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 require 'case_insensitive_hash'
-require 'geocoder_destinations_job'
 require 'importer_base'
 require 'value_to_boolean'
 
 class ImporterDestinations < ImporterBase
   include ConvertDeprecatedHelper
   attr_accessor :plannings
+  # Optional callable receiving a progress Hash (merged into Delayed::Job.progress).
+  attr_accessor :progress_callback
 
   def initialize(customer, planning_hash = nil)
     super customer
     @provided_planning_attributes = planning_hash || {}
     @deliverable_units = customer&.deliverable_units || []
     @deliverable_unit_hash = customer&.deliverable_units&.map{ |d_u| [d_u.label, d_u] }.to_h || {}
+    @progress_state = {}
   end
 
   def max_lines
@@ -523,18 +525,76 @@ class ImporterDestinations < ImporterBase
   end
 
   def after_import(name, _options)
+    destinations_total = @destinations_attributes_without_ref.size + @destinations_attributes_by_ref.size
+    stores_total = @stores_attributes_without_ref.size + @stores_attributes_by_ref.size
+    visits_total = visit_attributes_total
+    store_reloads_total = store_reload_attributes_total
+    tags_total = @tag_destinations.size + @tag_visits.size
+    plannings_total = @plannings_routes.size
+
+    notify_progress!(
+      phase: 'destinations',
+      first_progression: 10,
+      **progress_counter(:destinations, 0, destinations_total),
+      **progress_counter(:visits, 0, visits_total),
+      **progress_counter(:stores, 0, stores_total),
+      **progress_counter(:store_reloads, 0, store_reloads_total),
+      **progress_counter(:tags, 0, tags_total),
+      **progress_counter(:plannings, 0, plannings_total)
+    )
+
     @destination_ids = bulk_import_destinations(@destinations_attributes_without_ref)
     @destination_ids += bulk_import_destinations(@destinations_attributes_by_ref.values)
+    notify_progress!(
+      phase: 'destinations',
+      first_progression: 25,
+      **progress_counter(:destinations, @destination_ids.size, destinations_total)
+    )
 
     @store_ids = bulk_import_stores(@stores_attributes_without_ref)
     @store_ids += bulk_import_stores(@stores_attributes_by_ref.values)
+    notify_progress!(
+      phase: 'stores',
+      first_progression: 35,
+      **progress_counter(:stores, @store_ids.size, stores_total)
+    )
+
     # bulk import do not support before_create or before_save callbacks
     if @customer.destinations.count > max_lines
       raise(Exceptions::OverMaxLimitError.new(I18n.t('activerecord.errors.models.customer.attributes.destinations.over_max_limit')))
     end
+
+    notify_progress!(phase: 'visits', first_progression: 40, **progress_counter(:visits, 0, visits_total))
     @visit_ids = bulk_import_visits
+    notify_progress!(
+      phase: 'visits',
+      first_progression: 50,
+      **progress_counter(:visits, @visit_ids.size, visits_total)
+    )
+
+    if tags_total.positive?
+      notify_progress!(phase: 'tags', first_progression: 52, **progress_counter(:tags, 0, tags_total))
+    end
     tags_imported = bulk_import_tags
+    if tags_total.positive?
+      notify_progress!(
+        phase: 'tags',
+        first_progression: 55,
+        **progress_counter(:tags, tags_total, tags_total)
+      )
+    end
+
+    if store_reloads_total.positive?
+      notify_progress!(phase: 'store_reloads', first_progression: 56, **progress_counter(:store_reloads, 0, store_reloads_total))
+    end
     @store_reload_ids = bulk_import_store_reloads
+    if store_reloads_total.positive?
+      notify_progress!(
+        phase: 'store_reloads',
+        first_progression: 58,
+        **progress_counter(:store_reloads, @store_reload_ids.size, store_reloads_total)
+      )
+    end
     @customer.reload
 
     geocode_or_count_destinations
@@ -544,7 +604,17 @@ class ImporterDestinations < ImporterBase
 
     reload_plannings_hash!
 
+    if plannings_total.positive?
+      notify_progress!(phase: 'plannings', first_progression: 90, **progress_counter(:plannings, 0, plannings_total))
+    end
     prepare_plannings(name, _options)
+    if plannings_total.positive?
+      notify_progress!(
+        phase: 'plannings',
+        first_progression: 95,
+        **progress_counter(:plannings, @plannings.size, plannings_total)
+      )
+    end
 
     @customer.save! if tags_imported
 
@@ -559,84 +629,85 @@ class ImporterDestinations < ImporterBase
 
   def geocode_or_count_destinations
     @destinations_to_geocode_count = @customer.destinations.not_positioned.count
-    if @destinations_to_geocode_count > 0 && (@synchronous || !Planner::Application.config.delayed_job_use)
-      @customer.destinations.includes_visits.not_positioned.unscope(:order).find_in_batches(batch_size: 50) { |destinations|
-        Destination.transaction do
-          geocode_args = destinations.collect(&:geocode_args)
-          begin
-            results = Planner::Application.config.geocoder.code_bulk(geocode_args)
-            geocoded = []
-            destinations.zip(results).each do |destination, result|
-              next unless result
+    return if @destinations_to_geocode_count.zero?
 
-              destination.geocode_result(result)
-              geocoded << destination
-            end
-            if geocoded.any?
-              Destination.import(
-                geocoded,
-                on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-                validate: true, all_or_none: true, track_validation_failures: true,
-                validate_with_context: :import
-              )
-            end
-          rescue GeocodeError # avoid stop import because of geocoding job
+    geocoded = 0
+    total = @destinations_to_geocode_count + @customer.stores.not_positioned.count
+    notify_progress!(phase: 'geocoding', first_progression: 60, **progress_counter(:geocoding, 0, total))
+    @customer.destinations.includes_visits.not_positioned.unscope(:order).find_in_batches(batch_size: 50) { |destinations|
+      Destination.transaction do
+        geocode_args = destinations.collect(&:geocode_args)
+        begin
+          results = Planner::Application.config.geocoder.code_bulk(geocode_args)
+          batch = []
+          destinations.zip(results).each do |destination, result|
+            next unless result
+
+            destination.geocode_result(result)
+            batch << destination
           end
+          if batch.any?
+            Destination.import(
+              batch,
+              on_duplicate_key_update: { conflict_target: [:id], columns: :all },
+              validate: true, all_or_none: true, track_validation_failures: true,
+              validate_with_context: :import
+            )
+          end
+        rescue GeocodeError # avoid stop import because of geocoding
         end
-      }
-    end
+      end
+      geocoded += destinations.size
+      notify_progress!(
+        phase: 'geocoding',
+        first_progression: 60 + (30.0 * geocoded / [total, 1].max).round,
+        **progress_counter(:geocoding, geocoded, total)
+      )
+    }
+    @geocoding_done_count = geocoded
   end
 
   def geocode_or_count_stores
     @stores_to_geocode_count = @customer.stores.not_positioned.count
-    if @stores_to_geocode_count > 0 && (@synchronous || !Planner::Application.config.delayed_job_use)
-      @customer.stores.not_positioned.unscope(:order).find_in_batches(batch_size: 50) { |stores|
-        Store.transaction do
-          geocode_args = stores.collect(&:geocode_args)
-          begin
-            results = Planner::Application.config.geocoder.code_bulk(geocode_args)
-            geocoded = []
-            stores.zip(results).each do |store, result|
-              next unless result
+    return if @stores_to_geocode_count.zero?
 
-              store.geocode_result(result)
-              geocoded << store
-            end
-            if geocoded.any?
-              Store.import(
-                geocoded,
-                on_duplicate_key_update: { conflict_target: [:id], columns: :all },
-                validate: true, all_or_none: true, track_validation_failures: true,
-                validate_with_context: :import
-              )
-            end
-          rescue GeocodeError # avoid stop import because of geocoding job
+    geocoded = @geocoding_done_count.to_i
+    total = @destinations_to_geocode_count.to_i + @stores_to_geocode_count
+    notify_progress!(phase: 'geocoding', first_progression: 60, **progress_counter(:geocoding, geocoded, total)) if geocoded.zero?
+    @customer.stores.not_positioned.unscope(:order).find_in_batches(batch_size: 50) { |stores|
+      Store.transaction do
+        geocode_args = stores.collect(&:geocode_args)
+        begin
+          results = Planner::Application.config.geocoder.code_bulk(geocode_args)
+          batch = []
+          stores.zip(results).each do |store, result|
+            next unless result
+
+            store.geocode_result(result)
+            batch << store
           end
+          if batch.any?
+            Store.import(
+              batch,
+              on_duplicate_key_update: { conflict_target: [:id], columns: :all },
+              validate: true, all_or_none: true, track_validation_failures: true,
+              validate_with_context: :import
+            )
+          end
+        rescue GeocodeError # avoid stop import because of geocoding
         end
-      }
-    end
-  end
-
-  def save_plannings
-    Route.no_touching do
-      @plannings.each { |planning|
-        planning.update_columns(updated_at: Time.current)
-      }
-    end
+      end
+      geocoded += stores.size
+      notify_progress!(
+        phase: 'geocoding',
+        first_progression: 60 + (30.0 * geocoded / [total, 1].max).round,
+        **progress_counter(:geocoding, geocoded, total)
+      )
+    }
   end
 
   def finalize_import(_name, _options)
-    if (@destinations_to_geocode_count > 0 || @stores_to_geocode_count > 0) && (!@synchronous && Planner::Application.config.delayed_job_use)
-      save_plannings
-      outdate_routes_deferred(persist: true)
-      @customer.job_destination_geocoding = Delayed::Job.enqueue(
-        GeocoderJob.new(
-          @customer.id,
-          @plannings.any? ? @plannings.map(&:id) : nil,
-          import_new_planning_ids_for_capture
-        )
-      )
-    elsif @plannings.any?
+    if @plannings.any?
       sync_plannings_routes_outdated_from_db
       outdate_routes_deferred(persist: !@synchronous)
       @plannings.each{ |planning|
@@ -644,10 +715,42 @@ class ImporterDestinations < ImporterBase
       }
       capture_import_states_after_finalize!
     end
+    notify_progress!(phase: 'done', first_progression: 100, completed: true)
     @customer.save! && @customer.reload
   end
 
   private
+
+  def notify_progress!(updates)
+    return unless progress_callback
+
+    @progress_state = @progress_state.merge(updates.stringify_keys)
+    @progress_state['status'] ||= 'working'
+    progress_callback.call(@progress_state)
+  end
+
+  def visit_attributes_total
+    @visits_attributes_without_ref.size +
+      @visits_attributes_without_destination_without_ref_visit.values.sum(&:size) +
+      @visits_attributes_without_destination_with_ref_visit.values.sum{ |h| h.size } +
+      @visits_attributes_with_destination_without_ref_visit.values.sum(&:size) +
+      @visits_attributes_with_destination_with_ref_visit.values.sum{ |h| h.size }
+  end
+
+  def store_reload_attributes_total
+    @store_reloads_attributes_without_ref.size +
+      @store_reloads_attributes_without_store_without_ref_visit.values.sum(&:size) +
+      @store_reloads_attributes_without_store_with_ref_visit.values.sum{ |h| h.size } +
+      @store_reloads_attributes_with_store_without_ref_visit.values.sum(&:size) +
+      @store_reloads_attributes_with_store_with_ref_visit.values.sum{ |h| h.size }
+  end
+
+  # Omit zero totals so the UI only shows counters that apply to this import.
+  def progress_counter(key, done, total)
+    return {} if total.to_i <= 0
+
+    { key => "#{done} / #{total}" }
+  end
 
   def reload_plannings_hash!
     return if @plannings_hash.blank?
@@ -1488,8 +1591,16 @@ class ImporterDestinations < ImporterBase
       failed_indices = grouped_failed_instances.flat_map{ |index, _object|
         slice_lines[index].map{ |slice_line| csv_line_number(slice_line) }
       }
-      I18n.t('import.data_erroneous.csv', s: failed_indices.join(',')) + ' - ' + errors.join(', ')
+      # Validation message first: long line lists must not push it past last_async_jobs truncation.
+      errors.join(', ') + ' - ' + I18n.t('import.data_erroneous.csv', s: format_failed_line_indices(failed_indices))
     }.join(';')
+  end
+
+  def format_failed_line_indices(indices)
+    indices = indices.map(&:to_i).sort.uniq
+    return indices.join(',') if indices.size <= 12
+
+    "#{indices.first(3).join(',')},…,#{indices.last} (#{indices.size})"
   end
 
   def csv_line_number(slice_line)

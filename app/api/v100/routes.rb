@@ -22,7 +22,7 @@ class V100::Routes < Grape::API
         patch ':id/stops/moves' do
           Route.includes_destinations_and_stores.scoping do
             planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).first!
-            raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
+            raise Exceptions::JobInProgressError if planning.customer.blocking_job(planning_id: planning.id)
 
             route = planning.routes.includes_destinations_and_stores.where(ParseIdsRefs.read(params[:id])).first!
             moving_stops = planning.routes.includes_destinations_and_stores.flat_map{ |r| r.stops }.select{ |stop| params[:stop_ids].include?(stop.id) }
@@ -43,7 +43,7 @@ class V100::Routes < Grape::API
             end
           rescue Exceptions::JobInProgressError
             status 409
-            present planning.customer.job_optimizer, with: V100::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
+            present planning.customer.blocking_job(planning_id: planning.id), with: V100::Entities::Job, message: I18n.t('errors.planning.job_in_progress')
           end
         end
 
@@ -59,7 +59,7 @@ class V100::Routes < Grape::API
         patch ':id/visits/moves' do
           Route.includes_destinations_and_stores.scoping do
             planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).first!
-            raise Exceptions::JobInProgressError if Job.on_planning(planning.customer.job_optimizer, planning.id)
+            raise Exceptions::JobInProgressError if planning.customer.blocking_job(planning_id: planning.id)
 
             route = planning.routes.includes_destinations_and_stores.where(ParseIdsRefs.read(params[:id])).first!
             visit_ids = params[:visit_ids].map{ |raw_id|
@@ -85,7 +85,7 @@ class V100::Routes < Grape::API
             end
           rescue Exceptions::JobInProgressError
             status 409
-            present planning.customer.job_optimizer, with: V100::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
+            present planning.customer.blocking_job(planning_id: planning.id), with: V100::Entities::Job, message: I18n.t('errors.planning.job_in_progress')
           end
         end
 
@@ -117,7 +117,7 @@ class V100::Routes < Grape::API
             Planning.where(id: planning.id).preload_route_details.first!.capture_state!(trigger: 'update_stop')
           rescue Exceptions::JobInProgressError
             status 409
-            present planning.customer.job_optimizer, with: V100::Entities::Job, message: I18n.t('errors.planning.already_optimizing')
+            present planning.customer.blocking_job(planning_id: planning.id), with: V100::Entities::Job, message: I18n.t('errors.planning.job_in_progress')
           end
         end
       end

@@ -42,6 +42,7 @@ class Customer < ApplicationRecord
   belongs_to :job_destination_geocoding, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
   belongs_to :job_store_geocoding, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
   belongs_to :job_optimizer, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
+  belongs_to :job_destination_import, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
   has_many :products, inverse_of: :customer, autosave: true, dependent: :delete_all
   before_destroy :delete_all_plannings # Declare and run before has_many :plannings
   has_many :plannings, inverse_of: :customer, autosave: true
@@ -137,7 +138,7 @@ class Customer < ApplicationRecord
 
   include RefSanitizer
 
-  scope :includes_deps, -> { includes([:profile, :router, :job_optimizer, :job_destination_geocoding, :job_store_geocoding, { users: :role }]) }
+  scope :includes_deps, -> { includes([:profile, :router, :job_optimizer, :job_destination_geocoding, :job_store_geocoding, :job_destination_import, { users: :role }]) }
   scope :includes_stores, -> { includes(:stores) }
   scope :for_duplication, -> {
     preload(
@@ -231,11 +232,23 @@ class Customer < ApplicationRecord
   end
 
   def live_async_jobs
-    [job_optimizer, job_destination_geocoding, job_store_geocoding].compact
+    [job_optimizer, job_destination_geocoding, job_store_geocoding, job_destination_import].compact
   end
 
   def optimizer_running?
     job_optimizer.present? && job_optimizer.failed_at.nil?
+  end
+
+  def destination_import_running?
+    job_destination_import.present? && job_destination_import.failed_at.nil?
+  end
+
+  # Job that must block mutating operations (customer-wide, or scoped to a planning for optimizer).
+  def blocking_job(planning_id: nil)
+    return job_destination_import if destination_import_running?
+    return job_optimizer if planning_id ? Job.on_planning(job_optimizer, planning_id) : optimizer_running?
+
+    nil
   end
 
   def last_failed_optimizer_job(planning_id = nil)
@@ -243,6 +256,14 @@ class Customer < ApplicationRecord
     return unless entry.is_a?(Hash) && entry['status'] == 'failed'
     return if entry['dismissed']
     return if planning_id && entry['planning_id'] && entry['planning_id'].to_i != planning_id.to_i
+
+    entry
+  end
+
+  def last_failed_destination_import_job
+    entry = (last_async_jobs || {})['destination_import']
+    return unless entry.is_a?(Hash) && entry['status'] == 'failed'
+    return if entry['dismissed']
 
     entry
   end
@@ -292,7 +313,7 @@ class Customer < ApplicationRecord
     fallback_role_id = nil if fallback_role_id.blank? || !reseller_role_ids.include?(fallback_role_id)
 
     self.transaction_without_selects do
-      attributes = self.import_attributes.except('id', 'job_destination_geocoding_id', 'job_store_geocoding_id', 'job_optimizer_id', 'last_async_jobs')
+      attributes = self.import_attributes.except('id', 'job_destination_geocoding_id', 'job_store_geocoding_id', 'job_optimizer_id', 'job_destination_import_id', 'last_async_jobs')
       attributes['name'] += " (#{I18n.l(Time.zone.now, format: :long)})"
       attributes['test'] = Planner::Application.config.customer_test_default
       attributes['ref'] = attributes['ref'] ? Time.new.to_i.to_s : nil

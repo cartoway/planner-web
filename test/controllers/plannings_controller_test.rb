@@ -15,7 +15,7 @@ class PlanningsControllerTest < ActionController::TestCase
                                 skips: '',
                                 stops: 'out-of-route|store|rest|inactive'}
     sign_in users(:user_one)
-    customers(:customer_one).update(job_optimizer_id: nil, job_destination_geocoding_id: nil)
+    customers(:customer_one).update(job_optimizer_id: nil, job_destination_geocoding_id: nil, job_destination_import_id: nil)
   end
 
   # planning_one vehicle routes: ordered_for_planning puts out-of-route first, then by vehicle_usage index.
@@ -335,6 +335,60 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :success
     assert_match 'r2;planning2;;;;1;0;;;;16:00;;;;;;;;;;;;;', response.body.split("\n")[1]
     assert_match 'r1;planning1;10/10/2015;route_one;001;4;4;;0.0;1.5;32:00;;;;;;;;;;;;;', response.body.split("\n").find{ |l| l.include?('r1') && l.include?('001') }
+    assert_match(/#{Regexp.escape(I18n.t('helpers.export.summary'))}/, response.headers['Content-Disposition'])
+  end
+
+  test 'should get index detail csv for selected planning ids' do
+    other = plannings(:planning_two)
+    get :index, params: { format: :excel, ids: "#{@planning.id},#{other.id}", **@export_settings_params }
+    assert_response :success
+    lines = response.body.split("\n")
+    assert lines.any?{ |l| l.include?('planning1') }
+    assert lines.any?{ |l| l.include?('planning2') }
+  end
+
+  test 'should get index detail csv when columns param is blank' do
+    # Modal can submit columns= when the DnD list was empty; must fall back to defaults.
+    get :index, params: { format: :excel, ids: @planning.id.to_s, columns: '', stops: 'out-of-route|store|rest|inactive', skips: '' }
+    assert_response :success
+    lines = response.body.split(/\r?\n/).reject(&:blank?)
+    assert_operator lines.size, :>=, 2
+    assert lines.any?{ |l| l.include?('planning1') }
+  end
+
+  test 'should get index summary csv for selected planning ids' do
+    other = plannings(:planning_two)
+    get :index, params: { format: :excel, summary: true, ids: "#{@planning.id},#{other.id}" }
+    assert_response :success
+    lines = response.body.split("\n")
+    assert lines.any?{ |l| l.include?('planning1') && l.include?('001') }
+    assert lines.any?{ |l| l.include?('planning2') }
+  end
+
+  test 'should get index summary csv with selected columns' do
+    get :index, params: {
+      format: :excel,
+      summary: true,
+      ids: @planning.id.to_s,
+      columns: 'planning_name|route|ref_vehicle|stop_size'
+    }
+    assert_response :success
+    header = response.body.split(/\r?\n/).first
+    # Only the requested columns, not the full summary set.
+    assert_equal 4, header.split(';').size
+    assert response.body.split(/\r?\n/).any?{ |l| l.include?('planning1') }
+  end
+
+  test 'summary export should not overwrite detail column preferences' do
+    user = users(:user_one)
+    user.update!(export_settings: { 'export' => ['ref', 'name'], 'skips' => ['city'], 'stops' => ['store'], 'format' => 'excel' })
+
+    get :index, params: { format: :excel, summary: true, ids: @planning.id.to_s }
+    assert_response :success
+
+    user.reload
+    assert_equal ['ref', 'name'], user.export_settings['export']
+    assert_equal ['city'], user.export_settings['skips']
   end
 
   test 'should get new' do
@@ -1019,6 +1073,49 @@ class PlanningsControllerTest < ActionController::TestCase
     patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :json }
     assert_response :unprocessable_entity
     assert_equal 'job_in_progress', JSON.parse(response.body)['type']
+  end
+
+  test 'show json exposes destination import job over optimizer' do
+    customer = customers(:customer_one)
+    import_job = Delayed::Job.enqueue(ImporterDestinationsJob.new(customer.id, 'tomtom', nil, {}))
+    import_job.update!(progress: { 'status' => 'working', 'phase' => 'geocoding', 'first_progression' => 60 })
+    optimizer = delayed_jobs(:job_optimizer)
+    optimizer.update!(handler: "planning_id: #{@planning.id}")
+    customer.update!(job_destination_import: import_job, job_optimizer: optimizer)
+
+    get :show, params: { id: @planning.id, format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['import']
+    assert_equal import_job.id, body['import']['id']
+    assert_equal 'geocoding', body['import']['progress']['phase']
+    assert_nil body['optimizer']
+    assert_nil body['routes']
+  end
+
+  test 'show json exposes failed destination import with message' do
+    customer = customers(:customer_one)
+    customer.update!(
+      job_destination_import: nil,
+      job_optimizer: nil,
+      last_async_jobs: {
+        'destination_import' => {
+          'id' => 99,
+          'type' => 'importer_destinations',
+          'status' => 'failed',
+          'error' => 'ImportBaseError: invalid file'
+        }
+      }
+    )
+
+    get :show, params: { id: @planning.id, format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['import']
+    assert body['import']['error']
+    assert_equal 99, body['import']['id']
+    assert_equal 'ImportBaseError: invalid file', body['import']['message']
+    assert body['routes'].present?
   end
 
   test 'move returns not found when target route does not exist' do

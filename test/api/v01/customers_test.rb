@@ -222,6 +222,23 @@ class V01::CustomerTest < ActiveSupport::TestCase
     assert_nil @customer.last_failed_optimizer_job(plannings(:planning_one).id)
   end
 
+  test 'should dismiss last failed destination import when deleting the remembered job' do
+    @customer.update!(
+      job_destination_import_id: nil,
+      last_async_jobs: {
+        'destination_import' => { 'id' => 7, 'type' => 'importer_destinations', 'status' => 'failed', 'error' => 'boom' }
+      }
+    )
+    assert @customer.last_failed_destination_import_job
+
+    delete api("#{@customer.id}/job/7")
+    assert_equal 204, last_response.status, last_response.body
+    remembered = @customer.reload.last_async_jobs['destination_import']
+    assert_equal true, remembered['dismissed']
+    assert_equal 'failed', remembered['status']
+    assert_nil @customer.last_failed_destination_import_job
+  end
+
   test 'should duplicate customer' do
     assert_difference('Customer.count', +1) do
       patch api_admin(@customer.id.to_s + '/duplicate')

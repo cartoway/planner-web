@@ -1,15 +1,26 @@
 // Copyright © Cartoway
-// Clustered GeoJSON layers for the v2 destinations map (bbox loading, GPU rendering).
+// Clustered GeoJSON for the v2 destinations/stores map.
+// Points are HTML markers (not GL circles); clustering is done by
+// @teritorio/maplibre-gl-teritorio-cluster on top of a MapLibre GeoJSON source.
+
+import { TeritorioCluster } from '@teritorio/maplibre-gl-teritorio-cluster'
+import { fillClusterMarker, fillDestinationMarker } from 'maplibre/destination_markers'
+import { pointsToFeatures } from 'maplibre/map_points'
 
 export const SOURCE_ID = 'destinations-v2'
 export const CLUSTER_LAYER_ID = 'destinations-v2-clusters'
-export const CLUSTER_COUNT_LAYER_ID = 'destinations-v2-cluster-count'
-export const UNCLUSTERED_LAYER_ID = 'destinations-v2-unclustered'
 export const DECLUSTER_SOURCE_ID = 'destinations-v2-decluster-viewport'
 export const DECLUSTER_LAYER_ID = 'destinations-v2-decluster-viewport-points'
 
-const CLUSTER_MAX_ZOOM = 14
+// Source keeps clustering through the last zoom so overlapping points stay grouped
+// and Teritorio can unfold them as HTML (see the library README: clusterMaxZoom 22).
+const SOURCE_CLUSTER_MAX_ZOOM = 22
 const CLUSTER_RADIUS = 50
+// Above the map max zoom, so large clusters stay a count bubble until clicked.
+// Groups of at most UNFOLDED_CLUSTER_MAX_LEAVES still unfold in place.
+const PLUGIN_CLUSTER_MAX_ZOOM = 23
+const UNFOLDED_CLUSTER_MAX_LEAVES = 7
+const MARKER_SIZE = 22
 const FETCH_DEBOUNCE_MS = 300
 const BBOX_PADDING_RATIO = 0.35
 const PRUNE_MARGIN_RATIO = 2.5
@@ -38,12 +49,11 @@ function featureKey (feature) {
 }
 
 export class DestinationsMapLayers {
-  constructor (map, { buildUrl, staticFeatures, onPointClick, onClusterClick, onFeaturesUpdated, getMovePadding, signal }) {
+  constructor (map, { buildUrl, staticFeatures, onPointClick, onFeaturesUpdated, getMovePadding, signal }) {
     this.map = map
     this.buildUrl = buildUrl
     this.staticFeatures = Array.isArray(staticFeatures) ? staticFeatures : null
     this.onPointClick = onPointClick
-    this.onClusterClick = onClusterClick
     this.onFeaturesUpdated = onFeaturesUpdated
     this.getMovePadding = getMovePadding
     this.signal = signal
@@ -56,31 +66,34 @@ export class DestinationsMapLayers {
     this._eventsBound = false
     this._dataEpoch = 0
     this._declusterViewportActive = false
+    this._cluster = null
+    this._declusterCluster = null
+    this._disposed = false
     this._boundHandlers = {
       moveend: () => this._onMoveEnd(),
-      clickCluster: (e) => this._handleClusterClick(e),
-      clickPoint: (e) => this._handlePointClick(e)
+      resize: () => this._syncFitBoundsOptions(),
+      featureClick: (event) => this._handleFeatureClick(event)
     }
   }
 
   connect (options = {}) {
+    this._disposed = false
     const refitBounds = options.refitBounds !== false
     const force = !!options.force
     const run = () => {
-      try {
-        this._ensureLayers()
+      this._ensureLayers().then(() => {
+        if (this._disposed) return
         this._bindEvents()
         this._loadInitialViewport({ refitBounds })
-      } catch (e) {
+      }).catch(() => {
         // Style switch can leave the map briefly unable to accept layers; retry once on idle.
-        if (!this._connectRetryScheduled) {
-          this._connectRetryScheduled = true
-          this.map.once('idle', () => {
-            this._connectRetryScheduled = false
-            run()
-          })
-        }
-      }
+        if (this._disposed || this._connectRetryScheduled) return
+        this._connectRetryScheduled = true
+        this.map.once('idle', () => {
+          this._connectRetryScheduled = false
+          run()
+        })
+      })
     }
     // force: caller already waited for style.load (setStyle). Avoid racy map.loaded()/'load'.
     if (force || this.map.isStyleLoaded()) {
@@ -100,6 +113,7 @@ export class DestinationsMapLayers {
   }
 
   disconnect () {
+    this._disposed = true
     this._dataEpoch += 1
     window.clearTimeout(this._fetchTimer)
     this._fetchTimer = null
@@ -141,8 +155,25 @@ export class DestinationsMapLayers {
 
   setHiddenDestinationIds (ids) {
     this._hiddenIds = new Set((ids || []).map((id) => String(id)))
-    this._updateUnclusteredFilter()
+    // Hide the on-screen disc now. Source refresh (and Teritorio) catches up after, too late
+    // if a flyTo has already started: the yellow marker would slide onto the blue one.
+    this._concealHiddenMarkers()
     this._pushSourceData()
+  }
+
+  _concealHiddenMarkers () {
+    const container = this.map && this.map.getContainer && this.map.getContainer()
+    if (!container || this._hiddenIds.size === 0) return
+    this._hiddenIds.forEach((id) => {
+      let node = null
+      try {
+        node = container.querySelector(`[id="${CSS.escape(id)}"]`)
+      } catch (e) {
+        return
+      }
+      if (!node || node.classList.contains('destinations-marker--active')) return
+      node.style.visibility = 'hidden'
+    })
   }
 
   updateDestinationCoords (idStr, lng, lat) {
@@ -171,7 +202,6 @@ export class DestinationsMapLayers {
     if (!this._layersReady) return
 
     this._pushSourceData()
-    this._setClusterLayersVisible(true)
     if (fitBounds) await this._fetchBoundsOnly(epoch)
     if (!this._isCurrentEpoch(epoch)) return
     await this._fetchViewport({ force: true, epoch })
@@ -179,7 +209,6 @@ export class DestinationsMapLayers {
 
   declusterViewport () {
     if (!this._layersReady) return
-    this._ensureDeclusterLayer()
     this._declusterViewportActive = true
     this._pushSourceData()
   }
@@ -204,30 +233,16 @@ export class DestinationsMapLayers {
   }
 
   _onMoveEnd () {
+    this._syncFitBoundsOptions()
     this._scheduleFetch()
     if (this._declusterViewportActive) this._pushSourceData()
   }
 
-  _ensureDeclusterLayer () {
-    if (this.map.getSource(DECLUSTER_SOURCE_ID)) return
-
-    this.map.addSource(DECLUSTER_SOURCE_ID, {
-      type: 'geojson',
-      data: { type: 'FeatureCollection', features: [] }
-    })
-
-    this.map.addLayer({
-      id: DECLUSTER_LAYER_ID,
-      type: 'circle',
-      source: DECLUSTER_SOURCE_ID,
-      layout: { visibility: 'none' },
-      paint: {
-        'circle-color': '#0d6efd',
-        'circle-radius': 7,
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#ffffff'
-      }
-    })
+  _syncFitBoundsOptions () {
+    const padding = typeof this.getMovePadding === 'function' ? this.getMovePadding() : 48
+    const options = { padding: padding || 48, maxZoom: 16 }
+    if (this._cluster) this._cluster.setBoundsOptions(options)
+    if (this._declusterCluster) this._declusterCluster.setBoundsOptions(options)
   }
 
   _visibleFeatures () {
@@ -263,157 +278,110 @@ export class DestinationsMapLayers {
     })
   }
 
-  _syncDeclusterViewportLayer () {
-    if (!this._declusterViewportActive) return
-
-    this._ensureDeclusterLayer()
-    const source = this.map.getSource(DECLUSTER_SOURCE_ID)
-    if (!source) return
-
-    source.setData({
-      type: 'FeatureCollection',
-      features: this._featuresInMapBounds()
-    })
-    if (this.map.getLayer(DECLUSTER_LAYER_ID)) {
-      this.map.setLayoutProperty(DECLUSTER_LAYER_ID, 'visibility', 'visible')
-    }
-  }
-
-  _setClusterLayersVisible (visible) {
-    const layoutVisibility = visible ? 'visible' : 'none'
-    ;[CLUSTER_LAYER_ID, CLUSTER_COUNT_LAYER_ID, UNCLUSTERED_LAYER_ID].forEach((id) => {
-      if (this.map.getLayer(id)) this.map.setLayoutProperty(id, 'visibility', layoutVisibility)
-    })
-    if (this.map.getLayer(DECLUSTER_LAYER_ID)) {
-      this.map.setLayoutProperty(DECLUSTER_LAYER_ID, 'visibility', 'none')
-    }
-  }
-
   _ensureLayers () {
-    if (this._layersReady) return
+    if (this._layersReady) return Promise.resolve()
+    if (this._ensurePromise) return this._ensurePromise
+    this._ensurePromise = this._setupLayers().finally(() => {
+      this._ensurePromise = null
+    })
+    return this._ensurePromise
+  }
+
+  async _setupLayers () {
+    if (this._layersReady || this._disposed) return
+
     if (!this.map.getSource(SOURCE_ID)) {
       this.map.addSource(SOURCE_ID, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
         cluster: true,
-        clusterMaxZoom: CLUSTER_MAX_ZOOM,
+        clusterMaxZoom: SOURCE_CLUSTER_MAX_ZOOM,
         clusterRadius: CLUSTER_RADIUS
       })
     }
 
+    if (!this.map.getSource(DECLUSTER_SOURCE_ID)) {
+      // Unclustered: Teritorio renders each feature as an HTML marker.
+      this.map.addSource(DECLUSTER_SOURCE_ID, {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      })
+    }
+
     if (!this.map.getLayer(CLUSTER_LAYER_ID)) {
-      this.map.addLayer({
-        id: CLUSTER_LAYER_ID,
-        type: 'circle',
-        source: SOURCE_ID,
-        filter: ['has', 'point_count'],
-        paint: {
-          'circle-color': '#0d6efd',
-          'circle-radius': ['step', ['get', 'point_count'], 16, 25, 20, 100, 26],
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff'
-        }
-      })
+      this._cluster = this._createClusterLayer(CLUSTER_LAYER_ID, SOURCE_ID)
+      this.map.addLayer(this._cluster)
     }
-
-    if (!this.map.getLayer(CLUSTER_COUNT_LAYER_ID)) {
-      try {
-        this.map.addLayer({
-          id: CLUSTER_COUNT_LAYER_ID,
-          type: 'symbol',
-          source: SOURCE_ID,
-          filter: ['has', 'point_count'],
-          layout: {
-            'text-field': ['get', 'point_count_abbreviated'],
-            'text-size': 12
-          },
-          paint: {
-            'text-color': '#ffffff'
-          }
-        })
-      } catch (e) {
-        // Vector styles may not ship the default fonts; circles still show without counts.
-      }
-    }
-
-    if (!this.map.getLayer(UNCLUSTERED_LAYER_ID)) {
-      this.map.addLayer({
-        id: UNCLUSTERED_LAYER_ID,
-        type: 'circle',
-        source: SOURCE_ID,
-        filter: this._unclusteredFilter(),
-        paint: {
-          'circle-color': '#0d6efd',
-          'circle-radius': 7,
-          'circle-stroke-width': 2,
-          'circle-stroke-color': '#ffffff'
-        }
-      })
+    if (!this.map.getLayer(DECLUSTER_LAYER_ID)) {
+      this._declusterCluster = this._createClusterLayer(DECLUSTER_LAYER_ID, DECLUSTER_SOURCE_ID)
+      this.map.addLayer(this._declusterCluster)
     }
 
     this._layersReady = true
+    this._syncFitBoundsOptions()
   }
 
-  /** Prefer fonts already present in the active style (MapTiler, Cartoway, …). */
-  _clusterLabelFonts () {
-    try {
-      const layers = this.map.getStyle()?.layers || []
-      for (let i = 0; i < layers.length; i++) {
-        const fonts = layers[i].layout && layers[i].layout['text-font']
-        if (Array.isArray(fonts) && fonts.length) return fonts
+  _createClusterLayer (id, sourceId) {
+    const maplibregl = window.maplibregl
+    const layer = new TeritorioCluster(id, sourceId, {
+      clusterMaxZoom: PLUGIN_CLUSTER_MAX_ZOOM,
+      markerSize: MARKER_SIZE,
+      unfoldedClusterMaxLeaves: UNFOLDED_CLUSTER_MAX_LEAVES,
+      clusterRender (element, props) {
+        fillClusterMarker(element, props)
+      },
+      markerRender (element, _markerSize, feature) {
+        const name = feature && feature.properties && feature.properties.name
+        fillDestinationMarker(element, { name, anchored: true })
+      },
+      pinMarkerRender (coords, offset) {
+        // Selection is the controller's draggable pin. Keep Teritorio's pin invisible
+        // so a click does not stack a second marker on the point.
+        const el = document.createElement('div')
+        el.className = 'destinations-marker-pin-placeholder'
+        const marker = new maplibregl.Marker({ element: el }).setLngLat(coords)
+        if (offset) marker.setOffset(offset)
+        return marker
       }
-    } catch (e) { /* ignore */ }
-    return ['Open Sans Regular', 'Arial Unicode MS Regular']
+    })
+    layer.addEventListener('feature-click', this._boundHandlers.featureClick)
+    return layer
   }
 
-  _unclusteredFilter () {
-    const hidden = Array.from(this._hiddenIds)
-    const base = ['!', ['has', 'point_count']]
-    if (hidden.length === 0) return base
-    return ['all', base, ['!', ['in', ['to-string', ['get', 'id']], ['literal', hidden]]]]
-  }
-
-  _updateUnclusteredFilter () {
-    if (!this._layersReady || !this.map.getLayer(UNCLUSTERED_LAYER_ID)) return
-    this.map.setFilter(UNCLUSTERED_LAYER_ID, this._unclusteredFilter())
+  _handleFeatureClick (event) {
+    const feature = event.detail && event.detail.selectedFeature
+    if (this._cluster) this._cluster.resetSelectedFeature()
+    if (this._declusterCluster) this._declusterCluster.resetSelectedFeature()
+    if (feature && this.onPointClick) this.onPointClick(feature)
   }
 
   _bindEvents () {
     if (this._eventsBound) return
     this.map.on('moveend', this._boundHandlers.moveend)
-    this.map.on('click', CLUSTER_LAYER_ID, this._boundHandlers.clickCluster)
-    this.map.on('click', CLUSTER_COUNT_LAYER_ID, this._boundHandlers.clickCluster)
-    this.map.on('click', UNCLUSTERED_LAYER_ID, this._boundHandlers.clickPoint)
-    this.map.on('click', DECLUSTER_LAYER_ID, this._boundHandlers.clickPoint)
-    this.map.on('mouseenter', CLUSTER_LAYER_ID, () => { this.map.getCanvas().style.cursor = 'pointer' })
-    this.map.on('mouseleave', CLUSTER_LAYER_ID, () => { this.map.getCanvas().style.cursor = '' })
-    this.map.on('mouseenter', CLUSTER_COUNT_LAYER_ID, () => { this.map.getCanvas().style.cursor = 'pointer' })
-    this.map.on('mouseleave', CLUSTER_COUNT_LAYER_ID, () => { this.map.getCanvas().style.cursor = '' })
-    this.map.on('mouseenter', UNCLUSTERED_LAYER_ID, () => { this.map.getCanvas().style.cursor = 'pointer' })
-    this.map.on('mouseleave', UNCLUSTERED_LAYER_ID, () => { this.map.getCanvas().style.cursor = '' })
-    this.map.on('mouseenter', DECLUSTER_LAYER_ID, () => { this.map.getCanvas().style.cursor = 'pointer' })
-    this.map.on('mouseleave', DECLUSTER_LAYER_ID, () => { this.map.getCanvas().style.cursor = '' })
+    this.map.on('resize', this._boundHandlers.resize)
     this._eventsBound = true
   }
 
   _unbindEvents () {
     if (!this.map || !this._eventsBound) return
     this.map.off('moveend', this._boundHandlers.moveend)
-    this.map.off('click', CLUSTER_LAYER_ID, this._boundHandlers.clickCluster)
-    this.map.off('click', CLUSTER_COUNT_LAYER_ID, this._boundHandlers.clickCluster)
-    this.map.off('click', UNCLUSTERED_LAYER_ID, this._boundHandlers.clickPoint)
-    this.map.off('click', DECLUSTER_LAYER_ID, this._boundHandlers.clickPoint)
+    this.map.off('resize', this._boundHandlers.resize)
     this._eventsBound = false
   }
 
   _removeLayers () {
     if (!this._layersReady) return
-    ;[DECLUSTER_LAYER_ID, UNCLUSTERED_LAYER_ID, CLUSTER_COUNT_LAYER_ID, CLUSTER_LAYER_ID].forEach((id) => {
+    ;[this._declusterCluster, this._cluster].forEach((layer) => {
+      if (layer) layer.removeEventListener('feature-click', this._boundHandlers.featureClick)
+    })
+    ;[DECLUSTER_LAYER_ID, CLUSTER_LAYER_ID].forEach((id) => {
       if (this.map.getLayer(id)) this.map.removeLayer(id)
     })
     ;[DECLUSTER_SOURCE_ID, SOURCE_ID].forEach((id) => {
       if (this.map.getSource(id)) this.map.removeSource(id)
     })
+    this._cluster = null
+    this._declusterCluster = null
     this._layersReady = false
     this._declusterViewportActive = false
   }
@@ -505,7 +473,7 @@ export class DestinationsMapLayers {
       if (!res.ok || !this._isCurrentEpoch(epoch)) return
       const data = await res.json()
       if (!this._isCurrentEpoch(epoch)) return
-      const features = data.features || []
+      const features = pointsToFeatures(data.points)
       if (features.length === 0 && !force) {
         this._loadedBounds = null
         return
@@ -558,13 +526,19 @@ export class DestinationsMapLayers {
   _pushSourceData () {
     const source = this.map.getSource(SOURCE_ID)
     if (!source) return
+    const declusterSource = this.map.getSource(DECLUSTER_SOURCE_ID)
 
     if (this._declusterViewportActive) {
       source.setData({
         type: 'FeatureCollection',
         features: this._featuresOutsideMapBounds()
       })
-      this._syncDeclusterViewportLayer()
+      if (declusterSource) {
+        declusterSource.setData({
+          type: 'FeatureCollection',
+          features: this._featuresInMapBounds()
+        })
+      }
       return
     }
 
@@ -572,29 +546,8 @@ export class DestinationsMapLayers {
       type: 'FeatureCollection',
       features: this._visibleFeatures()
     })
-    if (this.map.getLayer(DECLUSTER_LAYER_ID)) {
-      this.map.setLayoutProperty(DECLUSTER_LAYER_ID, 'visibility', 'none')
+    if (declusterSource) {
+      declusterSource.setData({ type: 'FeatureCollection', features: [] })
     }
-  }
-
-  _handleClusterClick (e) {
-    const feature = e.features && e.features[0]
-    if (!feature) return
-    if (e.originalEvent) e.originalEvent.stopPropagation()
-    const padding = typeof this.getMovePadding === 'function' ? this.getMovePadding() : undefined
-    this.map.easeTo({
-      center: feature.geometry.coordinates,
-      zoom: this.map.getZoom() + 1,
-      ...(padding ? { padding } : {}),
-      duration: 250
-    })
-    if (this.onClusterClick) this.onClusterClick(e)
-  }
-
-  _handlePointClick (e) {
-    const feature = e.features && e.features[0]
-    if (!feature || !this.onPointClick) return
-    e.originalEvent.stopPropagation()
-    this.onPointClick(feature)
   }
 }

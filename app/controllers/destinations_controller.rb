@@ -17,6 +17,7 @@
 #
 require 'csv'
 require 'importer_destinations'
+require 'destinations_import'
 
 class DestinationsController < ApplicationController
   include LinkBack
@@ -30,7 +31,7 @@ class DestinationsController < ApplicationController
   before_action -> { deny_unless_form_update!(:destination) }, only: [:clear]
   before_action -> { deny_unless_form_create!(:destination) }, only: [:upload_csv, :upload_tomtom]
 
-  load_and_authorize_resource except: [:map, :list_columns]
+  load_and_authorize_resource except: [:map, :list_columns, :import_status]
 
   # visits/_form and v2/visits/_form iterate @visit_custom_attributes; keep it set for v1 and v2 destination flows.
   before_action :assign_visit_custom_attributes, only: [:new, :edit, :create, :update, :append_visit]
@@ -75,6 +76,13 @@ class DestinationsController < ApplicationController
         response.headers['Content-Disposition'] = 'attachment; filename="' + format_filename(t('activerecord.models.destinations.other')) + '.csv"'
       end
     end
+  end
+
+  # Import modal poll. Status only — the legacy index JSON also dumps every destination and visit.
+  def import_status
+    authorize! :index, Destination
+    @customer = current_user.customer
+    render json: destination_import_status_payload
   end
 
   def list_columns
@@ -253,36 +261,79 @@ class DestinationsController < ApplicationController
   end
 
   def upload_csv
-    respond_to do |format|
-      @importer = ImporterDestinations.new(current_user.customer, import_planning_attributes_from_params)
-      @columns_default = (current_user.customer&.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef') || {}).merge(import_csv_params[:column_def] || {})
-      @import_csv = ImportCsv.new(import_csv_params.merge(importer: @importer, content_code: :html, column_def: @columns_default))
-      if @import_csv.valid? && @import_csv.import
-        if @import_csv.importer.plannings.size == 1 && !current_user.customer.job_destination_geocoding
-          format.html { redirect_to edit_planning_url(@import_csv.importer.plannings.last) }
-        elsif @import_csv.importer.plannings.size > 1 && !current_user.customer.job_destination_geocoding
-          format.html { redirect_to plannings_url }
-        else
-          format.html { redirect_to action: 'index' }
-        end
-      else
-        @import_tomtom = ImportTomtom.new
-        format.html { render action: 'import' }
-      end
+    customer = current_user.customer
+    if customer.blocking_job
+      redirect_to destinations_path, alert: I18n.t('errors.planning.job_in_progress')
+      return
     end
+
+    planning_attrs = import_planning_attributes_from_params
+    @importer = ImporterDestinations.new(customer, planning_attrs)
+    @columns_default = (customer&.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef') || {}).merge(import_csv_params[:column_def] || {})
+    @import_csv = ImportCsv.new(import_csv_params.merge(importer: @importer, content_code: :html, column_def: @columns_default))
+    if @import_csv.valid?
+      blob = DestinationsImport.persist_upload!(@import_csv.file)
+      planning_opts = {}
+      planning_opts[:vehicle_usage_set_id] = planning_attrs[:vehicle_usage_set].id if planning_attrs[:vehicle_usage_set]
+      options = {
+        replace: @import_csv.replace,
+        delete_plannings: @import_csv.delete_plannings,
+        column_def: @columns_default,
+        content_code: :html,
+        planning: planning_opts
+      }
+      result = DestinationsImport.enqueue(customer, source: 'csv', blob: blob, options: options)
+      if result == false
+        @import_tomtom = ImportTomtom.new
+        flash.now[:alert] = customer.errors.full_messages.join(', ')
+        render action: 'import'
+      else
+        redirect_to action: 'index'
+      end
+    else
+      @import_tomtom = ImportTomtom.new
+      render action: 'import'
+    end
+  rescue ImportBaseError => e
+    @import_csv ||= ImportCsv.new
+    @import_csv.errors.add(:base, e.message)
+    @import_tomtom = ImportTomtom.new
+    render action: 'import'
   end
 
   def upload_tomtom
-    @import_tomtom = ImportTomtom.new import_tomtom_params.merge(importer: ImporterDestinations.new(current_user.customer), customer: current_user.customer, content_code: :html)
-    if current_user.customer.device.configured?(:tomtom) && @import_tomtom.valid? && @import_tomtom.import
-      flash[:warning] = @import_tomtom.warnings.join(', ') if @import_tomtom.warnings.any?
-      redirect_to destinations_path, notice: t('.success')
+    customer = current_user.customer
+    if customer.blocking_job
+      redirect_to destinations_path, alert: I18n.t('errors.planning.job_in_progress')
+      return
+    end
+
+    @import_tomtom = ImportTomtom.new import_tomtom_params.merge(importer: ImporterDestinations.new(customer), customer: customer, content_code: :html)
+    if customer.device.configured?(:tomtom) && @import_tomtom.valid?
+      result = DestinationsImport.enqueue(
+        customer,
+        source: 'tomtom',
+        options: { replace: @import_tomtom.replace, content_code: :html }
+      )
+      if result == false
+        @import_csv = ImportCsv.new
+        flash.now[:alert] = customer.errors.full_messages.join(', ')
+        render action: :import
+      else
+        flash[:warning] = @import_tomtom.warnings.join(', ') if @import_tomtom.warnings.any?
+        redirect_to destinations_path, notice: t('.success')
+      end
     else
       @import_csv = ImportCsv.new
       render action: :import
     end
   rescue DeviceServiceError => e
     redirect_to destination_import_path, alert: e.message
+  rescue ImportBaseError => e
+    @import_tomtom ||= ImportTomtom.new
+    @import_tomtom.errors.add(:base, e.message)
+    @import_csv = ImportCsv.new
+    render action: :import
   end
 
   def clear
@@ -307,6 +358,35 @@ class DestinationsController < ApplicationController
   end
 
   private
+
+  def destination_import_status_payload
+    if @customer.destination_import_running?
+      job = @customer.job_destination_import
+      {
+        import: {
+          id: job.id,
+          progress: job.progress,
+          attempts: job.attempts,
+          error: false,
+          message: nil,
+          customer_id: @customer.id
+        }
+      }
+    elsif (failed = @customer.last_failed_destination_import_job)
+      {
+        import: {
+          id: failed['id'],
+          attempts: 1,
+          progress: nil,
+          error: true,
+          message: failed['error'],
+          customer_id: @customer.id
+        }
+      }
+    else
+      {}
+    end
+  end
 
   def load_destinations_index_page
     per_page = destinations_index_per_page

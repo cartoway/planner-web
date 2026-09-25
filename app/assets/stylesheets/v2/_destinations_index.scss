@@ -1,6 +1,7 @@
 // Copyright © Cartoway
 // Destinations index (v2): map layout, list sidebar, filtered search, markers, table cells.
 
+@import "variables";
 @import "v2/maplibre_controls";
 
 // Compact checkbox column for multiple selection
@@ -530,45 +531,33 @@
   }
 
   .destinations-marker {
-    // Flat marker: solid disc + simple triangle, minimal shadow (aligns with flat app UI)
-    --dm-head-size: 30px;
-    --dm-pin-w: 12px;
-    --dm-pin-h: 9px;
-    --dm-flat: var(--bs-primary, #0d6efd);
-    --dm-flat-stem: #0a58ca;
+    // Disc centered on the coordinate (MapLibre anchor: center).
+    --dm-size:22px;
+    --dm-flat: #{$primary-color};
     --dm-flat-active: var(--bs-warning, #ffc107);
-    --dm-flat-active-stem: #d39e00;
 
-    width: 38px;
-    height: 46px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
+    width: var(--dm-size);
+    height: var(--dm-size);
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2.5px solid #fff;
+    background: var(--dm-flat);
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.28);
     cursor: pointer;
     pointer-events: auto;
-    transform-origin: 50% 100%;
-    transition: transform 0.18s ease;
+    transform-origin: 50% 50%;
+    transition: background 0.18s ease;
 
     &:hover:not(.destinations-marker--active) {
       transform: translateY(-2px);
     }
 
     &.destinations-marker--active {
-      transform: scale(1.06);
+      background: var(--dm-flat-active);
+      transform: scale(1.08);
 
       &:hover {
-        transform: scale(1.06) translateY(-1px);
-      }
-
-      .destinations-marker__head {
-        background: var(--dm-flat-active);
-        border-color: rgba(255, 255, 255, 0.95);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12), 0 0 0 2px rgba(0, 0, 0, 0.12);
-      }
-
-      .destinations-marker__pin {
-        border-top-color: var(--dm-flat-active-stem);
+        transform: scale(1.08) translateY(-1px);
       }
     }
 
@@ -582,42 +571,117 @@
     }
 
     &:focus-visible {
-      outline: 2px solid var(--bs-primary, #0d6efd);
+      outline: 2px solid $primary-color;
       outline-offset: 3px;
     }
   }
 
-  .destinations-marker__head {
-    position: relative;
-    z-index: 2;
-    width: var(--dm-head-size);
-    height: var(--dm-head-size);
-    border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.92);
-    background: var(--dm-flat);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
-  }
-
-  // Specular highlight — disabled for flat look (kept in DOM for a11y / structure)
-  .destinations-marker__glint {
+  // Disc is painted on the marker itself. Head, glint and pin stay in the DOM.
+  .destinations-marker__head,
+  .destinations-marker__glint,
+  .destinations-marker__pin {
     display: none;
   }
 
-  .destinations-marker__pin {
-    position: relative;
-    z-index: 1;
-    width: 0;
-    height: 0;
-    margin-top: -2px;
-    border-left: calc(var(--dm-pin-w) * 0.5) solid transparent;
-    border-right: calc(var(--dm-pin-w) * 0.5) solid transparent;
-    border-top: var(--dm-pin-h) solid var(--dm-flat-stem);
-    transition: border-top-color 0.18s ease;
+  // Bring the active destination marker above siblings (stacking within map overlays)
+  .maplibregl-marker:has(.destinations-marker--active),
+  .maplibregl-marker.destinations-marker--active {
+    z-index: 900 !important;
   }
 
-  // Bring the active destination marker above siblings (stacking within map overlays)
-  .maplibregl-marker:has(.destinations-marker--active) {
-    z-index: 900 !important;
+  .destinations-cluster {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2px solid #fff;
+    background: $primary-color;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .destinations-marker-pin-placeholder,
+  .teritorio-unfolded-cluster {
+    overflow: visible;
+  }
+
+  .destinations-marker-pin-placeholder {
+    display: none;
+  }
+}
+
+// Import progress modal
+#import-progress-modal {
+  --bs-modal-width: 600px;
+
+  .modal-content {
+    border-radius: 0;
+    border-left: 12px solid $primary-color;
+  }
+
+  .modal-header {
+    align-items: center;
+    border-bottom: 1px solid $grey-color;
+
+    .modal-title {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: $primary-color;
+      font-size: 1.125rem;
+    }
+  }
+
+  .modal-footer {
+    border-top: 1px solid $grey-color;
+  }
+
+  .btn-primary {
+    background-color: $primary-color;
+    border-color: $primary-color;
+
+    &:hover,
+    &:focus {
+      background-color: darken($primary-color, 6%);
+      border-color: darken($primary-color, 6%);
+    }
+  }
+
+  .progress-bar {
+    background-color: $primary-color;
+  }
+
+  .import-progress-counters {
+    margin-top: 0.5rem;
+  }
+
+  .route-info {
+    white-space: nowrap;
+    margin: 2px;
+    padding: 7px 6px 2px 6px;
+    height: 34px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #000;
+
+    .fa {
+      margin-right: 4px;
+      color: inherit;
+    }
+
+    &.info {
+      border: 1px solid $grey-color;
+      background-color: $lightgrey-color;
+    }
+
+    &.primary {
+      border: 1px solid $primary-border-color;
+      background-color: $primary-background-color;
+    }
   }
 }

@@ -59,6 +59,7 @@ class PlanningsController < ApplicationController
     }
     @customer = current_user.customer
     @spreadsheet_columns = export_columns
+    @spreadsheet_summary_columns = export_summary_columns
     @params = params
     respond_to do |format|
       format.html
@@ -967,7 +968,7 @@ class PlanningsController < ApplicationController
   end
 
   def check_no_existing_job
-    raise Exceptions::JobInProgressError if Job.on_planning(@planning.customer.job_optimizer, @planning.id)
+    raise Exceptions::JobInProgressError if @planning.customer.blocking_job(planning_id: @planning.id)
   end
 
   def capture_planning_state_after_success!(trigger = nil)
@@ -1011,6 +1012,7 @@ class PlanningsController < ApplicationController
   def prepare_planning_edit_view
     assign_stops_preload_from_planning!(@planning)
     @spreadsheet_columns = export_columns
+    @spreadsheet_summary_columns = export_summary_columns
     @with_devices = true
     capabilities
   end
@@ -1055,7 +1057,11 @@ class PlanningsController < ApplicationController
     if @planning
       format_filename(export_filename(@planning, @planning.ref, summary: @is_summary))
     else
-      format_filename(I18n.t('plannings.menu.plannings') + '_' + I18n.l(Time.now, format: :datepicker))
+      parts = []
+      parts << I18n.t('helpers.export.summary') if @is_summary
+      parts << I18n.t('plannings.menu.plannings')
+      parts << I18n.l(Time.now, format: :datepicker)
+      format_filename(parts.join('_'))
     end
   end
 
@@ -1179,9 +1185,11 @@ class PlanningsController < ApplicationController
     format.excel do
       @customer ||= @planning.customer
       @is_summary = ValueToBoolean.value_to_boolean(export_params[:summary])
-      @columns = @is_summary ? export_summary_columns : export_params[:columns]&.split('|') || export_columns
+      @columns = @is_summary ? (export_params[:columns].presence&.split('|') || export_summary_columns) : (export_params[:columns].presence&.split('|') || export_columns)
       @export_stop_categories = params.key?(:stops) ? Array(params[:stops]).flat_map { |value| value.to_s.split('|') }.reject(&:blank?) : nil
-      current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), @export_stop_categories, 'excel')
+      unless @is_summary
+        current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), @export_stop_categories, 'excel')
+      end
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
       type: 'text/csv',
@@ -1191,9 +1199,11 @@ class PlanningsController < ApplicationController
     format.csv do
       @customer ||= @planning.customer
       @is_summary = ValueToBoolean.value_to_boolean(export_params[:summary])
-      @columns = @is_summary ? export_summary_columns : export_params[:columns]&.split('|') || export_columns
+      @columns = @is_summary ? (export_params[:columns].presence&.split('|') || export_summary_columns) : (export_params[:columns].presence&.split('|') || export_columns)
       @export_stop_categories = params.key?(:stops) ? Array(params[:stops]).flat_map { |value| value.to_s.split('|') }.reject(&:blank?) : nil
-      current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), @export_stop_categories, 'csv')
+      unless @is_summary
+        current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), @export_stop_categories, 'csv')
+      end
       @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
       response.headers['Content-Disposition'] = 'attachment; filename="' + filename + '.csv"'
     end
@@ -1211,10 +1221,18 @@ class PlanningsController < ApplicationController
   def stream_plannings_export(kind)
     @customer ||= @plannings.first&.customer || current_user.customer
     @is_summary = ValueToBoolean.value_to_boolean(export_params[:summary])
-    @columns = @is_summary ? export_summary_columns : export_params[:columns]&.split('|') || export_columns
+    # "".split("|") => [""] which is truthy — treat blank columns as "use defaults".
+    @columns = if @is_summary
+      export_params[:columns].presence&.split('|') || export_summary_columns
+    else
+      export_params[:columns].presence&.split('|') || export_columns
+    end
     # Capture before the streaming Enumerator: request params may be unreliable mid-stream.
     @export_stop_categories = params.key?(:stops) ? Array(params[:stops]).flat_map { |value| value.to_s.split('|') }.reject(&:blank?) : nil
-    current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), @export_stop_categories, kind)
+    # Summary columns must not overwrite detail column preferences used by the spreadsheet modal.
+    unless @is_summary
+      current_user.save_export_settings(@columns, export_params[:skips]&.split('|'), @export_stop_categories, kind)
+    end
     @custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef')
 
     headers['Content-Type'] = 'text/csv'

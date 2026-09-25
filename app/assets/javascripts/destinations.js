@@ -534,6 +534,22 @@ const destinations_import = function(params, api) {
     })
   });
 
+  var dialog_import = bootstrap_dialog({
+    title: I18n.t('destinations.index.dialog.import.title'),
+    icon: 'fa-upload',
+    message: SMT['modals/import']({
+      i18n: mustache_i18n
+    })
+  });
+
+  var importErrorCallback = function(message) {
+    stickyError(message || I18n.t('destinations.index.dialog.import.error') || I18n.t('destinations.index.dialog.geocoding.error'));
+  };
+
+  var checkImportProgress = function(data) {
+    progressDialog(data.import, dialog_import, '/destinations.json', checkImportProgress, {error: importErrorCallback});
+  };
+
   $(":file").filestyle({
     buttonName: "btn-primary",
     iconName: "fa fa-folder-open",
@@ -588,6 +604,15 @@ const destinations_import = function(params, api) {
       }),
       url: '/api/0.1/customers/' + params.customer_id + '.json'
     });
+  });
+
+  // Resume progress modal when a destination import job is already running.
+  $.ajax({
+    url: '/destinations.json',
+    beforeSend: beforeSendWaiting,
+    success: checkImportProgress,
+    complete: completeWaiting,
+    error: ajaxError
   });
 };
 
@@ -1111,6 +1136,14 @@ const destinations_index = function(params, api) {
       stickyError(I18n.t('destinations.index.dialog.geocoding.error'));
     };
 
+    var importErrorCallback = function(message) {
+      stickyError(message || I18n.t('destinations.index.dialog.import.error') || I18n.t('destinations.index.dialog.geocoding.error'));
+    };
+
+    if (!progressDialog(data.import, dialog_import, '/destinations.json', checkForDisplayDestinations, {error: importErrorCallback})) {
+      return;
+    }
+
     if (!progressDialog(data.geocoding, dialog_geocoding, '/destinations.json', checkForDisplayDestinations, {error: errorCallback})) {
       return;
     }
@@ -1391,6 +1424,14 @@ const destinations_index = function(params, api) {
   const checkForDisplayDestinations = function(data) {
     displayDestinations(data);
   };
+
+  var dialog_import = bootstrap_dialog({
+    title: I18n.t('destinations.index.dialog.import.title'),
+    icon: 'fa-upload',
+    message: SMT['modals/import']({
+      i18n: mustache_i18n
+    })
+  });
 
   var dialog_geocoding = bootstrap_dialog({
     title: I18n.t('destinations.index.dialog.geocoding.title'),
