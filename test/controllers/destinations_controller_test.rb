@@ -230,8 +230,10 @@ class DestinationsControllerTest < ActionController::TestCase
     get :map, params: { per_page: 25 }
     assert_response :success
     body = JSON.parse(response.body)
-    assert_equal 'FeatureCollection', body['type']
-    assert body['features'].is_a?(Array)
+    assert body['points'].is_a?(Array)
+    body['points'].each do |point|
+      assert_equal 4, point.size
+    end
   end
 
   test 'map bounds_only returns bounds without loading all features' do
@@ -246,8 +248,7 @@ class DestinationsControllerTest < ActionController::TestCase
     get :map, params: { bbox: '-1,48,3,50', per_page: 25 }
     assert_response :success
     body = JSON.parse(response.body)
-    body['features'].each do |f|
-      lng, lat = f['geometry']['coordinates']
+    body['points'].each do |_id, lng, lat, _page|
       assert lat.between?(48, 50)
       assert lng.between?(-1, 3)
     end
