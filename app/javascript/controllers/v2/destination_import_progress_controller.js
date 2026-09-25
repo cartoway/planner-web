@@ -1,5 +1,5 @@
 // Copyright © Cartoway
-// Poll /destinations.json and show import progress while a destination import job runs.
+// Poll import status and show progress while a destination import job runs.
 
 import { Controller } from '@hotwired/stimulus'
 import { visit } from 'turbo/frame_promoted_visit'
@@ -22,7 +22,7 @@ export default class extends Controller {
   ]
 
   static values = {
-    pollUrl: { type: String, default: '/destinations.json' },
+    pollUrl: { type: String, default: '/destinations/import_status.json' },
     labels: { type: Object, default: {} }
   }
 
