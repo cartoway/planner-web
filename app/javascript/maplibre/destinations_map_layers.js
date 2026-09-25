@@ -5,6 +5,7 @@
 
 import { TeritorioCluster } from '@teritorio/maplibre-gl-teritorio-cluster'
 import { fillClusterMarker, fillDestinationMarker } from 'maplibre/destination_markers'
+import { pointsToFeatures } from 'maplibre/map_points'
 
 export const SOURCE_ID = 'destinations-v2'
 export const CLUSTER_LAYER_ID = 'destinations-v2-clusters'
@@ -472,7 +473,7 @@ export class DestinationsMapLayers {
       if (!res.ok || !this._isCurrentEpoch(epoch)) return
       const data = await res.json()
       if (!this._isCurrentEpoch(epoch)) return
-      const features = data.features || []
+      const features = pointsToFeatures(data.points)
       if (features.length === 0 && !force) {
         this._loadedBounds = null
         return
