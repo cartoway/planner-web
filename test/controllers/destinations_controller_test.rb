@@ -1507,5 +1507,29 @@ class DestinationsControllerTest < ActionController::TestCase
     get :index
     assert_response :success
     assert_select '#import-progress-modal[data-controller~="v2--destination-import-progress"]'
+    assert_select '#import-progress-modal[data-v2--destination-import-progress-poll-url-value=?]', import_status_destinations_path(format: :json)
+  end
+
+  test 'import status json reports a running import without the destination catalog' do
+    customer = customers(:customer_one)
+    job = Delayed::Job.enqueue(ImporterDestinationsJob.new(customer.id, 'tomtom', nil, {}))
+    job.update!(progress: { 'status' => 'working', 'phase' => 'destinations', 'first_progression' => 12, 'destinations' => '3/10' })
+    customer.update!(job_destination_import: job, job_destination_geocoding: nil)
+
+    get :import_status, params: { format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal job.id, body['import']['id']
+    assert_equal 'destinations', body['import']['progress']['phase']
+    assert_nil body['destinations']
+    assert_nil body['tags']
+  end
+
+  test 'import status json is empty when no import is running' do
+    customers(:customer_one).update!(job_destination_import: nil, job_destination_geocoding: nil, last_async_jobs: {})
+
+    get :import_status, params: { format: :json }
+    assert_response :success
+    assert_equal({}, JSON.parse(response.body))
   end
 end

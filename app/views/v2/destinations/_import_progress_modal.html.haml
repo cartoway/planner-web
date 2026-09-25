@@ -1,7 +1,7 @@
 -# Copyright © Cartoway
 -# Destination import progress modal (polled via Stimulus while job_destination_import runs).
 - phase_labels = I18n.t('destinations.index.dialog.import.phase')
-#import-progress-modal.modal.fade{tabindex: '-1', 'aria-hidden': 'true', data: {controller: 'v2--destination-import-progress', 'v2--destination-import-progress-poll-url-value': destinations_path(format: :json), 'v2--destination-import-progress-labels-value': phase_labels.to_json, 'v2--destination-import-progress-target': 'modal'}}
+#import-progress-modal.modal.fade{tabindex: '-1', 'aria-hidden': 'true', data: {controller: 'v2--destination-import-progress', 'v2--destination-import-progress-poll-url-value': import_status_destinations_path(format: :json), 'v2--destination-import-progress-labels-value': phase_labels.to_json, 'v2--destination-import-progress-target': 'modal'}}
   .modal-dialog
     .modal-content
       .modal-header

@@ -31,7 +31,7 @@ class DestinationsController < ApplicationController
   before_action -> { deny_unless_form_update!(:destination) }, only: [:clear]
   before_action -> { deny_unless_form_create!(:destination) }, only: [:upload_csv, :upload_tomtom]
 
-  load_and_authorize_resource except: [:map, :list_columns]
+  load_and_authorize_resource except: [:map, :list_columns, :import_status]
 
   # visits/_form and v2/visits/_form iterate @visit_custom_attributes; keep it set for v1 and v2 destination flows.
   before_action :assign_visit_custom_attributes, only: [:new, :edit, :create, :update, :append_visit]
@@ -76,6 +76,13 @@ class DestinationsController < ApplicationController
         response.headers['Content-Disposition'] = 'attachment; filename="' + format_filename(t('activerecord.models.destinations.other')) + '.csv"'
       end
     end
+  end
+
+  # Import modal poll. Status only — the legacy index JSON also dumps every destination and visit.
+  def import_status
+    authorize! :index, Destination
+    @customer = current_user.customer
+    render json: destination_import_status_payload
   end
 
   def list_columns
@@ -351,6 +358,35 @@ class DestinationsController < ApplicationController
   end
 
   private
+
+  def destination_import_status_payload
+    if @customer.destination_import_running?
+      job = @customer.job_destination_import
+      {
+        import: {
+          id: job.id,
+          progress: job.progress,
+          attempts: job.attempts,
+          error: false,
+          message: nil,
+          customer_id: @customer.id
+        }
+      }
+    elsif (failed = @customer.last_failed_destination_import_job)
+      {
+        import: {
+          id: failed['id'],
+          attempts: 1,
+          progress: nil,
+          error: true,
+          message: failed['error'],
+          customer_id: @customer.id
+        }
+      }
+    else
+      {}
+    end
+  end
 
   def load_destinations_index_page
     per_page = destinations_index_per_page
