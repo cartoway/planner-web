@@ -2,8 +2,9 @@
 
 # Copyright © Cartoway
 #
-# Builds a GeoJSON FeatureCollection for the v2 destinations map (MapLibre clustering).
-# Supports optional bbox filtering, list-page metadata, and bounds-only responses.
+# Point payload for the v2 destinations map (MapLibre clustering).
+# points: [id, lng, lat, page]. The client expands that to GeoJSON.
+# bounds_only still returns a FeatureCollection with an empty features list.
 class DestinationsMapGeojson
   EMPTY_FC = { type: 'FeatureCollection', features: [] }.freeze
 
@@ -26,10 +27,7 @@ class DestinationsMapGeojson
     rows = positioned_rows_in_bbox
     rows = ensure_highlight_row(rows)
 
-    {
-      type: 'FeatureCollection',
-      features: rows.map { |id, lat, lng, name| feature(id, lat, lng, name, id_to_page[id]) }
-    }
+    { points: rows.map { |id, lat, lng| point(id, lat, lng, id_to_page[id]) } }
   end
 
   private
@@ -63,7 +61,7 @@ class DestinationsMapGeojson
   def positioned_rows_in_bbox
     scope = @scope.positioned
     scope = apply_bbox(scope) if @bbox
-    scope.pluck(:id, :lat, :lng, :name)
+    scope.pluck(:id, :lat, :lng)
   end
 
   def apply_bbox(scope)
@@ -78,23 +76,15 @@ class DestinationsMapGeojson
     return rows unless @highlight_id
     return rows if rows.any? { |row| row[0] == @highlight_id }
 
-    extra = @scope.where(id: @highlight_id).pick(:id, :lat, :lng, :name)
+    extra = @scope.where(id: @highlight_id).pick(:id, :lat, :lng)
     return rows unless extra
     return rows if extra[1].nil? || extra[2].nil?
 
     rows + [extra]
   end
 
-  def feature(id, lat, lng, name, page)
-    {
-      type: 'Feature',
-      id: id,
-      geometry: { type: 'Point', coordinates: [lng.to_f, lat.to_f] },
-      properties: {
-        id: id,
-        name: name.to_s,
-        page: page || 1
-      }
-    }
+  # Six decimals is about 0.1 m. Full double strings are longer and not useful on the map.
+  def point(id, lat, lng, page)
+    [id, lng.to_f.round(6), lat.to_f.round(6), page || 1]
   end
 end

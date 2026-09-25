@@ -8,23 +8,24 @@ class DestinationsMapGeojsonTest < ActiveSupport::TestCase
     @scope = @customer.destinations.reorder(:id)
   end
 
-  test 'build returns features with page metadata' do
+  test 'build returns compact points with page metadata' do
     payload = DestinationsMapGeojson.build(scope: @scope, per_page: 1)
-    assert_equal 'FeatureCollection', payload[:type]
-    assert payload[:features].size.positive?
-    feature = payload[:features].first
-    assert_equal 'Feature', feature[:type]
-    assert feature[:properties][:page].present?
-    assert feature[:geometry][:coordinates].size == 2
+    assert payload[:points].size.positive?
+    id, lng, lat, page = payload[:points].first
+    assert id.present?
+    assert_kind_of Numeric, lng
+    assert_kind_of Numeric, lat
+    assert page.present?
+    assert_equal 4, payload[:points].first.size
   end
 
   test 'build filters by bbox' do
     full = DestinationsMapGeojson.build(scope: @scope, per_page: 25)
     bbox = [-1.0, 48.0, 3.0, 50.0]
     filtered = DestinationsMapGeojson.build(scope: @scope, per_page: 25, bbox: bbox)
-    assert filtered[:features].size <= full[:features].size
-    filtered[:features].each do |f|
-      lng, lat = f[:geometry][:coordinates]
+    assert filtered[:points].size <= full[:points].size
+    filtered[:points].each do |id, lng, lat, _page|
+      assert id.present?
       assert lat.between?(bbox[1], bbox[3])
       assert lng.between?(bbox[0], bbox[2])
     end
@@ -47,7 +48,7 @@ class DestinationsMapGeojsonTest < ActiveSupport::TestCase
       bbox: tiny_bbox,
       highlight_id: destination.id
     )
-    ids = payload[:features].map { |f| f[:properties][:id] }
+    ids = payload[:points].map(&:first)
     assert_includes ids, destination.id
   end
 end
