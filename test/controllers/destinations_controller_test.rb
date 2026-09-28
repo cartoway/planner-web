@@ -1106,6 +1106,23 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_not geocode_called
   end
 
+  test 'should update destination duration and visit revenue' do
+    visit = @destination.visits.first
+    patch :update, params: {
+      id: @destination,
+      destination: {
+        duration: '00:05:00',
+        visits_attributes: {
+          visit.id.to_s => { id: visit.id, revenue: '12.5', custom_attributes: { 'visit_info_visible' => 'porte 2' } }
+        }
+      }
+    }
+    assert_redirected_to edit_destination_path(@destination)
+    assert_equal 300, @destination.reload.duration
+    assert_in_delta 12.5, visit.reload.revenue.to_f, 0.001
+    assert_equal 'porte 2', visit.custom_attributes['visit_info_visible']
+  end
+
   test 'should update destination and visit' do
     size_visits = @destination.visits.size
     visits_attributes = Hash[@destination.visits.map{ |v| [v.id.to_s, v.attributes.merge('deliveries' => {'1' => 1, '2' => 2.3})]}]
