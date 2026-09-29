@@ -20,6 +20,16 @@ class RouteMobileTest < ActiveSupport::TestCase
     assert_match(/#{new_user_session_path}/, last_response.location)
   end
 
+  test 'should offer benav on ios and keep apple maps as fallback' do
+    vehicle = @route.vehicle_usage.vehicle
+    header 'User-Agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+
+    assert last_response.ok?
+    assert_includes last_response.body, "href='http://maps.apple.com/?daddr="
+    assert_includes last_response.body, "data-benav-url='benav://?cmd="
+  end
+
   test 'should display the requested page if key is valid' do
     vehicle = @route.vehicle_usage.vehicle
     get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"

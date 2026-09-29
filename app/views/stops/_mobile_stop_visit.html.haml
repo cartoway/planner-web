@@ -40,11 +40,7 @@
               .fa.fa-regular.fa-square-caret-right.mr-2
               #quick-status-text
                 = t("plannings.edit.stop_status.#{next_status}") if next_status
-        - agent_link = case agent
-        - when :ios
-          - "http://maps.apple.com/?daddr=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
-        - else
-          - "geo:#{stop.visit.destination.lat},#{stop.visit.destination.lng}?q=#{stop.visit.destination.lat},#{stop.visit.destination.lng}"
+        - href, benav_url = mobile_navigation_links(agent, stop.visit.destination.lat, stop.visit.destination.lng)
     .d-flex.align-items-center
       -# .col-xs-4.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
       .col-xs-12.p-0.mt-1
@@ -54,7 +50,7 @@
             = stop.visit.destination.postalcode
             = stop.visit.destination.city
           .col-xs-4.p-0
-            %a.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ href: agent_link }
+            %a.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ href: href, data: { benav_url: benav_url } }
               .d-flex.align-items-center
                 .fa.fa-diamond-turn-right.mr-2
                 = t("stops.mobile.navigate")
