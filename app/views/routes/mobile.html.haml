@@ -54,11 +54,7 @@
       #accordion.panel-group.route-stops{ role: 'tablist', aria_multiselectable: 'true' }
         - previous = nil
         - if @route.vehicle_usage&.default_store_start.present?
-          - agent_link = case agent
-            - when :ios
-              - "http://maps.apple.com/?daddr=#{@route.vehicle_usage.default_store_start.lat},#{@route.vehicle_usage.default_store_start.lng}"
-            - else
-              - "geo:#{@route.vehicle_usage.default_store_start.lat},#{@route.vehicle_usage.default_store_start.lng}?q=#{@route.vehicle_usage.default_store_start.lat},#{@route.vehicle_usage.default_store_start.lng}"
+          - href, benav_url = mobile_navigation_links(agent, @route.vehicle_usage.default_store_start.lat, @route.vehicle_usage.default_store_start.lng)
           - next_status = case @route.start_route_data.status
             - when 'atstore'
               - 'finished'
@@ -87,7 +83,7 @@
                       = @route.vehicle_usage.default_store_start.postalcode
                       = @route.vehicle_usage.default_store_start.city
                     .col-xs-4.p-0
-                      %a.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ href: agent_link }
+                      %a.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ href: href, data: { benav_url: benav_url } }
                         .d-flex.align-items-center
                           .fa.fa-diamond-turn-right.mr-2
                           = t("stops.mobile.navigate")
@@ -107,11 +103,7 @@
             = render partial: 'stops/mobile_stop_store', locals: { stop: stop, previous: previous, agent: agent, customer: customer, custom_attributes: stop_store_custom_attributes }
           - previous = stop
         - if @route.vehicle_usage&.default_store_stop.present?
-          - agent_link = case agent
-            - when :ios
-              - "http://maps.apple.com/?daddr=#{@route.vehicle_usage.default_store_stop.lat},#{@route.vehicle_usage.default_store_stop.lng}"
-            - else
-              - "geo:#{@route.vehicle_usage.default_store_stop.lat},#{@route.vehicle_usage.default_store_stop.lng}?q=#{@route.vehicle_usage.default_store_stop.lat},#{@route.vehicle_usage.default_store_stop.lng}"
+          - href, benav_url = mobile_navigation_links(agent, @route.vehicle_usage.default_store_stop.lat, @route.vehicle_usage.default_store_stop.lng)
           - next_status = case @route.stop_route_data.status
             - when 'intransit'
               - 'atstore'
@@ -142,7 +134,7 @@
                       = @route.vehicle_usage.default_store_stop.postalcode
                       = @route.vehicle_usage.default_store_stop.city
                     .col-xs-4.p-0
-                      %a.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ href: agent_link }
+                      %a.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ href: href, data: { benav_url: benav_url } }
                         .d-flex.align-items-center
                           .fa.fa-diamond-turn-right.mr-2
                           = t("stops.mobile.navigate")

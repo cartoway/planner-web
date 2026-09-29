@@ -51,6 +51,29 @@ class MobileHelperTest < ActionView::TestCase
     assert_equal :standard, detect_agent
   end
 
+  test 'benav guidance url encodes the startGuidance command' do
+    url = benav_guidance_url(43.2965, 5.3698)
+
+    assert_equal(
+      'benav://?cmd=eyJqc29ucnBjIjoiMi4wIiwiaWQiOiIxIiwibWV0aG9kIjoic3RhcnRHdWlkYW5jZSIsInBhcmFtcyI6eyJkZXN0aW5hdGlvbiI6eyJpZCI6ImRlc3QiLCJsYXQiOjQzLjI5NjUsImxvbiI6NS4zNjk4fX19',
+      url
+    )
+  end
+
+  test 'ios navigation keeps apple maps as fallback and offers benav' do
+    href, benav = mobile_navigation_links(:ios, 43.2965, 5.3698)
+
+    assert_equal 'http://maps.apple.com/?daddr=43.2965,5.3698', href
+    assert_includes benav, 'benav://?cmd='
+  end
+
+  test 'non ios navigation has no benav url' do
+    href, benav = mobile_navigation_links(:mobile, 1.0, 2.0)
+
+    assert_equal 'geo:1.0,2.0?q=1.0,2.0', href
+    assert_nil benav
+  end
+
   def mock_user_agent(user_agent)
     mock_request = mock('request')
     mock_request.expects(:user_agent).at_least(1).returns(user_agent)
