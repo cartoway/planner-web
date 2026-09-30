@@ -3,13 +3,16 @@
 module VehiclePositions
   class Record
     class MissingPositionedAt < StandardError; end
+    class OperationNotOpen < StandardError; end
 
     # rubocop:disable Metrics/ParameterLists
     def self.call(operation_route:, lat:, lng:, positioned_at:, source: 'mobile', heading: nil, speed: nil, accuracy: nil, altitude: nil, payload: {})
       raise MissingPositionedAt if positioned_at.blank?
 
       operation = operation_route.operation
-      VehiclePosition.create!(
+      raise OperationNotOpen unless operation.open?
+
+      position = VehiclePosition.create!(
         customer_id: operation.customer_id,
         vehicle_id: operation_route.vehicle_id,
         operation_id: operation.id,
@@ -25,6 +28,13 @@ module VehiclePositions
         source: source.presence || 'mobile',
         payload: payload || {}
       )
+
+      # Live-only mode: keep the latest point, drop the rest for this route.
+      unless operation.customer.vehicle_position_keep_trace?
+        operation_route.vehicle_positions.where.not(id: position.id).delete_all
+      end
+
+      position
     end
     # rubocop:enable Metrics/ParameterLists
   end
