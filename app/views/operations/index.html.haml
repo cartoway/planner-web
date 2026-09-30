@@ -55,7 +55,7 @@
               - if operation.published_at
                 = l(operation.published_at, format: :short)
             %td.operations-index-actions.text-end.text-nowrap
-              = link_to operation_path(operation), class: (operation.open? ? 'btn btn-sm btn-primary' : 'btn btn-outline-secondary'), title: t('execution.open_tracking') do
+              = link_to operation_path(operation), class: (operation.open? ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary'), title: t('execution.open_tracking') do
                 %i.fa.fa-tower-broadcast.fa-fw
                 = t('execution.open_tracking')
               \
