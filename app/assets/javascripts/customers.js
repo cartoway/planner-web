@@ -327,6 +327,12 @@ const customers_edit = function (params) {
   };
   $('#customer_enable_vehicle_position, #customer_vehicle_position_keep_trace').on('change', syncVehiclePositionFields);
   syncVehiclePositionFields();
+
+  var syncProofRetentionFields = function() {
+    $('#proof_retention_days_wrap').toggleClass('d-none', !$('#customer_enable_stop_status').is(':checked'));
+  };
+  $('#customer_enable_stop_status').on('change', syncProofRetentionFields);
+  syncProofRetentionFields();
 };
 
 var customerProfileId = function() {

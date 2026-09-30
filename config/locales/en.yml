@@ -217,6 +217,7 @@ en:
         vehicle_position_retention_days: Vehicle position retention (days)
         vehicle_position_keep_trace: Keep GPS trace
         enable_stop_status: Enable visits status
+        proof_retention_days: Proof retention (days)
         enable_store_stops: Enable intermediate stores
         enable_sms: Enable SMS
         enable_sms_intransit: Enable SMS in transit
@@ -1280,6 +1281,9 @@ en:
       vehicle_position_keep_trace_help: >-
         When off, only the latest position is kept (no trail). When on, history is
         kept until the retention period elapses.
+      proof_retention_days_help: >-
+        Retention for execution photos and signatures (30–1825 days). Default: 365 days.
+        Anchored on the operation date. Export before purge if a dispute is ongoing.
       optimization_dicho_minimum_service_size_help: >-
         Minimum number of visits for Dicho algorithm.
       optimization_max_split_size_default: '%{n} (default value)'

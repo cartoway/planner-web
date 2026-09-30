@@ -32,6 +32,7 @@ class V01::Entities::CustomerAdmin < V01::Entities::Customer
   expose(:enable_vehicle_position, documentation: { type: 'Boolean', desc: EDIT_ONLY_ADMIN })
   expose(:vehicle_position_retention_days, documentation: { type: Integer, desc: 'GPS position retention in days (1–365). ' + EDIT_ONLY_ADMIN })
   expose(:vehicle_position_keep_trace, documentation: { type: 'Boolean', desc: 'Keep full GPS trace vs last position only. ' + EDIT_ONLY_ADMIN })
+  expose(:proof_retention_days, documentation: { type: Integer, desc: 'Operation proof (photos/signature) retention in days (30–1825). ' + EDIT_ONLY_ADMIN })
   expose(:enable_stop_status, documentation: { type: 'Boolean', desc: EDIT_ONLY_ADMIN })
   expose(:enable_sms, documentation: { type: 'Boolean', desc: EDIT_ONLY_ADMIN })
 

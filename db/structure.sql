@@ -303,7 +303,8 @@ CREATE TABLE public.customers (
     job_destination_import_id integer,
     operations_mobile boolean DEFAULT false NOT NULL,
     vehicle_position_retention_days integer DEFAULT 60 NOT NULL,
-    vehicle_position_keep_trace boolean DEFAULT true NOT NULL
+    vehicle_position_keep_trace boolean DEFAULT true NOT NULL,
+    proof_retention_days integer DEFAULT 365 NOT NULL
 );
 
 
@@ -4476,7 +4477,6 @@ ALTER TABLE ONLY public.zonings
 -- PostgreSQL database dump complete
 --
 
-
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
@@ -4819,4 +4819,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260925120000'),
 ('20260925120300'),
 ('20260925120500'),
-('20260928170000');
+('20260928170000'),
+('20260930120000');
+
+
