@@ -15,7 +15,8 @@ const tracking = function(params) {
 
   $(".route-select").on("click", ".send_to_route", function() {
     stop_id = $(this).data('stop-id');
-    var url = this.href;
+    var url = this.dataset.url || this.href;
+    if (!url) return false;
     $.ajax({
       type: 'PATCH',
       url: url,
