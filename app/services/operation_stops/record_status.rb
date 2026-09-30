@@ -8,7 +8,7 @@ module OperationStops
 
     def initialize(operation_stop, status, recorded_at, eta, source, source_ref, actor_ref, payload)
       @operation_stop = operation_stop
-      @status = status
+      @status = status.presence
       @recorded_at = recorded_at.is_a?(String) ? Time.zone.parse(recorded_at) : recorded_at.in_time_zone
       @eta = eta
       @source = source.presence || 'mobile'
