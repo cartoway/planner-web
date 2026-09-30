@@ -92,15 +92,17 @@
                       = stop.actual_clock
                 .operation-stop-aside
                   - if stop.phase == 'failed'
-                    %span.operation-gap.is-bad= t("plannings.edit.stop_status.#{stop.status.to_s.downcase}", default: stop.status)
+                    %span.operation-gap.is-bad= stop.status_label
                   - elsif stop.phase == 'exception'
                     %span.operation-gap.is-exception= t('plannings.edit.stop_status.exception')
+                  - elsif stop.phase == 'started'
+                    %span.badge.operation-now= stop.status_label
                   - elsif stop.phase == 'current'
                     %span.badge.operation-now= t('operations.show.en_route')
                   - elsif delay && delay > OperationStop::LATE_AFTER_MINUTES
                     %span.operation-gap.is-late= t('operations.show.late', count: delay)
                   - elsif stop.phase == 'delivered' && delay&.negative?
-                    %span.operation-gap.is-ok= t('plannings.edit.stop_status.delivered')
+                    %span.operation-gap.is-ok= stop.status_label
                   - elsif delay
                     %span.operation-gap.is-ok= "#{delay.positive? ? '+' : ''}#{delay} min"
                   - elsif stop.phase == 'late'

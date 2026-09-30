@@ -444,6 +444,7 @@ body[data-controller*='-v2'] {
     &.is-delivered { background: var(--status-delivered); color: #fff; }
     &.is-failed { background: var(--status-failed); color: #fff; }
     &.is-exception { background: var(--status-exception); color: #fff; }
+    &.is-started { background: var(--info); color: #fff; }
     &.is-current { background: var(--status-navy); color: #fff; }
     &.is-late { background: var(--status-late); color: #fff; }
     &.is-depot { background: #fff; color: var(--status-failed); border: 1px solid #f3d0d0; }

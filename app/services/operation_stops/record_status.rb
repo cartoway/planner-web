@@ -18,6 +18,8 @@ module OperationStops
     end
 
     def call
+      raise ArgumentError, 'transferred status cannot be reset' if clearing_transferred?
+
       event = @operation_stop.operation_stop_status_events.create!(
         status: @status,
         eta: @eta,
@@ -34,6 +36,10 @@ module OperationStops
     end
 
     private
+
+    def clearing_transferred?
+      @operation_stop.status.to_s.downcase == 'transferred' && @status.blank?
+    end
 
     def broadcast_page_refresh
       operation = @operation_stop.operation_route&.operation

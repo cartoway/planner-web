@@ -132,6 +132,9 @@ export default class extends Controller {
       return
     }
 
+    // Close transfer dropdown on outside click
+    if (!target.closest('.route-select.dropdown')) this.closeTransferDropdowns()
+
     const nav = target.closest('.mobile-nav-link')
     if (nav && nav.dataset.navPrimary) {
       event.preventDefault()
@@ -219,10 +222,10 @@ export default class extends Controller {
       const match = panel.querySelector(`.radiobtn a[data-toggle="${toggled}"][data-title="${selected}"]`)
       if (match) match.classList.add('active')
     }
-    this.swapSuffix(panel.querySelector('#label-index'), 'label-', selected)
-    this.swapSuffix(panel.querySelector('.panel-heading'), 'panel-heading-', selected)
+    this.swapSuffix(panel.querySelector('#label-index'), 'label-', selected || 'neutral')
+    this.swapSuffix(panel.querySelector('.panel-heading'), 'panel-heading-', selected || 'neutral')
     const reset = panel.querySelector('.stop-status-reset')
-    if (reset) reset.classList.toggle('d-none', !selected)
+    if (reset) reset.classList.toggle('d-none', !selected || selected === 'transferred')
     this.updateQuickStatus(panel, selected)
     this.submitForm(form)
   }
@@ -237,6 +240,7 @@ export default class extends Controller {
     else if (stopType === 'visit' && selected === 'intransit') next = 'delivered'
     else if (stopType === 'store' && selected === 'intransit') next = 'atstore'
     else if (stopType === 'store' && selected === 'atstore') next = 'finished'
+    else if (stopType === 'rest' && selected === 'started') next = 'finished'
     if (!next) {
       quick.classList.add('d-none')
       return
@@ -248,6 +252,11 @@ export default class extends Controller {
   }
 
   onStatusReset (button) {
+    const panel = button.closest('.panel')
+    const form = panel?.querySelector('form.operation-stop-status-form, form.route-status-form') || panel?.querySelector('form')
+    const input = form?.querySelector('input[name="stop[status]"], input[name="operation_stop[status]"], input[name="status"]')
+    if (input?.value === 'transferred') return
+
     if (!button.classList.contains('confirm-click-armed')) {
       this.element.querySelectorAll('.stop-status-reset.confirm-click-armed').forEach((other) => {
         if (other !== button) this.disarmReset(other)
@@ -257,27 +266,28 @@ export default class extends Controller {
     }
     if (button.classList.contains('confirm-click-pending')) return
     this.disarmReset(button)
-    const panel = button.closest('.panel')
     if (panel) this.changeStatus(panel, '', button.dataset.toggle)
+  }
+
+  closeTransferDropdowns () {
+    this.element.querySelectorAll('.route-select.dropdown').forEach((dropdown) => {
+      dropdown.classList.remove('show', 'open')
+      dropdown.querySelector('.dropdown-menu')?.classList.remove('show')
+      dropdown.querySelector('.dropdown-toggle')?.setAttribute('aria-expanded', 'false')
+    })
   }
 
   toggleTransferDropdown (toggle) {
     const dropdown = toggle.closest('.dropdown')
     if (!dropdown) return
+    const wasOpen = dropdown.classList.contains('show') || dropdown.classList.contains('open')
+    this.closeTransferDropdowns()
+    if (wasOpen) return
+
     const menu = dropdown.querySelector('.dropdown-menu')
-    const open = dropdown.classList.contains('show') || dropdown.classList.contains('open')
-    this.element.querySelectorAll('.route-select.dropdown').forEach((other) => {
-      other.classList.remove('show', 'open')
-      const otherMenu = other.querySelector('.dropdown-menu')
-      if (otherMenu) otherMenu.classList.remove('show')
-      const otherToggle = other.querySelector('.dropdown-toggle')
-      if (otherToggle) otherToggle.setAttribute('aria-expanded', 'false')
-    })
-    if (!open) {
-      dropdown.classList.add('show', 'open')
-      if (menu) menu.classList.add('show')
-      toggle.setAttribute('aria-expanded', 'true')
-    }
+    dropdown.classList.add('show', 'open')
+    if (menu) menu.classList.add('show')
+    toggle.setAttribute('aria-expanded', 'true')
   }
 
   transferStop (link) {
@@ -292,27 +302,23 @@ export default class extends Controller {
       url = parsed.toString()
     }
 
-    const dropdown = link.closest('.route-select.dropdown')
-    if (dropdown) {
-      dropdown.classList.remove('show', 'open')
-      dropdown.querySelector('.dropdown-menu')?.classList.remove('show')
-      dropdown.querySelector('.dropdown-toggle')?.setAttribute('aria-expanded', 'false')
-    }
+    this.closeTransferDropdowns()
 
-    const label = link.closest('.panel')?.querySelector('#transfer-label')
-    if (label && !label.querySelector('.spinner-border')) {
-      label.classList.add('spinner-container', 'row')
-      label.insertAdjacentHTML('afterbegin', '<div class="col-xs-1"><div class="spinner-border"></div></div>')
+    const toggle = link.closest('.route-select')?.querySelector('.dropdown-toggle')
+    if (toggle) {
+      toggle.disabled = true
+      if (!toggle.querySelector('.fa-spinner')) {
+        toggle.insertAdjacentHTML('beforeend', ' <i class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i>')
+      }
     }
 
     this.patchJson(url, {}).then(() => {
       const panel = this.element.querySelector(`#heading-${stopId}`)?.closest('.panel')
       if (panel) panel.remove()
     }).catch(() => {
-      if (label) {
-        label.classList.remove('spinner-container', 'row')
-        label.querySelector('.col-xs-1')?.remove()
-      }
+      if (!toggle) return
+      toggle.disabled = false
+      toggle.querySelector('.fa-spinner')?.remove()
     })
   }
 
