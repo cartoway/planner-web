@@ -11,12 +11,16 @@
         .label.label-default.p-3.mr-2
           %i.fa.fa-truck-field.fa-fw
         = @route.vehicle_usage.vehicle.name
-    - if date
+    - if date || @operation_route
       %h4.d-flex.align-items-center.justify-items-center
         .label.label-default.p-3.mr-2
           %i.fa.fa-calendar.fa-fw
-        = date + (number_of_days(@route.route_data.start) || 0)
-    - if @route.route_data.start && @route.vehicle_usage.default_service_time_start.present?
+        - if @operation_route
+          = @operation_route.operation.date
+        - else
+          = date + (number_of_days(@route.route_data.start) || 0)
+    - start_seconds = @operation_route&.route_snapshot&.[]('start') || @route.route_data.start
+    - if start_seconds && @route.vehicle_usage.default_service_time_start.present?
       %h4.d-flex.align-items-center.justify-items-center
         .label.label-default.p-3.mr-2
           %i.fa.fa-clock.fa-fw
@@ -24,14 +28,20 @@
           = t('routes.mobile.prepare_time')
         - else
           = t('routes.mobile.start_time')
-        = @route.route_data.start_time
+        - if @operation_route
+          = @operation_route.planned_clock(start_seconds)
+        - else
+          = @route.route_data.start_time
 
     - if @route.service_time_start_value
       %h4.d-flex.align-items-center.justify-items-center
         .label.label-default.p-3.mr-2
           %i.fa.fa-clock.fa-fw
         = t('routes.mobile.start_time')
-        = time_over_day(@route.route_data.start + @route.service_time_start_value)
+        - if @operation_route
+          = @operation_route.planned_clock(start_seconds.to_i + @route.service_time_start_value)
+        - else
+          = time_over_day(@route.route_data.start + @route.service_time_start_value)
     - route_quantities(@route.planning, @route).each do |unit|
       - next if unit[:pickup].blank? && unit[:delivery].blank?
       - [:pickup, :delivery].each do |sym|

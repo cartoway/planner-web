@@ -25,7 +25,7 @@ class StopPhotosController < ApplicationController
 
   def show
     blob = Stop.find_photo_blob!(params[:signed_id])
-    raise ActiveRecord::RecordNotFound unless blob.attachments.exists?(record_type: 'Stop', name: 'photos')
+    raise ActiveRecord::RecordNotFound unless blob.attachments.exists?(record_type: %w[Stop OperationStop], name: 'photos')
 
     send_data blob.download,
               filename: blob.filename.to_s,
@@ -36,10 +36,19 @@ class StopPhotosController < ApplicationController
   private
 
   def set_stop
-    @stop = Stop.find(params[:stop_id])
+    @stop = if params[:operation_stop_id]
+              OperationStop.find(params[:operation_stop_id])
+            else
+              Stop.find(params[:stop_id])
+            end
   end
 
   def authorize_driver_stop!
-    raise ActiveRecord::RecordNotFound unless @stop.route.vehicle_usage&.vehicle_id == current_vehicle.id
+    vehicle_id = if @stop.is_a?(OperationStop)
+                   @stop.operation_route.vehicle_id
+                 else
+                   @stop.route.vehicle_usage&.vehicle_id
+                 end
+    raise ActiveRecord::RecordNotFound unless vehicle_id == current_vehicle.id
   end
 end

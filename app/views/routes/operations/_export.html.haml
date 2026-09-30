@@ -100,10 +100,6 @@
       - if route[:deliver]
         .dropdown-spacing
           = t('plannings.edit.dialog.deliver.title')
-        %li
-          %a{ href: driver_url(@planning, route) }
-            %i.fa.fa-link.fa-fw
-            = t('plannings.edit.deliver_send.singular.access')
         - if @planning.customer.enable_sms
           %li
             = link_to modal_route_path(route[:route_id], modal: 'sms_drivers'), remote: true, format: 'js', 'data-toggle': "modal", 'data-target': "#planning-send-sms-drivers-modal", 'data-keyboard': "true", id: 'send-sms-drivers' do

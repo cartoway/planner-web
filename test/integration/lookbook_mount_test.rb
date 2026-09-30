@@ -111,6 +111,17 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_select '.lookbook-planning-sidebar-host', 1
   end
 
+  test 'operation desk preview renders' do
+    get '/lookbook/preview/design_system/operation/default', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_select '.operation-board', 1
+    assert_select '.operation-chip', text: /#{Regexp.escape(I18n.t('operations.show.filter_exception'))}/
+    assert_select '.operation-glyph.is-exception', 1
+    assert_select '.operation-glyph.is-failed', 1
+    assert_select '.lookbook-operation-map', 1
+  end
+
   test 'filtered search preview renders' do
     get '/lookbook/preview/design_system/forms/filtered_search', headers: { 'User-Agent' => MODERN_CHROME_UA }
 

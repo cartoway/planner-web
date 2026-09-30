@@ -4,6 +4,7 @@
 - @reseller_name = @reseller.name
 %title= [yield(:title), @reseller_name].select{ |t| !t.empty? }.join(' – ')
 = csrf_meta_tags
+= yield :meta
 %meta{charset: "utf-8"}/
 %meta{content: "width=device-width, initial-scale=1.0", name: "viewport"}/
 %link{rel: "preconnect", href: "https://fonts.googleapis.com"}

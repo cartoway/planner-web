@@ -83,4 +83,8 @@ module VisitsHelper
     definitions = visit.destination.customer.custom_attributes.for_visit.to_a
     visit_stop_filled_custom_attributes(visit, definitions)
   end
+
+  def visit_operation_stops(visit, include_past: false)
+    OperationStop.for_visit(visit, include_past: params[:include_past].present? || include_past)
+  end
 end

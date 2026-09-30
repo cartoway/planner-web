@@ -93,7 +93,7 @@
         - attribute_lines.each do |line|
           %tr
             %td= line[:header]
-            %td.delivery-note-qty= line[:value]
+            %td.delivery-note-attr= line[:value]
 
   - if @photos.any?
     %section.delivery-note-proofs

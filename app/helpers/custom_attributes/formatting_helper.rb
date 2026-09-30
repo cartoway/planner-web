@@ -100,7 +100,16 @@ module CustomAttributes
       when 'float'
         json_array?(value) ? JSON.parse(value).first.to_f : value&.to_f
       when 'array'
-        json_array?(value) && JSON.parse(value) || [""]
+        items = if value.is_a?(Array)
+                  value
+                elsif json_array?(value)
+                  JSON.parse(value)
+                elsif value.present?
+                  [value]
+                else
+                  []
+                end
+        items.reject { |item| item.blank? }
       else
         json_array?(value) ? JSON.parse(value).first : value
       end

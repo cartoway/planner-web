@@ -1,0 +1,265 @@
+.print-layout[data-action='delivery_note'] {
+  background: #fff;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-top {
+  margin-bottom: 1.5rem;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-company p {
+  margin: 0 0 0.15rem;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-company-name {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-title-block {
+  text-align: right;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-title-block h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #25417c;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-title-block p {
+  margin: 0 0 0.2rem;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-ref {
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-place-date {
+  font-weight: 600;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-client-row {
+  margin-bottom: 1.75rem;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-client-box {
+  width: 280px;
+  max-width: 100%;
+  padding: 0.85rem 1rem;
+  border: 1px solid #bdc3c4;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-client-box p {
+  margin: 0 0 0.15rem;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-client-name {
+  font-weight: 700;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-items {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-items th,
+.print-layout[data-action='delivery_note'] .delivery-note-items td {
+  padding: 0.55rem 0.75rem;
+  vertical-align: top;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-items thead th {
+  background: #25417c;
+  color: #fff;
+  font-weight: 600;
+  border: none;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-items tbody tr:not(:last-child) {
+  border-bottom: 1px solid #ddd;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-items tbody td {
+  background: #fff;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-qty {
+  text-align: right;
+  white-space: nowrap;
+  width: 30%;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-attr {
+  text-align: right;
+  overflow-wrap: anywhere;
+  width: 70%;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-proofs {
+  margin-bottom: 1.25rem;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-proofs h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1.05rem;
+  color: #25417c;
+  font-weight: 700;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-doc {
+  width: 260px;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-doc img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #ccc;
+  background: #fff;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-signature {
+  margin-left: auto;
+  width: 220px;
+  max-width: 100%;
+  min-height: 140px;
+  padding: 0.75rem;
+  border: 1px solid #bdc3c4;
+  border-radius: 8px;
+  text-align: center;
+  background: #fff;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-signature img {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: 0.5rem;
+}
+
+.print-layout[data-action='delivery_note'] .delivery-note-signature-label {
+  margin: 0;
+  color: #25417c;
+  font-weight: 700;
+}
+
+@media screen {
+  .print-layout[data-action='delivery_note'] .btn-print {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    z-index: 100;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 2rem;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-company {
+    flex: 1 1 45%;
+    min-width: 0;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-title-block {
+    flex: 0 1 45%;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-client-row {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-documents {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+}
+
+@media print {
+  .print-layout[data-action='delivery_note'] .btn-print,
+  .print-layout[data-action='delivery_note'] .hidden-print {
+    display: none !important;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note {
+    max-width: none;
+    padding: 1cm 1.5cm 0;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-top {
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-company {
+    float: left;
+    width: 48%;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-title-block {
+    float: right;
+    width: 48%;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-client-row {
+    clear: both;
+    text-align: right;
+    overflow: hidden;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-client-box {
+    display: inline-block;
+    text-align: left;
+    vertical-align: top;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-items {
+    clear: both;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-items thead th {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-documents {
+    overflow: hidden;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-documents .delivery-note-doc {
+    float: left;
+    margin: 0 0.75rem 0.75rem 0;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-signature {
+    clear: both;
+  }
+
+  .print-layout[data-action='delivery_note'] .delivery-note-client-box,
+  .print-layout[data-action='delivery_note'] .delivery-note-doc,
+  .print-layout[data-action='delivery_note'] .delivery-note-signature,
+  .print-layout[data-action='delivery_note'] .delivery-note-items tr {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

@@ -22,6 +22,7 @@ class Visit < ApplicationRecord
   has_many :relation_currents, class_name: 'StopsRelation', foreign_key: 'current_id', dependent: :delete_all, validate: false
   has_many :relation_successors, class_name: 'StopsRelation', foreign_key: 'successor_id', dependent: :delete_all, validate: false
   has_many :stop_visits, inverse_of: :visit
+  has_many :operation_stops
   has_many :orders, inverse_of: :visit, dependent: :delete_all
 
   has_many :tag_visits, dependent: :destroy

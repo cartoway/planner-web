@@ -18,14 +18,41 @@ module CustomAttributes
       raw = object.custom_attributes || {}
 
       if raw.key?(storage_key) && (custom_attribute.boolean? || raw[storage_key].present?)
-        if custom_attribute.boolean?
-          ActiveRecord::Type::Boolean.new.cast(raw[storage_key])
-        else
-          object.custom_attributes_typed_hash(related_field: related_field)[custom_attribute.name]
-        end
+        value = if custom_attribute.boolean?
+                  ActiveRecord::Type::Boolean.new.cast(raw[storage_key])
+                else
+                  object.custom_attributes_typed_hash(related_field: related_field)[custom_attribute.name]
+                end
+        return if custom_attribute.array? && delivery_note_list_unselected?(custom_attribute, value)
+
+        value
+      elsif custom_attribute.array?
+        nil
       elsif delivery_note_custom_attribute_default_set?(custom_attribute)
         custom_attribute.typed_default_value
       end
+    end
+
+    # Array defaults are the option catalog, not a chosen value.
+    def delivery_note_list_unselected?(custom_attribute, value)
+      selected = delivery_note_list_items(value)
+      return true if selected.empty?
+
+      options = delivery_note_list_items(custom_attribute.typed_default_value)
+      options.any? && selected.sort == options.sort
+    end
+
+    def delivery_note_list_items(value)
+      items = if value.is_a?(Array)
+                value
+              elsif value.is_a?(String) && json_array?(value)
+                JSON.parse(value)
+              elsif value.present?
+                [value]
+              else
+                []
+              end
+      items.map { |item| item.to_s.strip }.reject(&:empty?)
     end
 
     def delivery_note_custom_attribute_default_set?(custom_attribute)

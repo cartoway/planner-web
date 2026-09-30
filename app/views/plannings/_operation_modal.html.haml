@@ -1,0 +1,40 @@
+- assignable_routes = @planning.routes.select { |route| route.vehicle_usage_id.present? }
+- operation_date = Date.current + @planning.customer.operation_date_offset_default
+- taken_by_date = @planning.open_taken_routes_by_date
+#planning-operation-modal.modal.fade{ role: 'dialog', tabindex: '-1', data: { taken_by_date: taken_by_date.to_json, already_in_template: t('execution.modal.already_in', name: '__NAME__') } }
+  .modal-dialog
+    .modal-content
+      = form_with url: publish_operation_planning_path(@planning), method: :post, local: true do
+        .modal-header
+          %button.close{ type: 'button', 'data-dismiss': 'modal' }
+            &times;
+          %h4.modal-title
+            %i.fa.fa-play.fa-fw
+            = t('execution.modal.title')
+        .modal-body
+          .form-group
+            = label_tag :name, t('execution.modal.name')
+            = text_field_tag :name, @planning.name, class: 'form-control', required: true
+          .form-group
+            = label_tag :date, t('execution.date')
+            = date_field_tag :date, operation_date, class: 'form-control', required: true, id: 'execution-operation-date'
+          .form-group
+            %label= t('execution.modal.routes')
+            .planning-execution-route-actions.btn-group.btn-group-xs.mb-1
+              %button.btn.btn-default{ type: 'button', data: { execution_routes: 'all' } }= t('execution.modal.select_all')
+              %button.btn.btn-default{ type: 'button', data: { execution_routes: 'none' } }= t('execution.modal.select_none')
+              %button.btn.btn-default{ type: 'button', data: { execution_routes: 'visible' } }= t('execution.modal.select_visible')
+            %ul.list-unstyled.planning-execution-routes
+              - assignable_routes.each do |route|
+                - label = [route.ref, route.vehicle_usage&.vehicle&.name].compact.join(' ').presence || "##{route.id}"
+                - default_on = !route.hidden
+                %li.planning-execution-route{ data: { route_id: route.id, hidden: route.hidden.to_s, default_on: default_on.to_s } }
+                  .d-flex.align-items-center
+                    .form-switch
+                      = check_box_tag 'route_ids[]', route.id, default_on, id: "execution_route_#{route.id}", class: 'execution-route-checkbox form-check-input', data: { hidden: route.hidden.to_s }
+                    %label.mb-0{ for: "execution_route_#{route.id}" }= label
+                  %span.help-block.mb-0.execution-route-taken-hint.hidden
+            %p.help-block#execution-route-count{ data: { template: t('execution.modal.selected_count') } }
+        .modal-footer
+          %button.btn.btn-default{ type: 'button', 'data-dismiss': 'modal' }= t('all.verb.dismiss')
+          = submit_tag t('execution.publish'), class: 'btn btn-primary', id: 'execution-publish-submit'

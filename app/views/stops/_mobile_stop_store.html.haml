@@ -26,6 +26,9 @@
                 %i.fa.fa-xmark
       .col-xs-6.p-0
         = stop.name
+        - planned = @operation_stops_by_stop_id&.[](stop.id)&.passage_time
+        - if planned
+          .small.text-muted= planned
       .col-xs-4.p-0
         %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'active_status', title: next_status } }
           .d-flex.align-items-center
@@ -48,7 +51,8 @@
       - current_route_data_quantities = route_data_quantities(stop.route_data, stop.route.vehicle_usage&.vehicle)
       .container.mt-1
         .form-group.mb-1
-          = bootstrap_form_for stop, url: stop_path, method: :patch, remote: true do |f|
+          - operation_stop = @operation_stops_by_stop_id&.[](stop.id)
+          = bootstrap_form_for stop, url: (operation_stop ? operation_stop_path(operation_stop) : stop_path(stop)), method: :patch, remote: true do |f|
             %label{ for: 'active_status' }
               = t('stops.mobile.status')
             .input-group.col-xs-12
@@ -102,4 +106,4 @@
                   .col-xs-12
                     %p.help-block
                       = custom_attribute.description
-        = render partial: 'stops/documents', locals: { stop: stop }
+        = render partial: 'stops/documents', locals: { stop: operation_stop || stop }

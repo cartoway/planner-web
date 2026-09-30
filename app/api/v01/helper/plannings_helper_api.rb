@@ -63,7 +63,7 @@ module PlanningsHelperApi
         route_name: [route.ref, route.vehicle_usage.vehicle.name].compact.join(' - '),
         date: I18n.l(date, format: :weekday),
         size_active: route.size_active,
-        url: (customer.reseller.url_protocol + '://' + customer.reseller.host + '/routes/' + route.id.to_s + '/mobile?driver_token=' + route.vehicle_usage.vehicle.driver_token).html_safe
+        url: Operations::MobileUrl.for_planning_route(route).to_s.html_safe
       }
 
       template = customer.sms_driver_template || I18n.t('notifications.sms.alert_driver')

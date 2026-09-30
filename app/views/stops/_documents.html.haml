@@ -1,8 +1,12 @@
-- photos = stop.serialized_photos
-- signature = stop.serialized_signature
+- proof = stop
+- operation_proof = proof.is_a?(OperationStop)
+- photos = proof.serialized_photos
+- signature = proof.serialized_signature
 - docs_count = photos.size + (signature ? 1 : 0)
+- photos_url = operation_proof ? operation_stop_photos_path(proof) : stop_photos_path(proof)
+- signature_url = operation_proof ? operation_stop_signature_path(proof) : stop_signature_path(proof)
 .stop-documents
-  .stop-photos{ data: { url: stop_photos_path(stop) } }
+  .stop-photos{ data: { url: photos_url } }
     %label= t('stops.mobile.photos')
     .stop-photos-actions
       %label.btn.btn-default.stop-photos-pick.mb-0
@@ -15,25 +19,26 @@
           %i.fa.fa-folder-open.mr-2
           = t('stops.mobile.from_storage')
         %input.stop-photos-input.stop-photos-gallery-input{ type: 'file', accept: 'image/*', multiple: true, name: 'photos[]' }
-  .stop-signature{ data: { url: stop_signature_path(stop) } }
+  .stop-signature{ data: { url: signature_url } }
     %label= t('stops.mobile.signature')
     %button.btn.btn-default.btn-block.stop-signature-open{ type: 'button' }
       %i.fa.fa-signature.fa-fw
       = t('stops.mobile.signature_open')
   .stop-documents-accordion{ class: ('d-none' if docs_count.zero?) }
-    %button.stop-documents-toggle.btn.btn-default{ type: 'button' }
+    %button.stop-documents-toggle.btn.btn-default{ type: 'button', class: ('d-none' if docs_count.zero?) }
       .d-flex.align-items-center.justify-content-between
         %span
           = t('stops.mobile.documents_loaded')
           %span.stop-documents-badge= docs_count
         %i.fa.fa-caret-down.fa-fw
-    .stop-documents-panel{ id: "documents-panel-#{stop.id}" }
-      .stop-documents-body
+    .stop-documents-panel{ id: "documents-panel-#{proof.class.base_class.name}-#{proof.id}" }
+      .stop-documents-body{ class: ('d-none' if docs_count.zero?) }
         .stop-documents-list
           - photos.each do |photo|
             .stop-photo
               - if photo[:deletable]
-                %button.stop-photo-remove.btn.btn-xs.btn-default{ type: 'button', data: { url: stop_photo_path(stop, photo[:id]) } }
+                - remove_url = operation_proof ? operation_stop_photo_path(proof, photo[:id]) : stop_photo_path(proof, photo[:id])
+                %button.stop-photo-remove.btn.btn-xs.btn-default{ type: 'button', data: { url: remove_url } }
                   %i.fa.fa-trash
               %button.stop-photo-open{ type: 'button', data: { url: photo[:url] } }
                 %img{ src: photo[:url], alt: photo[:filename] }

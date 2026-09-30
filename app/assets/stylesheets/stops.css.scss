@@ -1,7 +1,8 @@
 @import "variables";
 
 [data-controller='stops'][data-action='edit'],
-[data-controller='routes'][data-action='mobile'] {
+[data-controller='routes'][data-action='mobile'],
+.mobile-driver {
 
   .mobile_header {
     width: 100%;
@@ -90,6 +91,12 @@
   .label-default {
     background-color: $gray-200;
     color: $gray-700;
+  }
+
+  .actual_quantities {
+    .quantity-edit {
+      max-width: 14em;
+    }
   }
 
   .label-default-negative {

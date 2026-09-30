@@ -28,6 +28,9 @@
                 %i.fa.fa-xmark
       .col-xs-6.p-0
         = stop.name
+        - planned = @operation_stops_by_stop_id&.[](stop.id)&.passage_time
+        - if planned
+          .small.text-muted= planned
       .col-xs-4.p-0
         - if customer.enable_sms && in_route_data[:phone_number].present?
           = link_to "sms:#{in_route_data[:phone_number]}?body=#{sms_uri_body(in_route_data[:content])}",

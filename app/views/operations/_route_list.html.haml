@@ -1,0 +1,109 @@
+- routes = local_assigns[:routes] || @page_routes
+- operation = local_assigns[:operation] || @operation
+- started, waiting = routes.partition(&:started?)
+- open_route = started.first || routes.first
+- [[nil, started], [t('operations.show.waiting_group'), waiting]].each do |title, group|
+  - next if group.empty?
+  %section.operation-group
+    - if title
+      %h2= title
+    - group.each do |route|
+      - board = route.board
+      - departure, arrival = route.list_depots
+      %details.operation-tour{id: "route-#{route.id}", open: route == open_route, data: { route_id: route.id, delivered: board[:delivered], failed: board[:failed], exception: board[:exception], late: board[:late], upcoming: board[:upcoming], current: board[:current], total: board[:total], delay: board[:delay], distance_label: locale_distance(board[:distance], current_user.prefered_unit), units: board[:units].to_json }}
+        %summary.operation-tour-summary
+          .d-flex.justify-content-between.gap-2
+            .min-w-0
+              .operation-tour-title.text-truncate
+                = route.ref.presence || route.vehicle_name || t('operations.show.unassigned')
+                - if route.router_name.present?
+                  %span.text-muted= "· #{route.router_name}"
+              .operation-tour-meta.text-truncate
+                = route.vehicle_name
+                - if route.vehicle_snapshot['ref'].present?
+                  = "· #{route.vehicle_snapshot['ref']}"
+                ·
+                = t('operations.show.last_sent', at: (route.last_sent_at ? l(route.last_sent_at, format: :short) : '—'))
+              = render 'operations/quantity_stats', units: board[:units], compact: true
+              - if route.unassigned || route.vehicle_id.nil?
+                %span.badge.operation-unassigned= t('operations.show.unassigned_badge')
+            .operation-tour-progress
+              = "#{board[:delivered] + board[:failed]}/#{board[:total]}"
+              = t('operations.show.stops')
+              - if board[:total].positive?
+                ·
+                = "#{(100.0 * (board[:delivered] + board[:failed]) / board[:total]).round}%"
+              %i.fa.fa-chevron-down.operation-tour-chevron
+          .operation-tour-tools{onclick: 'event.stopPropagation();'}
+            .btn-group
+              - has_position = (@located_route_ids || Set.new).include?(route.id)
+              %button.btn.btn-sm.btn-light{type: 'button', title: t('operations.show.hide_trace'), aria: { label: t('operations.show.hide_trace') }, data: { action: 'click->v2--operation-show#toggleRouteTrace', route_id: route.id, hide_label: t('operations.show.hide_trace'), show_label: t('operations.show.show_trace') }}
+                %i.fa.fa-eye.fa-fw
+              %button.btn.btn-sm.btn-light{type: 'button', title: t('operations.show.center_route'), aria: { label: t('operations.show.center_route') }, data: { action: 'click->v2--operation-show#centerRoute', route_id: route.id }}
+                %i.fa.fa-expand.fa-fw
+              %button.btn.btn-sm.btn-light{type: 'button', title: t('operations.show.center_vehicle'), aria: { label: t('operations.show.center_vehicle') }, disabled: !has_position, data: { action: 'click->v2--operation-show#centerVehicle', route_id: route.id }}
+                %i.fa.fa-location-crosshairs.fa-fw
+            .btn-group
+              - if route.vehicle_id
+                .dropdown
+                  %button.btn.btn-sm.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }}
+                    %i.fa.fa-paper-plane.fa-fw
+                    = t('plannings.edit.deliver_send.singular.transmit')
+                  %ul.dropdown-menu
+                    %li
+                      %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'email', route_id: route.id, field: 'contact_email', contact: route.driver_email, vehicle_name: route.vehicle_name }}
+                        = t('operations.show.send_email')
+                    - if operation.customer.enable_sms
+                      %li
+                        %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'sms', route_id: route.id, field: 'phone_number', contact: route.driver_phone, vehicle_name: route.vehicle_name }}
+                          = t('operations.show.send_sms')
+                    - mobile_url = Operations::MobileUrl.for(route)
+                    - if mobile_url
+                      %li
+                        = link_to mobile_url, class: 'dropdown-item', target: '_blank', rel: 'noopener noreferrer' do
+                          = t('plannings.edit.deliver_send.singular.access')
+              = link_to media_operation_operation_route_path(operation, route), class: 'btn btn-sm btn-light', data: { action: 'click->v2--operation-show#openMedia' } do
+                %i.fa.fa-images.fa-fw
+                = t('operations.show.media')
+        .operation-tour-body
+          %ul.operation-stops
+            - if departure
+              = render 'operations/depot_row', depot: departure, route: route, label_key: 'activerecord.attributes.store.store_start'
+            - route.operation_stops.sort_by(&:index).each do |stop|
+              - next if stop.active == false
+              - label = (stop_list_primary_line(stop.list_fields).presence || stop.address_label).to_s
+              - delay = stop.delay_minutes
+              %li.operation-stop-row{id: "stop-#{stop.id}", class: "is-#{stop.phase}", data: { stop_id: stop.id, phase: stop.phase, label: label, lat: stop.lat, lng: stop.lng, url: operation_stop_path(stop), action: 'click->v2--operation-show#selectStop' }}
+                %span.operation-glyph{class: "is-#{stop.phase}"}
+                  - if stop.phase == 'delivered'
+                    %i.fa.fa-check
+                  - elsif stop.phase == 'failed'
+                    !
+                  - elsif stop.phase == 'exception'
+                    %i.fa.fa-triangle-exclamation
+                  - else
+                    = stop.index
+                .operation-stop-main.min-w-0
+                  .operation-stop-name= label
+                  .operation-stop-clock
+                    = stop.passage_time
+                    - if stop.actual_clock
+                      %span →
+                      = stop.actual_clock
+                .operation-stop-aside
+                  - if stop.phase == 'failed'
+                    %span.operation-gap.is-bad= t("plannings.edit.stop_status.#{stop.status.to_s.downcase}", default: stop.status)
+                  - elsif stop.phase == 'exception'
+                    %span.operation-gap.is-exception= t('plannings.edit.stop_status.exception')
+                  - elsif stop.phase == 'current'
+                    %span.badge.operation-now= t('operations.show.en_route')
+                  - elsif delay && delay > OperationStop::LATE_AFTER_MINUTES
+                    %span.operation-gap.is-late= t('operations.show.late', count: delay)
+                  - elsif stop.phase == 'delivered' && delay&.negative?
+                    %span.operation-gap.is-ok= t('plannings.edit.stop_status.delivered')
+                  - elsif delay
+                    %span.operation-gap.is-ok= "#{delay.positive? ? '+' : ''}#{delay} min"
+                  - elsif stop.phase == 'late'
+                    %span.operation-gap.is-late= t('operations.show.late_risk')
+            - if arrival
+              = render 'operations/depot_row', depot: arrival, route: route, label_key: 'activerecord.attributes.store.store_end'

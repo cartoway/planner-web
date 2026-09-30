@@ -1,0 +1,27 @@
+- content_for :title, t('operations.stops.title')
+%h1= t('operations.stops.title')
+= form_with url: stops_operations_path, method: :get, local: true, class: 'row g-2 mb-3' do |f|
+  .col-md-3= f.text_field :q, value: params[:q], placeholder: t('operations.stops.query'), class: 'form-control'
+  .col-md-2= f.date_field :from, value: @from, class: 'form-control'
+  .col-md-2= f.date_field :to, value: @to, class: 'form-control'
+  .col-auto= f.submit t('operations.index.filter'), class: 'btn btn-primary'
+%table.table.table-striped.table-hover
+  %thead
+    %tr
+      %th= t('operations.index.date')
+      %th= t('operations.stops.place')
+      %th= t('operations.index.status')
+      %th= t('operations.show.vehicle')
+  %tbody
+    - @stops.each do |stop|
+      - operation = stop.operation_route.operation
+      %tr
+        %td= l(operation.date)
+        %td= link_to stop.address_label, operation_path(operation, anchor: "stop-#{stop.id}")
+        %td
+          - if stop.status.present?
+            %span.badge= t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
+        %td= stop.operation_route.vehicle_name
+        %td
+          = link_to t('operations.show.open'), operation_path(operation, anchor: "stop-#{stop.id}")
+          = link_to t('operations.show.media'), media_operation_operation_route_path(operation, stop.operation_route)

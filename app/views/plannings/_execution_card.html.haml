@@ -1,0 +1,27 @@
+- fresh = operation.current_structure?(planning)
+- routes_count = operation.operation_routes.active_sync.where(unassigned: false).count
+- tracking_class = sync ? 'btn btn-primary btn-sm' : 'btn btn-default btn-sm'
+.planning-execution-card{ class: ('is-historized' unless sync) }
+  .planning-execution-card-head.clearfix
+    %span.planning-execution-card-title
+      %strong.planning-execution-ref= operation.ref.presence || operation.name
+      - if sync
+        %span.label{ class: (fresh ? 'label-success' : 'label-warning') }= t(fresh ? 'execution.badge_fresh' : 'execution.badge_dirty')
+      - else
+        %span.label.label-default= t('operations.statuses.historized')
+    %span.text-muted.pull-right= l(operation.date)
+  .planning-execution-routes-count= t('execution.routes_count', count: routes_count)
+  .planning-execution-actions.clearfix
+    .pull-right
+      - if sync
+        - if fresh
+          %button.btn.btn-default.btn-sm{ type: 'button', disabled: true, title: t('execution.sync') }
+            %i.fa.fa-arrows-rotate.fa-fw
+            = t('execution.sync')
+        - else
+          = button_to sync_operation_planning_path(planning, operation_id: operation.id), method: :post, class: 'btn btn-default btn-sm', form_class: 'button_to planning-execution-sync', title: t('execution.sync'), data: { confirm: t('execution.sync_confirm') } do
+            %i.fa.fa-arrows-rotate.fa-fw
+            = t('execution.sync')
+      = link_to operation_path(operation), class: tracking_class, title: t('execution.open_tracking') do
+        %i.fa.fa-tower-broadcast.fa-fw
+        = t('execution.open_tracking')

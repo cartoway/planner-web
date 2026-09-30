@@ -1,0 +1,94 @@
+-# Static media carousel. Markup matches app/views/operation_routes/media.html.haml.
+.modal.show.d-block.position-static.operation-media-modal#lookbook-operation-media{tabindex: '-1'}
+  .modal-dialog.modal-xl.modal-dialog-centered
+    .modal-content
+      .modal-header
+        %h2.h5.modal-title
+          = t('operations.media.title')
+          %span.text-muted Lundi master – Fourgon
+        %button.btn-close{type: 'button', aria: { label: t('web.dialog.close') }}
+      .modal-body
+        .operation-media-stage
+          .operation-media-track{data: { media_track: true }}
+            .operation-media-spacer{'aria-hidden': 'true'}
+            .operation-media-group{data: { media_group: true }}
+              .operation-media-stop
+                .d-flex.align-items-center.gap-2.min-w-0
+                  %span.operation-glyph.is-delivered 1
+                  %strong.operation-media-title.text-truncate Barbesier Père et Fils
+                %ul.operation-timeline
+                  %li.is-delivered
+                    %span.operation-timeline-label= t('plannings.edit.stop_status.delivered')
+                .operation-split
+                  %div
+                    %span= t('operations.show.planned')
+                    %strong 07:34
+                  %div
+                    %span= t('operations.show.actual')
+                    %strong 07:36
+                %section.operation-section
+                  %h3= t('operations.show.address')
+                  .operation-field
+                    %p.mb-1 48 chemin du Marcou, 5350 Arvieux
+                    %p.mb-0.text-muted
+                      = t('activerecord.attributes.destination.ref')
+                      874940374
+              .operation-proofs.operation-media-grid
+                .operation-proof
+                  %span= t('operations.show.photo')
+                .operation-proof
+                  %span.operation-media-caption= t('operations.media.signature')
+            .operation-media-group{data: { media_group: true }}
+              .operation-media-stop
+                .d-flex.align-items-center.gap-2.min-w-0
+                  %span.operation-glyph.is-exception 3
+                  %strong.operation-media-title.text-truncate Toye SARL
+                %ul.operation-timeline
+                  %li.is-exception
+                    %span.operation-timeline-label= t('plannings.edit.stop_status.exception')
+                .operation-split
+                  %div
+                    %span= t('operations.show.planned')
+                    %strong 07:45
+                  %div
+                    %span= t('operations.show.actual')
+                    %strong 10:34
+                %section.operation-section
+                  %h3= t('operations.show.address')
+                  .operation-field
+                    %p.mb-1 371 rue Vauban, 5350 Château-Ville-Vieille
+                    %p.mb-0.text-muted
+                      = t('activerecord.attributes.destination.ref')
+                      874940370
+              .operation-proofs.operation-media-grid
+                .operation-proof
+                  %span= t('operations.show.photo')
+                .operation-proof
+                  %span.operation-media-caption= t('operations.media.signature')
+            .operation-media-spacer{'aria-hidden': 'true'}
+          .operation-media-edge.operation-media-edge--left
+            .operation-media-fade
+            %button.operation-media-nav.btn-close{type: 'button', title: t('operations.media.previous'), aria: { label: t('operations.media.previous') }, data: { media_prev: true }}
+              %i.fa.fa-chevron-left
+          .operation-media-edge.operation-media-edge--right
+            .operation-media-fade
+            %button.operation-media-nav.btn-close{type: 'button', title: t('operations.media.next'), aria: { label: t('operations.media.next') }, data: { media_next: true }}
+              %i.fa.fa-chevron-right
+:javascript
+  (function () {
+    var modal = document.getElementById('lookbook-operation-media');
+    if (!modal || modal.dataset.mediaBound) return;
+    modal.dataset.mediaBound = '1';
+    var track = modal.querySelector('[data-media-track]');
+    var prev = modal.querySelector('[data-media-prev]');
+    var next = modal.querySelector('[data-media-next]');
+    function step(direction) {
+      if (!track) return;
+      var card = track.querySelector('[data-media-group]');
+      if (!card) return;
+      var gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 12;
+      track.scrollBy({ left: direction * (card.getBoundingClientRect().width + gap), behavior: 'smooth' });
+    }
+    if (prev) prev.addEventListener('click', function () { step(-1); });
+    if (next) next.addEventListener('click', function () { step(1); });
+  })();
