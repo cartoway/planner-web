@@ -23,6 +23,9 @@
         = render partial: path, locals: { route: route, summary: summary }
     .route-tools__right
       .btn-group.route-btn-group
+        - if route[:today_operation].present?
+          = link_to route[:today_operation][:path], class: 'btn btn-default btn-sm route-open-tracking', title: t('execution.open_tracking') do
+            %i.fa.fa-tower-broadcast.fa-fw
         - PreferencesHelper::ROUTE_TOOLBAR_VIEW_EXPORT.each do |seg|
           - path = Preferences::Catalog.toolbar_operation_partial('route', seg)
           - next if path.blank?

@@ -1,0 +1,23 @@
+- include_past = params[:include_past].present?
+- stops = destination_operation_stops(destination, include_past: include_past)
+.destination-operation-stops
+  %h6= t('operations.form.title')
+  = link_to (include_past ? t('operations.form.hide_past') : t('operations.form.show_past')), edit_destination_path(destination, include_past: (include_past ? nil : 1)), data: { turbo_frame: 'form_sidebar' }
+  = link_to t('operations.form.history'), stops_operations_path(destination_id: destination.id)
+  - if stops.any?
+    - stops.each do |stop|
+      - operation = stop.operation_route.operation
+      .destination-operation-stop
+        = operation.name
+        - if operation.date
+          %span.text-muted= l(operation.date)
+        %span= stop.index
+        %span= stop.operation_route.vehicle_name
+        - if stop.status.present?
+          %span.badge= t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
+        = link_to t('operations.show.open'), operation_path(operation, anchor: "stop-#{stop.id}"), target: '_blank', rel: 'noopener noreferrer'
+        = render 'operation_stops/delivery_note_link', operation_stop: stop
+        - if stop.photos.attached?
+          %span.badge= stop.photos.size
+        - if stop.signature.attached?
+          %span.badge= t('operations.media.signature')

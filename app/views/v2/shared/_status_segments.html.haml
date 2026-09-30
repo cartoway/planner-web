@@ -1,0 +1,15 @@
+-# Segmented multi-status progress bar.
+-# locals: counts: { delivered:, failed:, exception:, rest:, total: } (or board-like hash)
+- counts = local_assigns.fetch(:counts)
+- total = counts[:total].to_i
+- delivered = counts[:delivered].to_i
+- failed = counts[:failed].to_i
+- exception = counts[:exception].to_i
+- rest = counts.key?(:rest) ? counts[:rest].to_i : [total - delivered - failed - exception, 0].max
+- css_class = local_assigns.fetch(:css_class, 'status-segments')
+%div{class: css_class}
+  - if total.positive?
+    %span.is-delivered{style: "width: #{100.0 * delivered / total}%"}
+    %span.is-failed{style: "width: #{100.0 * failed / total}%"}
+    %span.is-exception{style: "width: #{100.0 * exception / total}%"}
+    %span.is-rest{style: "width: #{100.0 * rest / total}%"}

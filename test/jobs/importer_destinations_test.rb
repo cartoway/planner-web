@@ -634,8 +634,8 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should use config planning date offset when customer offset is nil' do
-    @customer.update_column(:planning_date_offset, nil)
-    expected_date = Date.today + @customer.planning_date_offset_default
+    @customer.update_column(:operation_date_offset, nil)
+    expected_date = Date.today + @customer.operation_date_offset_default
 
     assert ImportCsv.new(
       importer: ImporterDestinations.new(@customer),

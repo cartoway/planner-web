@@ -1,0 +1,14 @@
+= form_with model: @operation_stop, url: operation_stop_path(@operation_stop), method: :patch, local: true do |f|
+  = hidden_field_tag :driver_token, params[:driver_token]
+  %h1= @operation_stop.address_label
+  %p
+    = @operation_stop.destination_snapshot['street']
+    = @operation_stop.destination_snapshot['postalcode']
+    = @operation_stop.destination_snapshot['city']
+  - windows = @operation_stop.visit_snapshot
+  - if windows['time_window_start_1']
+    %p= "#{windows['time_window_start_1']} – #{windows['time_window_end_1']}"
+  = f.label :status, t('operations.mobile.status')
+  = f.text_field :status, value: @operation_stop.status, class: 'form-control'
+  = hidden_field_tag 'operation_stop[status_updated_at]', Time.current.iso8601
+  = f.submit t('operations.mobile.save'), class: 'btn btn-primary'

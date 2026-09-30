@@ -11,10 +11,17 @@ class RouteMobileTest < ActiveSupport::TestCase
   setup do
     @route = routes(:route_one_one)
     @route.planning.update!(date: 1.week.from_now.to_date)
+    Operation.where(customer_id: @route.planning.customer_id).delete_all
+    @operation = Operations::PublishFromPlanning.call(planning: @route.planning)
+    @operation_route = @operation.operation_routes.find_by!(route_id: @route.id)
+  end
+
+  teardown do
+    Operation.where(customer_id: @route.planning.customer_id).delete_all
   end
 
   test 'should redirect to sign in page if key is invalid' do
-    get "routes/#{@route.id}/mobile/?driver_token=bad_key"
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=bad_key"
 
     assert last_response.status, 302
     assert_match(/text\/html/, last_response.content_type)
@@ -34,9 +41,12 @@ class RouteMobileTest < ActiveSupport::TestCase
 
   test 'should display the requested page if key is valid' do
     vehicle = @route.vehicle_usage.vehicle
-    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
-    assert last_response.status, 200
+    assert_equal 200, last_response.status
+    assert_includes last_response.body, "data-controller='mobile'"
+    assert_includes last_response.body, 'importmap'
+    assert_includes last_response.body, "/operations/#{@operation.id}/routes/#{@operation_route.id}/update_position"
   end
 
   test 'should always show stop visit custom attributes on mobile' do
@@ -44,7 +54,7 @@ class RouteMobileTest < ActiveSupport::TestCase
     hidden_on_mobile_attr = custom_attributes(:custom_attribute_stop_two)
 
     vehicle = @route.vehicle_usage.vehicle
-    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
     assert last_response.ok?
     assert_includes last_response.body, visible_attr.name
@@ -62,7 +72,7 @@ class RouteMobileTest < ActiveSupport::TestCase
       'route_info_hidden' => 'secret route info'
     })
 
-    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
     assert last_response.ok?
     assert_includes last_response.body, 'custom_attribute_one'
@@ -83,7 +93,7 @@ class RouteMobileTest < ActiveSupport::TestCase
     })
 
     vehicle = @route.vehicle_usage.vehicle
-    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
     assert last_response.ok?
     assert_includes last_response.body, 'visit_info_visible'
@@ -98,7 +108,7 @@ class RouteMobileTest < ActiveSupport::TestCase
     @route.start_route_data.update!(status: 'atstore')
     @route.stop_route_data.update!(status: 'finished')
     vehicle = @route.vehicle_usage.vehicle
-    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
     assert last_response.ok?
     assert_includes last_response.body, 'stop-status-reset'
@@ -110,7 +120,7 @@ class RouteMobileTest < ActiveSupport::TestCase
 
   test 'should show photo capture and gallery buttons for each stop' do
     vehicle = @route.vehicle_usage.vehicle
-    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
     assert last_response.ok?
     assert_includes last_response.body, 'stop-photos-pick'
@@ -132,7 +142,7 @@ class RouteMobileTest < ActiveSupport::TestCase
 
   test 'should show signature button and fullscreen modal controls' do
     vehicle = @route.vehicle_usage.vehicle
-    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
     assert last_response.ok?
     assert_includes last_response.body, 'stop-signature-open'
@@ -148,14 +158,15 @@ class RouteMobileTest < ActiveSupport::TestCase
 
   test 'should list loaded photos with a delete button' do
     stop = @route.stops.find { |s| s.is_a?(StopVisit) }
-    stop.photos.attach(
+    operation_stop = @operation_route.operation_stops.find_by!(stop_id: stop.id)
+    operation_stop.photos.attach(
       io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')),
       filename: 'stop_photo.jpg',
       content_type: 'image/jpeg'
     )
 
     vehicle = @route.vehicle_usage.vehicle
-    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
     assert last_response.ok?
     assert_includes last_response.body, 'stop-photo-remove'
@@ -164,35 +175,37 @@ class RouteMobileTest < ActiveSupport::TestCase
     assert_includes last_response.body, 'stop-photo-open'
     assert_includes last_response.body, 'stop-photo-modal'
     refute_match(/stop-photo-open[\s\S]*target="_blank"/, last_response.body)
-    assert_includes last_response.body, "documents-panel-#{stop.id}"
-    assert_includes last_response.body, stop_photo_path(stop, stop.photos.first.id)
+    assert_includes last_response.body, "documents-panel-OperationStop-#{operation_stop.id}"
+    assert_includes last_response.body, operation_stop_photo_path(operation_stop, operation_stop.photos.first.id)
     assert_includes last_response.body, I18n.t('stops.mobile.documents_loaded')
   ensure
-    stop&.photos&.purge
+    operation_stop&.photos&.purge
   end
 
   test 'should list signature inside loaded documents' do
     stop = @route.stops.find { |s| s.is_a?(StopVisit) }
-    stop.attach_signature(
+    operation_stop = @operation_route.operation_stops.find_by!(stop_id: stop.id)
+    operation_stop.attach_signature(
       Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/stop_photo.jpg'), 'image/jpeg')
     )
 
     vehicle = @route.vehicle_usage.vehicle
-    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
     assert last_response.ok?
     assert_includes last_response.body, 'stop-signature-doc'
     refute_includes last_response.body, 'stop-signature-remove'
-    assert_includes last_response.body, "documents-panel-#{stop.id}"
+    assert_includes last_response.body, "documents-panel-OperationStop-#{operation_stop.id}"
     assert_includes last_response.body, I18n.t('stops.mobile.documents_loaded')
     assert_match(/stop-documents-badge['"]?>1</, last_response.body)
   ensure
-    stop.signature.purge if stop&.signature&.attached?
+    operation_stop.signature.purge if operation_stop&.signature&.attached?
   end
 
   test 'should hide photo delete button after one hour' do
     stop = @route.stops.find { |s| s.is_a?(StopVisit) }
-    stop.photos.attach(
+    operation_stop = @operation_route.operation_stops.find_by!(stop_id: stop.id)
+    operation_stop.photos.attach(
       io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')),
       filename: 'stop_photo.jpg',
       content_type: 'image/jpeg'
@@ -200,13 +213,13 @@ class RouteMobileTest < ActiveSupport::TestCase
 
     vehicle = @route.vehicle_usage.vehicle
     travel Stop::PHOTO_DELETABLE_FOR + 1.second do
-      get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+      get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
     end
 
     assert last_response.ok?
     refute_includes last_response.body, 'stop-photo-remove'
   ensure
-    stop&.photos&.purge
+    operation_stop&.photos&.purge
   end
 
   test 'should preserve multiline destination comment on mobile' do
@@ -214,7 +227,7 @@ class RouteMobileTest < ActiveSupport::TestCase
     destination.update!(comment: "Line 1\nLine 2")
 
     vehicle = @route.vehicle_usage.vehicle
-    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
     assert last_response.ok?
     assert_match(/wrapped-text/, last_response.body)
