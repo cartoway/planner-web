@@ -4138,6 +4138,7 @@ fr:
       passage: Horaire de passage
       documents: Documents
       no_status_history: Aucun changement de statut
+      status_reset: Réinitialisation du statut
       open: Ouvrir
       close: Clôturer
       close_operation: Clôturer l’opération
