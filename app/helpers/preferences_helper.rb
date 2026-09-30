@@ -20,6 +20,42 @@
 module PreferencesHelper
   extend ActiveSupport::Concern
 
+  # Stops, delay, transmissions and quantities are rendered outside this order.
+  def operation_preference_stat_keys
+    planning_header_block_order.map(&:to_s) - %w[stops vehicles speed quantities transmitted]
+  end
+
+  def operation_plan_stat(key, plan, user)
+    plan ||= {}
+    unit = user.prefered_unit
+    currency = I18n.t("all.unit.currency_symbol.#{user.prefered_currency}")
+    case key
+    when 'distance'
+      { icon: 'fa-road', value: locale_distance(plan['distance'].to_f, unit) }
+    when 'total_duration'
+      { icon: 'fa-stopwatch', value: time_over_day(plan['duration'].to_i) }
+    when 'work_duration'
+      { icon: 'fa-user-clock', value: time_over_day(plan['work_duration'].to_i) }
+    when 'drive_time'
+      { icon: 'fa-road', value: time_over_day(plan['drive_time'].to_i) }
+    when 'wait_time'
+      { icon: 'fa-hourglass-half', value: time_over_day(plan['wait_time'].to_i) }
+    when 'visits_duration'
+      { icon: 'fa-business-time', value: time_over_day(plan['visits_duration'].to_i) }
+    when 'rests_duration'
+      { icon: 'fa-circle-pause', value: time_over_day(plan['rests_duration'].to_i) }
+    when 'emission'
+      { icon: 'fa-flask', value: "#{number_to_human(plan['emission'].to_f, precision: 4)} #{I18n.t('all.unit.kgco2e_html')}".html_safe }
+    when 'total_cost'
+      { icon: 'fa-coins', value: "#{plan['cost'].to_f.round(2)} #{currency}" }
+    when 'total_revenue'
+      { icon: 'fa-hand-holding-dollar', value: "#{plan['revenue'].to_f.round(2)} #{currency}" }
+    when 'balance'
+      balance = (plan['revenue'].to_f - plan['cost'].to_f).round(2)
+      { icon: 'fa-scale-balanced', value: "#{balance} #{currency}" }
+    end
+  end
+
   def planning_header_block_order
     if user_signed_in? && current_user.respond_to?(:header_block_order)
       current_user.header_block_order(:planning)

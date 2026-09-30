@@ -1,5 +1,6 @@
 Rails.application.routes.draw do
   Healthcheck.routes(self)
+  mount ActionCable.server => '/cable'
 
   get '/api/0.1/swagger_doc.json/:all(*format)' => redirect('/api/0.1/swagger_doc/%{all}%{format}') # Workaround for silly swagger-codegen
   get '/api/100/swagger_doc.json/:all(*format)' => redirect('/api/100/swagger_doc/%{all}%{format}') # Workaround for silly swagger-codegen
@@ -186,6 +187,8 @@ Rails.application.routes.draw do
     member do
       patch :apply_zonings
       patch :automatic_insert
+      post :publish_operation
+      post :sync_operation
     end
     resources :planning_states, only: [:index] do
       member do
@@ -214,10 +217,10 @@ Rails.application.routes.draw do
   resources :routes do
     member do
       get 'modal'
+      get 'mobile'
       patch 'driver_update'
     end
   end
-  get 'routes/:id/mobile' => 'routes#mobile'
   patch 'routes/:id/update_position' => 'routes#update_position'
 
   get 'routes/:route_id/stops/by_index/:index' => 'stops#show'
@@ -226,6 +229,38 @@ Rails.application.routes.draw do
     member do
       post :create_store_reload
       get :delivery_note
+    end
+    resources :photos, only: [:create, :destroy], controller: 'stop_photos'
+    resource :signature, only: [:create], controller: 'stop_signatures'
+  end
+
+  resources :operations, only: [:index, :show, :update, :destroy] do
+    collection do
+      get :stops, to: 'operation_stops#index', as: :stops
+    end
+    member do
+      post :close
+      post :cancel
+      post :transmit
+      post :send_driver_sms
+      get :map
+      get :search_stops
+      get :routes
+    end
+    resources :operation_routes, only: [:show], path: 'routes' do
+      member do
+        get :mobile
+        get :media
+        post :transmit
+        patch :update_position
+        patch :update_status
+      end
+    end
+  end
+  resources :operation_stops, only: [:show, :edit, :update] do
+    member do
+      get :delivery_note
+      patch :desk
     end
     resources :photos, only: [:create, :destroy], controller: 'stop_photos'
     resource :signature, only: [:create], controller: 'stop_signatures'

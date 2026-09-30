@@ -50,14 +50,14 @@ class CustomerTest < ActiveSupport::TestCase
     assert_not @customer.valid?
   end
 
-  test 'planning_date_offset_default uses application config when customer offset is nil' do
-    @customer.update_column(:planning_date_offset, nil)
-    assert_equal Planner::Application.config.planning_date_offset_default, @customer.planning_date_offset_default
+  test 'operation_date_offset_default uses application config when customer offset is nil' do
+    @customer.update_column(:operation_date_offset, nil)
+    assert_equal Planner::Application.config.operation_date_offset_default, @customer.operation_date_offset_default
   end
 
-  test 'planning_date_offset_default returns customer offset when set' do
-    @customer.update!(planning_date_offset: 3)
-    assert_equal 3, @customer.planning_date_offset_default
+  test 'operation_date_offset_default returns customer offset when set' do
+    @customer.update!(operation_date_offset: 3)
+    assert_equal 3, @customer.operation_date_offset_default
   end
 
   test 'should save' do
