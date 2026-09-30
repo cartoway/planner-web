@@ -2193,6 +2193,7 @@ en:
         exception: Exception
         delivered: Delivered
         undelivered: Undelivered
+        transferred: Transferred
         any: Any status
         none: Without status
       stop_store_status:
@@ -3991,6 +3992,7 @@ en:
       documents: Documents
       no_status_history: No status changes
       status_reset: Status reset
+      status_transferred: 'Transferred · %{from} → %{to}'
       open: Open
       close: Close
       close_operation: Close operation

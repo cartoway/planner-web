@@ -254,6 +254,7 @@ Rails.application.routes.draw do
         post :transmit
         patch :update_position
         patch :update_status
+        patch :transfer_stop
       end
     end
   end
