@@ -234,4 +234,32 @@ class RouteMobileTest < ActiveSupport::TestCase
     assert_includes last_response.body, 'Line 1'
     assert_includes last_response.body, 'Line 2'
   end
+
+  test 'should display rests with started and finished statuses' do
+    rest = @route.stops.find { |stop| stop.is_a?(StopRest) }
+    assert rest, 'route_one_one fixture should include a rest'
+
+    vehicle = @route.vehicle_usage.vehicle
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
+
+    assert last_response.ok?
+    assert_includes last_response.body, "data-stop-type='rest'"
+    assert_includes last_response.body, rest.name
+    assert_includes last_response.body, I18n.t('plannings.edit.stop_rest_status.started')
+    assert_includes last_response.body, I18n.t('plannings.edit.stop_rest_status.finished')
+  end
+
+  test 'rest started status is not shown as en route on the operation board' do
+    rest_stop = @operation_route.operation_stops.find_by!(kind: 'rest')
+    OperationStops::RecordStatus.call(
+      operation_stop: rest_stop,
+      status: 'started',
+      recorded_at: Time.zone.parse('2026-09-25 12:00'),
+      source: 'mobile'
+    )
+
+    assert_equal 'started', rest_stop.reload.phase
+    assert_equal I18n.t('plannings.edit.stop_rest_status.started'), rest_stop.status_label
+    refute_equal I18n.t('operations.show.en_route'), rest_stop.status_label
+  end
 end

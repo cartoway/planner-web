@@ -762,14 +762,21 @@ class PlanningsController < ApplicationController
       redirect_to edit_planning_path(@planning), alert: t('execution.missing')
       return
     end
+    selection = params[:selection].present?
+    route_ids = if selection || params.key?(:route_ids)
+                  Array(params[:route_ids])
+                end
     Operations::SyncFromPlanning.call(
       planning: @planning,
       operation: operation,
-      route_ids: params[:route_ids],
+      route_ids: route_ids,
       stop_ids: params[:stop_ids],
-      orphan_policy: params[:orphan_policy].presence || :mark
+      orphan_policy: params[:orphan_policy].presence || :mark,
+      orphan_unselected: selection
     )
     redirect_to edit_planning_path(@planning), notice: t('execution.synced')
+  rescue Operations::EmptyRoutes
+    redirect_to edit_planning_path(@planning), alert: t('execution.empty_routes')
   end
 
   private

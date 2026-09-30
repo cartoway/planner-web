@@ -9,21 +9,23 @@ module Operations
       last_sent_at last_sent_to
     ].freeze
 
-    def self.call(planning:, operation:, route_ids: nil, stop_ids: nil, refresh_snapshots: true, orphan_policy: :mark)
-      new(planning, operation, route_ids, stop_ids, refresh_snapshots, orphan_policy).call
+    def self.call(planning:, operation:, route_ids: nil, stop_ids: nil, refresh_snapshots: true, orphan_policy: :mark, orphan_unselected: false)
+      new(planning, operation, route_ids, stop_ids, refresh_snapshots, orphan_policy, orphan_unselected).call
     end
 
-    def initialize(planning, operation, route_ids, stop_ids, refresh_snapshots, orphan_policy)
+    def initialize(planning, operation, route_ids, stop_ids, refresh_snapshots, orphan_policy, orphan_unselected)
       @planning = planning
       @operation = operation
       @route_ids = route_ids&.map(&:to_i)
       @stop_ids = stop_ids&.map(&:to_i)
       @refresh_snapshots = refresh_snapshots
       @orphan_policy = orphan_policy.to_sym
+      @orphan_unselected = orphan_unselected
     end
 
     def call
       raise ArgumentError, 'operation is not linked to this planning' if @operation.planning_id != @planning.id
+      raise EmptyRoutes if @route_ids&.empty?
 
       Operation.transaction do
         @units_by_id = @planning.customer.deliverable_units.index_by(&:id)
@@ -53,11 +55,18 @@ module Operations
         end
 
         orphan_missing! if @orphan_policy == :mark
-        @operation.update!(
+        orphan_unselected_routes! if @orphan_unselected && @route_ids
+        attrs = {
           synced_at: Time.current,
-          structure_fingerprint: full_sync? ? Snapshots.fingerprint(@planning, visible_routes_only: visible_routes_only?, route_ids: scoped_route_ids_for_fingerprint) : @operation.structure_fingerprint,
           planning_snapshot: Snapshots.planning(@planning)
-        )
+        }
+        if update_selection_meta?
+          attrs[:structure_fingerprint] = Snapshots.fingerprint(@planning, visible_routes_only: false, route_ids: @route_ids)
+          attrs[:custom_attributes] = @operation.custom_attributes.merge('_route_ids' => @route_ids)
+        elsif full_sync?
+          attrs[:structure_fingerprint] = Snapshots.fingerprint(@planning, visible_routes_only: visible_routes_only?, route_ids: scoped_route_ids_for_fingerprint)
+        end
+        @operation.update!(attrs)
       end
       @operation
     end
@@ -66,6 +75,10 @@ module Operations
 
     def full_sync?
       @route_ids.nil? && @stop_ids.nil?
+    end
+
+    def update_selection_meta?
+      @orphan_unselected && @route_ids
     end
 
     def visible_routes_only?
@@ -208,6 +221,14 @@ module Operations
       stop_scope = OperationStop.where(operation_route_id: @scoped_operation_route_ids + scope_route_ids)
       stop_scope = stop_scope.where(stop_id: @stop_ids) if @stop_ids
       stop_scope.where.not(id: @matched_stop_ids).find_each { |stop| mark_orphaned(stop) }
+    end
+
+    def orphan_unselected_routes!
+      unselected = @operation.operation_routes.where.not(id: @matched_route_ids)
+      unselected.find_each do |operation_route|
+        mark_orphaned(operation_route)
+        operation_route.operation_stops.find_each { |stop| mark_orphaned(stop) }
+      end
     end
 
     def mark_orphaned(record)
