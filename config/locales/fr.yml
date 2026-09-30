@@ -223,6 +223,7 @@ fr:
         vehicle_position_retention_days: Durée de conservation des positions (jours)
         vehicle_position_keep_trace: Conserver la trace GPS
         enable_stop_status: Activer les statuts des visites
+        proof_retention_days: Durée de conservation des preuves (jours)
         enable_store_stops: Activer les sites intermédiaires
         enable_sms: Activer l'envoi de SMS
         enable_sms_intransit: Activer l'envoi de SMS d'approche
@@ -1309,6 +1310,9 @@ fr:
       vehicle_position_keep_trace_help: >-
         Si désactivé, seule la dernière position est conservée (pas de tracé). Si activé,
         l’historique est gardé jusqu’à la durée de conservation.
+      proof_retention_days_help: >-
+        Durée de conservation des photos et signatures d’exécution (30–1825 jours).
+        Défaut : 365 jours. Ancrée sur la date de l’opération. Exporter avant purge en cas de litige.
       optimization_dicho_minimum_service_size_help: >-
         Nombre minimum de visites pour l'algorithme dichotomique.
       optimization_max_split_size_default: '%{n} (valeur par défaut)'

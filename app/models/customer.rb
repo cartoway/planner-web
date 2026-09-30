@@ -131,6 +131,12 @@ class Customer < ApplicationRecord
               greater_than_or_equal_to: 1,
               less_than_or_equal_to: VehiclePosition::MAX_RETENTION_DAYS
             }
+  validates :proof_retention_days,
+            numericality: {
+              only_integer: true,
+              greater_than_or_equal_to: OperationProofs::Purge::MIN_RETENTION_DAYS,
+              less_than_or_equal_to: OperationProofs::Purge::MAX_RETENTION_DAYS
+            }
   validates :stops_preload_limit, numericality: { greater_than: 0, less_than_or_equal_to: Planner::Application.config.max_destinations }
 
   after_initialize :assign_defaults, :update_max_vehicles, if: :new_record?
