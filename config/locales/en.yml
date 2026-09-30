@@ -2201,6 +2201,9 @@ en:
         intransit: In transit
         inprocessing: In processing
         finished: Finished
+      stop_rest_status:
+        started: Started
+        finished: Finished
       update_stops_status: 'Stops status:'
       customer_external_callback_url:
         action: External Application
@@ -3889,6 +3892,15 @@ en:
     visible_routes_only: Visible routes only
     sync: Synchronize
     sync_confirm: Do you really want to update the routes currently in execution?
+    sync_modal:
+      title: Synchronize the operation
+      help: Unselected routes will be marked as desynchronized.
+      change_add: add
+      change_update: update
+      change_desync: desync
+      change_unchanged: up to date
+      stops_delta: '%{delta} stops'
+      summary: '%{sync} to sync · %{desync} to desync'
     show: View
     open_tracking: Open tracking
     routes_count:
@@ -3922,6 +3934,9 @@ en:
       select_visible: Visible
       already_in: 'Already in %{name}'
       selected_count: '%{count} route(s) selected'
+      stops_count:
+        one: '(%{count} stop)'
+        other: '(%{count} stops)'
     mobile:
       unassigned: This route is not assigned to a vehicle
   operations:

@@ -181,6 +181,106 @@ var initPlanningExecution = function() {
     $('#planning-operation-modal').modal('show');
   });
 
+  var $syncModal = $('#planning-sync-modal');
+  var $syncCountEl = $('#sync-route-count');
+  var syncTemplate = $syncCountEl.data('template');
+  var syncLabels = $syncModal.data('labels') || {};
+  if (typeof syncLabels === 'string') {
+    try { syncLabels = JSON.parse(syncLabels); } catch (_e) { syncLabels = {}; }
+  }
+  var syncChanges = {};
+  var formatStopsDelta = function(change) {
+    var parts = [];
+    if (change.added) parts.push('+' + change.added);
+    if (change.removed) parts.push('−' + change.removed);
+    if (!parts.length) return '';
+    var template = syncLabels.stops_delta || '%{delta}';
+    return String(template).replace('%{delta}', parts.join(' '));
+  };
+  var refreshSyncChanges = function() {
+    var syncCount = 0;
+    var desyncCount = 0;
+    $syncModal.find('.planning-execution-route').each(function() {
+      var $row = $(this);
+      var routeId = String($row.data('route-id'));
+      var checked = $row.find('.sync-route-checkbox').prop('checked');
+      var change = syncChanges[routeId] || {};
+      var $hint = $row.find('.sync-route-change');
+      var text = '';
+      if (checked) {
+        if (!change.in_operation) {
+          text = syncLabels.add || '';
+          syncCount += 1;
+        } else if (change.dirty) {
+          var delta = formatStopsDelta(change);
+          text = [syncLabels.update, delta].filter(Boolean).join(' · ');
+          syncCount += 1;
+        } else {
+          text = syncLabels.unchanged || '';
+        }
+      } else if (change.in_operation) {
+        text = syncLabels.desync || '';
+        desyncCount += 1;
+      }
+      $hint.text(text ? '· ' + text : '');
+      $row.toggleClass('is-sync-change', !!(checked && (change.dirty || !change.in_operation)));
+      $row.toggleClass('is-sync-desync', !!(!checked && change.in_operation));
+    });
+    var $summary = $('#sync-change-summary');
+    if ($summary.length) {
+      var summary = String(syncLabels.summary || '')
+        .replace('%{sync}', syncCount)
+        .replace('%{desync}', desyncCount);
+      $summary.text(summary).toggle(syncCount > 0 || desyncCount > 0);
+    }
+  };
+  var refreshSyncCount = function() {
+    if (!$syncCountEl.length || !syncTemplate) return;
+    var n = $syncModal.find('.sync-route-checkbox:checked').length;
+    $syncCountEl.text(String(syncTemplate).replace('%{count}', n));
+    $('#sync-submit').prop('disabled', n === 0);
+    refreshSyncChanges();
+  };
+
+  $root.off('click.planningSync').on('click.planningSync', '.planning-execution-sync', function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    var $btn = $(this);
+    if (!$syncModal.length) return;
+    var routeIds = $btn.data('route-ids') || [];
+    if (typeof routeIds === 'string') {
+      try { routeIds = JSON.parse(routeIds); } catch (_e) { routeIds = []; }
+    }
+    syncChanges = $btn.data('route-changes') || {};
+    if (typeof syncChanges === 'string') {
+      try { syncChanges = JSON.parse(syncChanges); } catch (_e) { syncChanges = {}; }
+    }
+    var selected = {};
+    (routeIds || []).forEach(function(id) { selected[String(id)] = true; });
+    $('#sync-operation-id').val($btn.data('operation-id'));
+    $syncModal.find('.sync-route-checkbox').each(function() {
+      var $box = $(this);
+      $box.prop('checked', !!selected[String($box.val())]);
+    });
+    refreshSyncCount();
+    $syncModal.modal('show');
+  });
+
+  if ($syncModal.length) {
+    $syncModal.off('click.planningSync').on('click.planningSync', '[data-sync-routes]', function(event) {
+      event.preventDefault();
+      var mode = $(this).data('sync-routes');
+      $syncModal.find('.sync-route-checkbox').each(function() {
+        var $box = $(this);
+        if (mode === 'all') $box.prop('checked', true);
+        else if (mode === 'none') $box.prop('checked', false);
+        else if (mode === 'visible') $box.prop('checked', String($box.data('hidden')) !== 'true');
+      });
+      refreshSyncCount();
+    });
+    $syncModal.off('change.planningSync').on('change.planningSync', '.sync-route-checkbox', refreshSyncCount);
+  }
+
   var $modal = $('#planning-operation-modal');
   if (!$modal.length) return;
 

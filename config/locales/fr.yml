@@ -2291,6 +2291,9 @@ fr:
         intransit: En route
         inprocessing: En cours
         finished: Terminé
+      stop_rest_status:
+        started: Débuté
+        finished: Terminé
       update_stops_status: 'Statuts arrêts :'
       customer_external_callback_url:
         action: Application externe
@@ -4037,6 +4040,15 @@ fr:
     visible_routes_only: Uniquement les tournées visibles
     sync: Synchroniser
     sync_confirm: Voulez-vous vraiment mettre à jour les tournées en cours d’exécution ?
+    sync_modal:
+      title: Synchroniser l’opération
+      help: Les tournées non sélectionnées seront marquées comme désynchronisées.
+      change_add: ajout
+      change_update: mise à jour
+      change_desync: désynchro
+      change_unchanged: à jour
+      stops_delta: '%{delta} arrêts'
+      summary: '%{sync} à synchroniser · %{desync} à désynchroniser'
     show: Voir
     open_tracking: Ouvrir le suivi
     routes_count:
@@ -4070,6 +4082,9 @@ fr:
       select_visible: Visibles
       already_in: 'Déjà dans %{name}'
       selected_count: '%{count} tournée(s) sélectionnée(s)'
+      stops_count:
+        one: '(%{count} arrêt)'
+        other: '(%{count} arrêts)'
     mobile:
       unassigned: Cette tournée n’est pas affectée à un véhicule
   operations:

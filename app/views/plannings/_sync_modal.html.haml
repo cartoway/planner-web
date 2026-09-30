@@ -1,0 +1,37 @@
+- assignable_routes = @planning.routes.select { |route| route.vehicle_usage_id.present? }
+#planning-sync-modal.modal.fade{ role: 'dialog', tabindex: '-1', data: { labels: { add: t('execution.sync_modal.change_add'), update: t('execution.sync_modal.change_update'), desync: t('execution.sync_modal.change_desync'), unchanged: t('execution.sync_modal.change_unchanged'), summary: t('execution.sync_modal.summary'), stops_delta: t('execution.sync_modal.stops_delta') }.to_json } }
+  .modal-dialog
+    .modal-content
+      = form_with url: sync_operation_planning_path(@planning), method: :post, local: true, id: 'planning-sync-form' do
+        = hidden_field_tag :operation_id, nil, id: 'sync-operation-id'
+        = hidden_field_tag :selection, '1'
+        .modal-header
+          %button.close{ type: 'button', 'data-dismiss': 'modal' }
+            &times;
+          %h4.modal-title
+            %i.fa.fa-arrows-rotate.fa-fw
+            = t('execution.sync_modal.title')
+        .modal-body
+          %p.help-block= t('execution.sync_modal.help')
+          %p.help-block#sync-change-summary.mb-2
+          .form-group
+            %label= t('execution.modal.routes')
+            .planning-execution-route-actions.btn-group.btn-group-xs.mb-1
+              %button.btn.btn-default{ type: 'button', data: { sync_routes: 'all' } }= t('execution.modal.select_all')
+              %button.btn.btn-default{ type: 'button', data: { sync_routes: 'none' } }= t('execution.modal.select_none')
+              %button.btn.btn-default{ type: 'button', data: { sync_routes: 'visible' } }= t('execution.modal.select_visible')
+            %ul.list-unstyled.planning-execution-routes
+              - assignable_routes.each do |route|
+                - label = [route.ref, route.vehicle_usage&.vehicle&.name].compact.join(' ').presence || "##{route.id}"
+                %li.planning-execution-route{ data: { route_id: route.id, hidden: route.hidden.to_s } }
+                  .d-flex.align-items-center
+                    .form-switch
+                      = check_box_tag 'route_ids[]', route.id, false, id: "sync_route_#{route.id}", class: 'sync-route-checkbox form-check-input', data: { hidden: route.hidden.to_s }
+                    %label.mb-0{ for: "sync_route_#{route.id}" }
+                      = label
+                      %span.text-muted= t('execution.modal.stops_count', count: route.route_data&.size_active.to_i)
+                      %span.sync-route-change.text-muted
+            %p.help-block#sync-route-count{ data: { template: t('execution.modal.selected_count') } }
+        .modal-footer
+          %button.btn.btn-default{ type: 'button', 'data-dismiss': 'modal' }= t('all.verb.dismiss')
+          = submit_tag t('execution.sync'), class: 'btn btn-primary', id: 'sync-submit'
