@@ -59,6 +59,21 @@ class OperationStopDetailTest < ActionController::TestCase
     assert_includes response.body, delivery_note_operation_stop_path(@stop)
   end
 
+  test 'show renders status reset in the timeline' do
+    OperationStops::RecordStatus.call(
+      operation_stop: @stop,
+      status: nil,
+      recorded_at: Time.zone.parse('2026-09-25 12:00'),
+      source: 'mobile'
+    )
+
+    get :show, params: { id: @stop.id }
+
+    assert_response :success
+    assert_includes response.body, 'is-none is-latest'
+    assert_includes response.body, I18n.t('operations.show.status_reset')
+  end
+
   test 'delivery note opens the printable note for a delivered visit' do
     get :delivery_note, params: { id: @stop.id }
     assert_response :success
