@@ -1,0 +1,243 @@
+-# Static desk for the operation page. Classes match app/views/operations/show.html.haml.
+.operation-board
+  %header.operation-header
+    .operation-header-id
+      .d-flex.align-items-center.gap-2
+        %span.operation-header-title Tournée matin
+        %button.btn.btn-link.btn-sm.p-0{type: 'button', aria: { label: t('operations.show.edit_name') }}
+          %i.fa.fa-pencil
+        %span.operation-header-title REF-204
+        %span.badge.operation-status= t('operations.statuses.in_progress')
+      .operation-header-sub
+        %input.form-control.form-control.operation-date{type: 'date', value: '2026-09-28', aria: { label: t('operations.index.date') }}
+    .operation-header-progress
+      .operation-header-progress-label= "3/6 #{t('operations.show.stops')}"
+      .operation-segments
+        %span.is-delivered{style: 'width: 33%'}
+        %span.is-failed{style: 'width: 17%'}
+        %span.is-exception{style: 'width: 17%'}
+        %span.is-rest{style: 'width: 33%'}
+    .operation-header-actions
+      %a.btn.btn-light.btn-sm{href: '#'}
+        %i.fa.fa-map.fa-fw
+        = t('operations.show.planning')
+      %button.btn.btn-light.btn-sm{type: 'button'}
+        %i.fa.fa-paper-plane.fa-fw
+          = t('plannings.edit.deliver_send.plural.transmit')
+  .operation-body
+    %aside.operation-list
+      .operation-stats
+        .operation-stat
+          %i.fa.fa-paper-plane
+          %div
+            %strong 1/2
+            %span= t('operations.show.transmitted')
+        .operation-stat
+          %i.fa.fa-location-dot
+          %div
+            %strong 3/6
+            %span= t('operations.show.stops')
+        .operation-stat.is-late
+          %i.fa.fa-clock
+          %div
+            %strong 18 min
+            %span= t('operations.show.cumulative_delay')
+        .operation-stat
+          %i.fa.fa-road
+          %div
+            %strong 42 km
+            %span= t('display_ui.header_blocks.distance')
+      .operation-stats
+        .operation-stat
+          %i.fa.fa-fw.fa-box
+          %div
+            %strong 12
+            %span Palette
+      %input.form-control.form-control.operation-search{type: 'search', placeholder: t('operations.show.search_stops')}
+      .operation-chips
+        %button.operation-chip.is-active{type: 'button'}= "#{t('operations.show.filter_all')} 6"
+        %button.operation-chip{type: 'button'}= "#{t('operations.show.filter_late')} 1"
+        %button.operation-chip{type: 'button'}= "#{t('operations.show.filter_failed')} 1"
+        %button.operation-chip{type: 'button'}= "#{t('operations.show.filter_exception')} 1"
+        %button.operation-chip{type: 'button'}= "#{t('operations.show.filter_upcoming')} 1"
+        %button.operation-chip{type: 'button'}= "#{t('operations.show.filter_delivered')} 1"
+      %details.operation-tour{open: true}
+        %summary.operation-tour-summary
+          .d-flex.justify-content-between.gap-2
+            .min-w-0
+              .operation-tour-title
+                Véhicule 1
+                %span.text-muted · Voiture
+              .operation-tour-meta Véhicule 1 · 001
+              .operation-tour-quantities
+                %span
+                  Colis
+                  1 / 4
+                  = t('operations.show.deliveries')
+                  ·
+                  3 / 4
+                  = t('operations.show.pickups')
+            .operation-tour-progress
+              3/4
+              = t('operations.show.stops')
+              %i.fa.fa-chevron-down.operation-tour-chevron
+          .operation-tour-tools
+            %button.btn.btn-sm.btn-light{type: 'button', title: t('operations.show.hide_trace')}
+              %i.fa.fa-eye.fa-fw
+            %button.btn.btn-sm.btn-light{type: 'button', title: t('operations.show.center_route')}
+              %i.fa.fa-expand.fa-fw
+            %button.btn.btn-sm.btn-light{type: 'button', title: t('operations.show.center_vehicle'), disabled: true}
+              %i.fa.fa-location-crosshairs.fa-fw
+            %button.btn.btn-sm.btn-light.dropdown-toggle{type: 'button'}
+              %i.fa.fa-paper-plane.fa-fw
+              = t('plannings.edit.deliver_send.singular.transmit')
+            %button.btn.btn-sm.btn-light{type: 'button'}
+              %i.fa.fa-images.fa-fw
+              = t('operations.show.media')
+        %ul.operation-stops
+          %li.operation-depot-row
+            %span.operation-glyph.is-depot
+              %i.fa.fa-house
+            .operation-stop-main
+              .operation-stop-name Dépôt nord
+              .operation-stop-clock 08:00
+          %li.operation-stop-row.is-delivered
+            %span.operation-glyph.is-delivered
+              %i.fa.fa-check
+            .operation-stop-main
+              .operation-stop-name Boulangerie Martin
+              .operation-stop-clock
+                08:20
+                %span →
+                08:18
+            .operation-stop-aside
+              %span.operation-gap.is-ok= t('plannings.edit.stop_status.delivered')
+          %li.operation-stop-row.is-exception
+            %span.operation-glyph.is-exception
+              %i.fa.fa-triangle-exclamation
+            .operation-stop-main
+              .operation-stop-name Pharmacie du centre
+              .operation-stop-clock
+                08:40
+                %span →
+                08:55
+            .operation-stop-aside
+              %span.operation-gap.is-exception= t('plannings.edit.stop_status.exception')
+          %li.operation-stop-row.is-failed
+            %span.operation-glyph.is-failed !
+            .operation-stop-main
+              .operation-stop-name Café de la gare
+              .operation-stop-clock
+                09:00
+                %span →
+                09:10
+            .operation-stop-aside
+              %span.operation-gap.is-bad= t('plannings.edit.stop_status.undelivered')
+          %li.operation-stop-row.is-late
+            %span.operation-glyph.is-late 4
+            .operation-stop-main
+              .operation-stop-name École Jean Moulin
+              .operation-stop-clock 09:30
+            .operation-stop-aside
+              %span.operation-gap.is-late= t('operations.show.late_risk')
+          %li.operation-stop-row.is-upcoming
+            %span.operation-glyph 5
+            .operation-stop-main
+              .operation-stop-name Mairie
+              .operation-stop-clock 10:00
+    .operation-map
+      #map.lookbook-operation-map
+        = t('operations.show.planning')
+      .operation-legend
+        %span
+          %i.fa.fa-circle{style: 'color:#9ca3af'}
+          = t('operations.show.filter_upcoming')
+        %span
+          %i.fa.fa-circle{style: 'color:#25417c'}
+          = t('operations.show.en_route')
+        %span
+          %i.fa.fa-circle{style: 'color:#1f9d55'}
+          = t('operations.show.filter_delivered')
+        %span
+          %i.fa.fa-circle{style: 'color:#f59e0b'}
+          = t('operations.show.filter_late')
+        %span
+          %i.fa.fa-circle{style: 'color:#d64545'}
+          = t('operations.show.filter_failed')
+        %span
+          %i.fa.fa-circle{style: 'color:#7c3aed'}
+          = t('operations.show.filter_exception')
+    %aside.operation-detail.is-open
+      .operation-detail-bar
+        %button.btn-close{type: 'button', aria: { label: t('web.dialog.close') }}
+      .operation-detail-body
+        .operation-fiche.operation-stop-detail
+          .d-flex.align-items-start.justify-content-between.gap-2
+            %h2.mb-0 Pharmacie du centre
+            %span.badge.operation-exception= t('plannings.edit.stop_status.exception')
+          .operation-split
+            %div
+              %span= t('operations.show.planned')
+              %strong 08:40
+            %div
+              %span= t('operations.show.actual')
+              %strong 08:55
+          %section.operation-section
+            %h3= t('operations.show.details')
+            %p.mb-1
+              %span.text-muted= t('operations.show.destination_ref')
+              PH-12
+            %p.mb-1
+              %span.text-muted= t('operations.show.visit_ref')
+              VIS-88
+            %p.mb-1
+              %span.text-muted= t('operations.show.time_windows')
+              08:00 – 10:00 et 14:00 – 16:00
+            %p.mb-1
+              %span.text-muted= t('activerecord.attributes.visit.duration')
+              00:10:00
+            %p.mb-1
+              %span.text-muted= t('activerecord.attributes.destination.duration')
+              00:05:00
+            %h3= t('operations.show.quantities')
+            %ul.list-unstyled.mb-2
+              %li
+                Colis
+                0 / 2
+                = t('operations.show.deliveries')
+                ·
+                2 / 2
+                = t('operations.show.pickups')
+            %h3= t('operations.show.attributes')
+            %dl.operation-attrs
+              %dt Liste Anomalie
+              %dd 101-Anomalie température non-conforme
+          %section.operation-section
+            %h3= t('operations.show.address')
+            .operation-field
+              %p.mb-1 12 place du Marché, 69001 Lyon
+              %p.mb-0
+                %i.fa.fa-phone.fa-fw{"aria-hidden": "true"}
+                %a{href: 'tel:+33472000000'} 04 72 00 00 00
+          %section.operation-section
+            %h3= t('operations.show.proof')
+            .operation-proofs
+              .operation-proof
+                %span= t('operations.show.photo')
+              .operation-proof
+                %span= t('operations.media.signature')
+            %a.operation-delivery-note{href: '#'}
+              %i.fa.fa-file-lines.fa-fw{"aria-hidden": "true"}
+              = t('visits.form.delivery_note')
+          %section.operation-section
+            %h3= t('operations.show.timeline')
+            %ul.operation-timeline
+              %li.is-exception.is-latest
+                %span.operation-timeline-label= t('plannings.edit.stop_status.exception')
+                %time 08:55
+              %li.is-atstore
+                %span.operation-timeline-label= t('plannings.edit.stop_store_status.atstore')
+                %time 08:52
+              %li.is-intransit
+                %span.operation-timeline-label= t('plannings.edit.stop_status.intransit')
+                %time 08:31

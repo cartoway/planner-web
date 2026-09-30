@@ -1,0 +1,48 @@
+!!!
+%html{lang: I18n.locale}
+  %head
+    - content_for :title, t('plannings.edit.dialog.deliver.title')
+    = render 'v2/layouts/head'
+    = stylesheet_link_tag 'application', media: 'all'
+  %body.mobile-driver{data: { controller: 'routes', action: 'mobile' }}
+    #mobile-app{data: { controller: 'mobile', mobile_position_url_value: @mobile_position_url }}
+      .row.mobile_header.d-flex.align-items-center.justify-content-between
+        .col-xs-4.col-md-2
+          - if @reseller.website_url
+            %a{href: @reseller.website_url.gsub('{LG}', I18n.locale.to_s)}
+              .text-left
+                = image_tag @reseller.logo_small.url || 'logo.svg', alt: @reseller&.name, class: 'company-logo'
+          - else
+            .text-left
+              = image_tag @reseller.logo_small.url || 'logo.svg', alt: @reseller&.name, class: 'company-logo'
+        .col-xs-8.col-md-10
+          .form-check.form-switch.mb-0.text-right
+            %input#location-switch.form-check-input{checked: 'checked', role: 'switch', type: 'checkbox', data: { action: 'change->mobile#toggleTracking' }}
+            %label.mb-0
+              .fa.fa-location-dot.fa-fw
+              = t('stops.mobile.tracking')
+
+      .mobile
+        = yield
+
+      #stop-photo-modal.stop-photo-modal.d-none{ role: 'dialog', 'aria-modal': 'true' }
+        %button.stop-photo-modal-delete.btn.btn-xs.btn-default.d-none{ type: 'button', 'aria-label': t('stops.mobile.photo_delete') }
+          %i.fa.fa-trash
+        %button.stop-photo-modal-close.btn.btn-xs.btn-default{ type: 'button', 'aria-label': t('stops.mobile.photo_close') }
+          %i.fa.fa-times
+        %button.stop-photo-modal-nav.stop-photo-modal-prev.btn.btn-xs.btn-default{ type: 'button', 'aria-label': t('stops.mobile.previous') }
+          %i.fa.fa-chevron-left
+        %img.stop-photo-modal-img{ alt: '' }
+        %button.stop-photo-modal-nav.stop-photo-modal-next.btn.btn-xs.btn-default{ type: 'button', 'aria-label': t('stops.mobile.next') }
+          %i.fa.fa-chevron-right
+
+      #stop-signature-modal.stop-signature-modal.d-none{ role: 'dialog', 'aria-modal': 'true', 'aria-label': t('stops.mobile.signature') }
+        %button.stop-signature-modal-close.btn.btn-xs.btn-default{ type: 'button', 'aria-label': t('stops.mobile.signature_close') }
+          %i.fa.fa-times
+        .stop-signature-modal-pad
+          %canvas.stop-signature-canvas{ width: 800, height: 1200, 'aria-label': t('stops.mobile.signature') }
+        .stop-signature-modal-actions
+          %button.btn.btn-default.stop-signature-clear{ type: 'button' }= t('stops.mobile.signature_clear')
+          %button.btn.btn-primary.stop-signature-save{ type: 'button' }= t('stops.mobile.signature_save')
+
+    = render partial: 'shared/flash_messages'

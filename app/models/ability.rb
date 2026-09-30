@@ -59,6 +59,9 @@ class Ability
         if !user.customer.end_subscription || user.customer.end_subscription > Time.now
           can :manage, Planning, customer_id: user.customer.id
           can [:new, :create], Planning
+          can :manage, Operation, customer_id: user.customer.id
+          can :manage, OperationRoute, operation: { customer_id: user.customer.id }
+          can :manage, OperationStop, operation_route: { operation: { customer_id: user.customer.id } }
         end
         can :manage, Route, planning: {customer_id: user.customer.id}
         can :show, Vehicle, customer_id: user.customer.id
@@ -79,8 +82,8 @@ class Ability
     else
       can [:password, :set_password], User
 
-      # Mobile routes
-      can [:mobile, :update_position, :driver_update], Route
+      # Driver updates still hit the planning route (status and GPS from the mobile page).
+      can [:update_position, :driver_update], Route
       can [:edit, :update], Stop
       can [:create, :destroy], :stop_photos
       can [:create], :stop_signatures

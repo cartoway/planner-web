@@ -1,0 +1,32 @@
+- field = channel == 'sms' ? 'phone_number' : 'contact_email'
+.modal.fade{id: "operation-send-#{channel}", tabindex: '-1', aria: { hidden: 'true', labelledby: "operation-send-#{channel}-title" }}
+  .modal-dialog.modal-lg.modal-dialog-scrollable
+    .modal-content
+      = form_with url: transmit_operation_path(operation), method: :post, local: true, data: { turbo: false } do
+        = hidden_field_tag :channel, channel
+        .modal-header
+          %h2.h5.modal-title{id: "operation-send-#{channel}-title"}= t("operations.show.send_#{channel}_title")
+          %button.btn-close{type: 'button', data: { bs_dismiss: 'modal' }, aria: { label: t('web.dialog.close') }}
+        .modal-body
+          - all_selected = routes.all? { |route| (channel == 'sms' ? route.driver_phone : route.driver_email).present? }
+          .row.g-2.align-items-center.mb-2
+            .col-auto
+              %button.btn.btn-link.p-0{type: 'button', aria: { label: t('all.verb.toggle_selection') }, onclick: "var boxes = this.closest('.modal').querySelectorAll('[data-send-toggle]'); var check = !Array.prototype.every.call(boxes, function (box) { return box.checked }); boxes.forEach(function (box) { box.checked = check }); var icon = this.querySelector('i'); icon.classList.toggle('fa-square-check', check); icon.classList.toggle('fa-square', !check);"}
+                %i.fa{class: all_selected ? 'fa-square-check' : 'fa-square'}
+          - routes.each do |route|
+            - value = channel == 'sms' ? route.driver_phone : route.driver_email
+            .row.g-2.align-items-center.mb-2
+              .col-auto
+                .form-check.form-switch.mb-0
+                  = check_box_tag "routes[#{route.id}][send]", '1', value.present?, class: 'form-check-input', data: { send_toggle: true }, aria: { label: t('operations.show.send_route') }
+              .col
+                = route.ref.presence || route.vehicle_name
+                .text-muted= t('operations.show.last_sent', at: (route.last_sent_at ? l(route.last_sent_at, format: :short) : '—'))
+              .col-6
+                .input-group
+                  = text_field_tag "routes[#{route.id}][#{field}]", value, class: 'form-control', autocomplete: 'off', readonly: true, id: "operation-send-#{channel}-#{route.id}"
+                  %button.btn.btn-light{type: 'button', aria: { label: t('operations.show.edit_name') }, onclick: "var input = document.getElementById('operation-send-#{channel}-#{route.id}'); input.readOnly = false; input.focus(); this.classList.add('d-none');"}
+                    %i.fa.fa-pencil
+        .modal-footer
+          %button.btn.btn-light{type: 'button', data: { bs_dismiss: 'modal' }}= t('all.verb.cancel')
+          = submit_tag t("operations.show.send_#{channel}"), class: 'btn btn-primary'

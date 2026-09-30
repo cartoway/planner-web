@@ -24,6 +24,71 @@ class Planning < ApplicationRecord
   has_and_belongs_to_many :zonings, autosave: true, after_add: :update_zonings_track, after_remove: :update_zonings_track
   before_destroy :delete_all_routes
   has_many :routes, -> { ordered_for_planning }, inverse_of: :planning, autosave: true
+  has_many :operations
+
+  def current_operation
+    operations.open_status.order(published_at: :desc).first
+  end
+
+  def open_operations
+    operations.open_status.order(date: :desc, published_at: :desc)
+  end
+
+  # Open operations first, then historized; newest date first within each group.
+  def operations_for_sidebar
+    operations.order(
+      Arel.sql("CASE WHEN status IN ('#{Operation::OPEN_STATUSES.join("','")}') THEN 0 ELSE 1 END"),
+      date: :desc,
+      published_at: :desc
+    )
+  end
+
+  def open_operations_by_route_id
+    OperationRoute.joins(:operation)
+                  .merge(operations.open_status)
+                  .includes(:operation)
+                  .each_with_object({}) do |operation_route, hash|
+      next if operation_route.route_id.blank?
+
+      list = (hash[operation_route.route_id] ||= [])
+      list << operation_route.operation unless list.include?(operation_route.operation)
+    end
+  end
+
+  # { "YYYY-MM-DD" => { route_id => operation_name } } for open operations of this planning.
+  def open_taken_routes_by_date
+    OperationRoute.joins(:operation)
+                  .merge(operations.open_status)
+                  .where.not(route_id: nil)
+                  .pluck('operations.date', :route_id, 'operations.name')
+                  .each_with_object({}) do |(date, route_id, name), hash|
+      key = date.iso8601
+      day = (hash[key] ||= {})
+      day[route_id] ||= name
+    end
+  end
+
+  def taken_route_ids(date:, except_operation_id: nil)
+    return [] if date.blank?
+
+    scope = OperationRoute.joins(:operation)
+                          .merge(operations.open_status.where(date: date))
+                          .where.not(route_id: nil)
+    scope = scope.where.not(operations: { id: except_operation_id }) if except_operation_id
+    scope.distinct.pluck(:route_id)
+  end
+
+  # Open operation covering this route on Date.current, if any.
+  def open_operation_for_route_today(route_id)
+    return if route_id.blank?
+
+    OperationRoute.joins(:operation)
+                  .merge(operations.open_status.where(date: Date.current))
+                  .where(route_id: route_id)
+                  .includes(:operation)
+                  .first
+                  &.operation
+  end
 
   has_many :tag_plannings, dependent: :destroy
   has_many :tags, through: :tag_plannings, autosave: true, after_add: :update_tags_track, after_remove: :update_tags_track

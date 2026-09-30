@@ -821,7 +821,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def default_planning_date
-    Date.today + @customer.planning_date_offset_default
+    Date.today + @customer.operation_date_offset_default
   end
 
   def default_vehicle_usage_set

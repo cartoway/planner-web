@@ -53,12 +53,13 @@ else
   end
 
   routes_data = routes_array.map do |route|
-    RouteSidebarSerializer.new(
+    data = RouteSidebarSerializer.new(
       route: route,
       planning: @planning,
       with_stops: @with_stops,
       view_helpers: self
     ).as_hash
+    attach_open_operations!(data, @planning, route.id)
   end
 
   json.prefered_unit current_user.prefered_unit

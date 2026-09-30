@@ -18,94 +18,73 @@
 
 class History
   def self.historize(hourly, planning_id)
-    ActiveRecord::Base.connection.execute("
-DELETE FROM history_stops
-WHERE
-  date_trunc('day', date) = date_trunc('day', now()) AND
-  (planning_id IS NULL OR planning_id = #{planning_id || 'NULL'})
-;
-INSERT INTO history_stops
-SELECT
-  (SELECT max(version) FROM schema_migrations) AS schema_version,
-  #{hourly ? 'date_trunc(\'hour\', now())' : 'now()'} AS date,
-  customers.reseller_id AS reseller_id,
-  customers.id AS customer_id,
-  vehicle_usages.id AS vehicle_usage_id,
-  vehicles.id AS vehicle_id,
-  routers.mode AS router_mode,
-  plannings.id AS planning_id,
-  routes.id AS route_id,
-  jsonb_strip_nulls(row_to_json(vehicle_usages)::jsonb) - 'created_at' - 'updated_at' - 'id' - 'vehicle_usage_id' AS vehicle_usage,
-  jsonb_strip_nulls(row_to_json(vehicles)::jsonb) - 'created_at' - 'updated_at' - 'id' AS vehicle,
-  jsonb_strip_nulls(row_to_json(plannings)::jsonb) - 'created_at' - 'updated_at' - 'id' - 'customer_id' AS planning,
-  jsonb_strip_nulls(row_to_json(routes)::jsonb) - 'created_at' - 'updated_at' - 'id' - 'planning_id' - 'vehicle_usage_id' - 'route_data_id' - 'start_route_data_id' - 'stop_route_data_id' - 'route_geojson_id' AS route,
-  CASE WHEN count(stops) > 0 THEN
-      jsonb_agg(jsonb_build_object(
-          'stop', jsonb_strip_nulls(row_to_json(stops)::jsonb) - 'created_at' - 'updated_at' - 'id' - 'visit_id' - 'route_id',
-          'visit', jsonb_strip_nulls(row_to_json(visits)::jsonb) - 'created_at' - 'updated_at' - 'id' - 'destination_id',
-          'destination', jsonb_strip_nulls(row_to_json(destinations)::jsonb) - 'created_at' - 'updated_at' - 'id'
-      ) ORDER BY stops.index)
-  END AS stops,
-  count(stops) AS stops_count,
-  sum(CASE WHEN vehicles.id IS NOT NULL AND stops.active THEN 1 ELSE 0 END) AS stops_active_count,
-  jsonb_strip_nulls(row_to_json(route_data)::jsonb) - 'created_at' - 'updated_at' - 'id' AS route_data,
-  jsonb_strip_nulls(row_to_json(start_route_data)::jsonb) - 'created_at' - 'updated_at' - 'id' AS start_route_data,
-  jsonb_strip_nulls(row_to_json(stop_route_data)::jsonb) - 'created_at' - 'updated_at' - 'id' AS stop_route_data
-FROM
-  customers
-  JOIN plannings ON
-      plannings.customer_id = customers.id
-  JOIN routes ON
-      routes.planning_id = plannings.id
-  LEFT JOIN stops ON
-      stops.route_id = routes.id
-  LEFT JOIN visits ON
-      visits.id = stops.visit_id
-  LEFT JOIN destinations ON
-      destinations.id = visits.destination_id
-  LEFT JOIN vehicle_usages ON
-      vehicle_usages.id = routes.vehicle_usage_id
-  LEFT JOIN vehicles ON
-      vehicles.id = vehicle_usages.vehicle_id
-  LEFT JOIN routers ON
-      routers.id = coalesce(vehicles.router_id, customers.router_id)
-  LEFT JOIN route_data ON
-      route_data.id = routes.route_data_id
-  LEFT JOIN route_data AS start_route_data ON
-      start_route_data.id = routes.start_route_data_id
-  LEFT JOIN route_data AS stop_route_data ON
-      stop_route_data.id = routes.stop_route_data_id
-WHERE
-  (#{planning_id || 'NULL'} IS NULL OR plannings.id = #{planning_id || 'NULL'}) AND
-  (#{hourly ? 'FALSE' : 'TRUE'} OR
-    date_trunc('day', plannings.date) + (date_trunc('day', plannings.date) -
-      date_trunc('day', plannings.date) AT TIME ZONE (
-        SELECT
-          pg_timezone_names.name
-        FROM
-          users
-          JOIN pg_timezone_names ON
-            pg_timezone_names.name LIKE '%/' || time_zone
-        WHERE
-          users.customer_id = customer_id
-        ORDER BY
-          users.id,
-          pg_timezone_names.name
-        LIMIT 1
-      )
-    ) +
-    (customers.history_cron_hour || ' hours')::interval = date_trunc('hour', now())
-  )
-GROUP BY
-  customers.id,
-  plannings.id,
-  routes.id,
-  vehicle_usages.id,
-  vehicles.id,
-  routers.id,
-  route_data.id,
-  start_route_data.id,
-  stop_route_data.id
-    ")
+    at = Time.current
+    operation_ids = matching_operation_ids(hourly, planning_id, at)
+    return if operation_ids.empty?
+
+    operations = Operation.where(id: operation_ids).includes(:customer, operation_routes: :operation_stops)
+    schema_version = Operations::ToHistoryStops.current_schema_version
+    rows = operations.flat_map { |operation|
+      Operations::ToHistoryStops.rows(operation, hourly: hourly, at: at, schema_version: schema_version)
+    }
+    return close_operations!(operation_ids, at) if rows.empty?
+
+    replace_today_rows!(rows, planning_id, at)
+    close_operations!(operation_ids, at)
   end
+
+  def self.matching_operation_ids(hourly, planning_id, at)
+    at_sql = ActiveRecord::Base.connection.quote(at.utc.strftime('%Y-%m-%d %H:%M:%S'))
+    sql = <<~SQL
+      SELECT operations.id
+      FROM operations
+      JOIN customers ON customers.id = operations.customer_id
+      WHERE operations.status = 'in_progress'
+        AND (#{planning_id || 'NULL'} IS NULL OR operations.planning_id = #{planning_id || 'NULL'})
+        AND (#{hourly ? 'FALSE' : 'TRUE'} OR
+          date_trunc('day', operations.date) + (date_trunc('day', operations.date) -
+            date_trunc('day', operations.date) AT TIME ZONE (
+              SELECT
+                pg_timezone_names.name
+              FROM
+                users
+                JOIN pg_timezone_names ON
+                  pg_timezone_names.name LIKE '%/' || time_zone
+              WHERE
+                users.customer_id = customers.id
+              ORDER BY
+                users.id,
+                pg_timezone_names.name
+              LIMIT 1
+            )
+          ) +
+          (customers.history_cron_hour || ' hours')::interval = date_trunc('hour', #{at_sql}::timestamp)
+        )
+    SQL
+    ActiveRecord::Base.connection.select_values(sql).map(&:to_i)
+  end
+  private_class_method :matching_operation_ids
+
+  def self.replace_today_rows!(rows, planning_id, at)
+    planning_ids = rows.map { |row| row[:planning_id] }.uniq
+    route_ids = rows.map { |row| row[:route_id] }.uniq
+    day_sql = ActiveRecord::Base.connection.quote(at.utc.to_date.to_s)
+
+    scope = HistoryStop.where("date_trunc('day', date) = date_trunc('day', #{day_sql}::timestamp)")
+    scope = scope.where(planning_id: planning_id) if planning_id
+    scope = scope.where(planning_id: planning_ids, route_id: route_ids)
+    scope.delete_all
+
+    HistoryStop.insert_all(rows) if rows.any?
+  end
+  private_class_method :replace_today_rows!
+
+  def self.close_operations!(operation_ids, at = Time.current)
+    Operation.where(id: operation_ids, status: 'in_progress').update_all(
+      status: 'historized',
+      closed_at: at,
+      updated_at: at
+    )
+  end
+  private_class_method :close_operations!
 end

@@ -1,0 +1,34 @@
+-# Reusable type-to-confirm modal (v2).
+-# locals:
+-#   id: (required) modal DOM id
+-#   expected: (required) string the user must type
+-#   title:, body:, confirm_label:, dismiss_label:
+-#   url:, method: (:delete), form_class:
+-#   input_label:, input_placeholder:
+- id = local_assigns.fetch(:id)
+- expected = local_assigns.fetch(:expected).to_s
+- title = local_assigns.fetch(:title, t('all.verb.destroy'))
+- body = local_assigns[:body]
+- confirm_label = local_assigns.fetch(:confirm_label, t('all.verb.destroy'))
+- dismiss_label = local_assigns.fetch(:dismiss_label, t('all.verb.dismiss'))
+- url = local_assigns.fetch(:url)
+- method = local_assigns.fetch(:method, :delete)
+- form_class = local_assigns[:form_class]
+- input_label = local_assigns.fetch(:input_label, t('v2.typed_confirm.input_label'))
+- input_placeholder = local_assigns.fetch(:input_placeholder, expected)
+.modal.fade{id: id, tabindex: '-1', 'aria-hidden': 'true', data: { controller: 'v2--typed-confirm', v2__typed_confirm_expected_value: expected, action: 'hidden.bs.modal->v2--typed-confirm#reset' }}
+  .modal-dialog
+    .modal-content
+      = form_with url: url, method: method, local: true, class: form_class, data: { turbo: false, v2__typed_confirm_target: 'form', action: 'submit->v2--typed-confirm#prepareSubmit' } do
+        .modal-header
+          %h5.modal-title= title
+          %button.btn-close{type: 'button', 'data-bs-dismiss': 'modal', 'aria-label': dismiss_label}
+        .modal-body
+          - if body.present?
+            %p= body
+          .mb-0
+            = label_tag "#{id}_typed", input_label, class: 'form-label'
+            = text_field_tag :typed_confirm, nil, id: "#{id}_typed", class: 'form-control', autocomplete: 'off', placeholder: input_placeholder, data: { v2__typed_confirm_target: 'input', action: 'input->v2--typed-confirm#sync' }
+        .modal-footer
+          %button.btn.btn-light{type: 'button', 'data-bs-dismiss': 'modal'}= dismiss_label
+          = submit_tag confirm_label, class: 'btn btn-danger', disabled: true, data: { v2__typed_confirm_target: 'submit' }

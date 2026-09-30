@@ -77,6 +77,7 @@
               - path = Preferences::Catalog.toolbar_operation_partial('planning', op)
               - next if path.blank?
               = render partial: path
+        = render 'plannings/execution' if @planning.persisted?
         #planning.row
 
 #map.sidebar-map
@@ -100,6 +101,8 @@
           = t('all.verb.dismiss')
         %button#refresh-modal.btn.btn-primary{type: "button", disabled: refresh_dis}
           = t('plannings.edit.refresh')
+
+= render 'plannings/operation_modal' if @planning.persisted?
 
 #planning-move-stops-modal.modal.fade{role: "dialog", tabindex: "-1"}
   .modal-dialog

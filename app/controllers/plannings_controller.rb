@@ -29,7 +29,7 @@ class PlanningsController < ApplicationController
 
   UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   UPDATE_ACTIONS_FULL_ROUTE_PRELOAD = UPDATE_ACTIONS - [:update_stop]
-  before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :refresh, :route_edit] + UPDATE_ACTIONS_FULL_ROUTE_PRELOAD
+  before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :refresh, :route_edit, :publish_operation, :sync_operation] + UPDATE_ACTIONS_FULL_ROUTE_PRELOAD
   before_action :remember_vehicle_usage_set_id_for_state_capture, only: [:update]
   before_action :set_planning_for_edit, only: [:edit]
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
@@ -293,6 +293,7 @@ class PlanningsController < ApplicationController
       stops: stops_for_sidebar
     ).as_hash
     route_data[:route_id] = @route.id
+    attach_open_operations!(route_data, @planning)
     respond_to do |format|
       if current_route.vehicle_usage_id
         format.js { render partial: 'routes/in_route.js.erb', locals: { route: route_data, summary: planning_summary } }
@@ -345,6 +346,7 @@ class PlanningsController < ApplicationController
         stops: stops_for_sidebar
       ).as_hash
       route_data[:route_id] = route.id
+      attach_open_operations!(route_data, @planning)
       html = render_to_string(
         partial: 'routes/in_route.html.haml',
         formats: [:html],
@@ -736,6 +738,38 @@ class PlanningsController < ApplicationController
 
   def self.manage
     Hash[[:edit, :zoning, :vehicle_usage_set, :export, :organize, :vehicle, :destination, :store].map{ |v| ["manage_#{v}".to_sym, true] }]
+  end
+
+  def publish_operation
+    route_ids = params.key?(:route_ids) ? Array(params[:route_ids]) : nil
+    operation = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      date: params[:date],
+      name: params[:name],
+      route_ids: route_ids,
+      visible_routes_only: params[:visible_routes_only].present?
+    )
+    redirect_to edit_planning_path(@planning), notice: t('execution.published')
+  rescue Operations::RouteConflict
+    redirect_to edit_planning_path(@planning), alert: t('execution.route_conflict')
+  rescue Operations::EmptyRoutes
+    redirect_to edit_planning_path(@planning), alert: t('execution.empty_routes')
+  end
+
+  def sync_operation
+    operation = @planning.operations.find_by(id: params[:operation_id]) || @planning.current_operation
+    unless operation
+      redirect_to edit_planning_path(@planning), alert: t('execution.missing')
+      return
+    end
+    Operations::SyncFromPlanning.call(
+      planning: @planning,
+      operation: operation,
+      route_ids: params[:route_ids],
+      stop_ids: params[:stop_ids],
+      orphan_policy: params[:orphan_policy].presence || :mark
+    )
+    redirect_to edit_planning_path(@planning), notice: t('execution.synced')
   end
 
   private

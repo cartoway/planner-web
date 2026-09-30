@@ -334,4 +334,170 @@ body[data-controller*='-v2'] {
       margin-top: 0;
     }
   }
+
+  // Status colours shared by operation, planning and map surfaces.
+  --status-navy: #{$primary-color};
+  --status-failed: #d64545;
+  --status-delivered: #1f9d55;
+  --status-late: #f59e0b;
+  --status-exception: #7c3aed;
+  --status-muted: #6b7280;
+  --status-canvas: #f3f5f7;
+  --status-line: #e6e8eb;
+
+  .status-segments,
+  .operation-segments {
+    display: flex;
+    height: .45rem;
+    border-radius: 999px;
+    overflow: hidden;
+    background: #e5e7eb;
+
+    span {
+      display: block;
+      height: 100%;
+    }
+
+    .is-delivered { background: var(--status-delivered); }
+    .is-failed { background: var(--status-failed); }
+    .is-exception { background: var(--status-exception); }
+    .is-rest { background: #d1d5db; }
+  }
+
+  .filter-chips,
+  .operation-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+    margin-bottom: .75rem;
+  }
+
+  .filter-chip,
+  .operation-chip {
+    border: 0;
+    background: #eef1f4;
+    color: #334;
+    border-radius: 999px;
+    padding: .2rem .65rem;
+    font-size: .78rem;
+
+    &.is-active {
+      background: var(--status-navy);
+      color: #fff;
+    }
+  }
+
+  .stat-grid,
+  .operation-stats {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: .5rem;
+    margin-bottom: .85rem;
+  }
+
+  .stat-card,
+  .operation-stat {
+    border: 1px solid var(--status-line);
+    border-radius: .6rem;
+    padding: .55rem .7rem;
+    display: flex;
+    gap: .55rem;
+    align-items: center;
+
+    i {
+      color: var(--status-navy);
+      font-size: 1.15rem;
+      width: 1.4rem;
+      text-align: center;
+    }
+
+    strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    span {
+      color: var(--status-muted);
+      font-size: .75rem;
+    }
+
+    &.is-late i,
+    &.is-late strong {
+      color: var(--status-late);
+    }
+  }
+
+  .status-glyph,
+  .operation-glyph {
+    width: 1.7rem;
+    height: 1.7rem;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: .8rem;
+    flex: 0 0 auto;
+    background: #e5e7eb;
+    color: #4b5563;
+
+    &.is-delivered { background: var(--status-delivered); color: #fff; }
+    &.is-failed { background: var(--status-failed); color: #fff; }
+    &.is-exception { background: var(--status-exception); color: #fff; }
+    &.is-current { background: var(--status-navy); color: #fff; }
+    &.is-late { background: var(--status-late); color: #fff; }
+    &.is-depot { background: #fff; color: var(--status-failed); border: 1px solid #f3d0d0; }
+  }
+
+  .map-legend,
+  .operation-legend {
+    position: absolute;
+    left: 50%;
+    bottom: 4.5rem;
+    transform: translateX(-50%);
+    background: #fff;
+    border-radius: 999px;
+    padding: .35rem .7rem;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: .7rem;
+    width: max-content;
+    max-width: none;
+    white-space: nowrap;
+    font-size: .75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, .12);
+
+    span {
+      flex: none;
+      white-space: nowrap;
+    }
+
+    i { margin-right: .25rem; }
+  }
+
+  // Disc marker used by destination, store and operation maps.
+  .destinations-marker {
+    --dm-size: 22px;
+    --dm-flat: var(--status-navy);
+    width: var(--dm-size);
+    height: var(--dm-size);
+    box-sizing: border-box;
+    border-radius: 50%;
+    border: 2.5px solid #fff;
+    background: var(--dm-flat);
+    box-shadow: 0 1px 1.5px rgba(0, 0, 0, .28);
+
+    &.is-depot {
+      border-radius: .2rem;
+      --dm-flat: var(--status-muted);
+
+      &.is-returned { --dm-flat: var(--status-delivered); }
+    }
+  }
+
+  .destinations-marker__head,
+  .destinations-marker__glint,
+  .destinations-marker__pin {
+    display: none;
+  }
 }
