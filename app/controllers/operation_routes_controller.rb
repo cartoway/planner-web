@@ -84,7 +84,7 @@ class OperationRoutesController < ApplicationController
       payload: {}
     )
     head :ok
-  rescue VehiclePositions::Record::MissingPositionedAt
+  rescue VehiclePositions::Record::MissingPositionedAt, VehiclePositions::Record::OperationNotOpen
     head :unprocessable_entity
   end
 

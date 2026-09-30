@@ -298,6 +298,12 @@
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_references, label: t('activerecord.attributes.customer.enable_references') } %>
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_global_optimization, label: t('activerecord.attributes.customer.enable_global_optimization'), help: (t('.enable_global_optimization_test') if !@customer.id || @customer.test) } %>
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_vehicle_position, label: t('activerecord.attributes.customer.enable_vehicle_position') } %>
+    <div id="vehicle_position_trace_options" class="<%= 'd-none' unless @customer.enable_vehicle_position %>">
+      <%= render partial: 'shared/check_box', locals: { form: f, field: :vehicle_position_keep_trace, label: t('activerecord.attributes.customer.vehicle_position_keep_trace'), help: t('.vehicle_position_keep_trace_help') } %>
+      <div id="vehicle_position_retention_days_wrap" class="<%= 'd-none' unless @customer.enable_vehicle_position && @customer.vehicle_position_keep_trace %>">
+        <%= f.number_field :vehicle_position_retention_days, { help: t('.vehicle_position_retention_days_help'), min: 1, max: 365 } %>
+      </div>
+    </div>
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_stop_status, label: t('activerecord.attributes.customer.enable_stop_status') } %>
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_store_stops, label: t('activerecord.attributes.customer.enable_store_stops') } %>
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_sms, label: t('activerecord.attributes.customer.enable_sms'), options: { disabled: @customer.reseller.messagings.none?{ |_k, v| v['enable'] == true } } } %>
