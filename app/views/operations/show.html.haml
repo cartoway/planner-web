@@ -1,0 +1,169 @@
+- content_for :title, @operation.name
+- content_for :meta do
+  %meta{name: 'turbo-refresh-method', content: 'morph'}
+  %meta{name: 'turbo-refresh-scroll', content: 'preserve'}
+- stats = @operation.board
+- board = stats
+- customer = @operation.customer
+- layers = (customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: layer.url, vector_style_url: layer.vector_style_url, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
+- map_cfg = { map_lat: customer.default_position[:lat], map_lng: customer.default_position[:lng], map_zoom: 12, geocoder: true }
+- map_cfg[:geocoder_placeholder] = t('web.geocoder.search')
+- map_cfg[:geocoder_empty] = t('web.geocoder.empty_result')
+- map_cfg[:geocoder_tooltip] = t('web.geocoder.tooltip')
+- map_cfg[:geocoder_submit] = t('web.geocoder.submit_search')
+- map_cfg[:map_layers_title] = t('destinations.index.map_layers')
+- map_cfg[:map_base_layers_title] = t('destinations.index.map_base_layers')
+- map_cfg[:map_overlay_title] = t('destinations.index.map_overlay_layers')
+- map_cfg[:map_layers] = Hash[layers.map{ |l| l[:name] }.zip(layers)]
+- map_config = map_cfg.to_json
+.operation-board{data: { controller: 'v2--operation-show', config: map_config, v2__operation_show_map_url_value: map_operation_path(@operation), v2__operation_show_search_url_value: search_stops_operation_path(@operation), v2__operation_show_positions_url_value: map_operation_path(@operation), planned_label: t('operations.show.planned'), status_label: t('operations.index.status'), address_label: t('operations.show.address'), ref_label: t('display_ui.destinations_list_columns.ref') }}
+  = turbo_stream_from @operation
+  %header.operation-header
+    .operation-header-id
+      = form_with model: @operation, url: operation_path(@operation), method: :patch, local: true do |f|
+        .d-flex.align-items-center.gap-2
+          %span.operation-header-title{data: { v2__operation_show_target: 'nameLabel' }}= @operation.name
+          %button.btn.btn-link.btn-sm.p-0{type: 'button', aria: { label: t('operations.show.edit_name') }, data: { action: 'v2--operation-show#editName' }}
+            %i.fa.fa-pencil
+          = f.text_field :name, class: 'form-control form-control operation-name d-none', aria: { label: t('operations.index.name') }, data: { v2__operation_show_target: 'nameInput', action: 'keydown->v2--operation-show#saveNameOnEnter change->v2--operation-show#saveName' }
+          %span.badge.operation-status= t("operations.statuses.#{@operation.status}")
+        .operation-header-sub
+          - if @operation.ref.present?
+            %span.operation-header-title= @operation.ref
+          = f.date_field :date, class: 'form-control form-control operation-date', aria: { label: t('operations.index.date') }, disabled: !@operation.open?, data: { action: 'change->v2--operation-show#saveDate' }
+    .operation-header-progress
+      .operation-header-progress-label= "#{board[:delivered]}/#{board[:total]} #{t('operations.show.stops')}"
+      = render 'v2/shared/status_segments', counts: board, css_class: 'operation-segments'
+    .operation-header-actions
+      - if @operation.planning
+        = link_to edit_planning_path(@operation.planning), class: 'btn btn-light btn-sm', target: '_blank', rel: 'noopener', data: { turbo: false } do
+          %i.fa.fa-map.fa-fw
+          = t('operations.show.planning')
+      - if @operation.open? && @send_routes.present?
+        %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
+          %i.fa.fa-envelope.fa-fw
+          = t('operations.show.send_email')
+        - if @operation.customer.enable_sms
+          %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-sms' }}
+            %i.fa.fa-comment-sms.fa-fw
+            = t('operations.show.send_sms')
+  .operation-body
+    %aside.operation-list
+      %button.operation-scroll-top.btn-close{type: 'button', aria: { label: t('operations.show.scroll_top') }, data: { action: 'click->v2--operation-show#scrollListTop' }}
+        %i.fa.fa-chevron-up
+      .operation-list-body
+        .operation-stats
+          .operation-stat
+            %i.fa.fa-paper-plane
+            %div
+              %strong= "#{stats[:sent]}/#{stats[:routes]}"
+              %span= t('operations.show.transmitted')
+          .operation-stat
+            %i.fa.fa-location-dot
+            %div
+              %strong{data: { stat: 'stops' }}= "#{stats[:delivered] + stats[:failed] + stats[:exception]}/#{stats[:total]}"
+              %span= t('operations.show.stops')
+          .operation-stat{class: ('is-late' if stats[:delay].to_i.positive?)}
+            %i.fa.fa-clock
+            %div
+              %strong{data: { stat: 'delay' }}= stats[:delay].nil? ? '—' : "#{stats[:delay]} min"
+              %span= t('operations.show.cumulative_delay')
+          = render 'operations/quantity_stats', units: stats[:units]
+          - operation_preference_stat_keys.each do |key|
+            - if key != 'quantities' && (stat = operation_plan_stat(key, stats[:plan], current_user))
+              .operation-stat
+                %i.fa.fa-fw{class: stat[:icon]}
+                %div
+                  %strong= stat[:value]
+                  %span= t("display_ui.header_blocks.#{key}")
+        %input.form-control.form-control.operation-search{type: 'search', placeholder: t('operations.show.search_stops'), data: { action: 'input->v2--operation-show#filterQuery' }}
+        .operation-chips
+          %button.operation-chip.is-active{type: 'button', data: { phase: 'all', action: 'click->v2--operation-show#filterPhase' }}= "#{t('operations.show.filter_all')} #{stats[:total]}"
+          %button.operation-chip{type: 'button', data: { phase: 'late', action: 'click->v2--operation-show#filterPhase' }}= "#{t('operations.show.filter_late')} #{stats[:late]}"
+          %button.operation-chip{type: 'button', data: { phase: 'failed', action: 'click->v2--operation-show#filterPhase' }}= "#{t('operations.show.filter_failed')} #{stats[:failed]}"
+          %button.operation-chip{type: 'button', data: { phase: 'exception', action: 'click->v2--operation-show#filterPhase' }}= "#{t('operations.show.filter_exception')} #{stats[:exception]}"
+          %button.operation-chip{type: 'button', data: { phase: 'upcoming', action: 'click->v2--operation-show#filterPhase' }}= "#{t('operations.show.filter_upcoming')} #{stats[:upcoming]}"
+          %button.operation-chip{type: 'button', data: { phase: 'delivered', action: 'click->v2--operation-show#filterPhase' }}= "#{t('operations.show.filter_delivered')} #{stats[:delivered]}"
+        - selector_count = @selector_routes.size
+        - selector_label = selector_count.zero? ? t('web.select2.route_none') : "#{selector_count} #{t(selector_count == 1 ? 'web.select2.route_selected' : 'web.select2.routes_selected')}"
+        .d-flex.justify-content-end.px-2.pb-1
+          .btn-group.operation-route-toolbar{data: { route_selector: true, none_label: t('web.select2.route_none'), one_label: t('web.select2.route_selected'), many_label: t('web.select2.routes_selected') }}
+            %button.btn.btn-sm.btn-light.dropdown-toggle{type: 'button', title: t('routes.show.selector'), aria: { label: t('routes.show.selector') }, data: { bs_toggle: 'dropdown', bs_auto_close: 'outside', bs_popper_config: '{"strategy":"fixed"}' }}
+              %span{data: { route_selector_label: true }}= selector_label
+            .dropdown-menu.dropdown-menu-end.shadow.searchable-checklist-dropdown-menu
+              .searchable-checklist-dropdown-inner
+                .searchable-checklist-dropdown-search
+                  .operation-route-selector-search
+                    %input.form-control.form-control-sm{type: 'search', autocomplete: 'off', placeholder: t('web.select2.search_placeholder'), aria: { label: t('web.select2.search_placeholder') }, data: { action: 'input->v2--operation-show#filterRouteSelector' }}
+                    %button.operation-route-selector-clear.d-none{type: 'button', title: t('operations.show.clear_route_filter'), aria: { label: t('operations.show.clear_route_filter') }, data: { action: 'click->v2--operation-show#clearRouteSelectorFilter' }}
+                      %i.fa.fa-times
+                %ul.searchable-checklist-dropdown-results{role: 'listbox'}
+                  %li.searchable-checklist-dropdown-option--global
+                    %button{type: 'button', data: { action: 'click->v2--operation-show#selectRoutes', mode: 'all' }}
+                      %i.fa.fa-check-square.fa-fw
+                      = t('web.select2.route_all')
+                  %li.searchable-checklist-dropdown-option--global
+                    %button{type: 'button', data: { action: 'click->v2--operation-show#selectRoutes', mode: 'clear' }}
+                      %i.fa.fa-regular.fa-square.fa-fw
+                      = t('web.select2.route_clear')
+                  %li.searchable-checklist-dropdown-option--global
+                    %button{type: 'button', data: { action: 'click->v2--operation-show#selectRoutes', mode: 'reverse' }}
+                      %i.fa.fa-random.fa-fw
+                      = t('web.select2.route_reverse')
+                  - @selector_routes.each do |route|
+                    - label = route.ref.presence || route.vehicle_name.presence || t('operations.show.unassigned')
+                    - filter_label = [label, route.vehicle_name, route.ref, route.vehicle_snapshot['ref']].compact.map { |part| part.to_s.downcase }.uniq.join(' ')
+                    %li.operation-route-selector-option.searchable-checklist-dropdown-option{data: { filter_label: filter_label }}
+                      %label.searchable-checklist-dropdown-row{for: "operation-route-selector-#{route.id}"}
+                        %input.searchable-checklist-dropdown-checkbox{type: 'checkbox', checked: true, value: route.id, id: "operation-route-selector-#{route.id}", data: { action: 'change->v2--operation-show#applyRouteSelection' }}
+                        %span.searchable-checklist-dropdown-label= label
+            %button.btn.btn-sm.btn-light{type: 'button', title: t('operations.show.hide_traces'), aria: { label: t('operations.show.hide_traces') }, data: { action: 'click->v2--operation-show#toggleAllTraces', hide_label: t('operations.show.hide_traces'), show_label: t('operations.show.show_traces') }}
+              %i.fa.fa-eye.fa-fw
+        = render 'operations/route_list'
+        - if @next_page
+          = link_to t('operations.show.more'), routes_operation_path(@operation, page: @next_page), data: { action: 'click->v2--operation-show#loadMore' }
+    .operation-map
+      #map.destinations-map.maplibre-host{data: { v2__operation_show_target: 'map', turbo_permanent: true }}
+      .operation-legend
+        %span
+          %i.fa.fa-circle{style: 'color:#9ca3af'}
+          = t('operations.show.filter_upcoming')
+        %span
+          %i.fa.fa-circle{style: 'color:#25417c'}
+          = t('operations.show.en_route')
+        %span
+          %i.fa.fa-circle{style: 'color:#1f9d55'}
+          = t('operations.show.filter_delivered')
+        %span
+          %i.fa.fa-circle{style: 'color:#f59e0b'}
+          = t('operations.show.filter_late')
+        %span
+          %i.fa.fa-circle{style: 'color:#d64545'}
+          = t('operations.show.filter_failed')
+        %span
+          %i.fa.fa-circle{style: 'color:#7c3aed'}
+          = t('operations.show.filter_exception')
+    %aside#operation-detail.operation-detail
+      .operation-detail-bar
+        %button.btn-close{type: 'button', data: { action: 'click->v2--operation-show#closeDetail' }, 'aria-label': t('web.dialog.close')}
+      #operation-detail-body.operation-detail-body
+#operation-route-send.modal.fade{tabindex: '-1', aria: { hidden: 'true' }, data: { email_title: t('operations.show.send_email_title'), sms_title: t('operations.show.send_sms_title'), email_label: t('activerecord.attributes.vehicle.contact_email'), sms_label: t('activerecord.attributes.vehicle.phone_number'), email_submit: t('operations.show.send_email'), sms_submit: t('operations.show.send_sms') }}
+  .modal-dialog
+    .modal-content
+      = form_with url: transmit_operation_path(@operation), method: :post, local: true, data: { turbo: false } do
+        = hidden_field_tag :channel, '', data: { route_send_channel: true }
+        = hidden_field_tag :send, '1', data: { route_send_flag: true }
+        .modal-header
+          %h2.h5.modal-title{data: { route_send_title: true }}
+          %button.btn-close{type: 'button', data: { bs_dismiss: 'modal' }, aria: { label: t('web.dialog.close') }}
+        .modal-body
+          %p.mb-2{data: { route_send_name: true }}
+          %label.form-label{for: 'operation-route-send-contact', data: { route_send_label: true }}
+          %input.form-control{type: 'text', id: 'operation-route-send-contact', autocomplete: 'off', data: { route_send_input: true }}
+        .modal-footer
+          %button.btn.btn-light{type: 'button', data: { bs_dismiss: 'modal' }}= t('all.verb.cancel')
+          = submit_tag t('operations.show.send_email'), class: 'btn btn-primary', data: { route_send_submit: true }
+- if @operation.open? && @send_routes.present?
+  = render 'operations/send_drivers_modal', operation: @operation, routes: @send_routes, channel: 'email'
+  - if @operation.customer.enable_sms
+    = render 'operations/send_drivers_modal', operation: @operation, routes: @send_routes, channel: 'sms'

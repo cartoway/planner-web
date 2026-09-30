@@ -752,6 +752,136 @@ $sidebar-margins: 10px;
           left: auto;
         }
       }
+
+      #planning-execution.panel {
+        margin: 0 2px 8px;
+
+        .planning-execution-heading {
+          cursor: pointer;
+
+          .planning-execution-title {
+            font-weight: bold;
+          }
+
+          .planning-execution-caret {
+            transition: transform 0.15s ease;
+          }
+
+          &.is-open .planning-execution-caret {
+            transform: rotate(90deg);
+          }
+
+          .planning-execution-new {
+            margin-top: -2px;
+          }
+        }
+
+        .panel-body {
+          padding: 8px 12px;
+        }
+
+        .planning-execution-historized {
+          margin-top: 10px;
+        }
+
+        .planning-execution-historized-heading {
+          cursor: pointer;
+          color: #777;
+          font-size: 12px;
+          margin-bottom: 8px;
+
+          .planning-execution-caret {
+            transition: transform 0.15s ease;
+          }
+
+          &.is-open .planning-execution-caret {
+            transform: rotate(90deg);
+          }
+        }
+
+        .planning-execution-card {
+          background: #fff;
+          border: 1px solid #ddd;
+          border-left: 4px solid $primary-color;
+          border-radius: 4px;
+          padding: 10px 12px;
+          margin-bottom: 8px;
+
+          &.is-historized {
+            border-left-color: #bbb;
+          }
+
+          &:last-child {
+            margin-bottom: 0;
+          }
+        }
+
+        .planning-execution-card-head {
+          margin-bottom: 6px;
+        }
+
+        .planning-execution-card-title {
+          .planning-execution-ref {
+            font-size: 14px;
+            margin-right: 6px;
+          }
+
+          .label {
+            display: inline-block;
+            vertical-align: middle;
+          }
+        }
+
+        .planning-execution-routes-count {
+          color: #555;
+          margin-bottom: 10px;
+        }
+
+        .planning-execution-actions {
+          .pull-right > .btn,
+          .button_to,
+          .planning-execution-sync {
+            display: inline-block;
+            margin: 0 6px 0 0;
+            vertical-align: middle;
+          }
+
+          .pull-right > .btn:last-child,
+          .pull-right > a.btn:last-child {
+            margin-right: 0;
+          }
+
+          .btn[disabled] {
+            opacity: 0.55;
+            cursor: not-allowed;
+          }
+        }
+      }
+    }
+  }
+
+  #planning-operation-modal {
+    .planning-execution-route {
+      margin-bottom: 8px;
+
+      .d-flex {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .form-switch {
+        flex-shrink: 0;
+        margin: 0;
+      }
+
+      &.is-taken {
+        opacity: 0.75;
+
+        label {
+          color: #777;
+        }
+      }
     }
   }
 

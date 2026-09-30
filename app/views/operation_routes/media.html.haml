@@ -1,0 +1,90 @@
+- title = [@operation_route.vehicle_name, @operation_route.router_name].compact.join(' - ')
+- content_for :title, t('operations.media.title')
+.modal.fade.operation-media-modal{id: "operation-media-modal-#{@operation_route.id}", tabindex: '-1', 'aria-labelledby': "operation-media-title-#{@operation_route.id}", 'aria-hidden': 'true'}
+  .modal-dialog.modal-xl.modal-dialog-centered
+    .modal-content
+      .modal-header
+        %h2.h5.modal-title{id: "operation-media-title-#{@operation_route.id}"}
+          = t('operations.media.title')
+          %span.text-muted= title
+        %button.btn-close{type: 'button', 'data-bs-dismiss': 'modal', 'aria-label': t('web.dialog.close')}
+      .modal-body
+        - if @media_groups.empty?
+          %p.text-muted.mb-0= t('operations.media.empty')
+        - else
+          .operation-media-stage
+            .operation-media-track{data: { media_track: true }}
+              .operation-media-spacer{'aria-hidden': 'true'}
+              - @media_groups.each do |group|
+                - stop = group[:stop]
+                - label = stop_list_primary_line(stop.list_fields).presence || stop.address_label
+                - place = stop.destination_snapshot.presence || stop.store_snapshot
+                .operation-media-group{data: { media_group: true, stop_id: stop.id }}
+                  .operation-media-stop
+                    .d-flex.align-items-center.gap-2.min-w-0
+                      %span.operation-glyph{class: "is-#{stop.phase}"}= stop.index
+                      %strong.operation-media-title.text-truncate= label
+                    - if stop.status.present?
+                      %ul.operation-timeline
+                        %li{class: "is-#{stop.status.downcase}"}
+                          %span.operation-timeline-label= t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
+                    .operation-split
+                      %div
+                        %span= t('operations.show.planned')
+                        %strong= stop.passage_time.presence || '—'
+                      %div
+                        %span= t('operations.show.actual')
+                        %strong= stop.actual_clock.presence || '—'
+                    %section.operation-section
+                      %h3= t('operations.show.address')
+                      .operation-field
+                        %p.mb-1= [place['street'], place['postalcode'], place['city']].compact_blank.join(', ').presence || '—'
+                        - if place['ref'].present?
+                          %p.mb-0.text-muted
+                            = t('activerecord.attributes.destination.ref')
+                            = place['ref']
+                  .operation-proofs.operation-media-grid
+                    - group[:documents].each do |document|
+                      = link_to document[:url], target: '_blank', rel: 'noopener noreferrer', class: 'operation-proof operation-media-item', title: (document[:kind] == 'signature' ? t('operations.media.signature') : document[:filename]) do
+                        %img{src: document[:url], alt: document[:filename]}
+                        - if document[:kind] == 'signature'
+                          %span.operation-media-caption= t('operations.media.signature')
+                  = render 'operation_stops/delivery_note_link', operation_stop: stop
+              .operation-media-spacer{'aria-hidden': 'true'}
+            .operation-media-edge.operation-media-edge--left
+              .operation-media-fade
+              %button.operation-media-nav.btn-close{type: 'button', title: t('operations.media.previous'), aria: { label: t('operations.media.previous') }, data: { media_prev: true }}
+                %i.fa.fa-chevron-left
+            .operation-media-edge.operation-media-edge--right
+              .operation-media-fade
+              %button.operation-media-nav.btn-close{type: 'button', title: t('operations.media.next'), aria: { label: t('operations.media.next') }, data: { media_next: true }}
+                %i.fa.fa-chevron-right
+:javascript
+  (function () {
+    var modal = document.getElementById('operation-media-modal-#{@operation_route.id}');
+    if (!modal || modal.dataset.mediaBound) return;
+    modal.dataset.mediaBound = '1';
+    var track = modal.querySelector('[data-media-track]');
+    var prev = modal.querySelector('[data-media-prev]');
+    var next = modal.querySelector('[data-media-next]');
+    function step(direction) {
+      if (!track) return;
+      var card = track.querySelector('[data-media-group]');
+      if (!card) return;
+      var gap = parseFloat(getComputedStyle(track).columnGap || getComputedStyle(track).gap) || 12;
+      var delta = card.getBoundingClientRect().width + gap;
+      var max = track.scrollWidth - track.clientWidth;
+      if (direction > 0 && track.scrollLeft >= max - 4) {
+        track.scrollTo({ left: 0, behavior: 'smooth' });
+      } else if (direction < 0 && track.scrollLeft <= 4) {
+        track.scrollTo({ left: max, behavior: 'smooth' });
+      } else {
+        track.scrollBy({ left: direction * delta, behavior: 'smooth' });
+      }
+    }
+    if (prev) prev.addEventListener('click', function () { step(-1); });
+    if (next) next.addEventListener('click', function () { step(1); });
+    if (!modal.closest('#operation-media-host') && window.bootstrap && window.bootstrap.Modal) {
+      window.bootstrap.Modal.getOrCreateInstance(modal).show();
+    }
+  })();

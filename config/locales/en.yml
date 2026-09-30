@@ -243,7 +243,7 @@ en:
         router: Routing Engine
         router_warning: This routing engine is unauthorized in this profile
         layer_warning: This layer is unauthorized in this profile
-        planning_date_offset: Planning date offset
+        operation_date_offset: Operation date offset
         stops_preload_limit: Stops preload limit
         router_id: Routing Engine
         router_dimension: Router objective
@@ -1204,8 +1204,8 @@ en:
       limits: Limits
       options: Options
       optimization_parameters: Optimization settings
-      planning_date_offset_help: >-
-        Number of days to add to the date of the route plan compared to the current date.
+      operation_date_offset_help: >-
+        Number of days to add to the operation date compared to the current date.
       stops_preload_limit_help: >-
         Maximal number of stops before switching to manual loading of route stops.
       router_help: Profile used by route plan by default
@@ -3533,6 +3533,8 @@ en:
   unlock_operation:
     default: Contact support to activate this feature
   v2:
+    typed_confirm:
+      input_label: Confirmation
     layout:
       form_sidebar_aria: Form panel
       form_sidebar_placeholder: Use the pencil button on a row to open the edit form here.
@@ -3862,3 +3864,186 @@ en:
         toggle_title: Columns
         reset_defaults: Reset to defaults
         hint: Open the menu, type to filter, toggle checkboxes (max 5), or reset to defaults.
+  execution:
+    title: Operations
+    new: New
+    empty: No operation for this planning
+    historized:
+      one: '%{count} historized operation'
+      other: '%{count} historized operations'
+    publish: Create operation
+    date: Date
+    visible_routes_only: Visible routes only
+    sync: Synchronize
+    sync_confirm: Do you really want to update the routes currently in execution?
+    show: View
+    open_tracking: Open tracking
+    routes_count:
+      one: '%{count} route'
+      other: '%{count} routes'
+    republish: New operation
+    republish_confirm: Cancels the open operation and creates a new one.
+    published: Operation published
+    synced: Operation resynchronized
+    already_published: An operation is already published for this planning
+    route_conflict: A selected route is already in an open operation on that date
+    empty_routes: Select at least one route
+    missing: No open operation
+    badge_unpublished: Not published
+    badge_fresh: Up to date
+    badge_dirty: Out of date
+    alert_separator: ' · '
+    alert:
+      route_out_of_capacity: Out of capacity
+      route_out_of_drive_time: Out of time window
+      route_out_of_work_time: Out of time window
+      route_out_of_window: Out of slot
+      route_out_of_max_distance: Out of distance
+      route_no_path: No path
+    modal:
+      title: Create an operation
+      name: Name
+      routes: Routes
+      select_all: All
+      select_none: None
+      select_visible: Visible
+      already_in: 'Already in %{name}'
+      selected_count: '%{count} route(s) selected'
+    mobile:
+      unassigned: This route is not assigned to a vehicle
+  operations:
+    menu: Operations
+    historized: Operation historized
+    statuses:
+      in_progress: In progress
+      historized: Historized
+    index:
+      title: Operations
+      filter: Filter
+      any_status: Any status
+      chip_all: All
+      search_placeholder: Search a reference…
+      ref: Reference
+      date: Date
+      name: Name
+      status: Status
+      lifecycle: Lifecycle
+      sync: Sync
+      sync_na: '—'
+      planning: Planning
+      progress: Progress
+      stops_count: '%{treated}/%{total} stops'
+      published_at: Published at
+      actions: Actions
+      empty: No operations
+      past: Past
+      destroyed: Operation deleted
+      destroy_title: Delete operation
+      destroy_body: "To confirm, type the operation name: %{name}"
+      destroy_confirm: Delete permanently
+      destroy_input_label: Operation name
+    show:
+      planning: Source planning
+      search_routes: Vehicle name or ref
+      search_stops: Name, ref, street or city
+      all_routes: All routes
+      unassigned: Unassigned
+      media: Media
+      mobile: Driver view
+      mobile_access: Mobile access
+      send_drivers: Send to drivers
+      send_email: Send by email
+      send_sms: Send by SMS
+      send_email_title: Route email addresses
+      send_sms_title: Route phone numbers
+      send_route: Send this route
+      clear_selection: Clear selection
+      last_sent: "Last sent: %{at}"
+      transmitted: Sent
+      scroll_top: Back to top
+      sms_sent: "%{count} SMS sent"
+      sms_unavailable: SMS sending is not available
+      date_updated: Date updated
+      name_updated: Name updated
+      edit_name: Edit the name
+      date_locked: The date of a historized operation cannot be changed
+      date_taken: An operation with this ref already exists on that date
+      route_date_conflict: A route of this operation is already used by another open operation on that date
+      more: Load more
+      stops: Stops
+      collapse_panel: Collapse panel
+      expand_panel: Expand panel
+      timeline: Status history
+      details: Details
+      passage: Passage time
+      documents: Documents
+      no_status_history: No status changes
+      open: Open
+      close: Close
+      close_operation: Close operation
+      close_confirm: Close this operation?
+      cancel: Cancel
+      cancel_confirm: Cancel this operation?
+      more_actions: More actions
+      started_group: Started
+      waiting_group: Waiting
+      unassigned_badge: Unassigned
+      refresh: Refresh
+      en_route: On the way
+      late: "Late +%{count} min"
+      late_risk: Delay risk
+      filter_all: All
+      filter_late: Late
+      filter_failed: Failed
+      filter_exception: Exception
+      filter_upcoming: Upcoming
+      filter_delivered: Delivered
+      cumulative_delay: Cumulative delays
+      distance: Distance
+      parcels: Parcels
+      quantities: Quantities
+      save_quantities: Save quantities
+      deliveries: Deliveries
+      pickups: Pickups
+      attributes: Properties
+      planned: Planned
+      actual: Actual
+      center_vehicle: Center on the vehicle
+      center_route: Center on the route
+      hide_trace: Hide the route
+      show_trace: Show the route
+      hide_traces: Hide all routes
+      clear_route_filter: Clear search
+      show_traces: Show all routes
+      day_shift: "(D%{delta})"
+      address: Address
+      destination_ref: Destination reference
+      visit_ref: Visit reference
+      time_windows: "Time windows:"
+      proof: Proof of delivery
+      photo: Photo
+      call_contact: Call the contact
+      change_status: Change status
+      add_note: Add a note
+      vehicle: Vehicle
+    form:
+      title: Operations
+      show_past: Show past operations
+      hide_past: Hide past operations
+      history: See full history
+    media:
+      title: Route media
+      signature: Signature
+      without: Without documents (%{count})
+      empty: No documents on this route
+      previous: Previous stop
+      next: Next stop
+      documents_count: Documents
+    stops:
+      title: Place history
+      query: Ref, name, street or city
+      place: Place
+    mobile:
+      status: Status
+      save: Save
+

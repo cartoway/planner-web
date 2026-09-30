@@ -37,6 +37,25 @@ CREATE EXTENSION IF NOT EXISTS postgis WITH SCHEMA public;
 COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types and functions';
 
 
+--
+-- Name: operation_stops_null_for_destination(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.operation_stops_null_for_destination() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  UPDATE operation_stops
+  SET destination_id = NULL,
+      visit_id = NULL,
+      stop_id = NULL
+  WHERE destination_id = OLD.id
+     OR visit_id IN (SELECT id FROM visits WHERE destination_id = OLD.id);
+  RETURN OLD;
+END;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -253,7 +272,7 @@ CREATE TABLE public.customers (
     enable_optimization_soft_upper_bound boolean,
     stop_max_upper_bound integer DEFAULT 0,
     vehicle_max_upper_bound integer DEFAULT 0,
-    planning_date_offset integer DEFAULT 1,
+    operation_date_offset integer DEFAULT 1,
     optimization_cost_fixed integer,
     destination_duration integer,
     destinations_count integer DEFAULT 0 NOT NULL,
@@ -281,7 +300,8 @@ CREATE TABLE public.customers (
     company_city character varying,
     company_detail character varying,
     company_phone character varying,
-    job_destination_import_id integer
+    job_destination_import_id integer,
+    operations_mobile boolean DEFAULT false NOT NULL
 );
 
 
@@ -573,6 +593,195 @@ CREATE SEQUENCE public.messaging_logs_id_seq
 --
 
 ALTER SEQUENCE public.messaging_logs_id_seq OWNED BY public.messaging_logs.id;
+
+
+--
+-- Name: operation_routes; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.operation_routes (
+    id integer NOT NULL,
+    operation_id integer NOT NULL,
+    route_id integer,
+    vehicle_usage_id integer,
+    vehicle_id integer,
+    index integer,
+    ref character varying(255),
+    color character varying,
+    hidden boolean DEFAULT false NOT NULL,
+    unassigned boolean DEFAULT false NOT NULL,
+    sync_state character varying DEFAULT 'active'::character varying NOT NULL,
+    vehicle_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
+    vehicle_usage_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
+    route_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
+    departure_status character varying,
+    departure_eta timestamp without time zone,
+    departure_status_updated_at timestamp without time zone,
+    arrival_status character varying,
+    arrival_eta timestamp without time zone,
+    arrival_status_updated_at timestamp without time zone,
+    last_sent_at timestamp without time zone,
+    last_sent_to character varying,
+    custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: operation_routes_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.operation_routes_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: operation_routes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.operation_routes_id_seq OWNED BY public.operation_routes.id;
+
+
+--
+-- Name: operation_stop_status_events; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.operation_stop_status_events (
+    id integer NOT NULL,
+    operation_stop_id integer NOT NULL,
+    status character varying NOT NULL,
+    eta timestamp without time zone,
+    recorded_at timestamp without time zone NOT NULL,
+    source character varying DEFAULT 'mobile'::character varying NOT NULL,
+    source_ref character varying,
+    actor_ref character varying,
+    payload jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: operation_stop_status_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.operation_stop_status_events_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: operation_stop_status_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.operation_stop_status_events_id_seq OWNED BY public.operation_stop_status_events.id;
+
+
+--
+-- Name: operation_stops; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.operation_stops (
+    id integer NOT NULL,
+    operation_route_id integer NOT NULL,
+    stop_id integer,
+    visit_id integer,
+    destination_id integer,
+    store_id integer,
+    store_reload_id bigint,
+    kind character varying NOT NULL,
+    index integer NOT NULL,
+    active boolean DEFAULT true NOT NULL,
+    locked boolean DEFAULT false NOT NULL,
+    sync_state character varying DEFAULT 'active'::character varying NOT NULL,
+    destination_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
+    visit_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
+    store_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
+    stop_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
+    status character varying,
+    eta timestamp without time zone,
+    status_updated_at timestamp without time zone,
+    custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL,
+    actual_quantities jsonb DEFAULT '{}'::jsonb NOT NULL,
+    CONSTRAINT operation_stops_kind_check CHECK (((kind)::text = ANY (ARRAY[('visit'::character varying)::text, ('rest'::character varying)::text, ('store'::character varying)::text]))),
+    CONSTRAINT operation_stops_visit_kind_check CHECK ((((kind)::text <> 'visit'::text) OR (visit_snapshot <> '{}'::jsonb)))
+);
+
+
+--
+-- Name: operation_stops_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.operation_stops_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: operation_stops_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.operation_stops_id_seq OWNED BY public.operation_stops.id;
+
+
+--
+-- Name: operations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.operations (
+    id integer NOT NULL,
+    customer_id integer NOT NULL,
+    planning_id integer,
+    date date NOT NULL,
+    name character varying(255) NOT NULL,
+    ref character varying,
+    status character varying DEFAULT 'in_progress'::character varying NOT NULL,
+    published_at timestamp without time zone DEFAULT now() NOT NULL,
+    synced_at timestamp without time zone,
+    structure_fingerprint character varying,
+    closed_at timestamp without time zone,
+    cancelled_at timestamp without time zone,
+    planning_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
+    deliverable_units_snapshot jsonb DEFAULT '[]'::jsonb NOT NULL,
+    custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: operations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.operations_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: operations_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.operations_id_seq OWNED BY public.operations.id;
 
 
 --
@@ -1620,6 +1829,50 @@ ALTER SEQUENCE public.users_id_seq OWNED BY public.users.id;
 
 
 --
+-- Name: vehicle_positions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.vehicle_positions (
+    id integer NOT NULL,
+    customer_id integer NOT NULL,
+    vehicle_id integer,
+    operation_id integer,
+    operation_route_id integer NOT NULL,
+    lat double precision NOT NULL,
+    lng double precision NOT NULL,
+    heading double precision,
+    speed double precision,
+    accuracy double precision,
+    altitude double precision,
+    positioned_at timestamp without time zone NOT NULL,
+    received_at timestamp without time zone DEFAULT now() NOT NULL,
+    source character varying DEFAULT 'mobile'::character varying NOT NULL,
+    payload jsonb DEFAULT '{}'::jsonb NOT NULL,
+    created_at timestamp without time zone DEFAULT now() NOT NULL
+);
+
+
+--
+-- Name: vehicle_positions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.vehicle_positions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: vehicle_positions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.vehicle_positions_id_seq OWNED BY public.vehicle_positions.id;
+
+
+--
 -- Name: vehicle_usage_sets; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1962,6 +2215,34 @@ ALTER TABLE ONLY public.messaging_logs ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: operation_routes id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_routes ALTER COLUMN id SET DEFAULT nextval('public.operation_routes_id_seq'::regclass);
+
+
+--
+-- Name: operation_stop_status_events id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_stop_status_events ALTER COLUMN id SET DEFAULT nextval('public.operation_stop_status_events_id_seq'::regclass);
+
+
+--
+-- Name: operation_stops id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_stops ALTER COLUMN id SET DEFAULT nextval('public.operation_stops_id_seq'::regclass);
+
+
+--
+-- Name: operations id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operations ALTER COLUMN id SET DEFAULT nextval('public.operations_id_seq'::regclass);
+
+
+--
 -- Name: order_arrays id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2137,6 +2418,13 @@ ALTER TABLE ONLY public.users ALTER COLUMN id SET DEFAULT nextval('public.users_
 
 
 --
+-- Name: vehicle_positions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.vehicle_positions ALTER COLUMN id SET DEFAULT nextval('public.vehicle_positions_id_seq'::regclass);
+
+
+--
 -- Name: vehicle_usage_sets id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2272,6 +2560,38 @@ ALTER TABLE ONLY public.layers
 
 ALTER TABLE ONLY public.messaging_logs
     ADD CONSTRAINT messaging_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: operation_routes operation_routes_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_routes
+    ADD CONSTRAINT operation_routes_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: operation_stop_status_events operation_stop_status_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_stop_status_events
+    ADD CONSTRAINT operation_stop_status_events_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: operation_stops operation_stops_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_stops
+    ADD CONSTRAINT operation_stops_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: operations operations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operations
+    ADD CONSTRAINT operations_pkey PRIMARY KEY (id);
 
 
 --
@@ -2472,6 +2792,14 @@ ALTER TABLE ONLY public.tags
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: vehicle_positions vehicle_positions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.vehicle_positions
+    ADD CONSTRAINT vehicle_positions_pkey PRIMARY KEY (id);
 
 
 --
@@ -2810,6 +3138,153 @@ CREATE INDEX index_messaging_logs_on_message_id ON public.messaging_logs USING b
 
 
 --
+-- Name: index_operation_routes_on_operation_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_routes_on_operation_id ON public.operation_routes USING btree (operation_id);
+
+
+--
+-- Name: index_operation_routes_on_route_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_routes_on_route_id ON public.operation_routes USING btree (route_id);
+
+
+--
+-- Name: index_operation_routes_on_vehicle_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_routes_on_vehicle_id ON public.operation_routes USING btree (vehicle_id);
+
+
+--
+-- Name: index_operation_stop_status_events_on_recorded_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stop_status_events_on_recorded_at ON public.operation_stop_status_events USING btree (recorded_at);
+
+
+--
+-- Name: index_operation_stop_status_events_on_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stop_status_events_on_status ON public.operation_stop_status_events USING btree (status);
+
+
+--
+-- Name: index_operation_stop_status_events_on_stop_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stop_status_events_on_stop_id ON public.operation_stop_status_events USING btree (operation_stop_id);
+
+
+--
+-- Name: index_operation_stop_status_events_on_stop_id_and_recorded_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stop_status_events_on_stop_id_and_recorded_at ON public.operation_stop_status_events USING btree (operation_stop_id, recorded_at);
+
+
+--
+-- Name: index_operation_stops_on_destination_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stops_on_destination_id ON public.operation_stops USING btree (destination_id);
+
+
+--
+-- Name: index_operation_stops_on_destination_snapshot_city; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stops_on_destination_snapshot_city ON public.operation_stops USING btree (((destination_snapshot ->> 'city'::text)));
+
+
+--
+-- Name: index_operation_stops_on_destination_snapshot_ref; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stops_on_destination_snapshot_ref ON public.operation_stops USING btree (((destination_snapshot ->> 'ref'::text)));
+
+
+--
+-- Name: index_operation_stops_on_operation_route_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stops_on_operation_route_id ON public.operation_stops USING btree (operation_route_id);
+
+
+--
+-- Name: index_operation_stops_on_operation_route_id_and_index; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stops_on_operation_route_id_and_index ON public.operation_stops USING btree (operation_route_id, index);
+
+
+--
+-- Name: index_operation_stops_on_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stops_on_status ON public.operation_stops USING btree (status);
+
+
+--
+-- Name: index_operation_stops_on_status_updated_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stops_on_status_updated_at ON public.operation_stops USING btree (status_updated_at);
+
+
+--
+-- Name: index_operation_stops_on_stop_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stops_on_stop_id ON public.operation_stops USING btree (stop_id);
+
+
+--
+-- Name: index_operation_stops_on_visit_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_stops_on_visit_id ON public.operation_stops USING btree (visit_id);
+
+
+--
+-- Name: index_operations_on_customer_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operations_on_customer_id ON public.operations USING btree (customer_id);
+
+
+--
+-- Name: index_operations_on_customer_id_and_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operations_on_customer_id_and_date ON public.operations USING btree (customer_id, date);
+
+
+--
+-- Name: index_operations_on_customer_id_lower_ref_date; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_operations_on_customer_id_lower_ref_date ON public.operations USING btree (customer_id, lower((ref)::text), date) WHERE (ref IS NOT NULL);
+
+
+--
+-- Name: index_operations_on_planning_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operations_on_planning_id ON public.operations USING btree (planning_id);
+
+
+--
+-- Name: index_operations_on_status; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operations_on_status ON public.operations USING btree (status);
+
+
+--
 -- Name: index_orders_on_visit_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3104,6 +3579,34 @@ CREATE INDEX index_users_on_role_id ON public.users USING btree (role_id);
 
 
 --
+-- Name: index_vehicle_positions_on_customer_id_and_positioned_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_vehicle_positions_on_customer_id_and_positioned_at ON public.vehicle_positions USING btree (customer_id, positioned_at DESC);
+
+
+--
+-- Name: index_vehicle_positions_on_operation_id_and_positioned_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_vehicle_positions_on_operation_id_and_positioned_at ON public.vehicle_positions USING btree (operation_id, positioned_at DESC);
+
+
+--
+-- Name: index_vehicle_positions_on_operation_route_id_and_positioned_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_vehicle_positions_on_operation_route_id_and_positioned_at ON public.vehicle_positions USING btree (operation_route_id, positioned_at DESC);
+
+
+--
+-- Name: index_vehicle_positions_on_vehicle_id_and_positioned_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_vehicle_positions_on_vehicle_id_and_positioned_at ON public.vehicle_positions USING btree (vehicle_id, positioned_at DESC);
+
+
+--
 -- Name: index_vehicle_usage_sets_on_customer_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3209,6 +3712,13 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 
 
 --
+-- Name: destinations operation_stops_before_destination_delete; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER operation_stops_before_destination_delete BEFORE DELETE ON public.destinations FOR EACH ROW EXECUTE FUNCTION public.operation_stops_null_for_destination();
+
+
+--
 -- Name: destinations fk_destinations_customer_id; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3289,6 +3799,14 @@ ALTER TABLE ONLY public.products
 
 
 --
+-- Name: operation_stops fk_rails_017aaf1612; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_stops
+    ADD CONSTRAINT fk_rails_017aaf1612 FOREIGN KEY (visit_id) REFERENCES public.visits(id) ON DELETE SET NULL;
+
+
+--
 -- Name: resellers fk_rails_03bb1dfc17; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3313,6 +3831,22 @@ ALTER TABLE ONLY public.messaging_logs
 
 
 --
+-- Name: vehicle_positions fk_rails_0cea5179a8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.vehicle_positions
+    ADD CONSTRAINT fk_rails_0cea5179a8 FOREIGN KEY (vehicle_id) REFERENCES public.vehicles(id) ON DELETE SET NULL;
+
+
+--
+-- Name: operations fk_rails_1191e4d126; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operations
+    ADD CONSTRAINT fk_rails_1191e4d126 FOREIGN KEY (planning_id) REFERENCES public.plannings(id) ON DELETE SET NULL;
+
+
+--
 -- Name: vehicle_usage_sets fk_rails_16cc08e76b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3326,6 +3860,14 @@ ALTER TABLE ONLY public.vehicle_usage_sets
 
 ALTER TABLE ONLY public.routes
     ADD CONSTRAINT fk_rails_16cf5110b3 FOREIGN KEY (stop_route_data_id) REFERENCES public.route_data(id) ON DELETE CASCADE;
+
+
+--
+-- Name: operation_routes fk_rails_191d7fcccd; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_routes
+    ADD CONSTRAINT fk_rails_191d7fcccd FOREIGN KEY (vehicle_id) REFERENCES public.vehicles(id) ON DELETE SET NULL;
 
 
 --
@@ -3385,6 +3927,14 @@ ALTER TABLE ONLY public.layers_profiles
 
 
 --
+-- Name: operation_routes fk_rails_2db8d65270; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_routes
+    ADD CONSTRAINT fk_rails_2db8d65270 FOREIGN KEY (route_id) REFERENCES public.routes(id) ON DELETE SET NULL;
+
+
+--
 -- Name: planning_states fk_rails_3036bdb9c4; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3401,11 +3951,27 @@ ALTER TABLE ONLY public.vehicle_usages
 
 
 --
+-- Name: vehicle_positions fk_rails_3259c77892; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.vehicle_positions
+    ADD CONSTRAINT fk_rails_3259c77892 FOREIGN KEY (operation_route_id) REFERENCES public.operation_routes(id) ON DELETE CASCADE;
+
+
+--
 -- Name: stops_relations fk_rails_334c3fda73; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.stops_relations
     ADD CONSTRAINT fk_rails_334c3fda73 FOREIGN KEY (current_id) REFERENCES public.visits(id) ON DELETE CASCADE;
+
+
+--
+-- Name: operation_stops fk_rails_342b60ea8c; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_stops
+    ADD CONSTRAINT fk_rails_342b60ea8c FOREIGN KEY (stop_id) REFERENCES public.stops(id) ON DELETE SET NULL;
 
 
 --
@@ -3425,6 +3991,14 @@ ALTER TABLE ONLY public.deliverable_units
 
 
 --
+-- Name: operation_routes fk_rails_4a043e9e5b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_routes
+    ADD CONSTRAINT fk_rails_4a043e9e5b FOREIGN KEY (vehicle_usage_id) REFERENCES public.vehicle_usages(id) ON DELETE SET NULL;
+
+
+--
 -- Name: route_geojsons fk_rails_4b40197dfc; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3438,6 +4012,14 @@ ALTER TABLE ONLY public.route_geojsons
 
 ALTER TABLE ONLY public.customers
     ADD CONSTRAINT fk_rails_5095b21bc2 FOREIGN KEY (profile_id) REFERENCES public.profiles(id);
+
+
+--
+-- Name: operation_stops fk_rails_50bed73b53; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_stops
+    ADD CONSTRAINT fk_rails_50bed73b53 FOREIGN KEY (store_id) REFERENCES public.stores(id) ON DELETE SET NULL;
 
 
 --
@@ -3497,11 +4079,27 @@ ALTER TABLE ONLY public.stops_relations
 
 
 --
+-- Name: operation_routes fk_rails_6327bf0b23; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_routes
+    ADD CONSTRAINT fk_rails_6327bf0b23 FOREIGN KEY (operation_id) REFERENCES public.operations(id) ON DELETE CASCADE;
+
+
+--
 -- Name: users fk_rails_642f17018b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.users
     ADD CONSTRAINT fk_rails_642f17018b FOREIGN KEY (role_id) REFERENCES public.roles(id) ON DELETE SET NULL;
+
+
+--
+-- Name: operation_stop_status_events fk_rails_647aa306ec; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_stop_status_events
+    ADD CONSTRAINT fk_rails_647aa306ec FOREIGN KEY (operation_stop_id) REFERENCES public.operation_stops(id) ON DELETE CASCADE;
 
 
 --
@@ -3526,6 +4124,14 @@ ALTER TABLE ONLY public.vehicle_usages
 
 ALTER TABLE ONLY public.vehicle_usage_sets
     ADD CONSTRAINT fk_rails_7067840dd6 FOREIGN KEY (store_rest_id) REFERENCES public.stores(id);
+
+
+--
+-- Name: operation_stops fk_rails_72fe5af55e; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_stops
+    ADD CONSTRAINT fk_rails_72fe5af55e FOREIGN KEY (store_reload_id) REFERENCES public.store_reloads(id) ON DELETE SET NULL;
 
 
 --
@@ -3577,11 +4183,35 @@ ALTER TABLE ONLY public.active_storage_variant_records
 
 
 --
+-- Name: vehicle_positions fk_rails_af33fd4c25; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.vehicle_positions
+    ADD CONSTRAINT fk_rails_af33fd4c25 FOREIGN KEY (operation_id) REFERENCES public.operations(id) ON DELETE CASCADE;
+
+
+--
+-- Name: operations fk_rails_b37128efd5; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operations
+    ADD CONSTRAINT fk_rails_b37128efd5 FOREIGN KEY (customer_id) REFERENCES public.customers(id) ON DELETE CASCADE;
+
+
+--
 -- Name: customers fk_rails_b3c8f2f3d5; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.customers
     ADD CONSTRAINT fk_rails_b3c8f2f3d5 FOREIGN KEY (reseller_id) REFERENCES public.resellers(id);
+
+
+--
+-- Name: operation_stops fk_rails_b988a814f8; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_stops
+    ADD CONSTRAINT fk_rails_b988a814f8 FOREIGN KEY (destination_id) REFERENCES public.destinations(id) ON DELETE SET NULL;
 
 
 --
@@ -3606,6 +4236,14 @@ ALTER TABLE ONLY public.active_storage_attachments
 
 ALTER TABLE ONLY public.plannings_zonings
     ADD CONSTRAINT fk_rails_c4685d96c0 FOREIGN KEY (zoning_id) REFERENCES public.zonings(id) ON DELETE CASCADE;
+
+
+--
+-- Name: operation_stops fk_rails_c514e12603; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_stops
+    ADD CONSTRAINT fk_rails_c514e12603 FOREIGN KEY (operation_route_id) REFERENCES public.operation_routes(id) ON DELETE CASCADE;
 
 
 --
@@ -3646,6 +4284,14 @@ ALTER TABLE ONLY public.tag_destinations
 
 ALTER TABLE ONLY public.vehicle_usage_sets
     ADD CONSTRAINT fk_rails_d7ffafb662 FOREIGN KEY (store_stop_id) REFERENCES public.stores(id);
+
+
+--
+-- Name: vehicle_positions fk_rails_d93353fb21; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.vehicle_positions
+    ADD CONSTRAINT fk_rails_d93353fb21 FOREIGN KEY (customer_id) REFERENCES public.customers(id) ON DELETE CASCADE;
 
 
 --
@@ -3827,6 +4473,7 @@ ALTER TABLE ONLY public.zonings
 --
 -- PostgreSQL database dump complete
 --
+
 
 SET search_path TO "$user", public;
 
@@ -4152,7 +4799,6 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260526130000'),
 ('20260527153532'),
 ('20260623064843'),
-('20260729133352'),
 ('20260623141222'),
 ('20260624210858'),
 ('20260625210008'),
@@ -4160,12 +4806,15 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260717105805'),
 ('20260720072020'),
 ('20260721141523'),
+('20260729133352'),
 ('20260731120833'),
 ('20260904135351'),
 ('20260909160239'),
 ('20260910142720'),
 ('20260914115500'),
 ('20260918161934'),
-('20260921153038');
-
-
+('20260921153038'),
+('20260925120000'),
+('20260925120300'),
+('20260925120500'),
+('20260928170000');

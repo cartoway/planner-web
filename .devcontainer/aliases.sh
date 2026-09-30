@@ -16,6 +16,14 @@ alias planner-dev-build='_planner_web_devcontainer build'
 alias planner-dev-down='_planner_web_devcontainer down'
 alias planner-dev-logs='_planner_web_devcontainer logs -f'
 
+# Copy dirty app/config/lib/vendor files into web, precompile assets if needed, restart.
+# planner-dev-sync-v2 skips Webpacker and the v1 bundle.
+planner-dev-sync() {
+  bash "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/sync-web.sh" "$@"
+}
+alias planner-dev-sync='planner-dev-sync'
+alias planner-dev-sync-v2='planner-dev-sync --v2'
+
 # Tests must use RAILS_ENV=test and a separate database (POSTGRES_DB_TEST / planner-test).
 # Without this, db:test:purge would wipe the production database (POSTGRES_DB / planner).
 planner-dev-test-prepare() {

@@ -249,7 +249,7 @@ fr:
         router: Calculateur d'itinéraire
         router_warning: Ce calculateur d'itinéraire n'est pas autorisé dans ce profil
         layer_warning: Ce fond de carte n'est pas autorisé dans ce profil
-        planning_date_offset: Date de base des plans
+        operation_date_offset: Date de base des opérations
         stops_preload_limit: Préchargement des arrêts
         router_id: Calculateur d'itinéraire
         router_dimension: Objectif du calculateur
@@ -1230,8 +1230,8 @@ fr:
       limits: Limites
       options: Options
       optimization_parameters: Paramètres d'optimisation
-      planning_date_offset_help: >-
-        Nombre de jours à ajouter à la date du plan de tournées par rapport à la date du jour.
+      operation_date_offset_help: >-
+        Nombre de jours à ajouter à la date de l’opération par rapport à la date du jour.
       stops_preload_limit_help: >-
         Nombre maximal d'arrêts avant de passer à un chargement manuel des arrêts des tournées du plan.
       router_help: Profil utilisé pour les calculs d'itinéraires par défaut
@@ -3678,6 +3678,8 @@ fr:
   unlock_operation:
     default: Contactez le support pour activer cette fonctionnalité
   v2:
+    typed_confirm:
+      input_label: Confirmation
     layout:
       form_sidebar_aria: Panneau latéral de formulaire
       form_sidebar_placeholder: "Astuce : utilisez le bouton crayon d'une ligne pour ouvrir le formulaire de modification ici."
@@ -4010,3 +4012,186 @@ fr:
         toggle_title: Colonnes
         reset_defaults: Valeurs par défaut
         hint: 'Ouvrez le menu, tapez pour filtrer, cochez des cases (max 5), ou réinitialisez les valeurs par défaut.'
+  execution:
+    title: Opérations
+    new: Nouvelle
+    empty: Aucune opération pour ce planning
+    historized:
+      one: '%{count} opération historisée'
+      other: '%{count} opérations historisées'
+    publish: Créer l’opération
+    date: Date
+    visible_routes_only: Uniquement les tournées visibles
+    sync: Synchroniser
+    sync_confirm: Voulez-vous vraiment mettre à jour les tournées en cours d’exécution ?
+    show: Voir
+    open_tracking: Ouvrir le suivi
+    routes_count:
+      one: '%{count} tournée'
+      other: '%{count} tournées'
+    republish: Nouvelle opération
+    republish_confirm: Annule l’opération ouverte et en crée une nouvelle.
+    published: Opération publiée
+    synced: Opération resynchronisée
+    already_published: Une opération est déjà publiée pour ce planning
+    route_conflict: Une tournée sélectionnée est déjà dans une opération ouverte à cette date
+    empty_routes: Sélectionnez au moins une tournée
+    missing: Aucune opération ouverte
+    badge_unpublished: Non publié
+    badge_fresh: À jour
+    badge_dirty: Pas à jour
+    alert_separator: ' · '
+    alert:
+      route_out_of_capacity: Hors capacité
+      route_out_of_drive_time: Hors amplitude
+      route_out_of_work_time: Hors amplitude
+      route_out_of_window: Hors créneau
+      route_out_of_max_distance: Hors distance
+      route_no_path: Sans trajet
+    modal:
+      title: Créer une opération
+      name: Nom
+      routes: Tournées
+      select_all: Toutes
+      select_none: Aucune
+      select_visible: Visibles
+      already_in: 'Déjà dans %{name}'
+      selected_count: '%{count} tournée(s) sélectionnée(s)'
+    mobile:
+      unassigned: Cette tournée n’est pas affectée à un véhicule
+  operations:
+    menu: Opérations
+    historized: Opération historisée
+    statuses:
+      in_progress: En cours
+      historized: Historisée
+    index:
+      title: Opérations
+      filter: Filtrer
+      any_status: Tous les statuts
+      chip_all: Tous
+      search_placeholder: Rechercher une référence…
+      ref: Référence
+      date: Date
+      name: Nom
+      status: Statut
+      lifecycle: Cycle de vie
+      sync: Sync
+      sync_na: '—'
+      planning: Planning
+      progress: Avancement
+      stops_count: '%{treated}/%{total} arrêts'
+      published_at: Publiée le
+      actions: Actions
+      empty: Aucune opération
+      past: Passée
+      destroyed: Opération supprimée
+      destroy_title: Supprimer l’opération
+      destroy_body: "Pour confirmer, saisissez le nom de l’opération : %{name}"
+      destroy_confirm: Supprimer définitivement
+      destroy_input_label: Nom de l’opération
+    show:
+      planning: Planning
+      search_routes: Nom du véhicule ou référence
+      search_stops: Nom, référence, rue ou ville
+      all_routes: Toutes les tournées
+      unassigned: Hors tournée
+      media: Médias
+      mobile: Vue chauffeur
+      mobile_access: Accès mobile
+      send_drivers: Envoyer aux chauffeurs
+      send_email: Envoyer par e-mail
+      send_sms: Envoyer par SMS
+      send_email_title: E-mails des tournées
+      send_sms_title: Numéros des tournées
+      send_route: Envoyer cette tournée
+      clear_selection: Tout désélectionner
+      last_sent: "Dernier envoi : %{at}"
+      transmitted: Transmises
+      scroll_top: Remonter en haut
+      sms_sent: "%{count} SMS envoyé(s)"
+      sms_unavailable: L’envoi de SMS n’est pas disponible
+      date_updated: Date mise à jour
+      name_updated: Nom mis à jour
+      edit_name: Modifier le nom
+      date_locked: La date d'une opération historisée ne peut pas être modifiée
+      date_taken: Une opération avec cette référence existe déjà à cette date
+      route_date_conflict: Une tournée de cette opération est déjà utilisée par une autre opération ouverte à cette date
+      more: Charger la suite
+      stops: Arrêts
+      collapse_panel: Réduire le panneau
+      expand_panel: Déployer le panneau
+      timeline: Historique des statuts
+      details: Détails
+      passage: Horaire de passage
+      documents: Documents
+      no_status_history: Aucun changement de statut
+      open: Ouvrir
+      close: Clôturer
+      close_operation: Clôturer l’opération
+      close_confirm: Clôturer cette opération ?
+      cancel: Annuler
+      cancel_confirm: Annuler cette opération ?
+      more_actions: Autres actions
+      started_group: Démarrées
+      waiting_group: En attente
+      unassigned_badge: Non assigné
+      refresh: Actualiser
+      en_route: En route
+      late: "Retard +%{count} min"
+      late_risk: Risque retard
+      filter_all: Tous
+      filter_late: En retard
+      filter_failed: Échec
+      filter_exception: Anomalie
+      filter_upcoming: À venir
+      filter_delivered: Livrés
+      cumulative_delay: Retards cumulés
+      distance: Distance
+      parcels: Colis
+      quantities: Quantités
+      save_quantities: Enregistrer les quantités
+      deliveries: Livraisons
+      pickups: Collectes
+      attributes: Propriétés
+      planned: Prévu
+      actual: Réel
+      center_vehicle: Centrer sur le véhicule
+      center_route: Centrer sur la tournée
+      hide_trace: Masquer le tracé
+      show_trace: Afficher le tracé
+      hide_traces: Masquer tous les tracés
+      clear_route_filter: Effacer la recherche
+      show_traces: Afficher tous les tracés
+      day_shift: "(J%{delta})"
+      address: Adresse
+      destination_ref: Référence destination
+      visit_ref: Référence visite
+      time_windows: "Plages horaires :"
+      proof: Preuve de livraison
+      photo: Photo
+      call_contact: Appeler le contact
+      change_status: Changer le statut
+      add_note: Ajouter une note
+      vehicle: Véhicule
+    form:
+      title: Opérations
+      show_past: Afficher les opérations passées
+      hide_past: Masquer les opérations passées
+      history: Voir tout l’historique
+    media:
+      title: Médias de la tournée
+      signature: Signature
+      without: Sans document (%{count})
+      empty: Aucun document sur cette tournée
+      previous: Arrêt précédent
+      next: Arrêt suivant
+      documents_count: Documents
+    stops:
+      title: Historique des lieux
+      query: Référence, nom, rue ou ville
+      place: Lieu
+    mobile:
+      status: Statut
+      save: Enregistrer
+

@@ -46,6 +46,7 @@ class Customer < ApplicationRecord
   has_many :products, inverse_of: :customer, autosave: true, dependent: :delete_all
   before_destroy :delete_all_plannings # Declare and run before has_many :plannings
   has_many :plannings, inverse_of: :customer, autosave: true
+  has_many :operations
   has_many :order_arrays, inverse_of: :customer, autosave: true, dependent: :delete_all
   has_many :zonings, inverse_of: :customer, dependent: :delete_all
   before_destroy :destroy_disable_vehicle_usage_sets_validation # Declare and run before has_many :vehicle_usage_sets
@@ -177,8 +178,8 @@ class Customer < ApplicationRecord
     )
   }
 
-  def planning_date_offset_default
-    planning_date_offset || Planner::Application.config.planning_date_offset_default || 0
+  def operation_date_offset_default
+    operation_date_offset || Planner::Application.config.operation_date_offset_default || 0
   end
 
   def default_destination_icon

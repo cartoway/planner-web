@@ -284,7 +284,8 @@ function syncPositions() {
       return Promise.resolve();
     }
 
-    return fetch(`/routes/${position.routeId}/update_position.json`, {
+    const positionUrl = position.url || `/routes/${position.routeId}/update_position.json`
+    return fetch(positionUrl, {
       method: 'PATCH',
       body: JSON.stringify(position.coords),
       headers: {

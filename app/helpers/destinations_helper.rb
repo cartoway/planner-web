@@ -409,6 +409,10 @@ module DestinationsHelper
     csv
   end
 
+  def destination_operation_stops(destination, include_past: false)
+    OperationStop.for_destination(destination, include_past: include_past)
+  end
+
   private
 
   def destinations_current_user

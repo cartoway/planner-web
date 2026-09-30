@@ -1,0 +1,29 @@
+- operations = @planning.operations_for_sidebar.to_a
+- open_operations = operations.select(&:open?)
+- historized_operations = operations.reject(&:open?)
+- open_count = open_operations.size
+.panel.panel-default#planning-execution
+  .panel-heading.planning-execution-heading.clearfix.is-open{ role: 'button', data: { toggle: 'collapse', target: '#planning-execution-body' }, aria: { expanded: 'true', controls: 'planning-execution-body' } }
+    %span.planning-execution-title
+      %i.fa.fa-caret-right.fa-fw.planning-execution-caret
+      = t('execution.title')
+      - if open_count.positive?
+        %span.badge= open_count
+    %button.btn.btn-default.btn-xs.pull-right.planning-execution-new{ type: 'button' }
+      %i.fa.fa-plus.fa-fw
+      = t('execution.new')
+  #planning-execution-body.panel-collapse.collapse.in
+    .panel-body
+      - if open_operations.empty? && historized_operations.empty?
+        %p.text-muted.mb-0= t('execution.empty')
+      - else
+        - open_operations.each do |operation|
+          = render 'plannings/execution_card', operation: operation, planning: @planning, sync: true
+        - if historized_operations.any?
+          .planning-execution-historized
+            .planning-execution-historized-heading{ role: 'button', data: { toggle: 'collapse', target: '#planning-execution-historized' }, aria: { expanded: 'false', controls: 'planning-execution-historized' } }
+              %i.fa.fa-caret-right.fa-fw.planning-execution-caret
+              = t('execution.historized', count: historized_operations.size)
+            #planning-execution-historized.panel-collapse.collapse
+              - historized_operations.each do |operation|
+                = render 'plannings/execution_card', operation: operation, planning: @planning, sync: false

@@ -377,6 +377,26 @@ class StopsControllerTest < ActionController::TestCase
   end
 
   # Tests for update action
+  test 'planning stop status stays off the operation stop' do
+    operation = Operations::PublishFromPlanning.call(planning: @planning)
+    operation_stop = operation.operation_stops.find_by!(stop_id: @stop.id)
+    patch :update, params: {
+      id: @stop,
+      driver_token: @vehicle.driver_token,
+      stop: {
+        status: 'delivered',
+        status_updated_at: 1.hour.from_now.iso8601
+      },
+      format: :json
+    }
+    assert_response :success
+    assert_equal 'delivered', @stop.reload.status
+    assert_nil operation_stop.reload.status
+    assert_equal 0, operation_stop.operation_stop_status_events.count
+  ensure
+    Operation.where(customer_id: @planning.customer_id).delete_all
+  end
+
   test 'should update stop status successfully' do
     patch :update, params: {
       id: @stop,

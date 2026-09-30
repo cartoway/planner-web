@@ -63,6 +63,10 @@
                       = link_to plannings_path do
                         %i.fa.fa-map-location.fa-fw
                         = t 'all.verb.list'
+                    %li
+                      = link_to operations_path, data: { turbo: false } do
+                        %i.fa.fa-clipboard-check.fa-fw
+                        = t 'operations.menu'
                     %li.divider
                     - if current_user.customer.default_max_plannings
                       %li

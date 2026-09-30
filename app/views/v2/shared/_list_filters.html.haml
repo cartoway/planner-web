@@ -1,0 +1,33 @@
+-# Shared GET list filters toolbar (search + optional date + status chips).
+-# locals:
+-#   url: (required)
+-#   q:, date:, status:
+-#   search_placeholder:, search_name: 'q', date_name: 'date', status_name: 'status'
+-#   chips: [{ value:, label: }] — empty value = "all"
+-#   show_date: true
+- url = local_assigns.fetch(:url)
+- q = local_assigns[:q]
+- date = local_assigns[:date]
+- status = local_assigns[:status].to_s
+- search_placeholder = local_assigns.fetch(:search_placeholder, t('all.verb.filter'))
+- search_name = local_assigns.fetch(:search_name, 'q')
+- date_name = local_assigns.fetch(:date_name, 'date')
+- status_name = local_assigns.fetch(:status_name, 'status')
+- chips = Array(local_assigns[:chips])
+- show_date = local_assigns.fetch(:show_date, true)
+.v2-list-filters{data: { controller: 'v2--list-filters' }}
+  = form_with url: url, method: :get, local: true, class: 'v2-list-filters-form', data: { v2__list_filters_target: 'form' } do
+    .d-flex.flex-wrap.align-items-center.gap-2.mb-2
+      .v2-list-filters-search.flex-grow-1
+        .input-group.input-group-sm
+          %span.input-group-text
+            %i.fa.fa-search.fa-fw
+          = text_field_tag search_name, q, class: 'form-control', placeholder: search_placeholder, autocomplete: 'off', data: { v2__list_filters_target: 'search', action: 'input->v2--list-filters#submitSoon' }
+      - if show_date
+        = date_field_tag date_name, date, class: 'form-control form-control-sm v2-list-filters-date', data: { action: 'change->v2--list-filters#submitNow' }
+    - if chips.any?
+      .btn-group.btn-group-sm.v2-list-filters-chips{role: 'group'}
+        - chips.each do |chip|
+          - value = chip[:value].to_s
+          - active = status == value
+          %button.btn{type: 'submit', name: status_name, value: value, class: (active ? 'btn-primary' : 'btn-outline-secondary')}= chip[:label]
