@@ -1,19 +1,22 @@
 - place = @operation_stop.destination_snapshot.presence || @operation_stop.store_snapshot
 - visit = @operation_stop.visit_snapshot
 - title = stop_list_primary_line(@operation_stop.list_fields).presence || @operation_stop.address_label
+- rest = @operation_stop.kind == 'rest'
 = turbo_frame_tag 'form_sidebar' do
   - delay = @operation_stop.delay_minutes
   .operation-fiche.operation-stop-detail
     .d-flex.align-items-start.justify-content-between.gap-2
       %h2.mb-0= title
       - if @operation_stop.phase == 'failed'
-        %span.badge.text-bg-danger= t("plannings.edit.stop_status.#{@operation_stop.status.to_s.downcase}", default: @operation_stop.status)
+        %span.badge.text-bg-danger= @operation_stop.status_label
       - elsif @operation_stop.phase == 'exception'
         %span.badge.operation-exception= t('plannings.edit.stop_status.exception')
+      - elsif @operation_stop.phase == 'started'
+        %span.badge.text-bg-info= @operation_stop.status_label
       - elsif delay && delay > OperationStop::LATE_AFTER_MINUTES
         %span.badge.text-bg-warning= t('operations.show.late', count: delay)
-      - elsif @operation_stop.phase == 'delivered' && delay&.negative?
-        %span.badge.text-bg-success= t('plannings.edit.stop_status.delivered')
+      - elsif @operation_stop.phase == 'delivered' && (rest || delay&.negative?)
+        %span.badge.text-bg-success= @operation_stop.status_label
       - elsif delay && delay.positive?
     .operation-split
       %div
@@ -22,81 +25,82 @@
       %div
         %span= t('operations.show.actual')
         %strong= @operation_stop.actual_clock.presence || '—'
-    - windows = @operation_stop.time_windows_label
-    - destination_duration = @operation_stop.destination_duration_label
-    - if place['ref'].present? || visit['ref'].present? || windows || visit['duration'].present? || destination_duration || place['comment'].present? || @operation_stop.quantity_lines.any? || @operation_stop.fiche_attributes.any?
+    - unless rest
+      - windows = @operation_stop.time_windows_label
+      - destination_duration = @operation_stop.destination_duration_label
+      - if place['ref'].present? || visit['ref'].present? || windows || visit['duration'].present? || destination_duration || place['comment'].present? || @operation_stop.quantity_lines.any? || @operation_stop.fiche_attributes.any?
+        %section.operation-section
+          %h3= t('operations.show.details')
+          - if place['ref'].present?
+            %p.mb-1
+              %span.text-muted= t('operations.show.destination_ref')
+              = place['ref']
+          - if visit['ref'].present?
+            %p.mb-1
+              %span.text-muted= t('operations.show.visit_ref')
+              = visit['ref']
+          - if windows
+            %p.mb-1
+              %span.text-muted= t('operations.show.time_windows')
+              = windows
+          - if visit['duration'].present?
+            %p.mb-1
+              %span.text-muted= t('activerecord.attributes.visit.duration')
+              = @operation_stop.duration_label(visit['duration'])
+          - if destination_duration
+            %p.mb-1
+              %span.text-muted= t('activerecord.attributes.destination.duration')
+              = destination_duration
+          - if place['comment'].present?
+            %p.mb-2= place['comment']
+          - attribute_rows = @operation_stop.fiche_attributes
+          - if attribute_rows.any?
+            %h3= t('operations.show.attributes')
+            %dl.operation-attrs
+              - attribute_rows.each do |row|
+                - formatted = format_custom_attribute_value(row[:definition], object_type_cast(row[:definition].object_type, row[:value]))
+                - next if formatted.blank? && !row[:definition].boolean?
+                %dt= row[:definition].name
+                %dd= formatted
+      - lines = @operation_stop.quantity_lines
+      - if lines.any?
+        %section.operation-section
+          %h3= t('operations.show.quantities')
+          %ul.list-unstyled.mb-0
+            - lines.each do |line|
+              - value = line[:value].to_f
+              - done = @operation_stop.phase == 'delivered'
+              - reported = @operation_stop.actual_quantity(line[:kind], line[:unit_id])
+              - counted = reported.nil? ? (done ? value : 0) : reported
+              - amount = number_with_precision(counted, precision: 2, strip_insignificant_zeros: true, delimiter: t('number.format.delimiter'))
+              - planned = number_with_precision(value, precision: 2, strip_insignificant_zeros: true, delimiter: t('number.format.delimiter'))
+              %li
+                = line[:label]
+                = "#{amount} / #{planned}"
+                = t(line[:kind] == 'deliveries' ? 'operations.show.deliveries' : 'operations.show.pickups')
       %section.operation-section
-        %h3= t('operations.show.details')
-        - if place['ref'].present?
-          %p.mb-1
-            %span.text-muted= t('operations.show.destination_ref')
-            = place['ref']
-        - if visit['ref'].present?
-          %p.mb-1
-            %span.text-muted= t('operations.show.visit_ref')
-            = visit['ref']
-        - if windows
-          %p.mb-1
-            %span.text-muted= t('operations.show.time_windows')
-            = windows
-        - if visit['duration'].present?
-          %p.mb-1
-            %span.text-muted= t('activerecord.attributes.visit.duration')
-            = @operation_stop.duration_label(visit['duration'])
-        - if destination_duration
-          %p.mb-1
-            %span.text-muted= t('activerecord.attributes.destination.duration')
-            = destination_duration
-        - if place['comment'].present?
-          %p.mb-2= place['comment']
-        - attribute_rows = @operation_stop.fiche_attributes
-        - if attribute_rows.any?
-          %h3= t('operations.show.attributes')
-          %dl.operation-attrs
-            - attribute_rows.each do |row|
-              - formatted = format_custom_attribute_value(row[:definition], object_type_cast(row[:definition].object_type, row[:value]))
-              - next if formatted.blank? && !row[:definition].boolean?
-              %dt= row[:definition].name
-              %dd= formatted
-    - lines = @operation_stop.quantity_lines
-    - if lines.any?
+        %h3= t('operations.show.address')
+        .operation-field
+          - address = [place['street'], place['postalcode'], place['city']].compact_blank.join(', ')
+          %p.mb-1= address.presence || '—'
+          - if place['phone_number'].present?
+            %p.mb-0
+              %i.fa.fa-phone.fa-fw{"aria-hidden": "true"}
+              = link_to place['phone_number'], "tel:#{place['phone_number']}"
+      - documents = @operation_stop.document_items
       %section.operation-section
-        %h3= t('operations.show.quantities')
-        %ul.list-unstyled.mb-0
-          - lines.each do |line|
-            - value = line[:value].to_f
-            - done = @operation_stop.phase == 'delivered'
-            - reported = @operation_stop.actual_quantity(line[:kind], line[:unit_id])
-            - counted = reported.nil? ? (done ? value : 0) : reported
-            - amount = number_with_precision(counted, precision: 2, strip_insignificant_zeros: true, delimiter: t('number.format.delimiter'))
-            - planned = number_with_precision(value, precision: 2, strip_insignificant_zeros: true, delimiter: t('number.format.delimiter'))
-            %li
-              = line[:label]
-              = "#{amount} / #{planned}"
-              = t(line[:kind] == 'deliveries' ? 'operations.show.deliveries' : 'operations.show.pickups')
-    %section.operation-section
-      %h3= t('operations.show.address')
-      .operation-field
-        - address = [place['street'], place['postalcode'], place['city']].compact_blank.join(', ')
-        %p.mb-1= address.presence || '—'
-        - if place['phone_number'].present?
-          %p.mb-0
-            %i.fa.fa-phone.fa-fw{"aria-hidden": "true"}
-            = link_to place['phone_number'], "tel:#{place['phone_number']}"
-    - documents = @operation_stop.document_items
-    %section.operation-section
-      %h3= t('operations.show.proof')
-      .operation-proofs.operation-stop-documents
-        - if documents.any?
-          - documents.each do |document|
-            = link_to document[:url], target: '_blank', rel: 'noopener noreferrer', class: 'operation-proof' do
-              %img{src: document[:url], alt: document[:filename]}
-        - else
-          .operation-proof
-            %span= t('operations.show.photo')
-          .operation-proof
-            %span= t('operations.media.signature')
-      = render 'operation_stops/delivery_note_link', operation_stop: @operation_stop
+        %h3= t('operations.show.proof')
+        .operation-proofs.operation-stop-documents
+          - if documents.any?
+            - documents.each do |document|
+              = link_to document[:url], target: '_blank', rel: 'noopener noreferrer', class: 'operation-proof' do
+                %img{src: document[:url], alt: document[:filename]}
+          - else
+            .operation-proof
+              %span= t('operations.show.photo')
+            .operation-proof
+              %span= t('operations.media.signature')
+        = render 'operation_stops/delivery_note_link', operation_stop: @operation_stop
     %section.operation-section
       %h3= t('operations.show.timeline')
       %ul.operation-timeline
@@ -106,6 +110,8 @@
             - t('operations.show.status_reset')
           - elsif status_key == 'transferred'
             - t('operations.show.status_transferred', from: event.payload['from_route_name'], to: event.payload['to_route_name'])
+          - elsif rest
+            - t("plannings.edit.stop_rest_status.#{status_key}", default: t("plannings.edit.stop_status.#{status_key}", default: event.status))
           - else
             - t("plannings.edit.stop_status.#{status_key}", default: event.status)
           %li{class: ["is-#{status_key}", ('is-latest' if index.zero?)]}
