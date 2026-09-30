@@ -54,7 +54,7 @@ class OperationStopsController < ApplicationController
 
   def desk
     authorize! :update, @operation_stop.operation_route.operation
-    if params[:status].present?
+    if params.key?(:status)
       OperationStops::RecordStatus.call(
         operation_stop: @operation_stop,
         status: params[:status],
@@ -77,25 +77,16 @@ class OperationStopsController < ApplicationController
     raw = params[:operation_stop].presence || params[:stop] || {}
     save_actual_quantities(raw)
     if raw.key?(:status) || raw.key?('status')
-      status = raw[:status].presence
       recorded_at = raw[:status_updated_at].presence || Time.current.iso8601
-      if status
-        OperationStops::RecordStatus.call(
-          operation_stop: @operation_stop,
-          status: status,
-          eta: raw[:eta],
-          recorded_at: recorded_at,
-          source: 'mobile',
-          actor_ref: current_vehicle.id.to_s,
-          payload: {}
-        )
-      else
-        @operation_stop.update_columns(
-          status: nil,
-          status_updated_at: Time.zone.parse(recorded_at.to_s) || Time.current,
-          updated_at: Time.current
-        )
-      end
+      OperationStops::RecordStatus.call(
+        operation_stop: @operation_stop,
+        status: raw[:status],
+        eta: raw[:eta],
+        recorded_at: recorded_at,
+        source: 'mobile',
+        actor_ref: current_vehicle.id.to_s,
+        payload: {}
+      )
     end
     merge_custom_attributes(@operation_stop, raw[:custom_attributes])
     respond_to do |format|
