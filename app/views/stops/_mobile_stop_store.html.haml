@@ -14,21 +14,18 @@
   - 'intransit'
 
 .panel.panel-default{ data: { stop_type: 'store' } }
-  .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+  .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status.presence || 'neutral'}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
     .d-flex.align-items-center.justify-content-between.mb-1
       .col-xs-2.p-0
         .d-flex.align-items-center.justify-content-between
           .stop-status-label-wrap
-            #label-index.label.label-default-negative.p-3{ class: "label-#{stop.status}" }
+            #label-index.label.label-default-negative.p-3{ class: "label-#{stop.status.presence || 'neutral'}" }
               %i.fa.fa-fw{ class: "#{stop.default_icon}" }
             %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if stop.status.blank?), data: { toggle: 'active_status', next_status: 'intransit', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
               %span.stop-status-reset-face.btn.btn-xs.btn-default
                 %i.fa.fa-xmark
       .col-xs-6.p-0
         = stop.name
-        - planned = @operation_stops_by_stop_id&.[](stop.id)&.passage_time
-        - if planned
-          .small.text-muted= planned
       .col-xs-4.p-0
         %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'active_status', title: next_status } }
           .d-flex.align-items-center
