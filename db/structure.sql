@@ -658,7 +658,7 @@ ALTER SEQUENCE public.operation_routes_id_seq OWNED BY public.operation_routes.i
 CREATE TABLE public.operation_stop_status_events (
     id integer NOT NULL,
     operation_stop_id integer NOT NULL,
-    status character varying NOT NULL,
+    status character varying,
     eta timestamp without time zone,
     recorded_at timestamp without time zone NOT NULL,
     source character varying DEFAULT 'mobile'::character varying NOT NULL,
@@ -4820,6 +4820,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260925120300'),
 ('20260925120500'),
 ('20260928170000'),
-('20260930120000');
+('20260930120000'),
+('20260930130000');
 
 

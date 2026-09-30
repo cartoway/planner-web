@@ -29,6 +29,18 @@ class RecordStatusTest < ActiveSupport::TestCase
     assert_nil @stop.stop.reload.status
   end
 
+  test 'records status reset in the timeline and clears the cursor' do
+    t1 = Time.zone.parse('2026-09-25 10:00')
+    t2 = Time.zone.parse('2026-09-25 11:00')
+    OperationStops::RecordStatus.call(operation_stop: @stop, status: 'delivered', recorded_at: t1, source: 'mobile')
+    OperationStops::RecordStatus.call(operation_stop: @stop, status: nil, recorded_at: t2, source: 'mobile')
+
+    @stop.reload
+    assert_equal ['delivered', nil], @stop.operation_stop_status_events.order(:recorded_at).pluck(:status)
+    assert_nil @stop.status
+    assert_equal t2, @stop.status_updated_at
+  end
+
   test 'refreshes the operation page when a stop advances' do
     operation = @stop.operation_route.operation
     assert_broadcasts(operation.to_gid_param, 1) do

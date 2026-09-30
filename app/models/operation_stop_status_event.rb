@@ -5,7 +5,7 @@ class OperationStopStatusEvent < ApplicationRecord
 
   belongs_to :operation_stop
 
-  validates :status, :recorded_at, :source, presence: true
+  validates :recorded_at, :source, presence: true
   validates :source, inclusion: { in: SOURCES }
 
   before_update { raise ActiveRecord::ReadOnlyRecord }

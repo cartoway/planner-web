@@ -3990,6 +3990,7 @@ en:
       passage: Passage time
       documents: Documents
       no_status_history: No status changes
+      status_reset: Status reset
       open: Open
       close: Close
       close_operation: Close operation
