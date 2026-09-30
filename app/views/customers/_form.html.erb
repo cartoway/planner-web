@@ -305,6 +305,9 @@
       </div>
     </div>
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_stop_status, label: t('activerecord.attributes.customer.enable_stop_status') } %>
+    <div id="proof_retention_days_wrap" class="<%= 'd-none' unless @customer.enable_stop_status %>">
+      <%= f.number_field :proof_retention_days, { help: t('.proof_retention_days_help'), min: 30, max: 1825 } %>
+    </div>
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_store_stops, label: t('activerecord.attributes.customer.enable_store_stops') } %>
     <%= render partial: 'shared/check_box', locals: { form: f, field: :enable_sms, label: t('activerecord.attributes.customer.enable_sms'), options: { disabled: @customer.reseller.messagings.none?{ |_k, v| v['enable'] == true } } } %>
     <%= f.number_field :history_cron_hour, { help: t('.history_cron_hour_help'), min: 0, max: 23, append: content_tag('i', '', class: 'fa fa-chart-line fa-fw')} %>
