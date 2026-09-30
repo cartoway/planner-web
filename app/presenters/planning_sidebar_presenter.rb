@@ -18,14 +18,25 @@ class PlanningSidebarPresenter
     customer.custom_attributes.load
     routes_array = @routes.to_a
     stats_routes = @view_helpers.planning_statistics_routes(@planning, routes_array, @current_user)
+    today = Date.current
+    open_ops_by_route = @planning.open_operations_by_route_id
 
     routes_data = routes_array.map do |route|
-      RouteSidebarSerializer.new(
+      data = RouteSidebarSerializer.new(
         route: route,
         planning: @planning,
         with_stops: @with_stops,
         view_helpers: @view_helpers
       ).as_hash
+      today_op = (open_ops_by_route[route.id] || []).find { |operation| operation.date == today }
+      data[:today_operation] = if today_op
+        {
+          id: today_op.id,
+          name: today_op.name,
+          path: @view_helpers.operation_path(today_op)
+        }
+      end
+      data
     end
 
     stops_totals = RouteSidebarSerializer.planning_stops_totals_for_routes(stats_routes)

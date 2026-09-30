@@ -163,7 +163,6 @@ class StopsController < ApplicationController
     @destination = @stop.visit&.destination
   end
 
-  # Never trust parameters from the scary internet, only allow the white list through.
   def stop_params
     params.require(:stop).permit(
       :status,

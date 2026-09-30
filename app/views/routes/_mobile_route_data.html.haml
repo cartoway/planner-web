@@ -20,8 +20,39 @@
           = unit[:delivery]
           = unit[:label]
           = t('routes.mobile.route_data.to_load')
-  = bootstrap_form_for route, url: driver_update_route_path(route), method: :patch, remote: true, html: { class: 'route-status-form' } do |f|
-    - if local_assigns[:show_status_controls]
+  - if @operation_route && local_assigns[:show_status_controls]
+    - current_status = route_data.status
+    - leg = status_context == 'start_route_data' ? 'departure' : 'arrival'
+    = form_with url: update_status_operation_operation_route_path(@operation_route.operation, @operation_route), method: :patch, local: true, html: { class: 'route-status-form' } do
+      = hidden_field_tag :leg, leg
+      = hidden_field_tag :status_updated_at, ''
+      .form-group.mb-1
+        %label{ for: "route_#{status_context}_status" }
+          = t('stops.mobile.status')
+        .input-group.col-xs-12
+          .radiobtn
+            .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
+              - if status_context == 'stop_route_data'
+                .col-xs-6.d-flex.justify-content-center
+                  %a.btn.btn-primary{ data: { toggle: "route_#{status_context}_status", title: 'intransit' }, class: ('active' if current_status == 'intransit') }
+                    = t('plannings.edit.stop_store_status.intransit')
+              .col-xs-6.d-flex.justify-content-center
+                %a.btn.btn-info{ data: { toggle: "route_#{status_context}_status", title: 'atstore' }, class: ('active' if current_status == 'atstore') }
+                  = t('plannings.edit.stop_store_status.atstore')
+              - if status_context == 'start_route_data'
+                .col-xs-6.d-flex.justify-content-center
+                  %a.btn.btn-success{ data: { toggle: "route_#{status_context}_status", title: 'finished' }, class: ('active' if current_status == 'finished') }
+                    = t('plannings.edit.stop_store_status.finished')
+            - if status_context == 'stop_route_data'
+              .d-flex.align-items-center.justify-content-between
+                .col-xs-6.d-flex.justify-content-center
+                .col-xs-6.d-flex.justify-content-center
+                  %a.btn.btn-success{ data: { toggle: "route_#{status_context}_status", title: 'finished' }, class: ('active' if current_status == 'finished') }
+                    = t('plannings.edit.stop_store_status.finished')
+          = hidden_field_tag :status, current_status, id: "route_#{status_context}_status"
+  - route_form_url = @operation_route ? update_status_operation_operation_route_path(@operation_route.operation, @operation_route) : driver_update_route_path(route)
+  = bootstrap_form_for route, url: route_form_url, method: :patch, remote: true, html: { class: 'route-status-form' } do |f|
+    - if local_assigns[:show_status_controls] && !@operation_route
       - current_status = route_data.status
       .form-group.mb-1
         %label{ for: "route_#{status_context}_status" }

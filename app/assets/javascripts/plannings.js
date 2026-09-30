@@ -157,6 +157,103 @@ var initPlanningStatesModal = function(planningId, options) {
   $open.off('click.planningStates').on('click.planningStates', openDialog);
 };
 
+var initPlanningExecution = function() {
+  var $root = $('#planning-execution');
+  if (!$root.length) return;
+
+  var bindCaret = function($heading, $body) {
+    if (!$heading.length || !$body.length) return;
+    $body.off('show.bs.collapse.planningExecution hide.bs.collapse.planningExecution');
+    $body.on('show.bs.collapse.planningExecution', function() {
+      $heading.attr('aria-expanded', 'true').addClass('is-open');
+    });
+    $body.on('hide.bs.collapse.planningExecution', function() {
+      $heading.attr('aria-expanded', 'false').removeClass('is-open');
+    });
+  };
+
+  bindCaret($root.find('.planning-execution-heading'), $('#planning-execution-body'));
+  bindCaret($root.find('.planning-execution-historized-heading'), $('#planning-execution-historized'));
+
+  $root.find('.planning-execution-new').off('click.planningExecution').on('click.planningExecution', function(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    $('#planning-operation-modal').modal('show');
+  });
+
+  var $modal = $('#planning-operation-modal');
+  if (!$modal.length) return;
+
+  var takenByDate = $modal.data('taken-by-date');
+  if (typeof takenByDate === 'string') {
+    try { takenByDate = JSON.parse(takenByDate); } catch (_e) { takenByDate = {}; }
+  }
+  takenByDate = takenByDate || {};
+  var alreadyInTemplate = $modal.data('already-in-template') || '';
+  var $countEl = $('#execution-route-count');
+  var template = $countEl.data('template');
+  var $date = $('#execution-operation-date');
+
+  var rows = function() {
+    return $modal.find('.planning-execution-route');
+  };
+  var enabledBoxes = function() {
+    return $modal.find('.execution-route-checkbox:enabled');
+  };
+  var refreshCount = function() {
+    if (!$countEl.length || !template) return;
+    var n = enabledBoxes().filter(':checked').length;
+    $countEl.text(String(template).replace('%{count}', n));
+    $('#execution-publish-submit').prop('disabled', n === 0);
+  };
+  var applyAvailabilityForDate = function() {
+    var date = $date.val();
+    var taken = (date && takenByDate[date]) || {};
+    rows().each(function() {
+      var $row = $(this);
+      var routeId = String($row.data('route-id'));
+      var $box = $row.find('.execution-route-checkbox');
+      var $hint = $row.find('.execution-route-taken-hint');
+      var opName = taken[routeId];
+      if (opName) {
+        $box.prop('checked', false).prop('disabled', true);
+        $hint.text(String(alreadyInTemplate).replace('__NAME__', opName)).removeClass('hidden');
+        $row.addClass('is-taken');
+      } else {
+        var defaultOn = String($row.data('default-on')) === 'true';
+        $box.prop('disabled', false);
+        if (!$box.data('user-touched')) $box.prop('checked', defaultOn);
+        $hint.text('').addClass('hidden');
+        $row.removeClass('is-taken');
+      }
+    });
+    refreshCount();
+  };
+
+  $modal.off('click.planningExecution').on('click.planningExecution', '[data-execution-routes]', function(event) {
+    event.preventDefault();
+    var mode = $(this).data('execution-routes');
+    enabledBoxes().each(function() {
+      var $box = $(this);
+      $box.data('user-touched', true);
+      if (mode === 'all') $box.prop('checked', true);
+      else if (mode === 'none') $box.prop('checked', false);
+      else if (mode === 'visible') $box.prop('checked', String($box.data('hidden')) !== 'true');
+    });
+    refreshCount();
+  });
+  $modal.off('change.planningExecution').on('change.planningExecution', '.execution-route-checkbox', function() {
+    $(this).data('user-touched', true);
+    refreshCount();
+  });
+  $date.off('change.planningExecution').on('change.planningExecution', applyAvailabilityForDate);
+  $modal.off('shown.bs.modal.planningExecution').on('shown.bs.modal.planningExecution', function() {
+    rows().find('.execution-route-checkbox').removeData('user-touched');
+    applyAvailabilityForDate();
+  });
+  applyAvailabilityForDate();
+};
+
 $(function() {
   // Scope tooltips to planning areas only (avoid scanning the whole document on large pages).
   $('#edit-planning, #plannings').find('[data-toggle="tooltip"]').tooltip();
@@ -605,6 +702,7 @@ export const plannings_edit = function(params) {
   initRouteDepartureTimeEntry();
   initStoreDropdown(params.planning_id);
   initPlanningStatesModal(planning_id, { withStops: withStopsInSidePanel });
+  initPlanningExecution();
 
   var apply_zoning_modal = bootstrap_dialog({
     title: I18n.t('plannings.edit.dialog.zoning.title'),

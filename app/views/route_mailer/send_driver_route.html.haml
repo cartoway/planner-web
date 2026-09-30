@@ -7,12 +7,16 @@
         %p= t('.content', s: customer.reseller.name)
         %br
         %ul
+          - vehicle_name = local_assigns[:vehicle_name] || route.vehicle_usage.vehicle.name
+          - planning_name = local_assigns[:planning_name] || route.planning.name
+          - planning_date = local_assigns.key?(:planning_date) ? local_assigns[:planning_date] : route.planning.date
           %li
-            = t('.vehicle', name: route.vehicle_usage.vehicle.name)
+            = t('.vehicle', name: vehicle_name)
           %li
-            = t('.planning', name: route.planning.name, date: route.planning.date ? "#{l(route.planning.date)}" : '')
+            = t('.planning', name: planning_name, date: planning_date ? "#{l(planning_date)}" : '')
           %li
-            = t('.link', link: (customer.reseller.url_protocol + '://' + customer.reseller.host + '/routes/' + route.id.to_s + '/mobile?driver_token=' + route.vehicle_usage.vehicle.driver_token)).html_safe
+            - if mobile_url.present?
+              = t('.link', link: mobile_url).html_safe
         %br
         %p
           = I18n.t('user_mailer.layout.staff.greetings').html_safe
