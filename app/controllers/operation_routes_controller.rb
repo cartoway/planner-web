@@ -3,10 +3,10 @@
 require 'value_to_boolean'
 
 class OperationRoutesController < ApplicationController
-  before_action :authenticate_user!, except: [:mobile, :update_position, :update_status]
-  before_action :authenticate_driver!, only: [:mobile, :update_position, :update_status]
+  before_action :authenticate_user!, except: [:mobile, :update_position, :update_status, :transfer_stop]
+  before_action :authenticate_driver!, only: [:mobile, :update_position, :update_status, :transfer_stop]
   before_action :set_user_route, only: [:show, :media, :transmit]
-  before_action :set_driver_route, only: [:mobile, :update_position, :update_status]
+  before_action :set_driver_route, only: [:mobile, :update_position, :update_status, :transfer_stop]
 
   def show
     redirect_to operation_path(@operation_route.operation, route_id: @operation_route.id)
@@ -68,6 +68,21 @@ class OperationRoutesController < ApplicationController
     end
     merge_custom_attributes(@operation_route, params.dig(:route, :custom_attributes))
     render json: { success: true }
+  end
+
+  def transfer_stop
+    operation_stop = @operation_route.operation_stops.find(params[:stop_id])
+    target = @operation_route.operation.operation_routes.planned.find(params[:target_operation_route_id])
+    OperationStops::Transfer.call(
+      operation_stop: operation_stop,
+      target_operation_route: target,
+      recorded_at: params[:status_updated_at].presence || Time.current,
+      source: 'mobile',
+      actor_ref: current_vehicle.id.to_s
+    )
+    render json: { success: true }
+  rescue OperationStops::Transfer::Error, ActiveRecord::RecordNotFound
+    head :unprocessable_entity
   end
 
   def update_position

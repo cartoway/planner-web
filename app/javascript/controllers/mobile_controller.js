@@ -116,6 +116,22 @@ export default class extends Controller {
       return
     }
 
+    const transferToggle = target.closest('.route-select > .dropdown-toggle')
+    if (transferToggle) {
+      event.preventDefault()
+      event.stopPropagation()
+      this.toggleTransferDropdown(transferToggle)
+      return
+    }
+
+    const transferLink = target.closest('.send_to_route')
+    if (transferLink) {
+      event.preventDefault()
+      event.stopPropagation()
+      this.transferStop(transferLink)
+      return
+    }
+
     const nav = target.closest('.mobile-nav-link')
     if (nav && nav.dataset.navPrimary) {
       event.preventDefault()
@@ -243,6 +259,61 @@ export default class extends Controller {
     this.disarmReset(button)
     const panel = button.closest('.panel')
     if (panel) this.changeStatus(panel, '', button.dataset.toggle)
+  }
+
+  toggleTransferDropdown (toggle) {
+    const dropdown = toggle.closest('.dropdown')
+    if (!dropdown) return
+    const menu = dropdown.querySelector('.dropdown-menu')
+    const open = dropdown.classList.contains('show') || dropdown.classList.contains('open')
+    this.element.querySelectorAll('.route-select.dropdown').forEach((other) => {
+      other.classList.remove('show', 'open')
+      const otherMenu = other.querySelector('.dropdown-menu')
+      if (otherMenu) otherMenu.classList.remove('show')
+      const otherToggle = other.querySelector('.dropdown-toggle')
+      if (otherToggle) otherToggle.setAttribute('aria-expanded', 'false')
+    })
+    if (!open) {
+      dropdown.classList.add('show', 'open')
+      if (menu) menu.classList.add('show')
+      toggle.setAttribute('aria-expanded', 'true')
+    }
+  }
+
+  transferStop (link) {
+    const stopId = link.dataset.stopId
+    let url = link.dataset.url
+    if (!url) return
+
+    const token = new URLSearchParams(window.location.search).get('driver_token')
+    if (token) {
+      const parsed = new URL(url, window.location.origin)
+      parsed.searchParams.set('driver_token', token)
+      url = parsed.toString()
+    }
+
+    const dropdown = link.closest('.route-select.dropdown')
+    if (dropdown) {
+      dropdown.classList.remove('show', 'open')
+      dropdown.querySelector('.dropdown-menu')?.classList.remove('show')
+      dropdown.querySelector('.dropdown-toggle')?.setAttribute('aria-expanded', 'false')
+    }
+
+    const label = link.closest('.panel')?.querySelector('#transfer-label')
+    if (label && !label.querySelector('.spinner-border')) {
+      label.classList.add('spinner-container', 'row')
+      label.insertAdjacentHTML('afterbegin', '<div class="col-xs-1"><div class="spinner-border"></div></div>')
+    }
+
+    this.patchJson(url, {}).then(() => {
+      const panel = this.element.querySelector(`#heading-${stopId}`)?.closest('.panel')
+      if (panel) panel.remove()
+    }).catch(() => {
+      if (label) {
+        label.classList.remove('spinner-container', 'row')
+        label.querySelector('.col-xs-1')?.remove()
+      }
+    })
   }
 
   armReset (button) {
@@ -607,10 +678,12 @@ export default class extends Controller {
   patchJson (url, body) {
     return fetch(url, {
       method: 'PATCH',
+      credentials: 'same-origin',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        'X-CSRF-Token': this.csrfToken()
+        'X-CSRF-Token': this.csrfToken(),
+        'X-Requested-With': 'XMLHttpRequest'
       },
       body: JSON.stringify(body)
     }).then((response) => {
