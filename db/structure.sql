@@ -301,7 +301,9 @@ CREATE TABLE public.customers (
     company_detail character varying,
     company_phone character varying,
     job_destination_import_id integer,
-    operations_mobile boolean DEFAULT false NOT NULL
+    operations_mobile boolean DEFAULT false NOT NULL,
+    vehicle_position_retention_days integer DEFAULT 60 NOT NULL,
+    vehicle_position_keep_trace boolean DEFAULT true NOT NULL
 );
 
 

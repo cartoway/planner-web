@@ -318,6 +318,15 @@ const customers_edit = function (params) {
   $("#customer_enable_optimization_soft_upper_bound").click(function() {
     $("#optimization_soft_upper_bound").toggleClass('d-none');
   });
+
+  var syncVehiclePositionFields = function() {
+    var positionOn = $('#customer_enable_vehicle_position').is(':checked');
+    var traceOn = $('#customer_vehicle_position_keep_trace').is(':checked');
+    $('#vehicle_position_trace_options').toggleClass('d-none', !positionOn);
+    $('#vehicle_position_retention_days_wrap').toggleClass('d-none', !(positionOn && traceOn));
+  };
+  $('#customer_enable_vehicle_position, #customer_vehicle_position_keep_trace').on('change', syncVehiclePositionFields);
+  syncVehiclePositionFields();
 };
 
 var customerProfileId = function() {

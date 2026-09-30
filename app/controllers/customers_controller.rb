@@ -240,6 +240,8 @@ class CustomersController < ApplicationController
         :enable_references,
         :enable_global_optimization,
         :enable_vehicle_position,
+        :vehicle_position_retention_days,
+        :vehicle_position_keep_trace,
         :enable_stop_status,
         :enable_store_stops,
         :enable_sms,

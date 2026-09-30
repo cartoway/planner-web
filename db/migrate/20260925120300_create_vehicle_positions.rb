@@ -2,6 +2,9 @@
 
 class CreateVehiclePositions < ActiveRecord::Migration[6.1]
   def change
+    add_column :customers, :vehicle_position_retention_days, :integer, null: false, default: 60
+    add_column :customers, :vehicle_position_keep_trace, :boolean, null: false, default: true
+
     create_table :vehicle_positions, id: :serial do |t|
       t.references :customer, type: :integer, null: false, foreign_key: { on_delete: :cascade }, index: false
       t.references :vehicle, type: :integer, foreign_key: { on_delete: :nullify }, index: false
