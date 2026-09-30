@@ -102,7 +102,10 @@
         %button#refresh-modal.btn.btn-primary{type: "button", disabled: refresh_dis}
           = t('plannings.edit.refresh')
 
-= render 'plannings/operation_modal' if @planning.persisted?
+- if @planning.persisted?
+  = render 'plannings/operation_modal'
+  = render 'plannings/sync_modal'
+
 
 #planning-move-stops-modal.modal.fade{role: "dialog", tabindex: "-1"}
   .modal-dialog

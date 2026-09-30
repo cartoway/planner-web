@@ -41,6 +41,27 @@ class RecordStatusTest < ActiveSupport::TestCase
     assert_equal t2, @stop.status_updated_at
   end
 
+  test 'does not allow resetting a transferred status' do
+    target = @operation.operation_routes.planned.where.not(id: @stop.operation_route_id).detect { |route| route.route_id.present? }
+    skip 'Need a second vehicle route' unless target
+    OperationStops::Transfer.call(
+      operation_stop: @stop,
+      target_operation_route: target,
+      recorded_at: Time.zone.parse('2026-09-25 12:00'),
+      source: 'mobile'
+    )
+
+    assert_raises(ArgumentError) do
+      OperationStops::RecordStatus.call(
+        operation_stop: @stop.reload,
+        status: nil,
+        recorded_at: Time.zone.parse('2026-09-25 13:00'),
+        source: 'mobile'
+      )
+    end
+    assert_equal 'transferred', @stop.reload.status
+  end
+
   test 'refreshes the operation page when a stop advances' do
     operation = @stop.operation_route.operation
     assert_broadcasts(operation.to_gid_param, 1) do
