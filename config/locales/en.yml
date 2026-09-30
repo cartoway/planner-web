@@ -214,6 +214,8 @@ en:
         enable_references: View references
         enable_global_optimization: Enable global optimization
         enable_vehicle_position: Enable vehicle's position
+        vehicle_position_retention_days: Vehicle position retention (days)
+        vehicle_position_keep_trace: Keep GPS trace
         enable_stop_status: Enable visits status
         enable_store_stops: Enable intermediate stores
         enable_sms: Enable SMS
@@ -1272,6 +1274,12 @@ en:
       history_cron_hour_help: >-
         Hour at which the data is taken to be historised. If not filled in, no
         historization.
+      vehicle_position_retention_days_help: >-
+        Maximum GPS point retention (1–365 days). Default: 60 days (CNIL guidance).
+        Older points are removed by `rake vehicle_positions:purge`.
+      vehicle_position_keep_trace_help: >-
+        When off, only the latest position is kept (no trail). When on, history is
+        kept until the retention period elapses.
       optimization_dicho_minimum_service_size_help: >-
         Minimum number of visits for Dicho algorithm.
       optimization_max_split_size_default: '%{n} (default value)'
