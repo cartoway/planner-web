@@ -1,0 +1,17 @@
+- include_past = params[:include_past].present?
+- stops = visit_operation_stops(visit, include_past: include_past)
+- if stops.any?
+  .visit-operation-stops
+    %h6= t('operations.form.title')
+    - stops.each do |stop|
+      - operation = stop.operation_route.operation
+      .visit-operation-stop
+        = operation.name
+        - if operation.date
+          %span.text-muted= l(operation.date)
+        %span.visit-operation-stop-index= stop.index
+        %span= stop.operation_route.vehicle_name
+        - if stop.status.present?
+          %span.badge= t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
+        = link_to t('operations.show.open'), operation_path(operation, anchor: "stop-#{stop.id}"), target: '_blank', rel: 'noopener noreferrer'
+        = render 'operation_stops/delivery_note_link', operation_stop: stop

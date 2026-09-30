@@ -1,0 +1,112 @@
+# frozen_string_literal: true
+
+require 'test_helper'
+
+class PlanningsControllerOperationsTest < ActionController::TestCase
+  tests PlanningsController
+
+  setup do
+    @reseller = resellers(:reseller_one)
+    request.host = @reseller.host
+    @planning = plannings(:planning_one)
+    sign_in users(:user_one)
+    Operation.where(customer_id: @planning.customer_id).delete_all
+  end
+
+  teardown do
+    Operation.where(customer_id: @planning.customer_id).delete_all
+  end
+
+  test 'publish_operation creates from selected routes and stays on edit' do
+    route = routes(:route_one_one)
+    post :publish_operation, params: {
+      id: @planning.id,
+      name: 'Secteur A',
+      date: '2026-09-30',
+      route_ids: [route.id]
+    }
+
+    assert_redirected_to edit_planning_path(@planning)
+    operation = @planning.operations.open_status.last
+    assert_equal 'Secteur A', operation.name
+    assert_equal Date.new(2026, 9, 30), operation.date
+    assert_equal [route.id], operation.operation_routes.pluck(:route_id)
+  end
+
+  test 'publish_operation rejects a route already in an open operation' do
+    route = routes(:route_one_one)
+    Operations::PublishFromPlanning.call(planning: @planning, date: '2026-09-30', route_ids: [route.id])
+
+    post :publish_operation, params: {
+      id: @planning.id,
+      name: 'Collision',
+      date: '2026-09-30',
+      route_ids: [route.id]
+    }
+
+    assert_redirected_to edit_planning_path(@planning)
+    assert_equal I18n.t('execution.route_conflict'), flash[:alert]
+    assert_equal 1, @planning.operations.open_status.count
+  end
+
+  test 'sync_operation targets the given operation' do
+    route_a = routes(:route_one_one)
+    route_b = routes(:route_three_one)
+    first = Operations::PublishFromPlanning.call(planning: @planning, route_ids: [route_a.id])
+    second = Operations::PublishFromPlanning.call(planning: @planning, route_ids: [route_b.id])
+
+    post :sync_operation, params: { id: @planning.id, operation_id: first.id }
+
+    assert_redirected_to edit_planning_path(@planning)
+    assert_equal I18n.t('execution.synced'), flash[:notice]
+    assert_equal 'in_progress', second.reload.status
+  end
+
+  test 'edit shows the operations inventory and create modal' do
+    open_op = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      name: 'Matin',
+      date: Date.current,
+      route_ids: [routes(:route_one_one).id]
+    )
+    historized = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      name: 'Veille',
+      date: Date.current - 1,
+      route_ids: [routes(:route_three_one).id]
+    )
+    historized.update!(status: 'historized')
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_includes @response.body, 'planning-execution'
+    assert_includes @response.body, 'planning-execution-card'
+    assert_includes @response.body, 'planning-execution-historized'
+    assert_includes @response.body, 'is-historized'
+    assert_includes @response.body, 'planning-operation-modal'
+    assert_includes @response.body, 'form-switch'
+    assert_includes @response.body, 'execution-route-checkbox'
+    assert_includes @response.body, 'data-taken-by-date'
+    assert_includes @response.body, I18n.t('execution.open_tracking')
+    assert_includes @response.body, I18n.t('execution.badge_fresh')
+    assert_operator @response.body.index('planning-execution-card'), :<, @response.body.index('planning-execution-historized')
+    assert_includes @response.body, open_op.ref.presence || open_op.name
+  end
+
+  test 'planning json exposes today operation for the route toolbar button' do
+    operation = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      date: Date.current,
+      route_ids: [routes(:route_one_one).id]
+    )
+
+    get :show, params: { id: @planning.id }, format: :json
+
+    assert_response :success
+    route_payload = JSON.parse(@response.body)['routes'].find { |row| row['route_id'] == routes(:route_one_one).id }
+    assert route_payload
+    assert_equal operation.id, route_payload['today_operation']['id']
+    assert_equal operation_path(operation), route_payload['today_operation']['path']
+  end
+end
