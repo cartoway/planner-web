@@ -142,14 +142,21 @@
         .d-flex.align-items-center.justify-content-left.mb-1.row
           .col-xs-12
             .dropdown.route-select
-              %a.btn.btn-default.col-xs-12.dropdown-toggle{ data: { toggle: 'dropdown', title: t('plannings.edit.send_to_route_help') }, type: "button" }
+              %a.btn.btn-default.col-xs-12.dropdown-toggle{ href: '#', role: 'button', type: 'button', data: { toggle: 'dropdown', title: t('plannings.edit.send_to_route_help') }, 'aria-expanded': 'false' }
                 = t('stops.mobile.back')
-                %span.caret
               %ul.col-xs-12.dropdown-menu{ role: 'menu' }
-                - planning_summary(@route.planning)[:routes].each do |route_data|
-                  - next if route_data[:route_id] == @route.id || route_data[:vehicle_usage_id].nil?
-                  %li
-                    %a.send_to_route{ href: "/plannings/#{@route.planning_id}/#{route_data[:route_id]}/#{stop.id}/driver_move.json", data: { stop_id: stop.id } }
-                      %div.color_small{ style: "background: #{route_data[:color]};" }
-                      = route_data[:name]
+                - if operation_stop && @operation_route
+                  - @operation_route.operation.operation_routes.planned.includes(:vehicle).each do |other_route|
+                    - next if other_route.id == @operation_route.id || other_route.route_id.blank?
+                    %li
+                      %button.send_to_route.dropdown-item{ type: 'button', data: { stop_id: stop.id, url: transfer_stop_operation_operation_route_path(@operation_route.operation, @operation_route, stop_id: operation_stop.id, target_operation_route_id: other_route.id, format: :json) } }
+                        %div.color_small{ style: "background: #{other_route.vehicle_color};" }
+                        = other_route.vehicle_name
+                - else
+                  - planning_summary(@route.planning)[:routes].each do |route_data|
+                    - next if route_data[:route_id] == @route.id || route_data[:vehicle_usage_id].nil?
+                    %li
+                      %button.send_to_route.dropdown-item{ type: 'button', data: { stop_id: stop.id, url: "/plannings/#{@route.planning_id}/#{route_data[:route_id]}/#{stop.id}/driver_move.json" } }
+                        %div.color_small{ style: "background: #{route_data[:color]};" }
+                        = route_data[:name]
   = render partial: 'stops/documents', locals: { stop: operation_stop || stop }
