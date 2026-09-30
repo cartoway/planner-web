@@ -220,6 +220,8 @@ fr:
         enable_references: Montrer les références
         enable_global_optimization: Activer l'optimisation globale
         enable_vehicle_position: Activer la position des véhicules
+        vehicle_position_retention_days: Durée de conservation des positions (jours)
+        vehicle_position_keep_trace: Conserver la trace GPS
         enable_stop_status: Activer les statuts des visites
         enable_store_stops: Activer les sites intermédiaires
         enable_sms: Activer l'envoi de SMS
@@ -1301,6 +1303,12 @@ fr:
       history_cron_hour_help: >-
         Heure à laquelle sont prises les données pour être historisé. Si non
         renseigné, pas d'historisation.
+      vehicle_position_retention_days_help: >-
+        Durée maximale de conservation des positions GPS (1–365 jours). Défaut : 60 jours
+        (recommandation CNIL). Au-delà, les positions sont purgés.
+      vehicle_position_keep_trace_help: >-
+        Si désactivé, seule la dernière position est conservée (pas de tracé). Si activé,
+        l’historique est gardé jusqu’à la durée de conservation.
       optimization_dicho_minimum_service_size_help: >-
         Nombre minimum de visites pour l'algorithme dichotomique.
       optimization_max_split_size_default: '%{n} (valeur par défaut)'
