@@ -102,7 +102,12 @@
       %ul.operation-timeline
         - @operation_stop.operation_stop_status_events.sort_by(&:recorded_at).reverse.each_with_index do |event, index|
           - status_key = event.status.to_s.downcase.presence || 'none'
-          - label = event.status.present? ? t("plannings.edit.stop_status.#{status_key}", default: event.status) : t('operations.show.status_reset')
+          - label = if event.status.blank?
+            - t('operations.show.status_reset')
+          - elsif status_key == 'transferred'
+            - t('operations.show.status_transferred', from: event.payload['from_route_name'], to: event.payload['to_route_name'])
+          - else
+            - t("plannings.edit.stop_status.#{status_key}", default: event.status)
           %li{class: ["is-#{status_key}", ('is-latest' if index.zero?)]}
             %span.operation-timeline-label= label
             %time= @operation_stop.clock_on_operation_day(event.recorded_at)
