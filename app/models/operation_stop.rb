@@ -133,21 +133,40 @@ class OperationStop < ApplicationRecord
   FAILED_STATUSES = %w[rejected undelivered].freeze
   EXCEPTION_STATUSES = %w[exception].freeze
   DONE_STATUSES = %w[delivered finished].freeze
-  CURRENT_STATUSES = %w[intransit started atstore inprocessing].freeze
+  CURRENT_STATUSES = %w[intransit atstore inprocessing].freeze
   LATE_AFTER_MINUTES = 5
+
+  def treated?
+    TREATED_STATUSES.include?(status.to_s.downcase)
+  end
 
   def phase
     code = status.to_s.downcase
     return 'failed' if FAILED_STATUSES.include?(code)
     return 'exception' if EXCEPTION_STATUSES.include?(code)
     return 'delivered' if DONE_STATUSES.include?(code)
+    return 'started' if code == 'started'
     return 'current' if CURRENT_STATUSES.include?(code)
     return 'late' if eta_late?
 
     'upcoming'
   end
 
+  def status_label
+    code = status.to_s.downcase
+    return if code.blank?
+
+    scope = case kind
+            when 'rest' then 'plannings.edit.stop_rest_status'
+            when 'store' then 'plannings.edit.stop_store_status'
+            else 'plannings.edit.stop_status'
+            end
+    I18n.t("#{scope}.#{code}", default: I18n.t("plannings.edit.stop_status.#{code}", default: status))
+  end
+
   def delay_minutes
+    return unless treated?
+
     planned = planned_at
     return if planned.blank? || status_updated_at.blank?
 
@@ -220,6 +239,8 @@ class OperationStop < ApplicationRecord
   end
 
   def actual_clock
+    return unless treated?
+
     clock_on_operation_day(status_updated_at)
   end
 

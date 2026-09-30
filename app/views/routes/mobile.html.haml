@@ -70,12 +70,12 @@
             - when nil
               - 'atstore'
           .panel.panel-default{ data: { stop_type: 'store' } }
-            .panel-heading{ id: "heading-start-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{@route.start_route_data.status}", href: "#collapse-start-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
+            .panel-heading{ id: "heading-start-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{@route.start_route_data.status.presence || 'neutral'}", href: "#collapse-start-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
               .d-flex.align-items-center.justify-content-between.mb-1
                 .col-xs-2.p-0
                   .d-flex.align-items-center.justify-content-between
                     .stop-status-label-wrap
-                      #label-index.label.label-default-negative.p-3{ class: "label-#{@route.start_route_data.status}" }
+                      #label-index.label.label-default-negative.p-3{ class: "label-#{@route.start_route_data.status.presence || 'neutral'}" }
                         %i.fa.fa-fw{ class: "#{@route.vehicle_usage.default_store_start.default_icon}" }
                       %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if @route.start_route_data.status.blank?), data: { toggle: 'route_start_route_data_status', next_status: 'atstore', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
                         %span.stop-status-reset-face.btn.btn-xs.btn-default
@@ -105,12 +105,14 @@
           - previous = @route.vehicle_usage&.default_store_start
         - previous_route_data_quantities = current_route_data_quantities
         - @stops.each do |stop|
-          - next if !stop.active || stop.is_a?(StopRest)
+          - next unless stop.active
 
           - if stop.is_a?(StopVisit)
             = render partial: 'stops/mobile_stop_visit', locals: { stop: stop, previous: previous, agent: agent, customer: customer, enable_driver_move: enable_driver_move, custom_attributes: stop_visit_custom_attributes, visit_custom_attributes: visit_custom_attributes }
           - elsif stop.is_a?(StopStore)
             = render partial: 'stops/mobile_stop_store', locals: { stop: stop, previous: previous, agent: agent, customer: customer, custom_attributes: stop_store_custom_attributes }
+          - elsif stop.is_a?(StopRest)
+            = render partial: 'stops/mobile_stop_rest', locals: { stop: stop, previous: previous, agent: agent, customer: customer }
           - previous = stop
         - if @route.vehicle_usage&.default_store_stop.present?
           - next_status = case @route.stop_route_data.status
@@ -121,12 +123,12 @@
             - when nil
               - 'intransit'
           .panel.panel-default{ data: { stop_type: 'store' } }
-            .panel-heading{ id: "heading-stop-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{@route.stop_route_data.status}", href: "#collapse-stop-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
+            .panel-heading{ id: "heading-stop-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{@route.stop_route_data.status.presence || 'neutral'}", href: "#collapse-stop-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
               .d-flex.align-items-center.justify-content-between.mb-1
                 .col-xs-2.p-0
                   .d-flex.align-items-center.justify-content-between
                     .stop-status-label-wrap
-                      #label-index.label.label-default-negative.p-3{ class: "label-#{@route.stop_route_data.status}" }
+                      #label-index.label.label-default-negative.p-3{ class: "label-#{@route.stop_route_data.status.presence || 'neutral'}" }
                         %i.fa.fa-fw{ class: "#{@route.vehicle_usage.default_store_stop.default_icon}" }
                       %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if @route.stop_route_data.status.blank?), data: { toggle: 'route_stop_route_data_status', next_status: 'intransit', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
                         %span.stop-status-reset-face.btn.btn-xs.btn-default
@@ -159,15 +161,12 @@
             = t("routes.mobile.empty_route")
 
   .row
-    #mobile-sync-pending.d-none.fixed-spinner-container.spinner-container.alert-warning.col-xs-12.p-0
-      .d-flex.align-items-center.justify-content-center
-        .col-xs-1
-          .spinner-border{role: "status"}
-        .col-xs-7
-          = t('routes.mobile.sync_pending')
-    #mobile-sync-failed.d-none.fixed-spinner-container.spinner-container.alert-danger.col-xs-12.p-0
-      .d-flex.align-items-center.justify-content-center
-        .col-xs-8
-          = t('routes.mobile.sync_failed')
+    #mobile-sync-pending.d-none.fixed-spinner-container.alert.alert-warning.mb-0
+      .d-flex.align-items-center.justify-content-center.gap-2.py-2
+        %i.fa.fa-spinner.fa-spin.fa-fw{"aria-hidden": "true"}
+        %span= t('routes.mobile.sync_pending')
+    #mobile-sync-failed.d-none.fixed-spinner-container.alert.alert-danger.mb-0
+      .d-flex.align-items-center.justify-content-center.py-2
+        %span= t('routes.mobile.sync_failed')
 
 - controller.js(route_id: @route.id)

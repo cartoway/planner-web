@@ -74,6 +74,47 @@ class OperationStopDetailTest < ActionController::TestCase
     assert_includes response.body, I18n.t('operations.show.status_reset')
   end
 
+  test 'transferred stop hides late badge and actual clock in the sidebar' do
+    target = @operation.operation_routes.planned.where.not(id: @stop.operation_route_id).detect { |route| route.route_id.present? }
+    skip 'Need a second vehicle route in the operation' unless target
+
+    OperationStops::Transfer.call(
+      operation_stop: @stop,
+      target_operation_route: target,
+      recorded_at: Time.zone.parse('2026-09-25 18:00'),
+      source: 'mobile'
+    )
+
+    get :show, params: { id: @stop.id }
+
+    assert_response :success
+    assert_nil @stop.reload.actual_clock
+    assert_nil @stop.delay_minutes
+    assert_select '.badge.text-bg-warning', count: 0
+    assert_select '.operation-split div:last-child strong', text: '—'
+  end
+
+  test 'rest sidebar keeps schedule and timeline without details' do
+    rest = @operation.operation_stops.find_by!(kind: 'rest')
+    OperationStops::RecordStatus.call(
+      operation_stop: rest,
+      status: 'started',
+      recorded_at: Time.zone.parse('2026-09-25 12:00'),
+      source: 'mobile'
+    )
+
+    get :show, params: { id: rest.id }
+
+    assert_response :success
+    assert_includes response.body, I18n.t('operations.show.planned')
+    assert_includes response.body, I18n.t('operations.show.actual')
+    assert_includes response.body, 'operation-timeline'
+    assert_includes response.body, I18n.t('plannings.edit.stop_rest_status.started')
+    assert_not_includes response.body, I18n.t('operations.show.details')
+    assert_not_includes response.body, I18n.t('operations.show.address')
+    assert_not_includes response.body, I18n.t('operations.show.proof')
+  end
+
   test 'delivery note opens the printable note for a delivered visit' do
     get :delivery_note, params: { id: @stop.id }
     assert_response :success

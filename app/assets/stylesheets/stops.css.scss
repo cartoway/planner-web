@@ -104,7 +104,7 @@
     color: $gray-200;
   }
 
-  .label-atstore, .label-inprocessing {
+  .label-atstore, .label-inprocessing, .label-started {
     background-color: var(--info);
   }
 
@@ -112,7 +112,7 @@
     background-color: $primary-color;
   }
 
-  .label-started, .label-exception {
+  .label-exception {
     background-color: var(--warning);
   }
 
@@ -124,7 +124,7 @@
     background-color: var(--danger);
   }
 
-  .label- {
+  .label-neutral, .label-, .label-transferred {
     background-color: var(--gray);
   }
 
@@ -165,6 +165,10 @@
     border-left: 12px solid var(--warning);
   }
 
+  .panel-heading-started {
+    border-left: 12px solid var(--info);
+  }
+
   .panel-heading-delivered {
     border-left: 12px solid var(--success);
   }
@@ -177,7 +181,7 @@
     border-left: 12px solid var(--danger);
   }
 
-  .panel-heading- {
+  .panel-heading-neutral, .panel-heading-, .panel-heading-transferred {
     border-left: 12px solid transparent;
   }
 

@@ -860,7 +860,8 @@ $sidebar-margins: 10px;
     }
   }
 
-  #planning-operation-modal {
+  #planning-operation-modal,
+  #planning-sync-modal {
     .planning-execution-route {
       margin-bottom: 8px;
 
@@ -873,6 +874,24 @@ $sidebar-margins: 10px;
       .form-switch {
         flex-shrink: 0;
         margin: 0;
+      }
+
+      label .text-muted {
+        margin-left: 6px;
+        font-weight: normal;
+      }
+
+      .sync-route-change {
+        margin-left: 4px;
+        font-weight: normal;
+      }
+
+      &.is-sync-change .sync-route-change {
+        color: #8a6d3b;
+      }
+
+      &.is-sync-desync .sync-route-change {
+        color: #a94442;
       }
 
       &.is-taken {

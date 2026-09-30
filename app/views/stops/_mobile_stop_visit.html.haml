@@ -16,21 +16,18 @@
   - 'intransit'
 
 .panel.panel-default{ data: { stop_type: 'visit' } }
-  .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+  .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status.presence || 'neutral'}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
     .d-flex.align-items-center.justify-content-between.mb-1
       .col-xs-2.p-0
         .d-flex.align-items-center.justify-content-between
           .stop-status-label-wrap
-            #label-index.number.label.p-3{ class: ("label-#{stop.status}") }
+            #label-index.number.label.p-3{ class: ("label-#{stop.status.presence || 'neutral'}") }
               = stop.index
-            %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if stop.status.blank?), data: { toggle: 'active_status', next_status: 'intransit', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
+            %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if stop.status.blank? || stop.status == 'transferred'), data: { toggle: 'active_status', next_status: 'intransit', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
               %span.stop-status-reset-face.btn.btn-xs.btn-default
                 %i.fa.fa-xmark
       .col-xs-6.p-0
         = stop.name
-        - planned = @operation_stops_by_stop_id&.[](stop.id)&.passage_time
-        - if planned
-          .small.text-muted= planned
       .col-xs-4.p-0
         - if customer.enable_sms && in_route_data[:phone_number].present?
           = link_to "sms:#{in_route_data[:phone_number]}?body=#{sms_uri_body(in_route_data[:content])}",

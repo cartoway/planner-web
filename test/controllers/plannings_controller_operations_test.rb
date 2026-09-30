@@ -62,6 +62,44 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_equal 'in_progress', second.reload.status
   end
 
+  test 'sync_operation with selection orphans deselected routes' do
+    route_a = routes(:route_one_one)
+    route_b = routes(:route_three_one)
+    operation = Operations::PublishFromPlanning.call(planning: @planning, route_ids: [route_a.id, route_b.id])
+    kept = operation.operation_routes.find_by!(route_id: route_a.id)
+    dropped = operation.operation_routes.find_by!(route_id: route_b.id)
+
+    post :sync_operation, params: {
+      id: @planning.id,
+      operation_id: operation.id,
+      selection: '1',
+      route_ids: [route_a.id]
+    }
+
+    assert_redirected_to edit_planning_path(@planning)
+    assert_equal I18n.t('execution.synced'), flash[:notice]
+    assert_equal 'active', kept.reload.sync_state
+    assert_equal 'orphaned', dropped.reload.sync_state
+    assert dropped.operation_stops.all? { |stop| stop.sync_state == 'orphaned' }
+    assert_equal [route_a.id], operation.reload.custom_attributes['_route_ids']
+  end
+
+  test 'sync_operation with empty selection is rejected' do
+    route = routes(:route_one_one)
+    operation = Operations::PublishFromPlanning.call(planning: @planning, route_ids: [route.id])
+
+    post :sync_operation, params: {
+      id: @planning.id,
+      operation_id: operation.id,
+      selection: '1',
+      route_ids: []
+    }
+
+    assert_redirected_to edit_planning_path(@planning)
+    assert_equal I18n.t('execution.empty_routes'), flash[:alert]
+    assert_equal 'active', operation.operation_routes.find_by!(route_id: route.id).reload.sync_state
+  end
+
   test 'edit shows the operations inventory and create modal' do
     open_op = Operations::PublishFromPlanning.call(
       planning: @planning,
@@ -69,6 +107,7 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
       date: Date.current,
       route_ids: [routes(:route_one_one).id]
     )
+    open_op.update_columns(structure_fingerprint: 'stale')
     historized = Operations::PublishFromPlanning.call(
       planning: @planning,
       name: 'Veille',
@@ -85,11 +124,15 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_includes @response.body, 'planning-execution-historized'
     assert_includes @response.body, 'is-historized'
     assert_includes @response.body, 'planning-operation-modal'
+    assert_includes @response.body, 'planning-sync-modal'
+    assert_includes @response.body, 'planning-execution-sync'
     assert_includes @response.body, 'form-switch'
     assert_includes @response.body, 'execution-route-checkbox'
+    assert_includes @response.body, 'sync-route-checkbox'
     assert_includes @response.body, 'data-taken-by-date'
     assert_includes @response.body, I18n.t('execution.open_tracking')
-    assert_includes @response.body, I18n.t('execution.badge_fresh')
+    assert_includes @response.body, I18n.t('execution.badge_dirty')
+    assert_includes @response.body, I18n.t('execution.modal.stops_count', count: routes(:route_one_one).size_active)
     assert_operator @response.body.index('planning-execution-card'), :<, @response.body.index('planning-execution-historized')
     assert_includes @response.body, open_op.ref.presence || open_op.name
   end

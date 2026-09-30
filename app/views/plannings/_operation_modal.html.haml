@@ -32,7 +32,9 @@
                   .d-flex.align-items-center
                     .form-switch
                       = check_box_tag 'route_ids[]', route.id, default_on, id: "execution_route_#{route.id}", class: 'execution-route-checkbox form-check-input', data: { hidden: route.hidden.to_s }
-                    %label.mb-0{ for: "execution_route_#{route.id}" }= label
+                    %label.mb-0{ for: "execution_route_#{route.id}" }
+                      = label
+                      %span.text-muted= t('execution.modal.stops_count', count: route.route_data&.size_active.to_i)
                   %span.help-block.mb-0.execution-route-taken-hint.hidden
             %p.help-block#execution-route-count{ data: { template: t('execution.modal.selected_count') } }
         .modal-footer

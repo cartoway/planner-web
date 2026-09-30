@@ -281,6 +281,27 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
       route_ids: [routes(:route_three_one).id]
     )
     assert_equal original, outside.reload.destination_snapshot['name']
+    assert_equal 'active', outside.operation_route.sync_state
+  end
+
+  test 'sync with orphan_unselected marks deselected routes orphaned' do
+    route_a = routes(:route_one_one)
+    route_b = routes(:route_three_one)
+    operation = Operations::PublishFromPlanning.call(planning: @planning, route_ids: [route_a.id, route_b.id])
+    kept = operation.operation_routes.find_by!(route_id: route_a.id)
+    dropped = operation.operation_routes.find_by!(route_id: route_b.id)
+
+    Operations::SyncFromPlanning.call(
+      planning: @planning.reload,
+      operation: operation,
+      route_ids: [route_a.id],
+      orphan_unselected: true
+    )
+
+    assert_equal 'active', kept.reload.sync_state
+    assert_equal 'orphaned', dropped.reload.sync_state
+    assert dropped.operation_stops.reload.all? { |stop| stop.sync_state == 'orphaned' }
+    assert_equal [route_a.id], operation.reload.custom_attributes['_route_ids']
   end
 
   test 'sync targets the given operation among several open ones' do

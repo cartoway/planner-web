@@ -2,6 +2,7 @@
 
 module OperationStops
   # Move a visit stop to another route of the same open operation and log the transfer.
+  # Does not touch the underlying planning (Stop / Route).
   class Transfer
     Error = Class.new(StandardError)
 
@@ -39,7 +40,6 @@ module OperationStops
           }
         )
       end
-      move_planning_stop!
       @operation_stop
     end
 
@@ -61,19 +61,6 @@ module OperationStops
     def move_operation_stop!
       next_index = (@target_route.operation_stops.maximum(:index) || 0) + 1
       @operation_stop.update!(operation_route_id: @target_route.id, index: next_index)
-    end
-
-    # Keep planning membership in sync without a full router compute (routes stay outdated).
-    def move_planning_stop!
-      return if @operation_stop.stop_id.blank? || @target_route.route_id.blank?
-
-      stop = Stop.find_by(id: @operation_stop.stop_id)
-      return unless stop
-
-      source_route_id = stop.route_id
-      next_index = (Stop.where(route_id: @target_route.route_id).maximum(:index) || 0) + 1
-      stop.update_columns(route_id: @target_route.route_id, index: next_index, updated_at: Time.current)
-      Route.where(id: [source_route_id, @target_route.route_id].compact).update_all(outdated: true, updated_at: Time.current)
     end
   end
 end

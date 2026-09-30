@@ -142,7 +142,7 @@
         .d-flex.align-items-center.justify-content-left.mb-1.row
           .col-xs-12
             .dropdown.route-select
-              %a.btn.btn-default.col-xs-12.dropdown-toggle{ href: '#', role: 'button', type: 'button', data: { toggle: 'dropdown', title: t('plannings.edit.send_to_route_help') }, 'aria-expanded': 'false' }
+              %button.btn.btn-default.col-xs-12.dropdown-toggle{ type: 'button', data: { toggle: 'dropdown', title: t('plannings.edit.send_to_route_help') }, 'aria-expanded': 'false', 'aria-haspopup': 'true' }
                 = t('stops.mobile.back')
               %ul.col-xs-12.dropdown-menu{ role: 'menu' }
                 - if operation_stop && @operation_route

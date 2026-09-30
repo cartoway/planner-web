@@ -84,6 +84,9 @@ export const stops_edit = function(params) {
     e.preventDefault();
     e.stopPropagation();
     var btn = this;
+    var panel = $(btn).closest('.panel');
+    var current = panel.find('input[name="stop[status]"], input[name="operation_stop[status]"], #active_status').val();
+    if (current === 'transferred') return;
     if (!btn.classList.contains(CONFIRM_ARMED)) {
       disarmAllStatusResets(btn);
       armStatusReset(btn);
@@ -158,7 +161,7 @@ export const stops_edit = function(params) {
     if (labelMatch) {
       label.removeClass(labelMatch[0]);
     }
-    label.addClass('label-' + selected);
+    label.addClass('label-' + (selected || 'neutral'));
 
     var heading = panel.find('.panel-heading');
     var headingClasses = heading.attr("class") || "";
@@ -166,9 +169,9 @@ export const stops_edit = function(params) {
     if (headingMatch) {
       heading.removeClass(headingMatch[0]);
     }
-    heading.addClass('panel-heading-' + selected);
+    heading.addClass('panel-heading-' + (selected || 'neutral'));
 
-    panel.find('.stop-status-reset').toggleClass('d-none', !selected);
+    panel.find('.stop-status-reset').toggleClass('d-none', !selected || selected === 'transferred');
 
     var stopType = panel.data('stop-type');
 
@@ -177,7 +180,7 @@ export const stops_edit = function(params) {
       var nextAfterReset = element.data('next-status') || 'intransit';
       var statusI18nPrefix = stopType === 'visit'
         ? 'plannings.edit.stop_status.'
-        : 'plannings.edit.stop_store_status.';
+        : (stopType === 'rest' ? 'plannings.edit.stop_rest_status.' : 'plannings.edit.stop_store_status.');
       panel.find('#quick-status').removeClass('d-none');
       panel.find('#quick-status').data('title', nextAfterReset);
       panel.find('#quick-status-text').text(I18n.t(statusI18nPrefix + nextAfterReset));
@@ -196,6 +199,11 @@ export const stops_edit = function(params) {
       panel.find('#quick-status').removeClass('d-none');
       panel.find('#quick-status').data('title', next_status);
       panel.find('#quick-status-text').text(I18n.t("plannings.edit.stop_store_status.finished"));
+    } else if (stopType === 'rest' && selected == 'started') {
+      var next_status = 'finished';
+      panel.find('#quick-status').removeClass('d-none');
+      panel.find('#quick-status').data('title', next_status);
+      panel.find('#quick-status-text').text(I18n.t("plannings.edit.stop_rest_status.finished"));
     } else {
       panel.find('#quick-status').addClass('d-none');
     }

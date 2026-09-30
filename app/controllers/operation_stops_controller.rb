@@ -93,6 +93,8 @@ class OperationStopsController < ApplicationController
       format.json { render json: { success: true } }
       format.html { redirect_to mobile_operation_operation_route_path(@operation_stop.operation_route.operation, @operation_stop.operation_route) }
     end
+  rescue ArgumentError
+    head :unprocessable_entity
   end
 
   PRINT_IMAGE_MAX_EDGE = 880

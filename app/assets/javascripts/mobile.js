@@ -36,9 +36,11 @@ const tracking = function(params) {
   });
 
   function addSpinner(stop_id) {
-    $('#heading-' + stop_id).closest('.panel').find('#transfer-label')
-      .addClass('spinner-container row')
-      .prepend('<div class="col-xs-1"><div class="spinner-border"></div></div>');
+    var toggle = $('#heading-' + stop_id).closest('.panel').find('.route-select .dropdown-toggle');
+    toggle.prop('disabled', true);
+    if (!toggle.find('.fa-spinner').length) {
+      toggle.append(' <i class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i>');
+    }
   }
 
   function removeStop(stop_id) {

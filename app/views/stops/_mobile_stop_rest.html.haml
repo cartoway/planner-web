@@ -1,0 +1,62 @@
+- next_status = case stop.status
+- when 'started'
+  - 'finished'
+- when nil
+  - 'started'
+
+.panel.panel-default{ data: { stop_type: 'rest' } }
+  .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status.presence || 'neutral'}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+    .d-flex.align-items-center.justify-content-between.mb-1
+      .col-xs-2.p-0
+        .d-flex.align-items-center.justify-content-between
+          .stop-status-label-wrap
+            #label-index.label.p-3{ class: ("label-#{stop.status.presence || 'neutral'}") }
+              %i.fa.fa-fw{ class: stop.default_icon }
+            %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if stop.status.blank?), data: { toggle: 'active_status', next_status: 'started', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
+              %span.stop-status-reset-face.btn.btn-xs.btn-default
+                %i.fa.fa-xmark
+      .col-xs-6.p-0
+        = stop.name
+      .col-xs-4.p-0
+        %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'active_status', title: next_status } }
+          .d-flex.align-items-center
+            .fa.fa-regular.fa-square-caret-right.mr-2
+            #quick-status-text
+              = t("plannings.edit.stop_rest_status.#{next_status}") if next_status
+    - if stop.position?
+      .d-flex.align-items-center
+        .col-xs-12.p-0.mt-1
+          .d-flex.align-items-center.justify-content-between
+            .col-xs-8.p-0.mr-2
+              = stop.street
+              = stop.postalcode
+              = stop.city
+            .col-xs-4.p-0
+              = render partial: 'stops/mobile_navigate', locals: { lat: stop.lat, lng: stop.lng, agent: agent }
+    .d-flex.align-items-center.justify-content-center
+      .fa.fa-caret-down.fa-fw
+  .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
+    .panel-body
+      .container.mt-1
+        - operation_stop = @operation_stops_by_stop_id&.[](stop.id)
+        = form_with url: (operation_stop ? operation_stop_path(operation_stop) : stop_path(stop)), method: :patch, local: true, html: { class: (operation_stop ? 'operation-stop-status-form' : nil) } do
+          .form-group.mb-1
+            %label{ for: 'active_status' }
+              = t('stops.mobile.status')
+            .input-group.col-xs-12
+              .radiobtn
+                .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
+                  .col-xs-6.d-flex.justify-content-center
+                    %a.btn.btn-info{ data: { toggle: 'active_status', title: 'started' }, class: ('active' if stop.status == 'started') }
+                      = t('plannings.edit.stop_rest_status.started')
+                  .col-xs-6.d-flex.justify-content-center
+                    %a.btn.btn-success{ data: { toggle: 'active_status', title: 'finished' }, class: ('active' if stop.status == 'finished') }
+                      = t('plannings.edit.stop_rest_status.finished')
+              - if operation_stop
+                = hidden_field_tag 'operation_stop[status]', stop.status, id: 'active_status'
+                = hidden_field_tag 'operation_stop[status_updated_at]', ''
+              - else
+                = hidden_field_tag 'stop[status]', stop.status, id: 'active_status'
+                = hidden_field_tag 'stop[status_updated_at]', ''
+                = hidden_field_tag 'stop[position]', '', id: 'active_status_position'
+                = hidden_field_tag 'stop_id', stop.id

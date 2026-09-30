@@ -16,9 +16,11 @@ class OperationStopsTransferTest < ActiveSupport::TestCase
     Operation.where(customer_id: @planning.customer_id).delete_all
   end
 
-  test 'moves the stop and records transferred status with route names' do
+  test 'moves the operation stop and records transferred status without touching planning' do
     from_name = @source_route.vehicle_name
     to_name = @target_route.vehicle_name
+    planning_stop = Stop.find(@stop.stop_id)
+    planning_route_id = planning_stop.route_id
 
     OperationStops::Transfer.call(
       operation_stop: @stop,
@@ -34,5 +36,10 @@ class OperationStopsTransferTest < ActiveSupport::TestCase
     assert_equal 'transferred', event.status
     assert_equal from_name, event.payload['from_route_name']
     assert_equal to_name, event.payload['to_route_name']
+    assert_nil @stop.actual_clock
+    assert_nil @stop.delay_minutes
+
+    planning_stop.reload
+    assert_equal planning_route_id, planning_stop.route_id
   end
 end
