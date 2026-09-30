@@ -101,8 +101,10 @@
       %h3= t('operations.show.timeline')
       %ul.operation-timeline
         - @operation_stop.operation_stop_status_events.sort_by(&:recorded_at).reverse.each_with_index do |event, index|
-          %li{class: ["is-#{event.status.downcase}", ('is-latest' if index.zero?)]}
-            %span.operation-timeline-label= t("plannings.edit.stop_status.#{event.status.downcase}", default: event.status)
+          - status_key = event.status.to_s.downcase.presence || 'none'
+          - label = event.status.present? ? t("plannings.edit.stop_status.#{status_key}", default: event.status) : t('operations.show.status_reset')
+          %li{class: ["is-#{status_key}", ('is-latest' if index.zero?)]}
+            %span.operation-timeline-label= label
             %time= @operation_stop.clock_on_operation_day(event.recorded_at)
         - if @operation_stop.operation_stop_status_events.empty?
           %li.is-empty= t('operations.show.no_status_history')
