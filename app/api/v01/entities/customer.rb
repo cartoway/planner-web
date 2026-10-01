@@ -45,6 +45,7 @@ class V01::Entities::Customer < Grape::Entity
   expose(:print_header, documentation: { type: String })
   expose(:print_barcode, documentation: { type: String, values: ::Customer::PRINT_BARCODE, desc: 'Print the Reference as Barcode'})
   expose(:sms_template, documentation: { type: String })
+  expose(:recipient_template, documentation: { type: String, desc: 'Recipient email template for delivery tracking' })
   expose(:sms_concat, documentation: { type: 'Boolean' })
 
   expose(:enable_external_callback, documentation: { type: 'Boolean', desc: 'Enable external callback', default: false })
