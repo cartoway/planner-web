@@ -112,6 +112,10 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
     assert_equal 200, last_response.status
     assert_includes last_response.body, 'vehicle_one'
     assert_includes last_response.body, 'route_one'
+    assert_match(/id=['"]location-switch['"]/, last_response.body)
+    assert_match(/for=['"]location-switch['"]/, last_response.body)
+    assert_includes last_response.body, 'justify-content-end'
+    refute_match(/form-switch[^>]*(text-right|text-end)/, last_response.body)
   end
 
   test 'driver status update keeps an older event without regressing the cursor' do
