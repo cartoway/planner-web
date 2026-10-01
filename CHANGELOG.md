@@ -1,5 +1,12 @@
 # Changelog
 
+## v110.0.2
+  ### Added
+  - Mobile / iOS: navigate tries Benav first, then falls back to Apple Maps when Benav is not installed
+
+  ### Fixed
+  - Mobile / iOS: SMS links percent-encode the body (spaces as `%20`) so the message opens correctly
+
 ## v110.0.1
   ### Fixed
   - Planning:
