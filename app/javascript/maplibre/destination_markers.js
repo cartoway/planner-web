@@ -28,7 +28,7 @@ export function fillDestinationMarker (element, { name, anchored = false } = {})
 
 export function createDestinationMarkerElement (label) {
   const el = document.createElement('div')
-  return fillDestinationMarker(el, { name: label, anchored: false })
+  return fillDestinationMarker(el, { name: label, anchored: true })
 }
 
 export function fillClusterMarker (element, props) {

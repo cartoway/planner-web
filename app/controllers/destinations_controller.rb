@@ -117,6 +117,7 @@ class DestinationsController < ApplicationController
 
   def new
     @destination = current_user.customer.destinations.build
+    @destination.name = t('destinations.index.default_name')
     @destination.postalcode = current_user.customer.stores[0].postalcode
     @destination.city = current_user.customer.stores[0].city
     if turbo_frame_request? && turbo_frame_request_id == "form_sidebar"
@@ -179,6 +180,7 @@ class DestinationsController < ApplicationController
       p = destination_params
       time_with_day_params(params, p, [:time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2])
       @destination = current_user.customer.destinations.build(p)
+      @destination.visits.build if v2_sidebar_submit? && @destination.visits.empty?
       apply_geocode_on_save!(@destination)
 
       if @destination.save && current_user.customer.save

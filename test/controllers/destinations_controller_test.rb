@@ -478,12 +478,16 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#form_sidebar .form-submit-bar button[type="submit"][form="destination-form-sidebar"]', 1
   end
 
-  test 'v2 new destination sidebar has no visit fieldsets and no hidden visit template' do
+  test 'v2 new destination sidebar includes a default visit and map placement toggle' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
     get :new
     assert_response :success
-    assert_select '#visits > fieldset', 0
-    assert_select '#visit-fieldset-template', 0
+    assert_select '#visits > fieldset.visit-fieldset', 1
+    assert_select 'button#visit-new[data-action*="v2--visit-new#add"]', 1
+    assert_select 'template#visit-fieldset-template', 1
+    assert_select 'form#destination-form-sidebar[data-destination_id="0"][data-position-editable="true"]', 1
+    assert_select 'input#destination_name[value=?]', I18n.t('destinations.index.default_name')
+    assert_select 'button[data-v2-map-position-drag-toggle]', 1
   end
 
   test 'append_visit creates a persisted visit and re-renders form_sidebar' do
@@ -613,7 +617,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'v2 create from sidebar closes form_sidebar with saved destination id' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
-    assert_difference('Destination.count', 1) do
+    assert_difference(%w[Destination.count Visit.count], 1) do
       post :create, params: { v2_sidebar: '1', destination: {
         city: @destination.city,
         lat: @destination.lat,
