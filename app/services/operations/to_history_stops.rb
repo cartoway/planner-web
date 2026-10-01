@@ -75,7 +75,9 @@ module Operations
     end
 
     def ordered_stops(operation_route)
-      operation_route.operation_stops.sort_by { |stop| stop.index || 0 }
+      operation_route.operation_stops
+                     .select { |stop| stop.sync_state == 'active' && stop.active? }
+                     .sort_by { |stop| stop.index || 0 }
     end
 
     def stops_payload(stops)

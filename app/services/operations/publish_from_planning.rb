@@ -14,10 +14,10 @@ module Operations
 
   class PublishFromPlanning
     def self.call(planning:, date: nil, name: nil, route_ids: nil, visible_routes_only: false)
-      new(planning, date, name, route_ids, visible_routes_only).call
+      new(planning, date, name, route_ids, visible_routes_only: visible_routes_only).call
     end
 
-    def initialize(planning, date = nil, name = nil, route_ids = nil, visible_routes_only = false)
+    def initialize(planning, date = nil, name = nil, route_ids = nil, visible_routes_only: false)
       @planning = planning
       @date = date
       @name = name
@@ -118,7 +118,7 @@ module Operations
         next unless with_stops
 
         route.stops.each do |stop|
-          next if stop.active == false
+          next unless stop.active?
 
           build_stop(operation_route, stop, units_by_id, copy_cursor: copy_cursor)
         end
@@ -126,10 +126,12 @@ module Operations
     end
 
     def build_stop(operation_route, stop, units_by_id, copy_cursor:)
+      return unless stop.active?
+
       kind = Snapshots.kind_for(stop)
       visit = stop.visit
       destination = visit&.destination
-      store = stop.store || stop.store_reload&.store
+      store = Snapshots.store_for(stop)
       OperationStop.create!(
         operation_route: operation_route,
         stop: stop,
