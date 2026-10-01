@@ -4,7 +4,6 @@
 
 import { Controller } from '@hotwired/stimulus'
 import { visit } from 'turbo/frame_promoted_visit'
-import { navigator as turboNavigator } from '@hotwired/turbo'
 import { pickLayers, resolveMapStyle, styleForBaseLayer, basesNeedStyleSwitch, applyOverlays } from 'maplibre/raster_layers'
 import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
@@ -12,6 +11,7 @@ import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { DestinationsMapLayers, CLUSTER_LAYER_ID } from 'maplibre/destinations_map_layers'
 import { createDestinationMarkerElement } from 'maplibre/destination_markers'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
+import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
 
 const DEFAULT_ZOOM = 12
 
@@ -44,10 +44,6 @@ function afterSlideTransition (el, fn) {
   }
   el.addEventListener('transitionend', onEnd)
   const fallbackId = setTimeout(finish, 500)
-}
-
-function getMaplibre () {
-  return typeof window !== 'undefined' && window.maplibregl ? window.maplibregl : null
 }
 
 function storesToFeatures (stores) {
@@ -103,8 +99,11 @@ export default class extends Controller {
     document.addEventListener('click', this._onPositionDragToggleDocumentClick, { signal })
     document.addEventListener('v2:record-geocoded', this._onRecordGeocoded, { signal })
     window.addEventListener('resize', this._onPositionDragResize, { signal })
-    document.addEventListener('turbo:before-cache', this._beforeCache, { signal })
-    document.addEventListener('turbolinks:before-cache', this._beforeCache, { signal })
+    bindTurboMapHost({
+      signal,
+      teardown: () => this._teardownMap(),
+      getContainer: () => this.element.querySelector('#map')
+    })
     document.addEventListener('turbo:frame-load', this._onTurboFrameLoad, { signal })
     this.element.addEventListener('input', (e) => {
       if (e.target && e.target.closest && e.target.closest('[data-v2--table-filter-target="input"]')) {
@@ -120,12 +119,6 @@ export default class extends Controller {
     this._map = null
   }
 
-  _beforeCache = () => {
-    const visitState = turboNavigator.currentVisit
-    if (visitState && visitState.willRender === false) return
-    this._teardownMap()
-  }
-
   _teardownMap () {
     this._teardownPositionEdit()
     this._clearStoreHighlight()
@@ -134,11 +127,8 @@ export default class extends Controller {
       this._mapLayers = null
     }
     this._removeDomMarker()
-    const mapEl = this.element.querySelector('#map')
-    if (mapEl && mapEl._v2MaplibreMap) {
-      try { mapEl._v2MaplibreMap.remove() } catch (e) { /* ignore */ }
-      mapEl._v2MaplibreMap = null
-    }
+    detachMapFromContainer(this.element.querySelector('#map'))
+    this._map = null
   }
 
   _removeDomMarker () {
@@ -342,15 +332,10 @@ export default class extends Controller {
 
   _initMap (maplibregl, container, params, signal) {
     this._teardownPositionEdit()
-    if (container._v2MaplibreMap) {
-      try { container._v2MaplibreMap.remove() } catch (e) { /* ignore */ }
-      container._v2MaplibreMap = null
-    }
 
     const resolved = resolveMapStyle(params.map_layers)
     const { style, baseLayerIds, overlayToggles } = resolved
-    const map = new maplibregl.Map({
-      container,
+    const map = attachMapToContainer(container, {
       style,
       center: [parseFloat(params.map_lng) || 0, parseFloat(params.map_lat) || 0],
       zoom: params.map_zoom != null ? Number(params.map_zoom) : DEFAULT_ZOOM,
@@ -363,9 +348,9 @@ export default class extends Controller {
       pitch: 0,
       bearing: 0
     })
+    if (!map) return
     disableMapPitchAndRotation(map)
     map.on('style.load', () => disableMapPitchAndRotation(map))
-    container._v2MaplibreMap = map
     this._map = map
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
