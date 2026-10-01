@@ -7,6 +7,7 @@ import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_cont
 import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
+import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
 
 const OPACITY_MIN = 0.4
 const OPACITY_MAX = 1
@@ -35,9 +36,13 @@ export default class extends Controller {
     this.phase = 'all'
     this.query = ''
     this._beforeMorph = (event) => this._keepLiveState(event)
-    this._afterMorph = () => this._refreshLive()
     document.addEventListener('turbo:before-morph-element', this._beforeMorph, true)
-    document.addEventListener('turbo:morph', this._afterMorph)
+    this._mapHost = bindTurboMapHost({
+      teardown: () => this._teardownMap(),
+      getContainer: () => this.hasMapTarget ? this.mapTarget : null,
+      protectFromMorph: true,
+      onMorph: () => this._refreshLive()
+    })
     this._bindTours()
     this._bindListScroll()
     const open = this.element.querySelector('details.operation-tour[open]')
@@ -333,9 +338,25 @@ export default class extends Controller {
     const list = this._listScroller()
     if (list && this._onListScroll) list.removeEventListener('scroll', this._onListScroll)
     document.removeEventListener('turbo:before-morph-element', this._beforeMorph, true)
-    document.removeEventListener('turbo:morph', this._afterMorph)
+    if (this._mapHost) {
+      this._mapHost.disconnect()
+      this._mapHost = null
+    } else {
+      this._teardownMap()
+    }
+  }
+
+  _teardownMap () {
     this._clearStopMarkers()
-    if (this.map) this.map.remove()
+    if (this._vehicleMarker) {
+      this._vehicleMarker.remove()
+      this._vehicleMarker = null
+    }
+    if (this.map && this._onMapMoveEnd) {
+      try { this.map.off('moveend', this._onMapMoveEnd) } catch (_) { /* ignore */ }
+    }
+    detachMapFromContainer(this.hasMapTarget ? this.mapTarget : null)
+    this.map = null
   }
 
   _keepLiveState (event) {
@@ -592,7 +613,7 @@ export default class extends Controller {
   }
 
   async _loadMap () {
-    const maplibregl = window.maplibregl
+    const maplibregl = getMaplibre()
     if (!maplibregl || !this.hasMapTarget) return
     const response = await fetch(this.mapUrlValue, { cache: 'no-store', headers: { Accept: 'application/json' } })
     if (!response.ok) return
@@ -608,8 +629,7 @@ export default class extends Controller {
     const center = this._center()
     const zoom = params.map_zoom != null ? Number(params.map_zoom) : 12
 
-    this.map = new maplibregl.Map({
-      container: this.mapTarget,
+    const map = attachMapToContainer(this.mapTarget, {
       style,
       center,
       zoom,
@@ -622,6 +642,8 @@ export default class extends Controller {
       pitch: 0,
       bearing: 0
     })
+    if (!map) return
+    this.map = map
     disableMapPitchAndRotation(this.map)
     this.map.on('style.load', () => disableMapPitchAndRotation(this.map))
 

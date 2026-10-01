@@ -1,6 +1,13 @@
 // Delivery tracking public map (MapLibre) — destination pin + optional approx vehicle / track
 import { Controller } from '@hotwired/stimulus'
 import { resolveMapStyle } from 'maplibre/raster_layers'
+import {
+  attachMapToContainer,
+  bindTurboMapHost,
+  detachMapFromContainer,
+  getMaplibre,
+  scheduleMapResize
+} from 'maplibre/turbo_map_host'
 
 const FALLBACK_STYLE = 'https://demotiles.maplibre.org/style.json'
 
@@ -10,14 +17,22 @@ export default class extends Controller {
 
   connect () {
     this._markers = []
-    this._afterMorph = () => this._onMorph()
-    document.addEventListener('turbo:morph', this._afterMorph)
+    this._mapHost = bindTurboMapHost({
+      teardown: () => this._destroyMap(),
+      getContainer: () => this.hasCanvasTarget ? this.canvasTarget : null,
+      protectFromMorph: true,
+      onMorph: () => this._onMorph()
+    })
     this._buildMap()
   }
 
   disconnect () {
-    document.removeEventListener('turbo:morph', this._afterMorph)
-    this._destroyMap()
+    if (this._mapHost) {
+      this._mapHost.disconnect()
+      this._mapHost = null
+    } else {
+      this._destroyMap()
+    }
   }
 
   payloadValueChanged () {
@@ -34,12 +49,13 @@ export default class extends Controller {
       this._buildMap()
       return
     }
-    this.map.resize()
+    scheduleMapResize(this.map)
     this._paint(this.payloadValue || {})
   }
 
   _buildMap () {
-    if (!window.maplibregl || !this.hasCanvasTarget) return
+    const maplibregl = getMaplibre()
+    if (!maplibregl || !this.hasCanvasTarget) return
     const data = this.payloadValue || {}
     const dest = data.destination
     if (!dest) return
@@ -49,18 +65,18 @@ export default class extends Controller {
     const resolved = data.map_layers ? resolveMapStyle(data.map_layers) : null
     const style = resolved?.style || FALLBACK_STYLE
 
-    this.map = new window.maplibregl.Map({
-      container: this.canvasTarget,
+    const map = attachMapToContainer(this.canvasTarget, {
       style,
       center: [dest.lng, dest.lat],
       zoom: 12,
       interactive: false
     })
+    if (!map) return
+    this.map = map
 
     this.map.on('load', () => {
       this._paint(this._pendingPaint || data)
-      // Morph / layout can leave the WebGL canvas at 0×0 until resize.
-      requestAnimationFrame(() => { if (this.map) this.map.resize() })
+      scheduleMapResize(this.map)
     })
   }
 
@@ -76,7 +92,10 @@ export default class extends Controller {
 
     this._clearOverlays()
 
-    const destMarker = new window.maplibregl.Marker({ color: '#1a365d' })
+    const maplibregl = getMaplibre()
+    if (!maplibregl) return
+
+    const destMarker = new maplibregl.Marker({ color: '#1a365d' })
       .setLngLat([dest.lng, dest.lat])
       .addTo(this.map)
     this._markers.push(destMarker)
@@ -84,7 +103,7 @@ export default class extends Controller {
     if (data.vehicle) {
       const el = document.createElement('div')
       el.className = 'delivery-tracking-vehicle-marker'
-      const vehicleMarker = new window.maplibregl.Marker({ element: el })
+      const vehicleMarker = new maplibregl.Marker({ element: el })
         .setLngLat([data.vehicle.lng, data.vehicle.lat])
         .addTo(this.map)
       this._markers.push(vehicleMarker)
@@ -107,7 +126,7 @@ export default class extends Controller {
       })
     }
 
-    const bounds = new window.maplibregl.LngLatBounds([dest.lng, dest.lat], [dest.lng, dest.lat])
+    const bounds = new maplibregl.LngLatBounds([dest.lng, dest.lat], [dest.lng, dest.lat])
     if (data.vehicle) bounds.extend([data.vehicle.lng, data.vehicle.lat])
     track.forEach((c) => bounds.extend([c[0], c[1]]))
     this.map.fitBounds(bounds, { padding: 48, maxZoom: 14 })
@@ -123,9 +142,7 @@ export default class extends Controller {
 
   _destroyMap () {
     this._clearOverlays()
-    if (this.map) {
-      this.map.remove()
-      this.map = null
-    }
+    detachMapFromContainer(this.hasCanvasTarget ? this.canvasTarget : null)
+    this.map = null
   }
 }

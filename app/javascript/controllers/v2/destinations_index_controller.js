@@ -4,7 +4,6 @@
 
 import { Controller } from '@hotwired/stimulus'
 import { visit } from 'turbo/frame_promoted_visit'
-import { navigator as turboNavigator } from '@hotwired/turbo'
 import { pickLayers, resolveMapStyle, styleForBaseLayer, basesNeedStyleSwitch, applyOverlays } from 'maplibre/raster_layers'
 import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
@@ -12,6 +11,7 @@ import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { DestinationsMapLayers, CLUSTER_LAYER_ID } from 'maplibre/destinations_map_layers'
 import { createDestinationMarkerElement } from 'maplibre/destination_markers'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
+import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
 
 const DEFAULT_ZOOM = 12
 const MIN_CHARS = 3
@@ -48,10 +48,6 @@ function afterSlideTransition (el, fn) {
   }
   el.addEventListener('transitionend', onEnd)
   const fallbackId = setTimeout(finish, 500)
-}
-
-function getMaplibre () {
-  return typeof window !== 'undefined' && window.maplibregl ? window.maplibregl : null
 }
 
 // Split only before the next key:value token, not on spaces inside a value.
@@ -133,9 +129,11 @@ export default class extends Controller {
     document.addEventListener('v2:destination-geocoded', this._onDestinationGeocoded, { signal })
     document.addEventListener('v2:destination-visits-changed', this._onDestinationVisitsChanged, { signal })
     window.addEventListener('resize', this._onPositionDragResize, { signal })
-
-    document.addEventListener('turbo:before-cache', this._beforeCache, { signal })
-    document.addEventListener('turbolinks:before-cache', this._beforeCache, { signal })
+    bindTurboMapHost({
+      signal,
+      teardown: () => this._teardownMap(),
+      getContainer: () => this.element.querySelector('#map')
+    })
     document.addEventListener('turbo:frame-load', this._onTurboFrameLoad, { signal })
     this.element.addEventListener('confirm-click:confirmed', this._onDestroyConfirmed, { signal })
   }
@@ -147,18 +145,6 @@ export default class extends Controller {
     this._map = null
   }
 
-  /**
-   * Turbo fires turbo:before-cache before snapshotting the page. Frame navigations
-   * (e.g. list page change from a map marker) also run a Visit with willRender: false
-   * to sync history — not a real body swap. Tearing WebGL down there loses the map
-   * context while the live DOM is unchanged ("WebGL context was lost").
-   */
-  _beforeCache = () => {
-    const visit = turboNavigator.currentVisit
-    if (visit && visit.willRender === false) return
-    this._teardownMap()
-  }
-
   _teardownMap () {
     this._teardownPositionEdit()
     this._clearDestinationHighlight()
@@ -167,13 +153,8 @@ export default class extends Controller {
       this._mapLayers = null
     }
     this._removeDomMarker()
-    const mapEl = this.element.querySelector('#map')
-    if (mapEl && mapEl._v2MaplibreMap) {
-      try {
-        mapEl._v2MaplibreMap.remove()
-      } catch (e) { /* ignore */ }
-      mapEl._v2MaplibreMap = null
-    }
+    detachMapFromContainer(this.element.querySelector('#map'))
+    this._map = null
     this._iconOverStack = []
   }
 
@@ -467,10 +448,6 @@ export default class extends Controller {
 
   _initMap (maplibregl, container, params, signal) {
     this._teardownPositionEdit()
-    if (container._v2MaplibreMap) {
-      try { container._v2MaplibreMap.remove() } catch (e) { /* ignore */ }
-      container._v2MaplibreMap = null
-    }
 
     const resolved = resolveMapStyle(params.map_layers)
     const { style, baseLayerIds, overlayToggles } = resolved
@@ -478,8 +455,7 @@ export default class extends Controller {
     const centerLat = parseFloat(params.map_lat) || 0
     const zoom = params.map_zoom != null ? Number(params.map_zoom) : DEFAULT_ZOOM
 
-    const map = new maplibregl.Map({
-      container,
+    const map = attachMapToContainer(container, {
       style,
       center: [centerLng, centerLat],
       zoom,
@@ -492,9 +468,9 @@ export default class extends Controller {
       pitch: 0,
       bearing: 0
     })
+    if (!map) return
     disableMapPitchAndRotation(map)
     map.on('style.load', () => disableMapPitchAndRotation(map))
-    container._v2MaplibreMap = map
     this._map = map
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
