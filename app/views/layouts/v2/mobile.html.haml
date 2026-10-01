@@ -15,11 +15,11 @@
           - else
             .text-left
               = image_tag @reseller.logo_small.url || 'logo.svg', alt: @reseller&.name, class: 'company-logo'
-        .col-xs-8.col-md-10
-          .form-check.form-switch.mb-0.text-right
+        .col-xs-8.col-md-10.d-flex.justify-content-end.align-items-center
+          .form-check.form-switch.mb-0
             %input#location-switch.form-check-input{checked: 'checked', role: 'switch', type: 'checkbox', data: { action: 'change->mobile#toggleTracking' }}
-            %label.mb-0
-              .fa.fa-location-dot.fa-fw
+            %label.form-check-label.mb-0{for: 'location-switch'}
+              %i.fa.fa-location-dot.fa-fw
               = t('stops.mobile.tracking')
 
       .mobile
