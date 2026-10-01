@@ -16,6 +16,15 @@ module Operations
       KIND_BY_TYPE.fetch(stop.type) { KIND_BY_TYPE.fetch(stop.class.name, 'visit') }
     end
 
+    # Rest coords come from vehicle_usage.default_store_rest, not stops.store_id.
+    def store_for(stop)
+      if kind_for(stop) == 'rest'
+        stop.position? ? stop.position : nil
+      else
+        stop.store || stop.store_reload&.store
+      end
+    end
+
     def fingerprint(planning, visible_routes_only: false, route_ids: nil)
       scope = Route.unscoped
                    .left_joins(:vehicle_usage)
@@ -25,8 +34,8 @@ module Operations
       scope = scope.where(id: route_ids) if route_ids.present?
       scope = scope.where('routes.hidden IS NOT TRUE') if visible_routes_only
       rows = scope
-                  .order('routes.id', 'stops.index')
-                  .pluck('routes.id', 'vehicle_usages.vehicle_id', 'stops.id', 'stops.visit_id', 'stops.type', 'stops.index')
+             .order('routes.id', 'stops.index')
+             .pluck('routes.id', 'vehicle_usages.vehicle_id', 'stops.id', 'stops.visit_id', 'stops.type', 'stops.index')
       payload = rows.map { |route_id, vehicle_id, stop_id, visit_id, type, index|
         kind = KIND_BY_TYPE[type]
         [route_id, vehicle_id, stop_id, visit_id, kind, index].join(':')
@@ -93,7 +102,7 @@ module Operations
         'max_reload' => usage.max_reload,
         'store_start' => place(usage.store_start),
         'store_stop' => place(usage.store_stop),
-        'store_rest' => place(usage.store_rest)
+        'store_rest' => place(usage.default_store_rest)
       }
     end
 
@@ -138,10 +147,15 @@ module Operations
     end
 
     # Encoded route_geojson tracks (precision 6). Not the stop-to-stop shortcut.
+    # Drop legs that only serve inactive stops (stale geojson after a deactivate without recompute).
     def tracks_for(route)
+      inactive_indices = inactive_stop_indices(route)
       Array(route&.geojson_tracks).filter_map { |raw|
         feature = raw.is_a?(String) ? JSON.parse(raw) : raw
-        geometry = feature.is_a?(Hash) ? (feature['geometry'] || feature[:geometry]) : nil
+        next unless feature.is_a?(Hash)
+        next if track_for_inactive_stop?(feature, inactive_indices)
+
+        geometry = feature['geometry'] || feature[:geometry]
         next unless geometry.is_a?(Hash)
 
         geometry = geometry.stringify_keys
@@ -154,6 +168,20 @@ module Operations
       }
     rescue JSON::ParserError
       []
+    end
+
+    def inactive_stop_indices(route)
+      Array(route&.stops).each_with_object(Set.new) do |stop, indices|
+        indices << stop.index.to_i unless stop.active?
+      end
+    end
+
+    def track_for_inactive_stop?(feature, inactive_indices)
+      return false if inactive_indices.empty?
+
+      props = (feature['properties'] || feature[:properties] || {}).stringify_keys
+      indices = Array(props['stop_indices'] || props['stop_index']).compact.map(&:to_i)
+      indices.present? && indices.all? { |index| inactive_indices.include?(index) }
     end
 
     def destination(destination)
