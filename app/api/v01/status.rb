@@ -33,6 +33,7 @@ class V01::Status < Grape::API
       code_405: { code: 405, message: 'Method not allowed.', model: V01::Entities::Status405 },
       code_408: { code: 408, message: 'Request timeout.', model: V01::Entities::Status408 },
       code_409: { code: 409, message: 'Conflict.', model: V01::Entities::Status409 },
+      code_410: { code: 410, message: 'Gone. Destination SMS is sent from operations.', model: V01::Entities::Status404 },
       code_422: { code: 422, message: 'Unprocessable entity.', model: V01::Entities::Status422 },
       code_500: { code: 500, message: 'Internal servor error.', model: V01::Entities::Status500 }
     }

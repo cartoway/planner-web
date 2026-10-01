@@ -583,38 +583,13 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     end
   end
 
-  test 'should send SMS for each stop visit' do
+  test 'planning destination SMS endpoint is gone' do
     @planning.customer.reseller.update(messagings: {sms_partner: { enable: true, api_key: :sms_api_key, api_secret: :sms_api_secret }})
     @planning.customer.update enable_sms: true
 
-    SmsPartnerService.stub_any_instance(:send_message, true) do
-      get api("#{@planning.id}/send_sms")
-      assert last_response.ok?, 'Bad response: ' + last_response.body
-      assert_equal '4', last_response.body
-    end
-  end
-
-  test 'should send SMS to mobile only' do
-    @planning.customer.reseller.update(messagings: {sms_partner: { enable: true, api_key: :sms_api_key, api_secret: :sms_api_secret }})
-    @planning.customer.update enable_sms: true
-    @planning.customer.destinations.first(2).each {|d| d.update_attribute(:phone_number, '0612345678')}
-
-    SmsPartnerService.stub_any_instance(:send_message, ->(to, _ct, _opts) { true if to == '0612345678' }) do
-      get api("#{@planning.id}/send_sms")
-      assert last_response.ok?, 'Bad response: ' + last_response.body
-      assert_equal '2', last_response.body
-    end
-  end
-
-  test 'should return ok response even if no sms is sent' do
-    @planning.customer.reseller.update(messagings: {sms_partner: { enable: true, api_key: :sms_api_key, api_secret: :sms_api_secret }})
-    @planning.customer.update enable_sms: true
-
-    SmsPartnerService.stub_any_instance(:send_message, false) do
-      get api("#{@planning.id}/send_sms")
-      assert last_response.ok?, 'Bad response: ' + last_response.body
-      assert_equal '0', last_response.body
-    end
+    get api("#{@planning.id}/send_sms")
+    assert_equal 410, last_response.status
+    assert_match(/Gone/i, last_response.body)
   end
 
   test 'should get planning quantities' do

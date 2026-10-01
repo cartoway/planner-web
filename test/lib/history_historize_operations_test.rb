@@ -62,7 +62,7 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
         planning: @planning, date: '2026-09-30', name: 'Match', route_ids: [route_ids.first]
       )
       other = Operations::PublishFromPlanning.call(
-        planning: @planning, date: '2026-01-01', name: 'Other', route_ids: [route_ids.last]
+        planning: @planning, date: '2026-10-02', name: 'Other', route_ids: [route_ids.last]
       )
 
       stop = matching.operation_routes.planned.first.operation_stops.find { |row| row.kind == 'visit' }
@@ -79,6 +79,26 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
       assert history.any?
       payload_status = history.flat_map { |h| Array(h.stops).map { |s| s.dig('stop', 'status') } }
       assert_includes payload_status, 'delivered'
+    end
+  end
+
+  # Cron hour already passed yesterday; a later run must still close that operation.
+  test 'hourly cron historizes an overdue operation from the previous day' do
+    travel_to Time.utc(2026, 10, 1, 7, 5, 0) do
+      @planning.update!(date: Date.new(2026, 1, 1))
+      route_id = @planning.routes.where.not(vehicle_usage_id: nil).order(:id).pick(:id)
+
+      yesterday = Operations::PublishFromPlanning.call(
+        planning: @planning, date: '2026-09-30', name: 'Yesterday', route_ids: [route_id]
+      )
+      today = Operations::PublishFromPlanning.call(
+        planning: @planning, date: '2026-10-01', name: 'Today', route_ids: [route_id]
+      )
+
+      History.historize(true, nil)
+
+      assert_equal 'historized', yesterday.reload.status
+      assert_equal 'in_progress', today.reload.status
     end
   end
 end

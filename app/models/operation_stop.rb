@@ -283,6 +283,18 @@ class OperationStop < ApplicationRecord
     visit? && stop_id.present? && Stop::DELIVERY_NOTE_STATUSES.include?(status.to_s.downcase)
   end
 
+  def active_delivery_tracking
+    return unless kind == 'visit'
+
+    operation = operation_route&.operation
+    return unless operation
+
+    key = destination_id.presence || destination_snapshot&.[]('id')
+    return unless key
+
+    OperationDeliveryTracking.active.find_by(operation_id: operation.id, destination_id: key)
+  end
+
   def document_items
     items = serialized_photos.map { |photo| { url: photo[:url], filename: photo[:filename], kind: 'photo' } }
     if stop&.photos&.attached?
