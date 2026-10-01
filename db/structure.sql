@@ -304,7 +304,11 @@ CREATE TABLE public.customers (
     operations_mobile boolean DEFAULT false NOT NULL,
     vehicle_position_retention_days integer DEFAULT 60 NOT NULL,
     vehicle_position_keep_trace boolean DEFAULT true NOT NULL,
-    proof_retention_days integer DEFAULT 365 NOT NULL
+    proof_retention_days integer DEFAULT 365 NOT NULL,
+    company_logo character varying,
+    recipient_template text,
+    delivery_tracking_eta_gap_before integer DEFAULT 5 NOT NULL,
+    delivery_tracking_eta_gap_after integer DEFAULT 15 NOT NULL
 );
 
 
@@ -431,7 +435,8 @@ CREATE TABLE public.destinations (
     geocoded_at timestamp without time zone,
     geocoder_version character varying,
     geocoding_result jsonb DEFAULT '{}'::jsonb NOT NULL,
-    duration integer
+    duration integer,
+    email character varying
 );
 
 
@@ -596,6 +601,41 @@ CREATE SEQUENCE public.messaging_logs_id_seq
 --
 
 ALTER SEQUENCE public.messaging_logs_id_seq OWNED BY public.messaging_logs.id;
+
+
+--
+-- Name: operation_delivery_trackings; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.operation_delivery_trackings (
+    id integer NOT NULL,
+    operation_id integer NOT NULL,
+    destination_id integer NOT NULL,
+    token character varying NOT NULL,
+    expires_at timestamp without time zone NOT NULL,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: operation_delivery_trackings_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.operation_delivery_trackings_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: operation_delivery_trackings_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.operation_delivery_trackings_id_seq OWNED BY public.operation_delivery_trackings.id;
 
 
 --
@@ -2218,6 +2258,13 @@ ALTER TABLE ONLY public.messaging_logs ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
+-- Name: operation_delivery_trackings id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_delivery_trackings ALTER COLUMN id SET DEFAULT nextval('public.operation_delivery_trackings_id_seq'::regclass);
+
+
+--
 -- Name: operation_routes id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2563,6 +2610,14 @@ ALTER TABLE ONLY public.layers
 
 ALTER TABLE ONLY public.messaging_logs
     ADD CONSTRAINT messaging_logs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: operation_delivery_trackings operation_delivery_trackings_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_delivery_trackings
+    ADD CONSTRAINT operation_delivery_trackings_pkey PRIMARY KEY (id);
 
 
 --
@@ -3138,6 +3193,34 @@ CREATE INDEX index_messaging_logs_on_customer_id ON public.messaging_logs USING 
 --
 
 CREATE INDEX index_messaging_logs_on_message_id ON public.messaging_logs USING btree (message_id);
+
+
+--
+-- Name: index_operation_delivery_trackings_on_destination_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_delivery_trackings_on_destination_id ON public.operation_delivery_trackings USING btree (destination_id);
+
+
+--
+-- Name: index_operation_delivery_trackings_on_operation_and_destination; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_operation_delivery_trackings_on_operation_and_destination ON public.operation_delivery_trackings USING btree (operation_id, destination_id);
+
+
+--
+-- Name: index_operation_delivery_trackings_on_operation_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operation_delivery_trackings_on_operation_id ON public.operation_delivery_trackings USING btree (operation_id);
+
+
+--
+-- Name: index_operation_delivery_trackings_on_token; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_operation_delivery_trackings_on_token ON public.operation_delivery_trackings USING btree (token);
 
 
 --
@@ -3994,6 +4077,14 @@ ALTER TABLE ONLY public.deliverable_units
 
 
 --
+-- Name: operation_delivery_trackings fk_rails_40fc324cf9; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.operation_delivery_trackings
+    ADD CONSTRAINT fk_rails_40fc324cf9 FOREIGN KEY (operation_id) REFERENCES public.operations(id) ON DELETE CASCADE;
+
+
+--
 -- Name: operation_routes fk_rails_4a043e9e5b; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4819,8 +4910,12 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260925120000'),
 ('20260925120300'),
 ('20260925120500'),
+('20260928165000'),
 ('20260928170000'),
 ('20260930120000'),
-('20260930130000');
+('20260930130000'),
+('20260930155200'),
+('20260930162000'),
+('20260930181500');
 
 

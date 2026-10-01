@@ -67,6 +67,7 @@ module Operations
           attrs[:structure_fingerprint] = Snapshots.fingerprint(@planning, visible_routes_only: visible_routes_only?, route_ids: scoped_route_ids_for_fingerprint)
         end
         @operation.update!(attrs)
+        OperationDeliveryTracking.ensure_for!(@operation)
       end
       @operation
     end

@@ -226,6 +226,7 @@ en:
         sms_template: Customer SMS template
         sms_driver_template: Driver SMS template
         sms_intransit_template: Inroute SMS template
+        recipient_template: Recipient email template
         sms_concat: Long SMS
         enable_external_callback: Enable Callback URL
         history_cron_hour: Hour of historisation
@@ -240,6 +241,9 @@ en:
         company_city: City
         company_detail: Address complement
         company_phone: Phone
+        company_logo: Company logo
+        delivery_tracking_eta_gap_before: ETA gap before (minutes)
+        delivery_tracking_eta_gap_after: ETA gap after (minutes)
         speed_multiplier: Speed multiplier
         stop_max_upper_bound: Visit overtime
         vehicle_max_upper_bound: Driver shift overtime
@@ -297,6 +301,7 @@ en:
         duration: Duration at the destination
         phone_number: Phone number
         phone_number_small: Phone
+        email: Email
         geocoding_accuracy: Geocoding accuracy
         geocoding_accuracy_small: Geoc.
         geocoding_level: Geocoding level
@@ -1344,6 +1349,11 @@ en:
       company:
         title: Company (delivery note)
         help: Details of the company performing the deliveries
+        logo_help: Logo shown on the delivery note and recipient tracking page (PNG or SVG)
+        tracking_eta_title: Estimated arrival window (recipient tracking)
+        tracking_eta_help: Gaps shown around the estimated time on the public tracking page, rounded to the nearest quarter hour.
+        tracking_eta_gap_before_help: Minutes subtracted from the estimate (e.g. 5 → lower bound)
+        tracking_eta_gap_after_help: Minutes added to the estimate (e.g. 15 → upper bound)
       sms:
         title: SMS
       sms_character_count: 'Your message contains %{c} characters'
@@ -1358,16 +1368,22 @@ en:
         standard characters (GSM 03.38) and not exceed 160 characters.
       sms_template_help: >-
         SMS template sent for your visits. {NAME} will be replaced by
-        destination name filled in app. Your text should not contain non
+        destination name filled in app. {URL} will be replaced by the tracking link.
+        Your text should not contain non
         standard characters (GSM 03.38) and not exceed 160 characters (or 70 in
         case of special characters).
+      recipient_template_help: >-
+        Email template sent to recipients from the operation. {URL} will be replaced by the tracking link.
       sms_driver_keys_help: >-
         Available replacement strings: {ROUTE_NAME} {DATE} {SIZE_ACTIVE} {URL}.
       sms_intransit_keys_help: >-
         Available replacement strings: {NAME} {CUSTOMER_NAME} {TIME} {STREET} {CITY}.
       sms_keys_help: >-
         Available replacement strings: {NAME} {REF} {VISIT_REF} {DATE} {TIME}
-        {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME} {PHONE_NUMBER}.
+        {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME} {PHONE_NUMBER} {URL}.
+      recipient_keys_help: >-
+        Available replacement strings: {NAME} {REF} {VISIT_REF} {DATE} {TIME}
+        {STREET} {CITY} {URL}.
       sms_concat_help: >-
         If checked your SMS will be complete (but charged several SMS for price
         when exceeding), if not checked your SMS will be truncated.
@@ -3629,12 +3645,15 @@ en:
     sms:
       alert_plan: >-
         Hello {NAME}. Your visit is planned {DATE} between {TIME-60} and
-        {TIME+60} in {CITY}.
+        {TIME+60} in {CITY}. Track your delivery: {URL}
       alert_driver: >-
         Hello, the {ROUTE_NAME} route has been assigned to you for {DATE} with {SIZE_ACTIVE} stops - {URL}
       alert_intransit: >-
         Hello {NAME}. Your {CUSTOMER_NAME} driver is on the way.
         He will arrive between {TIME-5} and {TIME+15}.
+    email:
+      alert_plan: >-
+        Hello {NAME},\n\nYour delivery is planned on {DATE} between {TIME-60} and {TIME+60} in {CITY}.\n\nTrack your delivery: {URL}
   all:
     providers:
       entra_id: Microsoft Entra ID
@@ -3984,6 +4003,12 @@ en:
       send_sms: Send by SMS
       send_email_title: Route email addresses
       send_sms_title: Route phone numbers
+      send_destinations_email: Recipient emails
+      send_destinations_sms: Recipient SMS
+      send_destinations_email_title: Recipient emails
+      send_destinations_sms_title: Recipient SMS
+      destinations_send_success: "%{sms} SMS and %{email} email(s) sent"
+      destinations_send_fail: No recipient message could be sent
       send_route: Send this route
       clear_selection: Clear selection
       last_sent: "Last sent: %{at}"
@@ -4056,6 +4081,7 @@ en:
       change_status: Change status
       add_note: Add a note
       vehicle: Vehicle
+      recipient_tracking: Recipient tracking link
     form:
       title: Operations
       show_past: Show past operations
@@ -4068,7 +4094,6 @@ en:
       empty: No documents on this route
       previous: Previous stop
       next: Next stop
-      documents_count: Documents
     stops:
       title: Place history
       query: Ref, name, street or city
@@ -4076,4 +4101,55 @@ en:
     mobile:
       status: Status
       save: Save
+  delivery_trackings:
+    show:
+      title: Delivery tracking
+      order_ref: "Order #%{ref}"
+      eta_label: Estimated arrival
+      imminent: Arrival imminent
+      undelivered: We were unable to complete the delivery
+      last_update: "Last update · %{time}"
+      approx_position: Approximate position
+      stops_before:
+        one: "%{count} stop before you"
+        other: "%{count} stops before you"
+      timeline_title: Tracking
+      visits_title: Your visits
+      visit_n: "Visit %{n}"
+    expired:
+      title: Link expired
+      body: This tracking link is no longer available.
+    chips:
+      planned: Planned
+      loading: Loading
+      departed: Tour in progress
+      intransit: On the way to you
+      on_site: On site
+      delivered: Delivered
+      failed: Failed
+      missed: Not delivered
+      exception: Issue
+    timeline:
+      loading: Depot loading
+      departed: Depot departure
+      upstream:
+        one: "%{count} delivery before you"
+        other: "%{count} deliveries before you"
+      upstream_detail: Other stops are planned before yours
+      intransit: On the way to you
+      delivered: Delivered
+      delivered_detail: Delivery completed
+      failed: Failed
+      failed_detail: We were unable to complete the delivery
+      exception: Issue
+      exception_detail: An issue was reported during the delivery
+      today_at: "Today - %{time}"
+      in_progress: In progress
+      in_progress_eta: "In progress · ETA %{eta}"
+      upcoming: Upcoming
+  destination_mailer:
+    delivery_tracking:
+      subject: "Track your delivery — %{shipper}"
+      cta: Track my delivery
+      documents_count: Documents
 
