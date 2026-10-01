@@ -129,6 +129,7 @@
     .destination_visits_attributes_tag_ids_input
       = f.select :tag_ids, options_for_select(@destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }, @destination.tags.collect(&:id)), {label: t('activerecord.attributes.destination.tag_ids'), help: df.call('tags_help'), append: content_tag('i', '', class: 'fa fa-tags fa-fw')}, {multiple: true, data: tom_select_data}
     = f.text_field :phone_number, {input_group: content_tag('i', '', class: 'fa fa-phone fa-fw')}
+    = f.email_field :email, {input_group: content_tag('i', '', class: 'fa fa-envelope fa-fw')}
     = f.text_area :comment, help: df.call('comment_help')
     = f.text_field :duration,
       value: @destination.duration_time_with_seconds,

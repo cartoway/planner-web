@@ -1,0 +1,29 @@
+.modal.fade{id: "operation-send-destinations-#{channel}", tabindex: '-1', aria: { hidden: 'true', labelledby: "operation-send-destinations-#{channel}-title" }}
+  .modal-dialog.modal-lg.modal-dialog-scrollable
+    .modal-content
+      = form_with url: transmit_destinations_operation_path(operation), method: :post, local: true, data: { turbo: false } do
+        = hidden_field_tag :channel, channel
+        .modal-header
+          %h2.h5.modal-title{id: "operation-send-destinations-#{channel}-title"}= t("operations.show.send_destinations_#{channel}_title")
+          %button.btn-close{type: 'button', data: { bs_dismiss: 'modal' }, aria: { label: t('web.dialog.close') }}
+        .modal-body
+          - all_selected = trackings.all? { |tracking| destination_tracking_contact(tracking, channel).present? }
+          .row.g-2.align-items-center.mb-2
+            .col-auto
+              %button.btn.btn-link.p-0{type: 'button', aria: { label: t('all.verb.toggle_selection') }, onclick: "var boxes = this.closest('.modal').querySelectorAll('[data-send-toggle]'); var check = !Array.prototype.every.call(boxes, function (box) { return box.checked }); boxes.forEach(function (box) { box.checked = check }); var icon = this.querySelector('i'); icon.classList.toggle('fa-square-check', check); icon.classList.toggle('fa-square', !check);"}
+                %i.fa{class: all_selected ? 'fa-square-check' : 'fa-square'}
+          - trackings.each do |tracking|
+            - value = destination_tracking_contact(tracking, channel)
+            - label = tracking.destination&.name.presence || tracking.destination_id
+            .row.g-2.align-items-center.mb-2
+              .col-auto
+                .form-check.form-switch.mb-0
+                  = check_box_tag "trackings[#{tracking.id}][send]", '1', value.present?, class: 'form-check-input', data: { send_toggle: true }, aria: { label: t('operations.show.send_route') }
+              .col
+                = label
+                .text-muted.small= tracking.destination&.street
+              .col-5
+                %span.text-muted= value.presence || '—'
+        .modal-footer
+          %button.btn.btn-light{type: 'button', data: { bs_dismiss: 'modal' }}= t('all.verb.cancel')
+          = submit_tag t("operations.show.send_destinations_#{channel}"), class: 'btn btn-primary'

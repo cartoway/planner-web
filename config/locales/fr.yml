@@ -231,7 +231,8 @@ fr:
         enable_strict_within_timewindows: Créneau strict (durée de visite comprise)
         sms_template: Modèle SMS clients
         sms_driver_template: Modèle SMS livreurs
-        sms_intransit_template: Modèle SMS d'approche
+        sms_intransit_template: Modèle SMS en approche
+        recipient_template: Modèle e-mail destinataires
         sms_concat: SMS longs
         enable_external_callback: Activer URL de rappel
         history_cron_hour: Heure de l'historisation
@@ -246,6 +247,9 @@ fr:
         company_city: Ville
         company_detail: Complément d'adresse
         company_phone: Téléphone
+        company_logo: Logo société
+        delivery_tracking_eta_gap_before: Écart ETA avant (minutes)
+        delivery_tracking_eta_gap_after: Écart ETA après (minutes)
         speed_multiplier: Ajustement de la vitesse
         stop_max_upper_bound: Dépassement max créneaux horaires visites
         vehicle_max_upper_bound: Dépassement max amplitude chauffeur
@@ -303,6 +307,7 @@ fr:
         duration: Durée à la destination
         phone_number: Numéro de téléphone
         phone_number_small: Tél.
+        email: E-mail
         geocoding_accuracy: Qualité du géocodage
         geocoding_accuracy_small: Géoc.
         geocoding_level: Niveau de géocodage
@@ -1378,6 +1383,11 @@ fr:
       company:
         title: Société (bon de livraison)
         help: Coordonnées de la société qui effectue les livraisons
+        logo_help: Logo affiché sur le bon de livraison et la page de suivi destinataire (PNG ou SVG)
+        tracking_eta_title: Fenêtre d’arrivée estimée (suivi destinataire)
+        tracking_eta_help: Écarts affichés autour de l’horaire estimé sur la page de suivi publique, arrondis au quart d’heure.
+        tracking_eta_gap_before_help: Minutes soustraites à l’estimation (ex. 5 → borne basse)
+        tracking_eta_gap_after_help: Minutes ajoutées à l’estimation (ex. 15 → borne haute)
       sms:
         title: SMS
       sms_character_count: 'Votre message comporte %{c} caractères'
@@ -1392,9 +1402,12 @@ fr:
         (GSM 03.38) et ne devrait pas dépasser 160 caractères.
       sms_template_help: >-
         Modèle de SMS envoyé à vos clients. {NAME} sera remplacé par le nom de
-        votre client renseigné sur l'application. Votre texte ne doit pas
+        votre client renseigné sur l'application. {URL} sera remplacé par le lien de suivi.
+        Votre texte ne doit pas
         comporter de caractères non standards (GSM 03.38) et ne devrait pas
         dépasser 160 caractères.
+      recipient_template_help: >-
+        Modèle d'e-mail envoyé à vos destinataires depuis l'opération. {URL} sera remplacé par le lien de suivi.
       sms_driver_keys_help: >-
         Chaînes de remplacements disponibles : {ROUTE_NAME} {DATE} {SIZE_ACTIVE} {URL}.
       sms_intransit_keys_help: >-
@@ -1402,7 +1415,10 @@ fr:
       sms_keys_help: >-
         Chaînes de remplacements disponibles : {NAME} {REF} {VISIT_REF} {DATE}
         {TIME} {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME}
-        {PHONE_NUMBER}.
+        {PHONE_NUMBER} {URL}.
+      recipient_keys_help: >-
+        Chaînes de remplacements disponibles : {NAME} {REF} {VISIT_REF} {DATE}
+        {TIME} {STREET} {CITY} {URL}.
       sms_concat_help: >-
         Si coché vos SMS seront complets (mais facturés le prix de plusieurs SMS
         en cas de dépassement), si non coché vos SMS seront tronqués en cas de
@@ -3775,13 +3791,16 @@ fr:
     sms:
       alert_plan: >-
         Bonjour {NAME}. Votre visite est planifiée le {DATE} entre {TIME-60} et
-        {TIME+60} à {CITY}.
+        {TIME+60} à {CITY}. Suivez votre livraison : {URL}
       alert_driver: >-
         Bonjour, La tournée {ROUTE_NAME} vous a été attribuée pour le {DATE} avec
         {SIZE_ACTIVE} arrêts - {URL}
       alert_intransit: >-
         Bonjour {NAME}. Votre chauffeur {CUSTOMER_NAME} est en route.
         Son arrivée est prévue entre {TIME-5} et {TIME+15}.
+    email:
+      alert_plan: >-
+        Bonjour {NAME},\n\nVotre livraison est prévue le {DATE} entre {TIME-60} et {TIME+60} à {CITY}.\n\nSuivez votre livraison : {URL}
   all:
     providers:
       entra_id: Microsoft Entra ID
@@ -4132,6 +4151,12 @@ fr:
       send_sms: Envoyer par SMS
       send_email_title: E-mails des tournées
       send_sms_title: Numéros des tournées
+      send_destinations_email: E-mails destinataires
+      send_destinations_sms: SMS destinataires
+      send_destinations_email_title: E-mails des destinataires
+      send_destinations_sms_title: SMS des destinataires
+      destinations_send_success: "%{sms} SMS et %{email} e-mail(s) envoyé(s)"
+      destinations_send_fail: Aucun message destinataire n’a pu être envoyé
       send_route: Envoyer cette tournée
       clear_selection: Tout désélectionner
       last_sent: "Dernier envoi : %{at}"
@@ -4204,6 +4229,7 @@ fr:
       change_status: Changer le statut
       add_note: Ajouter une note
       vehicle: Véhicule
+      recipient_tracking: Lien de suivi destinataire
     form:
       title: Opérations
       show_past: Afficher les opérations passées
@@ -4212,11 +4238,10 @@ fr:
     media:
       title: Médias de la tournée
       signature: Signature
-      without: Sans document (%{count})
+      without: Sans documents (%{count})
       empty: Aucun document sur cette tournée
       previous: Arrêt précédent
       next: Arrêt suivant
-      documents_count: Documents
     stops:
       title: Historique des lieux
       query: Référence, nom, rue ou ville
@@ -4224,4 +4249,55 @@ fr:
     mobile:
       status: Statut
       save: Enregistrer
+  delivery_trackings:
+    show:
+      title: Suivi de livraison
+      order_ref: "Commande #%{ref}"
+      eta_label: Arrivée estimée
+      imminent: Arrivée imminente
+      undelivered: Nous n’avons pas pu procéder à la livraison
+      last_update: "Dernière mise à jour · %{time}"
+      approx_position: Position approximative
+      stops_before:
+        one: "%{count} arrêt avant vous"
+        other: "%{count} arrêts avant vous"
+      timeline_title: Suivi
+      visits_title: Vos passages
+      visit_n: "Visite %{n}"
+    expired:
+      title: Lien expiré
+      body: Ce lien de suivi n’est plus disponible.
+    chips:
+      planned: Planifiée
+      loading: Chargement
+      departed: Tournée en cours
+      intransit: En route vers vous
+      on_site: Sur place
+      delivered: Livrée
+      failed: Échec
+      missed: Non livrée
+      exception: Anomalie
+    timeline:
+      loading: Chargement dépôt
+      departed: Départ dépôt
+      upstream:
+        one: "%{count} livraison avant vous"
+        other: "%{count} livraisons avant vous"
+      upstream_detail: D’autres arrêts sont prévus avant la vôtre
+      intransit: En route vers vous
+      delivered: Livré
+      delivered_detail: Livraison effectuée
+      failed: Échec
+      failed_detail: Nous n’avons pas pu procéder à la livraison
+      exception: Anomalie
+      exception_detail: Une anomalie a été signalée lors de la livraison
+      today_at: "Aujourd’hui - %{time}"
+      in_progress: En cours
+      in_progress_eta: "En cours · ETA %{eta}"
+      upcoming: À venir
+  destination_mailer:
+    delivery_tracking:
+      subject: "Suivi de votre livraison — %{shipper}"
+      cta: Suivre ma livraison
+      documents_count: Documents
 

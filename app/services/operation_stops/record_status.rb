@@ -46,8 +46,11 @@ module OperationStops
       return unless operation
 
       Turbo::StreamsChannel.broadcast_refresh_to(operation)
-    rescue StandardError => error
-      Rails.logger.warn("operation turbo refresh failed: #{error.class}: #{error.message}")
+      OperationDeliveryTracking.where(operation_id: operation.id).find_each do |tracking|
+        Turbo::StreamsChannel.broadcast_refresh_to(tracking.turbo_stream_name)
+      end
+    rescue StandardError => e
+      Rails.logger.warn("operation turbo refresh failed: #{e.class}: #{e.message}")
     end
 
     # rubocop:disable Naming/PredicateMethod

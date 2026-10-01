@@ -1,4 +1,4 @@
-json.extract! destination, :id, :name, :street, :detail, :postalcode, :city, :country, :lat, :lng, :phone_number, :comment, :geocoding_accuracy, :geocoding_level, :geocoding_result
+json.extract! destination, :id, :name, :street, :detail, :postalcode, :city, :country, :lat, :lng, :phone_number, :email, :comment, :geocoding_accuracy, :geocoding_level, :geocoding_result
 json.ref destination.ref if @customer.enable_references
 json.geocoding_level_point destination.point?
 json.geocoding_level_house destination.house?

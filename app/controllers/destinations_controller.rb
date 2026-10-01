@@ -550,6 +550,7 @@ class DestinationsController < ApplicationController
       :lat,
       :lng,
       :phone_number,
+      :email,
       :comment,
       :duration,
       :geocoding_accuracy,

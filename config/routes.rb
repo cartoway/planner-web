@@ -251,6 +251,7 @@ Rails.application.routes.draw do
       post :cancel
       post :transmit
       post :send_driver_sms
+      post :transmit_destinations
       get :map
       get :search_stops
       get :routes
@@ -276,6 +277,8 @@ Rails.application.routes.draw do
   end
   get 'stop_photos/*signed_id', to: 'stop_photos#show', as: :signed_stop_photo, format: false
   get 'stop_signatures/*signed_id', to: 'stop_signatures#show', as: :signed_stop_signature, format: false
+
+  get 's/:token', to: 'delivery_trackings#show', as: :delivery_tracking
 
   get 'routes_by_vehicles/:vehicle_id' => 'routes_by_vehicles#show'
   get 'plannings_by_destinations/:destination_id' => 'plannings_by_destinations#show'

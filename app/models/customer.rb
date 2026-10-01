@@ -74,8 +74,10 @@ class Customer < ApplicationRecord
   include LocalizedAttr # To use to_delocalized_decimal method
 
   nilify_blanks
-  auto_strip_attributes :name, :print_header, :default_country, :print_barcode, :sms_template,
+  auto_strip_attributes :name, :print_header, :default_country, :print_barcode, :sms_template, :recipient_template,
                         :company_name, :company_street, :company_postalcode, :company_city, :company_detail, :company_phone
+
+  mount_uploader :company_logo, CompanyLogoUploader
 
   include TimeAttr
   attribute :visit_duration, ScheduleType.new
@@ -93,6 +95,8 @@ class Customer < ApplicationRecord
   validates :name, presence: true, length: { maximum: 255 }
   validates :company_name, :company_street, :company_postalcode, :company_city, :company_detail, :company_phone,
             length: { maximum: 255 }, allow_nil: true
+  validates :delivery_tracking_eta_gap_before, :delivery_tracking_eta_gap_after,
+            numericality: { only_integer: true, greater_than_or_equal_to: 0, less_than_or_equal_to: 180 }
   validates :default_country, presence: true
   validates :destination_icon, :store_icon, :rest_icon,
             inclusion: { in: FontAwesome::ICONS_TABLE, allow_nil: true,
