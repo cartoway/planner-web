@@ -70,6 +70,26 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
   test 'publish skips inactive stops and the unplanned route' do
     inactive = stops(:stop_one_two)
     inactive.update_columns(active: false)
+    route = routes(:route_one_one)
+    route.route_geojson.update_columns(
+      tracks: [
+        {
+          type: 'Feature',
+          geometry: { type: 'LineString', polylines: '_ibE_seK_seK_seK' },
+          properties: { stop_index: stops(:stop_one_one).index }
+        }.to_json,
+        {
+          type: 'Feature',
+          geometry: { type: 'LineString', polylines: '_p~iF~ps|U_ulLnnqC_mqNvxq`@' },
+          properties: { stop_index: inactive.index }
+        }.to_json,
+        {
+          type: 'Feature',
+          geometry: { type: 'LineString', polylines: '_ibE_seK_seK_seK' },
+          properties: {}
+        }.to_json
+      ]
+    )
 
     operation = Operations::PublishFromPlanning.call(planning: @planning)
 
@@ -77,16 +97,35 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     assert operation.operation_routes.where(unassigned: true).none?
     assert_nil operation.operation_stops.find_by(stop_id: inactive.id)
     assert operation.operation_stops.where(stop_id: stops(:stop_one_one).id).exists?
+
+    snap_tracks = operation.operation_routes.find_by!(route_id: route.id).route_snapshot['tracks']
+    assert_equal 2, snap_tracks.size
+    refute_includes snap_tracks.map { |track| track['polylines'] }, '_p~iF~ps|U_ulLnnqC_mqNvxq`@'
   end
 
   test 'sync drops a stop that became inactive or unplanned' do
     operation = Operations::PublishFromPlanning.call(planning: @planning)
     stop = operation.operation_stops.find_by!(stop_id: stops(:stop_one_one).id)
+    stop_id = stop.id
     stops(:stop_one_one).update_columns(active: false)
 
     Operations::SyncFromPlanning.call(planning: @planning.reload, operation: operation.reload)
 
-    assert_equal 'orphaned', stop.reload.sync_state
+    assert_nil OperationStop.find_by(id: stop_id)
+    assert_nil operation.operation_stops.find_by(stop_id: stops(:stop_one_one).id)
+  end
+
+  test 'sync orphans a stop removed from the planning route' do
+    operation = Operations::PublishFromPlanning.call(planning: @planning)
+    stop = operation.operation_stops.find_by!(stop_id: stops(:stop_one_one).id)
+    planning_stop = stops(:stop_one_one)
+    planning_stop.update_columns(route_id: routes(:route_zero_one).id)
+
+    Operations::SyncFromPlanning.call(planning: @planning.reload, operation: operation.reload)
+
+    stop.reload
+    assert_equal 'orphaned', stop.sync_state
+    assert_equal false, stop.active
   end
 
   test 'board splits delivered quantities from quantities still to load' do
