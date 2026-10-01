@@ -39,6 +39,26 @@ class OperationsMapGeojsonTest < ActiveSupport::TestCase
     assert_equal lines.first[:geometry][:coordinates].last, lines.last[:geometry][:coordinates].first
   end
 
+  test 'fade split does not teleport back along the track' do
+    coords = 20.times.map { |i| [2.0 + (i * 0.01), 48.0 + (i * 0.01)] }
+    @operation_route.update_columns(
+      route_snapshot: @operation_route.route_snapshot.merge('tracks' => [{ 'coordinates' => coords }])
+    )
+    stops = @operation_route.operation_stops.executable.where.not(kind: 'rest').order(:index).to_a
+    stops.first.update_columns(status: 'delivered')
+
+    geojson = Operations::MapGeojson.call(operation: @operation.reload, routes: [@operation_route.reload])
+    lines = geojson[:features].select { |feature| feature[:properties][:geometry_kind] == 'route' }
+    solid = lines.find { |feature| feature[:properties][:opacity] == Operations::MapGeojson::OPACITY_MAX }
+    assert solid
+
+    solid[:geometry][:coordinates].each_cons(2) do |start, finish|
+      jump = Math.hypot(finish[0] - start[0], finish[1] - start[1])
+      assert_operator jump, :<=, 0.02, "unexpected teleport #{start} -> #{finish}"
+    end
+    assert_operator solid[:geometry][:coordinates].size, :<, coords.size
+  end
+
   test 'treated stop markers use the faded opacity' do
     stop = @operation_route.operation_stops.executable.where.not(kind: 'rest').order(:index).first
     stop.update_columns(status: 'delivered')
@@ -94,6 +114,73 @@ class OperationsMapGeojsonTest < ActiveSupport::TestCase
     geojson = Operations::MapGeojson.call(operation: @operation, routes: routes.map(&:reload))
     ends = geojson[:features].select { |feature| feature.dig(:properties, :depot_role) == 'end' }
     assert ends.all? { |feature| feature.dig(:properties, :returns_complete) }
+  end
+
+  test 'rest without store has no map point and keeps the pause label' do
+    route = routes(:route_one_one)
+    route.vehicle_usage.update!(store_rest_id: nil)
+    route.vehicle_usage.vehicle_usage_set.update!(store_rest_id: nil)
+    rest_stop = route.stops.find { |stop| stop.is_a?(StopRest) }
+    refute rest_stop.position?
+
+    Operation.where(customer_id: @planning.customer_id).delete_all
+    operation = Operations::PublishFromPlanning.call(planning: @planning.reload)
+    operation_route = operation.operation_routes.find_by!(route_id: route.id)
+    rest = operation_route.operation_stops.find_by!(kind: 'rest')
+
+    assert_equal I18n.t('stops.default.name_rest'), rest.address_label
+    assert_nil rest.lat
+    assert_nil rest.lng
+
+    geojson = Operations::MapGeojson.call(operation: operation, routes: [operation_route])
+    rest_point = geojson[:features].find { |feature| feature.dig(:properties, :operation_stop_id) == rest.id }
+    assert_nil rest_point
+  end
+
+  test 'rest with store is snapshotted and drawn on the map' do
+    rest = @operation_route.operation_stops.find_by!(kind: 'rest')
+    store = stores(:store_one)
+
+    assert rest.store_snapshot['lat'].present?
+    assert_equal store.lat, rest.lat
+    assert_equal store.lng, rest.lng
+    assert_includes rest.address_label, store.name
+
+    geojson = Operations::MapGeojson.call(operation: @operation, routes: [@operation_route])
+    rest_point = geojson[:features].find { |feature| feature.dig(:properties, :operation_stop_id) == rest.id }
+    assert rest_point
+    assert_equal [store.lng.to_f, store.lat.to_f], rest_point[:geometry][:coordinates]
+  end
+
+  test 'legacy rest without store_snapshot still uses vehicle_usage store_rest on the map' do
+    rest = @operation_route.operation_stops.find_by!(kind: 'rest')
+    store = stores(:store_one)
+    rest.update_columns(store_snapshot: {}, store_id: nil)
+
+    assert_equal store.lat, rest.reload.lat
+    assert_equal I18n.t('stops.default.name_rest'), OperationStop.new(kind: 'rest', store_snapshot: {}, destination_snapshot: {}).address_label
+
+    geojson = Operations::MapGeojson.call(operation: @operation, routes: [@operation_route.reload])
+    rest_point = geojson[:features].find { |feature| feature.dig(:properties, :operation_stop_id) == rest.id }
+    assert rest_point
+    assert_equal [store.lng.to_f, store.lat.to_f], rest_point[:geometry][:coordinates]
+  end
+
+  test 'zero-length polylines are omitted from the map' do
+    @operation_route.update_columns(
+      route_snapshot: @operation_route.route_snapshot.merge(
+        'tracks' => [
+          { 'polylines' => '_ibE_seK_seK_seK' },
+          { 'polylines' => '??' }
+        ]
+      )
+    )
+
+    geojson = Operations::MapGeojson.call(operation: @operation, routes: [@operation_route.reload])
+    lines = geojson[:features].select { |feature| feature[:properties][:geometry_kind] == 'route' }
+
+    assert_equal 1, lines.size
+    assert lines.first[:geometry][:coordinates].size >= 2
   end
 
   test 'mobile positions stay a simplified trace' do

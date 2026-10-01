@@ -32,7 +32,7 @@ module Operations
     private
 
     def keys_for_planning(route)
-      route.stops.reject { |stop| stop.active == false }.sort_by(&:index).map { |stop| planning_key(stop) }
+      route.stops.select(&:active?).sort_by(&:index).map { |stop| planning_key(stop) }
     end
 
     def keys_for_operation(operation_route)
