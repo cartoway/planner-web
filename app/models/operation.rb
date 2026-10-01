@@ -9,6 +9,7 @@ class Operation < ApplicationRecord
   has_many :operation_routes, dependent: :destroy
   has_many :operation_stops, through: :operation_routes
   has_many :vehicle_positions, dependent: :destroy
+  has_many :operation_delivery_trackings, dependent: :destroy
 
   validates :customer, :name, :date, presence: true
   validates :status, inclusion: { in: STATUSES }
@@ -156,9 +157,9 @@ class Operation < ApplicationRecord
 
   def progress_counts
     stops = operation_stops.joins(:operation_route)
-                          .merge(OperationRoute.planned)
-                          .executable
-                          .where.not(kind: 'rest')
+                           .merge(OperationRoute.planned)
+                           .executable
+                           .where.not(kind: 'rest')
     total = stops.count
     treated = stops.where(status: OperationStop::TREATED_STATUSES).count
     { treated: treated, total: total }

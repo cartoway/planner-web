@@ -1,4 +1,4 @@
 - if operation_stop.delivery_note_available?
-  = link_to delivery_note_operation_stop_path(operation_stop), class: 'operation-delivery-note', target: '_blank', rel: 'noopener noreferrer' do
+  = link_to delivery_note_operation_stop_path(operation_stop), class: 'operation-stop-link', target: '_blank', rel: 'noopener noreferrer' do
     %i.fa.fa-file-lines.fa-fw{"aria-hidden": "true"}
     = t('visits.form.delivery_note')
