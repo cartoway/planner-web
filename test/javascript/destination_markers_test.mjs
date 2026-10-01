@@ -11,7 +11,7 @@ import { pathToFileURL } from 'node:url'
 const srcPath = new URL('../../app/javascript/maplibre/destination_markers.js', import.meta.url)
 const tmpPath = path.join(os.tmpdir(), 'planner-destination-markers.mjs')
 fs.writeFileSync(tmpPath, fs.readFileSync(srcPath))
-const { clusterMarkerSize, fillClusterMarker, fillDestinationMarker } = await import(pathToFileURL(tmpPath).href)
+const { clusterMarkerSize, createDestinationMarkerElement, fillClusterMarker, fillDestinationMarker } = await import(pathToFileURL(tmpPath).href)
 
 function element () {
   return {
@@ -42,6 +42,13 @@ describe('destination HTML markers', () => {
     assert.equal(el.children.length, 2)
     assert.equal(el.children[0].className, 'destinations-marker__head')
     assert.equal(el.children[1].className, 'destinations-marker__pin')
+  })
+
+  it('builds the placement marker with the same anchored disc as the map', () => {
+    const el = createDestinationMarkerElement('Depot')
+    assert.equal(el.className, 'destinations-marker destinations-marker--anchored')
+    assert.equal(el.attrs['aria-label'], 'Depot')
+    assert.equal(el.children.length, 2)
   })
 
   it('sizes the cluster bubble from the point count', () => {

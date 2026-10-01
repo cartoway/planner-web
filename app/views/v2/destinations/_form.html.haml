@@ -115,7 +115,7 @@
         .input-group
           = number_field :destination, :lat, step: 0.000001, class: 'form-control'
           = number_field :destination, :lng, step: 0.000001, class: 'form-control'
-          - show_map_drag_toggle = dest_form_mutable && @destination.persisted? && @destination.lat.present? && @destination.lng.present?
+          - show_map_drag_toggle = dest_form_mutable
           %span.input-group-text.p-0.d-flex.btn-container
             - if show_map_drag_toggle
               - drag_idle = df.call('v2_map_position_drag_enable')
@@ -135,29 +135,27 @@
       placeholder: @destination.customer.destination_duration ? "#{@destination.customer.destination_duration_time_with_seconds} (#{df.call('duration_default')})" : t('all.unit.hour_minute_second'),
       append: content_tag('i', '', class: 'fa fa-map-marker fa-fw'),
       help: df.call('duration_help')
-  - if @destination.persisted?
-    .destination-visits{data: {controller: 'v2--visit-new'}}
-      %template#visits-header-template{data: {v2__visit_new_target: 'headerTemplate'}}
+  - visits_to_show = @destination.visits.to_a
+  - if !@destination.persisted? && visits_to_show.empty?
+    - visits_to_show = [@destination.visits.build]
+  .destination-visits{data: {controller: 'v2--visit-new'}}
+    %template#visits-header-template{data: {v2__visit_new_target: 'headerTemplate'}}
+      = render 'v2/destinations/visits_header', destination_form_mutable: dest_form_mutable
+    #visits{data: visits_list_data}
+      - if visits_to_show.size > 1
         = render 'v2/destinations/visits_header', destination_form_mutable: dest_form_mutable
-      #visits{data: visits_list_data}
-        - if @destination.visits.size > 1
-          = render 'v2/destinations/visits_header', destination_form_mutable: dest_form_mutable
-        - @destination.visits.each_with_index do |visit, i|
-          = render 'v2/visits/form', visit: visit, i: i+1, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
-      - if dest_form_mutable
-        %button#visit-new.btn.btn-light.btn-sm{type: 'button', role: 'button', title: t('destinations.form.visit.new_help'), data: {action: 'click->v2--visit-new#add'}}
-          %i.fa.fa-plus.fa-fw
-          = t('destinations.form.visit.new')
-      - else
-        %button#visit-new.btn.btn-light.btn-sm{title: t('destinations.form.visit.new_help'), type: 'button', disabled: true}
-          %i.fa.fa-plus.fa-fw
-          = t('destinations.form.visit.new')
-      %template#visit-fieldset-template{data: {v2__visit_new_target: 'template'}}
-        = render 'v2/visits/form', visit: @destination.visits.build, i: 0, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
-  - else
-    %button#visit-new.btn.btn-light.btn-sm{title: t('destinations.form.visit.new_help'), type: 'button', disabled: true}
-      %i.fa.fa-plus.fa-fw
-      = t('destinations.form.visit.new')
+      - visits_to_show.each_with_index do |visit, i|
+        = render 'v2/visits/form', visit: visit, i: i+1, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
+    - if dest_form_mutable
+      %button#visit-new.btn.btn-light.btn-sm{type: 'button', role: 'button', title: t('destinations.form.visit.new_help'), data: {action: 'click->v2--visit-new#add'}}
+        %i.fa.fa-plus.fa-fw
+        = t('destinations.form.visit.new')
+    - else
+      %button#visit-new.btn.btn-light.btn-sm{title: t('destinations.form.visit.new_help'), type: 'button', disabled: true}
+        %i.fa.fa-plus.fa-fw
+        = t('destinations.form.visit.new')
+    %template#visit-fieldset-template{data: {v2__visit_new_target: 'template'}}
+      = render 'v2/visits/form', visit: @destination.visits.build, i: 0, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
   = hidden_field :destination, :geocoder_version, :value => @destination.geocoder_version
   = hidden_field :destination, :geocoded_at, :value => @destination.geocoded_at
 #visits-attributes-change-bulk-modal.modal.fade{role: "dialog", tabindex: "-1", "aria-labelledby": "visits-attributes-change-bulk-modal-title", data: { controller: 'v2--visit-tags-bulk' }}
