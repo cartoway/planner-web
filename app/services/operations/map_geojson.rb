@@ -83,8 +83,8 @@ module Operations
     end
 
     def point_feature(stop, props)
-      lat = stop.destination_snapshot['lat'] || stop.store_snapshot['lat']
-      lng = stop.destination_snapshot['lng'] || stop.store_snapshot['lng']
+      lat = stop.lat
+      lng = stop.lng
       return nil if lat.blank? || lng.blank?
 
       treated = OperationStop::TREATED_STATUSES.include?(stop.status.to_s.downcase)
@@ -110,7 +110,10 @@ module Operations
       end
       parts = Array(tracks).filter_map { |track|
         coords = coordinates_for(track)
-        coords if coords.size >= 2
+        next if coords.size < 2
+        next if length_of(coords) <= 0
+
+        coords
       }
       return [] if parts.empty?
 
@@ -157,25 +160,23 @@ module Operations
 
     def split_at(coords, distance)
       done = [coords.first]
-      rest = nil
       coords.each_cons(2).with_index do |(start, finish), index|
-        if rest
-          rest << finish
-          next
-        end
-
         segment = Math.hypot(finish[0] - start[0], finish[1] - start[1])
         if segment <= distance
           done << finish
           distance -= segment
-        else
-          ratio = segment.zero? ? 0 : distance / segment
-          middle = [start[0] + ((finish[0] - start[0]) * ratio), start[1] + ((finish[1] - start[1]) * ratio)]
-          done << middle
-          rest = [middle, finish, *coords[(index + 2)..]]
+          next
         end
+
+        # Cut on this segment; return immediately so later vertices are not appended twice
+        # (that used to teleport from track end back to mid-leg → a fake straight chord).
+        ratio = segment.zero? ? 0 : distance / segment
+        middle = [start[0] + ((finish[0] - start[0]) * ratio), start[1] + ((finish[1] - start[1]) * ratio)]
+        done << middle
+        rest = [middle, finish, *coords[(index + 2)..]]
+        return [done, rest]
       end
-      [done, rest || [coords.last]]
+      [done, [coords.last]]
     end
 
     def coordinates_for(track)

@@ -259,7 +259,7 @@ class OperationStop < ApplicationRecord
   end
 
   def list_fields
-    place = destination_snapshot.presence || store_snapshot
+    place = place_snapshot
     {
       'name' => place['name'],
       'ref' => place['ref'],
@@ -311,19 +311,40 @@ class OperationStop < ApplicationRecord
   end
 
   def address_label
-    snap = destination_snapshot.presence || store_snapshot
-    [snap['name'], snap['street'], snap['postalcode'], snap['city']].compact_blank.join(', ')
+    snap = place_snapshot
+    label = [snap['name'], snap['street'], snap['postalcode'], snap['city']].compact_blank.join(', ')
+    return label if label.present?
+    return I18n.t('stops.default.name_rest') if kind == 'rest'
+
+    label
   end
 
   def lat
-    (destination_snapshot['lat'] || store_snapshot['lat'])&.to_f
+    raw = place_snapshot['lat']
+    return if raw.blank?
+
+    raw.to_f
   end
 
   def lng
-    (destination_snapshot['lng'] || store_snapshot['lng'])&.to_f
+    raw = place_snapshot['lng']
+    return if raw.blank?
+
+    raw.to_f
   end
 
   private
+
+  def place_snapshot
+    destination_snapshot.presence || store_snapshot.presence || rest_place_snapshot
+  end
+
+  # Legacy publishes left rest store_snapshot empty; fall back to usage snapshot.
+  def rest_place_snapshot
+    return {} unless kind == 'rest'
+
+    operation_route&.vehicle_usage_snapshot&.[]('store_rest').presence || {}
+  end
 
   def quantity_total(raw)
     values = raw.is_a?(Hash) ? raw.values : Array(raw)

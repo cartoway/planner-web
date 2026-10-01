@@ -705,7 +705,7 @@ export default class extends Controller {
 
   _mountOperationLayers () {
     if (!this.map || this.map.getSource('operation')) return
-    this.map.addSource('operation', { type: 'geojson', data: this.geojson || { type: 'FeatureCollection', features: [] } })
+    this.map.addSource('operation', { type: 'geojson', data: this.geojson || { type: 'FeatureCollection', features: [] }, tolerance: 0 })
     this.map.addLayer({
       id: OPERATION_LINES_LAYER_ID,
       type: 'line',
