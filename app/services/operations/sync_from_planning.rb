@@ -101,7 +101,7 @@ module Operations
     end
 
     def scoped_stops(route)
-      stops = route.stops.reject { |stop| stop.active == false }
+      stops = route.stops.select(&:active?)
       return stops unless @stop_ids
 
       stops.select { |stop| @stop_ids.include?(stop.id) }
@@ -188,7 +188,7 @@ module Operations
       kind = Snapshots.kind_for(stop)
       visit = stop.visit
       destination = visit&.destination
-      store = stop.store || stop.store_reload&.store
+      store = Snapshots.store_for(stop)
       operation_stop.update!(
         operation_route: operation_route,
         stop: stop,
@@ -221,7 +221,7 @@ module Operations
 
       stop_scope = OperationStop.where(operation_route_id: @scoped_operation_route_ids + scope_route_ids)
       stop_scope = stop_scope.where(stop_id: @stop_ids) if @stop_ids
-      stop_scope.where.not(id: @matched_stop_ids).find_each { |stop| mark_orphaned(stop) }
+      stop_scope.where.not(id: @matched_stop_ids).find_each { |stop| drop_unmatched_stop(stop) }
     end
 
     def orphan_unselected_routes!
@@ -232,10 +232,22 @@ module Operations
       end
     end
 
+    # Inactive planning stops leave the execution graph; anything else stays orphaned for audit.
+    def drop_unmatched_stop(operation_stop)
+      planning_stop = operation_stop.stop
+      if planning_stop && !planning_stop.active?
+        operation_stop.destroy!
+      else
+        mark_orphaned(operation_stop)
+      end
+    end
+
     def mark_orphaned(record)
       return unless record.sync_state == 'active'
 
-      record.update_columns(sync_state: 'orphaned', updated_at: Time.current)
+      attrs = { sync_state: 'orphaned', updated_at: Time.current }
+      attrs[:active] = false if record.is_a?(OperationStop)
+      record.update_columns(attrs)
     end
   end
 end
