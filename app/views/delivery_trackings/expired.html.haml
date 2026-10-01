@@ -1,0 +1,9 @@
+.delivery-tracking-shell
+  - customer = @tracking.operation.customer
+  - name = customer.company_name.presence || customer.name
+  .delivery-tracking-brand
+    - if customer.company_logo.url.present?
+      = image_tag customer.company_logo.url, alt: name, class: 'delivery-tracking-logo'
+    %span.delivery-tracking-shipper= name
+  %h1.h4.mt-4= t('delivery_trackings.expired.title')
+  %p.text-muted= t('delivery_trackings.expired.body')

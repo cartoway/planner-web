@@ -139,4 +139,28 @@ class OperationStopDetailTest < ActionController::TestCase
     @stop.photos.purge
     @stop.stop&.photos&.purge
   end
+
+  test 'show renders recipient tracking link when token is still valid' do
+    tracking = @operation.operation_delivery_trackings.find_by(destination_id: @stop.destination_id)
+    assert tracking.present?
+
+    get :show, params: { id: @stop.id }
+    assert_response :success
+    assert_includes response.body, delivery_tracking_path(token: tracking.token)
+    assert_includes response.body, I18n.t('operations.show.recipient_tracking')
+
+    tracking.update_columns(expires_at: 1.hour.ago)
+    get :show, params: { id: @stop.id }
+    assert_response :success
+    assert_not_includes response.body, delivery_tracking_path(token: tracking.token)
+  end
+
+  test 'active delivery tracking resolves via destination snapshot when fk is cleared' do
+    tracking = @operation.operation_delivery_trackings.find_by(destination_id: @stop.destination_id)
+    assert_equal tracking, @stop.active_delivery_tracking
+
+    @stop.update_columns(destination_id: nil)
+    assert_nil @stop.reload.destination_id
+    assert_equal tracking.id, @stop.active_delivery_tracking.id
+  end
 end

@@ -101,6 +101,7 @@
             .operation-proof
               %span= t('operations.media.signature')
         = render 'operation_stops/delivery_note_link', operation_stop: @operation_stop
+        = render 'operation_stops/recipient_tracking_link', operation_stop: @operation_stop
     %section.operation-section
       %h3= t('operations.show.timeline')
       %ul.operation-timeline

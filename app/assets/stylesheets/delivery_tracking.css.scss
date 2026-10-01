@@ -1,0 +1,324 @@
+.delivery-tracking-body {
+  margin: 0;
+  background: #f5f7fa;
+  color: #1a202c;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+.delivery-tracking-shell {
+  max-width: 520px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding: 1.25rem 1rem 2.5rem;
+  background: #fff;
+  box-shadow: 0 1px 8px rgba(26, 54, 93, 0.08);
+}
+
+.delivery-tracking-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.delivery-tracking-brand-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.delivery-tracking-logo {
+  max-height: 40px;
+  max-width: 140px;
+  object-fit: contain;
+}
+
+.delivery-tracking-shipper {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: #1a365d;
+}
+
+.delivery-tracking-tagline {
+  display: block;
+  font-size: 0.72rem;
+  line-height: 1.2;
+  font-weight: 400;
+  color: #64748b;
+}
+
+.delivery-tracking-ref {
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+
+.delivery-tracking-chip {
+  display: inline-block;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  background: #1a365d;
+  color: #fff;
+  margin-bottom: 1rem;
+}
+
+.delivery-tracking-chip-sm {
+  font-size: 0.75rem;
+  padding: 0.2rem 0.55rem;
+  margin: 0;
+}
+
+.delivery-tracking-chip.is-planned,
+.delivery-tracking-chip.is-loading {
+  background: transparent;
+  color: #1a365d;
+  border: 1.5px solid #1a365d;
+}
+
+.delivery-tracking-chip.is-delivered {
+  background: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.delivery-tracking-chip.is-failed,
+.delivery-tracking-chip.is-missed {
+  background: #c62828;
+  border-color: #c62828;
+}
+
+.delivery-tracking-chip.is-exception {
+  background: #ed6c02;
+  border-color: #ed6c02;
+}
+
+.delivery-tracking-eta-card {
+  background: #e8eef7;
+  border-radius: 0.75rem;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.delivery-tracking-eta-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 600;
+}
+
+.delivery-tracking-eta-value {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: #1a365d;
+  line-height: 1.2;
+}
+
+.delivery-tracking-eta-updated {
+  font-size: 0.8rem;
+  color: #64748b;
+  margin-top: 0.35rem;
+}
+
+.delivery-tracking-map {
+  position: relative;
+  height: 180px;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  background: #e2e8f0;
+}
+
+.delivery-tracking-map-canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.delivery-tracking-map-badge,
+.delivery-tracking-map-approx {
+  position: absolute;
+  z-index: 2;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.25rem 0.65rem;
+  font-size: 0.75rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.delivery-tracking-map-badge {
+  top: 0.75rem;
+  right: 0.75rem;
+  color: #1a365d;
+  font-weight: 600;
+}
+
+.delivery-tracking-map-approx {
+  top: 0.75rem;
+  left: 0.75rem;
+  color: #64748b;
+}
+
+.delivery-tracking-vehicle-marker {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #1a202c;
+}
+
+.delivery-tracking-section-title {
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #64748b;
+  font-weight: 600;
+  margin: 1rem 0 0.75rem;
+}
+
+.delivery-tracking-timeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.delivery-tracking-timeline li {
+  position: relative;
+  padding: 0 0 1rem 1.5rem;
+  color: #64748b;
+}
+
+.delivery-tracking-timeline li:last-child {
+  padding-bottom: 0;
+}
+
+.delivery-tracking-timeline li::before {
+  content: '';
+  position: absolute;
+  left: 0.35rem;
+  top: 0.85rem;
+  bottom: 0;
+  width: 2px;
+  background: #e2e8f0;
+}
+
+.delivery-tracking-timeline li:last-child::before {
+  display: none;
+}
+
+.delivery-tracking-dot {
+  position: absolute;
+  left: 0;
+  top: 0.2rem;
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 50%;
+  border: 2px solid #cbd5e1;
+  background: #fff;
+}
+
+.delivery-tracking-step-label {
+  display: block;
+  font-size: 0.95rem;
+  line-height: 1.25;
+}
+
+.delivery-tracking-step-detail {
+  display: block;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  font-weight: 400;
+  color: #64748b;
+  margin-top: 0.12rem;
+}
+
+.delivery-tracking-timeline li.is-done {
+  color: #1a202c;
+}
+
+.delivery-tracking-timeline li.is-done .delivery-tracking-dot {
+  background: #2e7d32;
+  border-color: #2e7d32;
+}
+
+.delivery-tracking-timeline li.is-current {
+  color: #1a365d;
+  font-weight: 600;
+}
+
+.delivery-tracking-timeline li.is-current .delivery-tracking-dot {
+  border-color: #1a365d;
+  border-width: 3px;
+}
+
+.delivery-tracking-timeline li.is-current .delivery-tracking-step-detail {
+  color: #64748b;
+  font-weight: 400;
+}
+
+.delivery-tracking-timeline li.is-info .delivery-tracking-dot {
+  border-color: #94a3b8;
+}
+
+.delivery-tracking-timeline li.is-failed {
+  color: #c62828;
+}
+
+.delivery-tracking-timeline li.is-failed .delivery-tracking-dot {
+  background: #c62828;
+  border-color: #c62828;
+}
+
+.delivery-tracking-timeline li.is-failed .delivery-tracking-step-label,
+.delivery-tracking-timeline li.is-failed .delivery-tracking-step-detail {
+  color: #c62828;
+}
+
+.delivery-tracking-timeline li.is-alert {
+  color: #b45309;
+}
+
+.delivery-tracking-timeline li.is-alert .delivery-tracking-dot {
+  background: #f9a825;
+  border-color: #f9a825;
+}
+
+.delivery-tracking-timeline li.is-alert .delivery-tracking-step-label,
+.delivery-tracking-timeline li.is-alert .delivery-tracking-step-detail {
+  color: #b45309;
+}
+
+.delivery-tracking-eta-card.is-alert .delivery-tracking-eta-value {
+  font-size: 1.15rem;
+}
+
+.delivery-tracking-visits {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.delivery-tracking-visits li {
+  padding: 0.65rem 0;
+  border-top: 1px solid #e2e8f0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.delivery-tracking-visits li.is-current {
+  color: #1a365d;
+  font-weight: 600;
+}
+
+@media (min-width: 768px) {
+  .delivery-tracking-body {
+    padding: 2rem 1rem;
+  }
+
+  .delivery-tracking-shell {
+    border-radius: 0.75rem;
+    min-height: auto;
+  }
+}

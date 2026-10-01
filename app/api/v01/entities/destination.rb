@@ -33,6 +33,7 @@ class V01::Entities::Destination < Grape::Entity
   expose(:detail, documentation: { type: String, desc: 'Address complement (floor, intercom).', example: '2nd floor' })
   expose(:comment, documentation: { type: String, desc: 'Free comment shown to the driver.', example: 'Call on arrival' })
   expose(:phone_number, documentation: { type: String, desc: 'Contact phone.', example: '+33601020304' })
+  expose(:email, documentation: { type: String, desc: 'Contact email.', example: 'client@example.com' })
   expose(:geocoding_accuracy, documentation: { type: Float, desc: 'Geocoding confidence in 0..1. Higher is better.', example: 0.92 })
   expose(:geocoding_level, documentation: { type: String, values: ['point', 'house', 'street', 'intersection', 'city'], desc: 'Precision of the geocoded position.', example: 'house' })
   expose(:geocoding_result, documentation: { type: JSON, desc: 'Raw geocoder payload (provider-specific).' })
