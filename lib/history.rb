@@ -58,7 +58,7 @@ class History
               LIMIT 1
             )
           ) +
-          (customers.history_cron_hour || ' hours')::interval = date_trunc('hour', #{at_sql}::timestamp)
+          (customers.history_cron_hour || ' hours')::interval <= date_trunc('hour', #{at_sql}::timestamp)
         )
     SQL
     ActiveRecord::Base.connection.select_values(sql).map(&:to_i)

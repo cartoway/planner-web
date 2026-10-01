@@ -1,0 +1,5 @@
+- tracking = operation_stop.active_delivery_tracking
+- if tracking
+  = link_to delivery_tracking_path(token: tracking.token), class: 'operation-stop-link', target: '_blank', rel: 'noopener noreferrer' do
+    %i.fa.fa-location-dot.fa-fw{"aria-hidden": "true"}
+    = t('operations.show.recipient_tracking')

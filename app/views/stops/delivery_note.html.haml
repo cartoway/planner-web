@@ -3,7 +3,7 @@
   - if @destination.name.present?
     = " — #{@destination.name}"
 
-- company_present = [@customer.company_name, @customer.company_street, @customer.company_postalcode, @customer.company_city, @customer.company_detail, @customer.company_phone].any?(&:present?)
+- company_present = [@customer.company_logo.url, @customer.company_name, @customer.company_street, @customer.company_postalcode, @customer.company_city, @customer.company_detail, @customer.company_phone].any?(&:present?)
 - order_lines = []
 - if @customer.enable_orders
   - if @stop.order&.products&.any?
@@ -30,6 +30,8 @@
   .delivery-note-top
     .delivery-note-company
       - if company_present
+        - if @customer.company_logo.url.present?
+          %p= image_tag @customer.company_logo.url, alt: @customer.company_name.presence || @customer.name, class: 'delivery-note-company-logo', style: 'max-height: 64px; max-width: 200px;'
         - if @customer.company_name.present?
           %p.delivery-note-company-name= @customer.company_name
         - if @customer.company_street.present?

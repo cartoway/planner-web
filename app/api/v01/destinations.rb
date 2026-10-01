@@ -91,7 +91,7 @@ class V01::Destinations < Grape::API
 
       deliverable_unit_ids = current_customer.deliverable_units.map{ |du| du.id.to_s }
       nested_visit_custom_attributes = current_customer.custom_attributes.for_visit.map(&:name)
-      p.permit(:ref, :name, :street, :detail, :postalcode, :city, :state, :country, :lat, :lng, :comment, :phone_number, :geocoding_accuracy, :geocoding_level, tag_ids: [], visits_attributes: [:id, :ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :revenue, :force_position, tag_ids: [], pickups: deliverable_unit_ids, deliveries: deliverable_unit_ids, custom_attributes: nested_visit_custom_attributes])
+      p.permit(:ref, :name, :street, :detail, :postalcode, :city, :state, :country, :lat, :lng, :comment, :phone_number, :email, :geocoding_accuracy, :geocoding_level, tag_ids: [], visits_attributes: [:id, :ref, :duration, :time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2, :priority, :revenue, :force_position, tag_ids: [], pickups: deliverable_unit_ids, deliveries: deliverable_unit_ids, custom_attributes: nested_visit_custom_attributes])
     end
 
     def present_geojson_destinations(params)

@@ -290,15 +290,13 @@ class V01::RoutesTest < V01::RoutesBaseTest
     assert json['out_of_date']
   end
 
-  test 'should send SMS for each stop visit' do
+  test 'route destination SMS endpoint is gone' do
     @route.planning.customer.reseller.update(messagings: {sms_partner: { enable: true, api_key: :sms_api_key, api_secret: :sms_api_secret }})
     @route.planning.customer.update enable_sms: true
 
-    SmsPartnerService.stub_any_instance(:send_message, true) do
-      get api(@route.planning_id, "#{@route.id}/send_sms")
-      assert last_response.ok?, 'Bad response: ' + last_response.body
-      assert_equal '3', last_response.body
-    end
+    get api(@route.planning_id, "#{@route.id}/send_sms")
+    assert_equal 410, last_response.status
+    assert_match(/Gone/i, last_response.body)
   end
 
   test 'PUT route color returns 403 when operations.route.paint is not usable' do

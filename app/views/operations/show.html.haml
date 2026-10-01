@@ -47,6 +47,14 @@
           %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-sms' }}
             %i.fa.fa-comment-sms.fa-fw
             = t('operations.show.send_sms')
+      - if @operation.open? && @send_trackings.present?
+        %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-email' }}
+          %i.fa.fa-envelope-open-text.fa-fw
+          = t('operations.show.send_destinations_email')
+        - if @operation.customer.enable_sms
+          %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-sms' }}
+            %i.fa.fa-mobile-screen.fa-fw
+            = t('operations.show.send_destinations_sms')
   .operation-body
     %aside.operation-list
       %button.operation-scroll-top.btn-close{type: 'button', aria: { label: t('operations.show.scroll_top') }, data: { action: 'click->v2--operation-show#scrollListTop' }}
@@ -167,3 +175,7 @@
   = render 'operations/send_drivers_modal', operation: @operation, routes: @send_routes, channel: 'email'
   - if @operation.customer.enable_sms
     = render 'operations/send_drivers_modal', operation: @operation, routes: @send_routes, channel: 'sms'
+- if @operation.open? && @send_trackings.present?
+  = render 'operations/send_destinations_modal', operation: @operation, trackings: @send_trackings, channel: 'email'
+  - if @operation.customer.enable_sms
+    = render 'operations/send_destinations_modal', operation: @operation, trackings: @send_trackings, channel: 'sms'

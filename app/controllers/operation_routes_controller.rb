@@ -61,10 +61,12 @@ class OperationRoutesController < ApplicationController
       leg = params[:leg] == 'arrival' ? 'arrival' : 'departure'
       status = params[:status].presence
       recorded_at = Time.zone.parse(params[:status_updated_at].to_s) || Time.current
+      stash_departure_loading_at!(leg, status)
       @operation_route.update!(
         "#{leg}_status" => status,
         "#{leg}_status_updated_at" => recorded_at
       )
+      broadcast_tracking_refresh
     end
     merge_custom_attributes(@operation_route, params.dig(:route, :custom_attributes))
     render json: { success: true }
@@ -127,6 +129,29 @@ class OperationRoutesController < ApplicationController
 
     merged = (record.custom_attributes || {}).merge(incoming.to_unsafe_h.stringify_keys)
     record.update!(custom_attributes: merged)
+  end
+
+  def broadcast_tracking_refresh
+    operation = @operation_route.operation
+    Turbo::StreamsChannel.broadcast_refresh_to(operation)
+    OperationDeliveryTracking.where(operation_id: operation.id).find_each do |tracking|
+      Turbo::StreamsChannel.broadcast_refresh_to(tracking.turbo_stream_name)
+    end
+  rescue StandardError => e
+    Rails.logger.warn("operation turbo refresh failed: #{e.class}: #{e.message}")
+  end
+
+  # Route departure has a single cursor; keep the atstore timestamp for the public timeline.
+  def stash_departure_loading_at!(leg, status)
+    return unless leg == 'departure'
+    return unless status.to_s.downcase == 'finished'
+    return unless @operation_route.departure_status.to_s.downcase == 'atstore'
+    return if @operation_route.departure_status_updated_at.blank?
+
+    attrs = (@operation_route.custom_attributes || {}).merge(
+      '_departure_loading_at' => @operation_route.departure_status_updated_at.iso8601
+    )
+    @operation_route.custom_attributes = attrs
   end
 
   def transmit_flash(result)

@@ -217,13 +217,7 @@ class V01::Routes < Grape::API
           requires :id, type: String, desc: SharedParams::ID_DESC
         end
         get ':id/send_sms' do
-          if current_customer.enable_sms && current_customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
-            Stop.includes_destinations_and_stores.scoping do
-              send_sms_route get_route
-            end
-          else
-            error! V01::Status.code_response(:code_403), 403
-          end
+          error! V01::Status.code_response(:code_410), 410
         end
 
         desc 'Send SMS to driver.',

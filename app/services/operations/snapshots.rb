@@ -171,6 +171,7 @@ module Operations
         'lat' => destination.lat,
         'lng' => destination.lng,
         'phone_number' => destination.phone_number,
+        'email' => destination.email,
         'duration' => schedule_seconds(destination, :duration),
         'detail' => destination.detail,
         'comment' => destination.comment

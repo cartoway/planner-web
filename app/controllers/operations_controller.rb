@@ -26,7 +26,10 @@ class OperationsController < ApplicationController
     @located_route_ids = located_route_ids(@page_routes)
     @next_page = next_page
     @selector_routes = selector_routes
-    @send_routes = transmittable_routes.to_a if @operation.open?
+    if @operation.open?
+      @send_routes = transmittable_routes.to_a
+      @send_trackings = destination_trackings_for_send.to_a
+    end
     render_v2_page 'operations/show'
   end
 
@@ -97,6 +100,21 @@ class OperationsController < ApplicationController
     redirect_to operation_path(@operation), alert: t('operations.show.sms_unavailable')
   end
 
+  def transmit_destinations
+    trackings = destination_trackings_for_send
+    result = case params[:channel]
+             when 'email'
+               { emailed: Operations::SendDestinationEmail.call(operation: @operation, trackings: trackings), sms: 0 }
+             when 'sms'
+               { emailed: 0, sms: Operations::SendDestinationSms.call(operation: @operation, trackings: trackings) }
+             else
+               { emailed: 0, sms: 0 }
+             end
+    redirect_to operation_path(@operation), **destination_transmit_flash(result)
+  rescue ArgumentError
+    redirect_to operation_path(@operation), alert: t('operations.show.sms_unavailable')
+  end
+
   def update
     if @operation.update(operation_params)
       notice = @operation.saved_change_to_name? ? t('operations.show.name_updated') : t('operations.show.date_updated')
@@ -159,6 +177,23 @@ class OperationsController < ApplicationController
     else
       { notice: t("plannings.edit.deliver_send.#{scope}.success") }
     end
+  end
+
+  def destination_transmit_flash(result)
+    if result[:emailed].zero? && result[:sms].zero?
+      { alert: t('operations.show.destinations_send_fail') }
+    else
+      { notice: t('operations.show.destinations_send_success', sms: result[:sms], email: result[:emailed]) }
+    end
+  end
+
+  def destination_trackings_for_send
+    OperationDeliveryTracking.ensure_for!(@operation)
+    trackings = @operation.operation_delivery_trackings.includes(:destination).to_a
+    return trackings if params[:trackings].blank?
+
+    submitted = params[:trackings].to_unsafe_h
+    trackings.select { |tracking| submitted.dig(tracking.id.to_s, 'send').present? }
   end
 
   def set_filtered_routes

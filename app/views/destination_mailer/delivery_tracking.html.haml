@@ -1,0 +1,11 @@
+!!!
+%html
+  %body{style: 'font-family: system-ui, sans-serif; color: #1a202c;'}
+    %div{style: 'max-width: 520px; margin: 0 auto; padding: 16px;'}
+      - if @logo_url.present?
+        %p= image_tag @logo_url, alt: @shipper_name, style: 'max-height: 48px; max-width: 160px;'
+      %p{style: 'font-weight: 600; color: #1a365d;'}= @shipper_name
+      %p= simple_format(@body)
+      - if @tracking_url.present?
+        %p
+          %a{href: @tracking_url, style: 'display: inline-block; background: #1a365d; color: #fff; padding: 10px 16px; border-radius: 8px; text-decoration: none;'}= t('destination_mailer.delivery_tracking.cta')

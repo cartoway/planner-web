@@ -24,6 +24,7 @@ class BackfillPastPlanningsTest < ActiveSupport::TestCase
     assert_equal Date.new(2015, 10, 10), operation.date
     operation_stop = operation.operation_stops.find_by!(stop_id: @stop.id)
     assert_equal 'delivered', operation_stop.status
+    assert operation_stop.destination_snapshot.key?('email')
     assert_equal 1, operation_stop.operation_stop_status_events.where(source: 'migration').count
     assert operation_stop.photos.attached?
     assert @stop.reload.photos.attached?

@@ -1,0 +1,60 @@
+.delivery-tracking-shell
+  - if @view.shipper_logo_url.present?
+    .delivery-tracking-brand
+      = image_tag @view.shipper_logo_url, alt: @view.shipper_name, class: 'delivery-tracking-logo'
+      .delivery-tracking-brand-text
+        %span.delivery-tracking-shipper= @view.shipper_name
+        %span.delivery-tracking-tagline= t('delivery_trackings.show.title')
+  - else
+    .delivery-tracking-brand
+      .delivery-tracking-brand-text
+        %span.delivery-tracking-shipper= @view.shipper_name
+        %span.delivery-tracking-tagline= t('delivery_trackings.show.title')
+
+  - if @current&.ref.present?
+    .delivery-tracking-ref= t('delivery_trackings.show.order_ref', ref: @current.ref)
+
+  - if @current
+    %span.delivery-tracking-chip{class: "is-#{@current.chip_key}"}= @current.chip
+
+    - if @current.eta_window.present?
+      - imminent = @current.eta_window == t('delivery_trackings.show.imminent')
+      - missed = @current.chip_key == 'missed'
+      .delivery-tracking-eta-card{class: ("is-alert" if imminent || missed)}
+        - unless imminent || missed
+          .delivery-tracking-eta-label= t('delivery_trackings.show.eta_label')
+        .delivery-tracking-eta-value= @current.eta_window
+        - if !missed && @view.last_updated_at
+          .delivery-tracking-eta-updated= t('delivery_trackings.show.last_update', time: l(@view.last_updated_at, format: :hour_minute))
+
+
+    - map = @current.map_data
+    - if map[:destination]
+      .delivery-tracking-map{data: { controller: 'delivery-tracking-map', delivery_tracking_map_payload_value: map.to_json }}
+        .delivery-tracking-map-canvas{id: "delivery-tracking-map-canvas-#{@tracking.token}", data: { delivery_tracking_map_target: 'canvas', turbo_permanent: true }}
+        - if map[:show_live]
+          .delivery-tracking-map-approx= t('delivery_trackings.show.approx_position')
+        - if map[:show_live] && map[:stops_before].to_i.positive?
+          .delivery-tracking-map-badge= t('delivery_trackings.show.stops_before', count: map[:stops_before])
+
+    %h2.delivery-tracking-section-title= t('delivery_trackings.show.timeline_title')
+    %ol.delivery-tracking-timeline
+      - @current.timeline.each do |step|
+        %li{class: "is-#{step[:state]}"}
+          %span.delivery-tracking-dot
+          .delivery-tracking-step-label= step[:label]
+          - if step[:detail].present?
+            .delivery-tracking-step-detail= step[:detail]
+
+  - if @view.visits.size > 1
+    %h2.delivery-tracking-section-title= t('delivery_trackings.show.visits_title')
+    %ul.delivery-tracking-visits
+      - @view.visits.each_with_index do |visit, index|
+        %li{class: ("is-current" if visit == @current)}
+          %strong= t('delivery_trackings.show.visit_n', n: index + 1)
+          %span.delivery-tracking-chip.delivery-tracking-chip-sm{class: "is-#{visit.chip_key}"}= visit.chip
+          - if visit.eta_window.present?
+            .text-muted.small= visit.eta_window
+
+- unless @terminal
+  = turbo_stream_from @tracking.turbo_stream_name

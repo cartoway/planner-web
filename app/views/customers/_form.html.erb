@@ -437,6 +437,18 @@
           </div>
         </div>
         <%= f.text_field :company_phone, input_group: content_tag('i', '', class: 'fa fa-phone fa-fw') %>
+        <%= f.file_field :company_logo, help: t('.company.logo_help') %>
+        <% if @customer.company_logo.url %>
+          <div class="row mb-3">
+            <div class="col-md-offset-2 col-md-8">
+              <%= image_tag @customer.company_logo.url, alt: @customer.company_name.presence || @customer.name, style: 'max-height: 64px; max-width: 200px;' %>
+            </div>
+          </div>
+        <% end %>
+        <h4 class="h5"><%= t('.company.tracking_eta_title') %></h4>
+        <p class="help-block"><%= t('.company.tracking_eta_help') %></p>
+        <%= f.number_field :delivery_tracking_eta_gap_before, min: 0, max: 180, help: t('.company.tracking_eta_gap_before_help') %>
+        <%= f.number_field :delivery_tracking_eta_gap_after, min: 0, max: 180, help: t('.company.tracking_eta_gap_after_help') %>
       </div>
     </div>
   </div>
@@ -485,6 +497,27 @@
       </div>
     </div>
   <% end %>
+
+  <div class="panel panel-default accordion col-md-12 p0">
+    <div class="panel-heading">
+      <h2 class="panel-title">
+        <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapseRecipientTemplate">
+          <%= t 'activerecord.attributes.customer.recipient_template' %>
+        </a>
+      </h2>
+    </div>
+    <div id="collapseRecipientTemplate" class="panel-collapse collapse">
+      <div class="panel-body">
+        <%= f.text_area :recipient_template, placeholder: t('notifications.email.alert_plan'), value: @customer.recipient_template || t('notifications.email.alert_plan') %>
+        <div class="row">
+          <div class="col-md-offset-2 col-md-8">
+            <p class="help-block"><%= t '.recipient_template_help' %></p>
+            <p class="help-block"><%= t '.recipient_keys_help' %></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <% if current_user.admin? %>
     <div class="row">

@@ -84,6 +84,7 @@ module Operations
       selected.each_with_index do |route, index|
         build_route(operation, route, index, false, date, units_by_id, copy_cursor: false, with_stops: true)
       end
+      OperationDeliveryTracking.ensure_for!(operation)
       operation
     end
 
