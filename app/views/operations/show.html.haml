@@ -59,7 +59,7 @@
     %aside.operation-list
       %button.operation-scroll-top.btn-close{type: 'button', aria: { label: t('operations.show.scroll_top') }, data: { action: 'click->v2--operation-show#scrollListTop' }}
         %i.fa.fa-chevron-up
-      .operation-list-body
+      .operation-list-body{data: { controller: 'exclusive-accordion', exclusive_accordion_item_selector_value: 'details.operation-tour', exclusive_accordion_panel_selector_value: '.operation-tour-body', exclusive_accordion_heading_selector_value: 'summary.operation-tour-summary', exclusive_accordion_scroll_parent_selector_value: '.operation-list-body', exclusive_accordion_mode_value: 'details' }}
         .operation-stats
           .operation-stat
             %i.fa.fa-paper-plane
