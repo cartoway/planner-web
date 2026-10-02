@@ -446,6 +446,20 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'new planning date field uses offset as placeholder without default value' do
+    customers(:customer_one).update!(operation_date_offset: 2)
+    suggested = I18n.l(Date.current + 2, format: :datepicker)
+
+    get :new
+
+    assert_response :success
+    assert_select 'input#planning_date' do |inputs|
+      input = inputs.first
+      assert_equal suggested, input['placeholder']
+      assert input['value'].blank?
+    end
+  end
+
   test 'Create Planning' do
     orig_locale = I18n.locale
     orig_default_locale = I18n.default_locale
