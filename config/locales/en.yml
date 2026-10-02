@@ -2115,6 +2115,20 @@ en:
       deliverables_by_vehicles: Vehicle's deliverables
       vehicle_select_error: You must select a vehicle
       vehicle_action: 'Actions for a vehicle:'
+    compare:
+      title: Compare plans
+      action: Compare
+      back: Back to list
+      reference: Reference
+      use_as_reference: Use as reference
+      metric: Metric
+      equal: =
+      add: Add
+      add_placeholder: Add a plan…
+      remove: Remove from comparison
+      help: Choose the reference, then compare the colored differences under each metric.
+      need_selection: Please select at least two plans to compare
+      v2_only: Plan comparison is available in the new interface
     edit:
       sopac_title: Temperature statement
       device_name_label: 'Device Name:'
