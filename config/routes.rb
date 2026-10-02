@@ -161,6 +161,9 @@ Rails.application.routes.draw do
   post 'plannings/:id/export(.:format)' => 'plannings#show', as: :export_planning, constraints: { format: /excel|csv/ }
 
   resources :plannings do
+    collection do
+      get :compare
+    end
     patch ':route_id/:stop_id/move' => 'plannings#move'
     patch ':route_id/:stop_id/driver_move' => 'plannings#driver_move'
     patch ':route_id/:stop_id/move/:index' => 'plannings#move'

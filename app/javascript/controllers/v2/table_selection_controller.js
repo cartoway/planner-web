@@ -16,7 +16,10 @@ export default class extends Controller {
   }
 
   syncBulk () {
-    const any = this.rowTargets.some((box) => box.checked && !box.disabled)
-    this.bulkTargets.forEach((el) => { el.disabled = !any })
+    const checkedCount = this.rowTargets.filter((box) => box.checked && !box.disabled).length
+    this.bulkTargets.forEach((el) => {
+      const min = Number(el.dataset.min || 1)
+      el.disabled = checkedCount < min
+    })
   }
 }

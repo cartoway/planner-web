@@ -2201,6 +2201,20 @@ fr:
       deliverables_by_vehicles: État de charge
       vehicle_select_error: Vous devez avoir sélectionné un véhicule
       vehicle_action: 'Actions pour un véhicule :'
+    compare:
+      title: Comparaison des plans
+      action: Comparer
+      back: Retour à la liste
+      reference: Référence
+      use_as_reference: Utiliser comme référence
+      metric: Indicateur
+      equal: =
+      add: Ajouter
+      add_placeholder: Ajouter un plan…
+      remove: Retirer de la comparaison
+      help: "Choisissez la référence, puis comparez les écarts colorés sous chaque indicateur."
+      need_selection: Veuillez sélectionner au moins deux plans à comparer
+      v2_only: La comparaison des plans est disponible dans la nouvelle interface
     edit:
       sopac_title: Relevé de température
       device_name_label: 'Nom de l''appareil :'

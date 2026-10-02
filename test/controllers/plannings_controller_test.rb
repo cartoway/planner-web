@@ -75,12 +75,44 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_select 'table#plannings', 1
     assert_select %(.plannings-toolbar a[href="#{new_planning_path}"]), 1
     assert_select 'table#plannings a[href=?]', edit_planning_path(@planning)
+    assert_select %(table#plannings a[href="#{planning_duplicate_path(@planning)}"][data-turbo-method="patch"][data-turbo-frame="_top"]), 1
+    assert_select %(table#plannings tr##{ActionView::RecordIdentifier.dom_id(@planning)}), 1
     assert_select 'a[data-action="click->v2--plannings-index#spreadsheet"]', 2
     assert_select '#planning-spreadsheet-modal', 1
     assert_select '#planning-spreadsheet-modal .transfer-list[data-controller~="v2--transfer-list"]', 1
     assert_select '#planning-spreadsheet-modal [data-v2--transfer-list-target="list"]', 2
     assert_select '#planning-spreadsheet-modal [data-action="click->v2--transfer-list#transferAll"]', 2
     assert_select '#planning-spreadsheet-modal [data-v2--plannings-index-target="detailColumnsTemplate"] .transfer-list-item .item-toggle-btn', minimum: 1
+    assert_select 'button[data-action="click->v2--plannings-index#compare"][data-min="2"]', 1
+  end
+
+  test 'compare uses v2 layout and marks first planning as reference' do
+    enable_layout_v2!
+    other = plannings(:planning_two)
+    get :compare, params: { ids: "#{@planning.id},#{other.id}" }
+    assert_response :success
+    assert_select 'body.cartoway-v2', 1
+    assert_select '.plannings-compare-board', 1
+    assert_select '.plannings-compare-col--reference', 1
+    assert_select 'input[name=compare_reference][checked]', 1
+    assert_select 'input[name=compare_reference]', 2
+  end
+
+  test 'compare honors the selected reference planning' do
+    enable_layout_v2!
+    other = plannings(:planning_two)
+    get :compare, params: { ids: "#{@planning.id},#{other.id}", ref: other.id }
+    assert_response :success
+    assert_equal other.id, assigns(:reference).id
+    assert_select %(input[name=compare_reference][value="#{other.id}"][checked]), 1
+    assert_select '.plannings-compare-col--reference .plannings-compare-col__title', text: other.name
+  end
+
+  test 'compare redirects when fewer than two plannings are selected' do
+    enable_layout_v2!
+    get :compare, params: { ids: @planning.id.to_s }
+    assert_redirected_to plannings_path
+    assert_equal I18n.t('plannings.compare.need_selection'), flash[:alert]
   end
 
   test 'index hides planning dashboard link when planning_dashboard operation is not visible' do
@@ -1039,6 +1071,17 @@ class PlanningsControllerTest < ActionController::TestCase
     end
 
     assert_redirected_to plannings_path
+  end
+
+  test 'destroy removes planning row via turbo stream on v2' do
+    enable_layout_v2!
+    planning_dom_id = ActionView::RecordIdentifier.dom_id(@planning)
+    assert_difference('Planning.count', -1) do
+      delete :destroy, params: { id: @planning }, as: :turbo_stream
+    end
+    assert_response :success
+    assert_equal 'text/vnd.turbo-stream.html', response.media_type
+    assert_select "turbo-stream[action='remove'][target='#{planning_dom_id}']", 1
   end
 
   test 'should destroy multiple planning' do
