@@ -52,6 +52,7 @@ class PlanningsController < ApplicationController
   include SharedHelper
   include PlanningToolbarPermissions
   include PreferencesAuthorization
+  include V2Layout
 
   def index
     @plannings = current_user.customer.plannings.select{ |planning|
@@ -62,7 +63,9 @@ class PlanningsController < ApplicationController
     @spreadsheet_summary_columns = export_summary_columns
     @params = params
     respond_to do |format|
-      format.html
+      format.html do
+        render_v2_page 'v2/plannings/index' if layout_v2?
+      end
       format.json
       format_csv_stream(format)
     end

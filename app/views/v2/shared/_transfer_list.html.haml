@@ -1,0 +1,33 @@
+-# Copyright © Cartoway
+-# Shared multi-column transfer list (2+ columns).
+-# locals:
+-#   columns: [{ key:, title:, inactive:, icon_html/icon_class/icon_style:,
+-#               toggle_to:, transfer_all_to:, transfer_all_title:, transfer_all_icon_class:,
+-#               zone_class: }]
+-#   OR legacy 2-col: active_title:, inactive_title:, transfer_all_to_*_title:
+-#   help:, id:, wrapper_class:, show_order: (default true)
+- columns = local_assigns[:columns].presence || [{ key: 'active', title: local_assigns.fetch(:active_title), inactive: false, icon_class: 'fa fa-check fa-fw', icon_style: 'color: green;', transfer_all_to: 'inactive', transfer_all_title: local_assigns.fetch(:transfer_all_to_inactive_title, t('v2.transfer_list.transfer_all_to_inactive')), transfer_all_icon_class: 'fa fa-angle-double-right', zone_class: 'active-zone' }, { key: 'inactive', title: local_assigns.fetch(:inactive_title), inactive: true, icon_class: 'fa fa-times fa-fw', icon_style: 'color: red;', transfer_all_to: 'active', transfer_all_title: local_assigns.fetch(:transfer_all_to_active_title, t('v2.transfer_list.transfer_all_to_active')), transfer_all_icon_class: 'fa fa-angle-double-left', zone_class: 'inactive-zone', toggle_to: 'active' }]
+- help = local_assigns[:help]
+- id = local_assigns[:id]
+- wrapper_class = local_assigns[:wrapper_class]
+- show_order = local_assigns.fetch(:show_order, true)
+.transfer-list.active-inactive-zones{id: id, class: [wrapper_class, ("transfer-list--#{columns.size}-cols" if columns.size != 2)], data: { controller: 'v2--transfer-list', v2__transfer_list_show_order_value: show_order }}
+  - columns.each_with_index do |column, index|
+    - key = column.fetch(:key).to_s
+    - inactive = !!column[:inactive]
+    - toggle_to = column[:toggle_to].presence || columns[(index + 1) % columns.size].fetch(:key).to_s
+    - zone_class = column[:zone_class].presence || (inactive ? 'inactive-zone' : (index.zero? ? 'active-zone' : 'disabled-zone'))
+    .transfer-list-zone{class: zone_class, data: { column_key: key }}
+      .zone-title
+        - if column[:icon_html].present?
+          = column[:icon_html]
+        - elsif column[:icon_class].present?
+          %i{class: column[:icon_class], style: column[:icon_style]}
+        = column.fetch(:title)
+        - if column[:transfer_all_to].present?
+          - transfer_title = column[:transfer_all_title].presence || t('v2.transfer_list.transfer_all')
+          %button.transfer-list-transfer-all{type: 'button', title: transfer_title, 'aria-label': transfer_title, data: { action: 'click->v2--transfer-list#transferAll', from: key, to: column[:transfer_all_to].to_s }}
+            %i{class: column[:transfer_all_icon_class].presence || 'fa fa-angle-double-right'}
+      .item-list.transfer-list-items{data: { v2__transfer_list_target: 'list', column_key: key, inactive: inactive.to_s, toggle_to: toggle_to, action: 'dragover->v2--transfer-list#dragOver drop->v2--transfer-list#drop' }}
+- if help.present?
+  %p.help-block.mb-0= help
