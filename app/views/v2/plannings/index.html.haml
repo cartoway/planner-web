@@ -8,7 +8,7 @@
 - callback_usable = toolbar_operation_usable?(:planning, 'external_callback')
 - dashboard_visible = toolbar_operation_visible?(:planning, 'planning_dashboard')
 - dashboard_usable = toolbar_operation_usable?(:planning, 'planning_dashboard')
-.plannings-index{data: { controller: 'v2--table-filter v2--table-selection v2--plannings-index', v2__plannings_index_none_selected_value: t('plannings.index.export.none_planning'), v2__plannings_index_email_success_value: t('plannings.edit.export.icalendar.success'), v2__plannings_index_email_fail_value: t('plannings.edit.export.icalendar.fail'), v2__plannings_index_callback_url_value: external_callback_customer_path(@customer), v2__plannings_index_api_key_value: current_user.api_key, v2__plannings_index_callback_success_value: t('plannings.edit.export.customer_external_callback_url.success'), v2__plannings_index_callback_fail_value: t('plannings.edit.export.customer_external_callback_url.fail') }}
+.plannings-index{data: { controller: 'v2--table-filter v2--table-selection v2--plannings-index', action: 'turbo:after-stream-render@document->v2--table-filter#filter turbo:after-stream-render@document->v2--table-selection#syncBulk', v2__plannings_index_none_selected_value: t('plannings.index.export.none_planning'), v2__plannings_index_compare_need_selection_value: t('plannings.compare.need_selection'), v2__plannings_index_email_success_value: t('plannings.edit.export.icalendar.success'), v2__plannings_index_email_fail_value: t('plannings.edit.export.icalendar.fail'), v2__plannings_index_callback_url_value: external_callback_customer_path(@customer), v2__plannings_index_api_key_value: current_user.api_key, v2__plannings_index_callback_success_value: t('plannings.edit.export.customer_external_callback_url.success'), v2__plannings_index_callback_fail_value: t('plannings.edit.export.customer_external_callback_url.fail') }}
   .plannings-toolbar.px-3.pt-3
     - if current_user.customer.too_many_plannings?
       .alert.alert-warning{data: { error: 'true' }}
@@ -37,7 +37,7 @@
           %th
       %tbody
         - @plannings.each do |planning|
-          %tr{data: { v2__table_filter_target: 'row' }}
+          %tr{id: dom_id(planning), data: { v2__table_filter_target: 'row' }}
             %td
               = check_box_tag "plannings[#{planning.id}]", planning.id, false, disabled: !can_destroy, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
             %td= planning.name
@@ -55,7 +55,7 @@
                   = link_to @reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', class: 'btn btn-light btn-sm', disabled: !dashboard_usable, data: { turbo: false } do
                     %i.fa.fa-chart-line.fa-fw
                     = t('customers.menu.analytics')
-                = link_to planning_duplicate_path(planning), class: 'btn btn-light btn-sm', disabled: current_user.customer.too_many_plannings? || !current_user_planning_form_submit_enabled?(planning), data: { turbo_method: :patch }, title: t('all.verb.duplicate') do
+                = link_to planning_duplicate_path(planning), class: 'btn btn-light btn-sm', disabled: current_user.customer.too_many_plannings? || !current_user_planning_form_submit_enabled?(planning), data: { turbo_method: :patch, turbo_frame: '_top' }, title: t('all.verb.duplicate') do
                   %i.fa.fa-copy.fa-fw
                   = t('all.verb.duplicate')
                 = link_to edit_planning_path(planning), class: 'btn btn-primary btn-sm', data: { turbo: false }, title: t('all.verb.edit') do
@@ -74,6 +74,9 @@
         = button_tag type: :submit, class: 'btn btn-danger btn-sm', disabled: true, data: { v2__table_selection_target: 'bulk', turbo_confirm: t('all.verb.destroy_confirm') } do
           %i.fa.fa-trash.fa-fw
           = t('all.verb.destroy_selection')
+        %button.btn.btn-light.btn-sm{type: 'button', disabled: true, data: { v2__table_selection_target: 'bulk', min: '2', action: 'click->v2--plannings-index#compare' }}
+          %i.fa.fa-chart-column.fa-fw
+          = t('plannings.compare.action')
         .dropdown
           %button#btn-export.btn.btn-light.btn-sm.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }}
             %i.fa.fa-share-nodes.fa-fw
