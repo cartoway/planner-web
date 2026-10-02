@@ -266,7 +266,7 @@ export default class extends Controller {
     const lng = parseFloat(row.dataset.lng)
     const lat = parseFloat(row.dataset.lat)
     if (!Number.isFinite(lng) || !Number.isFinite(lat)) return
-    this._pendingCenter = { lng, lat, stopId: row.dataset.stopId, formSidebar: true }
+    this._pendingCenter = { lng, lat, stopId: row.dataset.stopId }
     requestAnimationFrame(() => {
       this._flyToStop(this._pendingCenter)
       this._resizeMap()
@@ -479,7 +479,7 @@ export default class extends Controller {
     const lat = parseFloat(button.dataset.lat)
     if (!Number.isFinite(lng) || !Number.isFinite(lat)) return
     const opensForm = button.dataset.turboFrame === 'form_sidebar'
-    this._pendingCenter = { lng, lat, stopId: button.dataset.stopId, formSidebar: opensForm }
+    this._pendingCenter = { lng, lat, stopId: button.dataset.stopId }
     this._flyToStop(this._pendingCenter)
     if (!opensForm) return
     const refresh = () => this._flyToStop(this._pendingCenter)
@@ -712,7 +712,7 @@ export default class extends Controller {
       }), 'top-right')
     }
 
-    this.map.on('load', () => {
+    const onLoad = () => {
       this._mountOperationLayers()
       this._applyOverlays({ includeRaster: this._mapStyleMode === 'vector' })
       if (this._geojsonStale) this._refreshGeojson()
@@ -722,7 +722,10 @@ export default class extends Controller {
       else this._fit()
       this._syncVehicleButtons()
       this.map.resize()
-    })
+    }
+    // Inline / cached styles can emit load before we subscribe.
+    if (this.map.isStyleLoaded()) onLoad()
+    else this.map.once('load', onLoad)
   }
 
   _mountOperationLayers () {
@@ -903,6 +906,7 @@ export default class extends Controller {
     const position = this._vehiclePosition(routeId)
     if (!position) return
     const zoom = Math.max(this.map.getZoom(), 14)
+    this._clearMapPadding()
     this.map.flyTo({ center: position, zoom, padding: this._mapPadding(), duration: 500 })
   }
 
@@ -922,7 +926,8 @@ export default class extends Controller {
     if (!coords.length || !this.map) return
     const maplibregl = window.maplibregl
     const bounds = coords.reduce((box, pair) => box.extend(pair), new maplibregl.LngLatBounds(coords[0], coords[0]))
-    this.map.fitBounds(bounds, { padding: 48, maxZoom: 14 })
+    this._clearMapPadding()
+    this.map.fitBounds(bounds, { padding: this._mapPadding(), maxZoom: 14 })
   }
 
   _fitRoute (routeId, waitForIdle) {
@@ -950,7 +955,8 @@ export default class extends Controller {
       if (done || !this.map) return
       done = true
       this.map.stop()
-      this.map.fitBounds(bounds, { padding: 48, maxZoom: 15, duration: 500 })
+      this._clearMapPadding()
+      this.map.fitBounds(bounds, { padding: this._mapPadding(), maxZoom: 15, duration: 500 })
     }
     let done = false
     // setFilter is still settling when the trace was just shown again.
@@ -1185,26 +1191,26 @@ export default class extends Controller {
     this._onStopFeatureClick = null
   }
 
-  _flyToStop ({ lng, lat, stopId, formSidebar }) {
+  _flyToStop ({ lng, lat, stopId }) {
     if (!this.map) return
     this._activeStopId = stopId
     this._paintActiveStop()
     this._syncStopClusters()
     const zoom = Math.max(this.map.getZoom(), 14)
-    this.map.flyTo({ center: [lng, lat], zoom, padding: this._mapPadding({ formSidebar }), duration: 500 })
+    this._clearMapPadding()
+    this.map.flyTo({ center: [lng, lat], zoom, padding: this._mapPadding(), duration: 500 })
   }
 
-  _mapPadding (options = {}) {
-    const sidebar = this.element.querySelector('.operation-list')
-    const left = sidebar ? Math.ceil(sidebar.getBoundingClientRect().width) + 16 : 48
-    let right = 48
-    const detail = document.getElementById('operation-detail')
-    const detailOpen = detail && detail.classList.contains('is-open')
-    if (detail && (detailOpen || options.formSidebar)) {
-      const width = Math.ceil(detail.getBoundingClientRect().width) || 360
-      if (width > 40) right = width + 16
-    }
-    return { top: 48, bottom: 48, left, right }
+  // List and detail are flex siblings of the map (not overlays). map.resize() already
+  // shrinks the canvas — counting their widths as padding made fitBounds a no-op after
+  // flyTo (MapLibre keeps flyTo padding and sums it with the next fitBounds padding).
+  _mapPadding () {
+    return { top: 48, bottom: 48, left: 48, right: 48 }
+  }
+
+  _clearMapPadding () {
+    if (!this.map) return
+    this.map.setPadding({ top: 0, right: 0, bottom: 0, left: 0 })
   }
 
   _center () {
