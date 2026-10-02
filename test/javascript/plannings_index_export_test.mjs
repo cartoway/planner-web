@@ -6,14 +6,18 @@ import path from 'node:path'
 import { describe, it } from 'node:test'
 import { pathToFileURL } from 'node:url'
 
-const srcPath = new URL('../../app/javascript/controllers/v2/plannings_index_controller.js', import.meta.url)
-const tmpPath = path.join(os.tmpdir(), 'planner-plannings-index.mjs')
-const source = fs.readFileSync(srcPath, 'utf8').replace(
-  'import { Controller } from "@hotwired/stimulus"\n\nexport default class extends Controller {',
-  'class Controller {}\n\nexport default class extends Controller {'
-)
-fs.writeFileSync(tmpPath, source)
-const { planningExportUrl } = await import(pathToFileURL(tmpPath).href)
+const compareUrlSrc = new URL('../../app/javascript/lib/planning_compare_url.js', import.meta.url)
+const compareUrlTmp = path.join(os.tmpdir(), 'planner-planning-compare-url.mjs')
+fs.writeFileSync(compareUrlTmp, fs.readFileSync(compareUrlSrc))
+const { planningCompareUrl } = await import(pathToFileURL(compareUrlTmp).href)
+
+const indexSrc = new URL('../../app/javascript/controllers/v2/plannings_index_controller.js', import.meta.url)
+const indexTmp = path.join(os.tmpdir(), 'planner-plannings-index.mjs')
+const indexSource = fs.readFileSync(indexSrc, 'utf8')
+  .replace('import { Controller } from "@hotwired/stimulus"\n', 'class Controller {}\n')
+  .replace('import { planningCompareUrl } from "lib/planning_compare_url"\n', 'const planningCompareUrl = () => {}\n')
+fs.writeFileSync(indexTmp, indexSource)
+const { planningExportUrl } = await import(pathToFileURL(indexTmp).href)
 
 describe('planning list export url', () => {
   it('builds an excel url from the selected ids and modal columns', () => {
@@ -27,5 +31,12 @@ describe('planning list export url', () => {
     })
 
     assert.equal(url, '/plannings.excel?stops=store%7Crest&columns=name%7Cref&ids=4%2C9&skips=comment')
+  })
+})
+
+describe('planning list compare url', () => {
+  it('builds a compare url from the selected ids and reference', () => {
+    assert.equal(planningCompareUrl(['4', '9']), '/plannings/compare?ids=4%2C9')
+    assert.equal(planningCompareUrl(['4', '9'], 9), '/plannings/compare?ids=4%2C9&ref=9')
   })
 })

@@ -156,6 +156,9 @@ Rails.application.routes.draw do
   delete 'stores' => 'stores#destroy_multiple'
 
   resources :plannings do
+    collection do
+      get :compare
+    end
     patch ':route_id/:stop_id/move' => 'plannings#move'
     patch ':route_id/:stop_id/driver_move' => 'plannings#driver_move'
     patch ':route_id/:stop_id/move/:index' => 'plannings#move'
