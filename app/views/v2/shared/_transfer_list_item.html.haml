@@ -1,0 +1,10 @@
+-# Copyright © Cartoway
+-# locals: value:, label:, zone:, order: (optional), inactive: (optional), toggle_title: (optional)
+- zone = local_assigns.fetch(:zone).to_s
+- inactive = local_assigns.key?(:inactive) ? !!local_assigns[:inactive] : zone == 'inactive'
+- toggle_title = local_assigns.fetch(:toggle_title, t('v2.transfer_list.toggle'))
+.transfer-list-item.draggable-item{class: ('inactive' if inactive), draggable: 'true', data: { value: value, zone: zone }}
+  %button.item-toggle-btn{type: 'button', title: toggle_title, 'aria-label': toggle_title, data: { action: 'click->v2--transfer-list#toggleItem' }}
+    %i.fa.fa-times.fa-fw
+  %span.item-order= local_assigns[:order]
+  %span.item-text= label

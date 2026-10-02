@@ -357,3 +357,22 @@ body[data-controller*='-v2'] {
     max-width: 100%;
   }
 }
+
+.plannings-index {
+  #plannings {
+    width: 100%;
+
+    > :is(thead, tbody) > tr > :first-child {
+      padding-left: 1rem;
+    }
+
+    > :is(thead, tbody) > tr > :last-child {
+      padding-right: 1rem;
+    }
+
+    th,
+    td {
+      vertical-align: middle;
+    }
+  }
+}
