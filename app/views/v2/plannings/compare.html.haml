@@ -1,0 +1,15 @@
+-# Copyright © Cartoway
+- content_for :title, t('plannings.compare.title')
+- planning_ids = @plannings.map(&:id)
+.plannings-compare.px-3.pt-3.pb-4{data: { controller: 'v2--plannings-compare', v2__plannings_compare_ids_value: planning_ids.to_json, v2__plannings_compare_ref_value: @reference.id }}
+  .plannings-compare-toolbar.d-flex.justify-content-between.align-items-start.mb-3.flex-wrap.gap-3
+    %div
+      %h1.h4.mb-1= t('plannings.compare.title')
+      %p.text-muted.small.mb-0= t('plannings.compare.help')
+    - if @available_plannings.any?
+      .input-group.input-group-sm.plannings-compare-add
+        = select_tag :add_planning_id, options_from_collection_for_select(@available_plannings, :id, :name), include_blank: t('plannings.compare.add_placeholder'), class: 'form-select', data: { v2__plannings_compare_target: 'addSelect' }
+        %button.btn.btn-primary.text-nowrap{type: 'button', data: { action: 'click->v2--plannings-compare#add' }}
+          %i.fa.fa-plus.fa-fw
+          = t('plannings.compare.add')
+  = render 'v2/plannings/compare_table', plannings: @plannings, reference: @reference, statistics_by_planning_id: @statistics_by_planning_id, prefered_unit: @prefered_unit, can_remove: @plannings.size > 2

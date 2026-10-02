@@ -71,6 +71,37 @@ class PlanningsController < ApplicationController
     end
   end
 
+  def compare
+    ids = params[:ids].to_s.split(',').map(&:presence).compact.map { |id| Integer(id, exception: false) }.compact
+    scoped = current_user.customer.plannings.where(id: ids).includes(routes: [:route_data, :vehicle_usage]).index_by(&:id)
+    @plannings = ids.map { |id| scoped[id] }.compact
+    if @plannings.size < 2
+      redirect_to plannings_path, alert: t('plannings.compare.need_selection')
+      return
+    end
+
+    ref_id = Integer(params[:ref], exception: false)
+    @reference = @plannings.find { |planning| planning.id == ref_id } || @plannings.first
+    @plannings = [@reference] + @plannings.reject { |planning| planning.id == @reference.id }
+    @compared = @plannings.drop(1)
+    @prefered_unit = current_user.prefered_unit
+    @statistics_by_planning_id = @plannings.each_with_object({}) { |planning, hash|
+      hash[planning.id] = planning.route_data_statistics
+    }
+    compared_ids = @plannings.map(&:id)
+    @available_plannings = current_user.customer.plannings.where.not(id: compared_ids).order(:name)
+
+    respond_to do |format|
+      format.html do
+        if layout_v2?
+          render_v2_page 'v2/plannings/compare'
+        else
+          redirect_to plannings_path, alert: t('plannings.compare.v2_only')
+        end
+      end
+    end
+  end
+
   def show
     @params = params
     @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
@@ -192,6 +223,7 @@ class PlanningsController < ApplicationController
   def destroy
     @planning.destroy
     respond_to do |format|
+      format.turbo_stream { render turbo_stream: turbo_stream.remove(@planning) }
       format.html { redirect_to plannings_url }
     end
   end

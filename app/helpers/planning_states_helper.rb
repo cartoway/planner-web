@@ -22,19 +22,19 @@ module PlanningStatesHelper
   PLANNING_STATE_EXCLUDED_BLOCKS = %w[speed quantities].freeze
 
   PLANNING_STATE_STAT_DIFF_METRICS = {
-    'distance' => { stat_key: 'distance_total', format: :distance },
-    'total_duration' => { stat_key: 'duration_total', format: :duration },
-    'work_duration' => { stat_key: 'work_duration_total', format: :duration },
-    'stops' => { stat_key: 'stops_size_active', format: :integer, higher_is_better: true },
-    'visits_duration' => { stat_key: 'routes_visits_duration', format: :duration },
-    'rests_duration' => { stat_key: 'routes_rests_duration', format: :duration },
-    'drive_time' => { stat_key: 'routes_drive_time', format: :duration },
-    'wait_time' => { stat_key: 'routes_wait_time', format: :duration },
-    'vehicles' => { stat_key: 'vehicles_used', format: :integer },
-    'emission' => { stat_key: 'routes_emission', format: :emission },
-    'total_cost' => { stat_key: 'routes_cost', format: :currency },
-    'total_revenue' => { stat_key: 'routes_revenue', format: :currency, higher_is_better: true },
-    'balance' => { stat_key: :balance, format: :currency, higher_is_better: true }
+    'distance' => { stat_key: 'distance_total', format: :distance, icon: 'fa-road' },
+    'total_duration' => { stat_key: 'duration_total', format: :duration, icon: 'fa-stopwatch' },
+    'work_duration' => { stat_key: 'work_duration_total', format: :duration, icon: 'fa-user-clock' },
+    'stops' => { stat_key: 'stops_size_active', format: :integer, higher_is_better: true, icon: 'fa-check-square' },
+    'visits_duration' => { stat_key: 'routes_visits_duration', format: :duration, icon: 'fa-business-time' },
+    'rests_duration' => { stat_key: 'routes_rests_duration', format: :duration, icon: 'fa-circle-pause' },
+    'drive_time' => { stat_key: 'routes_drive_time', format: :duration, icon: 'fa-road' },
+    'wait_time' => { stat_key: 'routes_wait_time', format: :duration, icon: 'fa-hourglass-half' },
+    'vehicles' => { stat_key: 'vehicles_used', format: :integer, icon: 'fa-truck-field' },
+    'emission' => { stat_key: 'routes_emission', format: :emission, icon: 'fa-flask' },
+    'total_cost' => { stat_key: 'routes_cost', format: :currency, icon: 'fa-coins' },
+    'total_revenue' => { stat_key: 'routes_revenue', format: :currency, higher_is_better: true, icon: 'fa-hand-holding-dollar' },
+    'balance' => { stat_key: :balance, format: :currency, higher_is_better: true, icon: 'fa-scale-balanced' }
   }.freeze
 
   def planning_state_pin_disabled?(planning_state, pinned_count:, max_pinned:)
@@ -103,6 +103,30 @@ module PlanningStatesHelper
       )
       diffs[block_key] = diff if diff
     end
+  end
+
+  def format_planning_state_stat_absolute(stats, config, prefered_unit:)
+    value = planning_state_stat_value((stats || {}).stringify_keys, config[:stat_key])
+    return '—' if value.nil?
+
+    case config[:format]
+    when :distance
+      locale_distance(value, prefered_unit)
+    when :duration
+      time_over_day(value.to_i)
+    when :currency
+      value.round(2).to_s
+    when :integer
+      value.to_i.to_s
+    when :emission
+      number_to_human(value, precision: 4)
+    else
+      value.to_s
+    end
+  end
+
+  def planning_compare_metric_label(metric_key)
+    t("display_ui.header_blocks.#{metric_key}", default: metric_key.to_s.humanize)
   end
 
   private

@@ -1,6 +1,7 @@
 // Copyright © Cartoway
 // Planning list exports; column picker uses shared v2--transfer-list.
 import { Controller } from "@hotwired/stimulus"
+import { planningCompareUrl } from "lib/planning_compare_url"
 
 export default class extends Controller {
   static targets = [
@@ -16,6 +17,7 @@ export default class extends Controller {
 
   static values = {
     noneSelected: String,
+    compareNeedSelection: String,
     emailSuccess: String,
     emailFail: String,
     callbackUrl: String,
@@ -34,6 +36,16 @@ export default class extends Controller {
     if (!ids) return
     event.preventDefault()
     this.openSpreadsheetModal(event.currentTarget.dataset.summary === "true")
+  }
+
+  compare (event) {
+    event.preventDefault()
+    const ids = this.selectedIds()
+    if (ids.length < 2) {
+      this.flash(this.compareNeedSelectionValue || this.noneSelectedValue, "warning")
+      return
+    }
+    window.location.href = planningCompareUrl(ids)
   }
 
   downloadSpreadsheet (event) {
@@ -180,3 +192,5 @@ export function planningExportUrl ({ format, ids, columns, skips, stops, summary
   const base = routeId ? `/routes/${routeId}` : "/plannings"
   return `${base}.${format}?${params.toString()}`
 }
+
+export { planningCompareUrl }

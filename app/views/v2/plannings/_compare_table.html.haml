@@ -1,0 +1,44 @@
+-# Copyright © Cartoway
+-# locals: plannings, statistics_by_planning_id, prefered_unit, reference:, can_remove:
+- reference = local_assigns.fetch(:reference, plannings.first)
+- can_remove = local_assigns.fetch(:can_remove, plannings.size > 2)
+- reference_stats = statistics_by_planning_id[reference.id]
+- metrics = PlanningStatesHelper::PLANNING_STATE_STAT_DIFF_METRICS
+- diffs_by_planning_id = {}
+- plannings.each do |planning|
+  - next if planning.id == reference.id
+  - diffs_by_planning_id[planning.id] = planning_state_stat_diffs(statistics_by_planning_id[planning.id], reference_stats, prefered_unit: prefered_unit)
+.plannings-compare-board{style: "--compare-metric-rows: #{metrics.size}"}
+  .plannings-compare-col.plannings-compare-col--metrics
+    .plannings-compare-col__head
+      %span.plannings-compare-col__title= t('plannings.compare.metric')
+    - metrics.each do |metric_key, config|
+      .plannings-compare-metric-label
+        %i.fa.fa-fw{class: config[:icon], 'aria-hidden': 'true'}
+        %span= planning_compare_metric_label(metric_key)
+  - plannings.each do |planning|
+    - is_reference = planning.id == reference.id
+    .plannings-compare-col{class: ('plannings-compare-col--reference' if is_reference)}
+      .plannings-compare-col__head
+        .d-flex.justify-content-between.align-items-start.gap-2
+          %div
+            .plannings-compare-col__title= planning.name
+            - if planning.date
+              .plannings-compare-col__meta= l(planning.date)
+            - if planning.ref.present?
+              .plannings-compare-col__meta= planning.ref
+          - if can_remove
+            %button.btn-close.plannings-compare-remove{type: 'button', title: t('plannings.compare.remove'), 'aria-label': t('plannings.compare.remove'), data: { action: 'click->v2--plannings-compare#remove', planning_id: planning.id }}
+        %label.plannings-compare-ref-toggle
+          %input{type: 'radio', name: 'compare_reference', value: planning.id, checked: is_reference, data: { action: 'change->v2--plannings-compare#setReference' }}
+          %span= t('plannings.compare.use_as_reference')
+      - metrics.each do |metric_key, config|
+        - stats = statistics_by_planning_id[planning.id] || {}
+        - value = format_planning_state_stat_absolute(stats, config, prefered_unit: prefered_unit)
+        - diff = diffs_by_planning_id[planning.id]&.[](metric_key)
+        .plannings-compare-cell
+          .plannings-compare-value= value
+          - if diff.present?
+            %span.stat-diff{class: diff[:css_class]}= diff[:formatted]
+          - elsif !is_reference
+            %span.stat-diff.stat-diff--equal= t('plannings.compare.equal')
