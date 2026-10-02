@@ -66,6 +66,23 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'index uses v2 layout when user preference is set' do
+    enable_layout_v2!
+    get :index
+    assert_response :success
+    assert_select 'body.cartoway-v2', 1
+    assert_select '.plannings-index', 1
+    assert_select 'table#plannings', 1
+    assert_select %(.plannings-toolbar a[href="#{new_planning_path}"]), 1
+    assert_select 'table#plannings a[href=?]', edit_planning_path(@planning)
+    assert_select 'a[data-action="click->v2--plannings-index#spreadsheet"]', 2
+    assert_select '#planning-spreadsheet-modal', 1
+    assert_select '#planning-spreadsheet-modal .transfer-list[data-controller~="v2--transfer-list"]', 1
+    assert_select '#planning-spreadsheet-modal [data-v2--transfer-list-target="list"]', 2
+    assert_select '#planning-spreadsheet-modal [data-action="click->v2--transfer-list#transferAll"]', 2
+    assert_select '#planning-spreadsheet-modal [data-v2--plannings-index-target="detailColumnsTemplate"] .transfer-list-item .item-toggle-btn', minimum: 1
+  end
+
   test 'index hides planning dashboard link when planning_dashboard operation is not visible' do
     return unless Role.column_names.include?('operations')
 
