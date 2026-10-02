@@ -1,0 +1,50 @@
+-# Copyright © Cartoway
+- custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef') || {}
+- detail_export, detail_skip = planning_spreadsheet_column_lists(@spreadsheet_columns, settings)
+- summary_export, summary_skip = planning_spreadsheet_column_lists(@spreadsheet_summary_columns, settings)
+- export_format = settings['format'].presence || 'excel'
+.modal.fade#planning-spreadsheet-modal{tabindex: '-1', role: 'dialog', 'aria-labelledby': 'planning-spreadsheet-modal-title', 'aria-hidden': 'true', data: { v2__plannings_index_target: 'modal' }}
+  .modal-dialog.modal-lg.modal-dialog-scrollable
+    .modal-content
+      .modal-header
+        %h5#planning-spreadsheet-modal-title.modal-title
+          %i.fa.fa-table.fa-fw
+          = t('plannings.edit.dialog.spreadsheet.title')
+        %button.btn-close{type: 'button', data: { bs_dismiss: 'modal' }, 'aria-label': t('all.verb.dismiss')}
+      .modal-body
+        %input{name: 'spreadsheet-route', type: 'hidden', value: '', data: { v2__plannings_index_target: 'routeId' }}/
+        %input#spreadsheet-summary{name: 'spreadsheet-summary', type: 'hidden', value: 'false', data: { v2__plannings_index_target: 'summary' }}/
+        .mb-3{data: { v2__plannings_index_target: 'stopsGroup' }}
+          %label.form-label= t('plannings.edit.dialog.spreadsheet.stops')
+          .d-flex.flex-wrap.gap-3
+            - [%w[out-of-route out_of_route], %w[store stores], %w[rest rests], %w[inactive stops_inactives]].each do |value, key|
+              .form-check
+                %input.form-check-input.spreadsheet-stops{type: 'checkbox', id: "spreadsheet-stop-#{value}", name: "spreadsheet-#{value}", value: value, checked: export_stops.include?(value), data: { v2__plannings_index_target: 'stop' }}
+                %label.form-check-label{for: "spreadsheet-stop-#{value}"}= t("plannings.edit.dialog.spreadsheet.#{key}")
+        .mb-3
+          %label.form-label= t('plannings.edit.dialog.spreadsheet.columns')
+          = render 'v2/shared/transfer_list', id: 'spreadsheet-columns-container', active_title: t('plannings.edit.dialog.spreadsheet.columns_export'), inactive_title: t('plannings.edit.dialog.spreadsheet.columns_skip'), transfer_all_to_inactive_title: t('plannings.edit.dialog.spreadsheet.columns_skip_all'), transfer_all_to_active_title: t('plannings.edit.dialog.spreadsheet.columns_export_all'), help: t('plannings.edit.dialog.spreadsheet.columns_DnD_help')
+        .mb-0
+          %label.form-label= t('plannings.edit.dialog.spreadsheet.format')
+          .d-flex.gap-3
+            .form-check
+              %input.form-check-input{type: 'radio', name: 'spreadsheet-format', id: 'spreadsheet-format-csv', value: 'csv', checked: export_format == 'csv', data: { v2__plannings_index_target: 'format' }}
+              %label.form-check-label{for: 'spreadsheet-format-csv'}= t('plannings.edit.dialog.spreadsheet.csv')
+            .form-check
+              %input.form-check-input{type: 'radio', name: 'spreadsheet-format', id: 'spreadsheet-format-excel', value: 'excel', checked: export_format != 'csv', data: { v2__plannings_index_target: 'format' }}
+              %label.form-check-label{for: 'spreadsheet-format-excel'}= t('plannings.edit.dialog.spreadsheet.excel')
+        %template{data: { v2__plannings_index_target: 'detailColumnsTemplate' }}
+          - detail_export.each_with_index do |column, index|
+            = render 'v2/shared/transfer_list_item', value: column, label: planning_spreadsheet_column_label(column, custom_columns), zone: 'active', order: index + 1, toggle_title: t('plannings.edit.dialog.spreadsheet.columns_toggle')
+          - detail_skip.each do |column|
+            = render 'v2/shared/transfer_list_item', value: column, label: planning_spreadsheet_column_label(column, custom_columns), zone: 'inactive', toggle_title: t('plannings.edit.dialog.spreadsheet.columns_toggle')
+        %template{data: { v2__plannings_index_target: 'summaryColumnsTemplate' }}
+          - summary_export.each_with_index do |column, index|
+            = render 'v2/shared/transfer_list_item', value: column, label: planning_spreadsheet_column_label(column, custom_columns), zone: 'active', order: index + 1, toggle_title: t('plannings.edit.dialog.spreadsheet.columns_toggle')
+          - summary_skip.each do |column|
+            = render 'v2/shared/transfer_list_item', value: column, label: planning_spreadsheet_column_label(column, custom_columns), zone: 'inactive', toggle_title: t('plannings.edit.dialog.spreadsheet.columns_toggle')
+      .modal-footer
+        %button.btn.btn-light{type: 'button', data: { bs_dismiss: 'modal' }}= t('all.verb.dismiss')
+        %button.btn.btn-primary{type: 'button', data: { action: 'click->v2--plannings-index#downloadSpreadsheet' }}
+          %i.fa.fa-download.fa-fw
+          = t('plannings.edit.dialog.spreadsheet.download')

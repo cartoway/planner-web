@@ -93,4 +93,22 @@ class PlanningsHelperTest < ActionView::TestCase
     assert_equal planning.routes.map(&:id).sort, got.map(&:id).sort
     assert_same first, got.find { |route| route.id == first.id }
   end
+
+  test 'planning_spreadsheet_column_lists partitions export and skips, filling remaining into export' do
+    export, skip = planning_spreadsheet_column_lists(
+      %w[name city ref],
+      'export' => %w[name],
+      'skips' => %w[city]
+    )
+
+    assert_equal %w[name ref], export
+    assert_equal %w[city], skip
+  end
+
+  test 'planning_spreadsheet_column_label uses export translation and optional custom suffix' do
+    label = planning_spreadsheet_column_label('name', 'name' => 'Custom')
+
+    assert_includes label, 'Custom'
+    assert_match(/./, label)
+  end
 end
