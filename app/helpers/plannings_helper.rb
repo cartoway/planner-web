@@ -18,6 +18,7 @@
 module PlanningsHelper
   include PlanningStopsPreloadHelper
   include PlanningStatisticsHelper
+  include PlanningSpreadsheetHelper
 
   def planning_vehicles_array(planning)
     customer = planning.customer

@@ -2528,6 +2528,9 @@ en:
           columns: Columns
           columns_export: For export
           columns_skip: Skip
+          columns_export_all: Export all
+          columns_skip_all: Skip all
+          columns_toggle: Transfer
           columns_DnD_help: Use mouse to drag-and-drop exported columns
           format: Format
           csv: standard CSV format
@@ -3520,6 +3523,11 @@ en:
       form_sidebar_aria: Form panel
       form_sidebar_placeholder: Use the pencil button on a row to open the edit form here.
       form_sidebar_close: Close panel
+    transfer_list:
+      toggle: Transfer
+      transfer_all: Transfer all
+      transfer_all_to_inactive: Skip all
+      transfer_all_to_active: Include all
   web:
     key_not_found: Your connection key is invalid
     slow_browser: >-

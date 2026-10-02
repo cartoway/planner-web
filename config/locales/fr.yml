@@ -2639,6 +2639,9 @@ fr:
           columns: Colonnes
           columns_export: À exporter
           columns_skip: Non exportées
+          columns_export_all: Tout exporter
+          columns_skip_all: Tout exclure
+          columns_toggle: Transférer
           columns_DnD_help: Utilisez la souris pour glisser-déposer les colonnes à exporter
           format: Format
           csv: format standard CSV
@@ -3665,6 +3668,11 @@ fr:
       form_sidebar_aria: Panneau latéral de formulaire
       form_sidebar_placeholder: "Astuce : utilisez le bouton crayon d'une ligne pour ouvrir le formulaire de modification ici."
       form_sidebar_close: Fermer le panneau latéral
+    transfer_list:
+      toggle: Transférer
+      transfer_all: Tout transférer
+      transfer_all_to_inactive: Tout exclure
+      transfer_all_to_active: Tout inclure
   web:
     key_not_found: Votre clé de connexion n'est pas reconnue
     slow_browser: >-
