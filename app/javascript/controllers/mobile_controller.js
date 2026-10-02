@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus'
+import { ExclusiveAccordion } from 'lib/exclusive_accordion'
 
 const CONFIRM_DELAY = 200
 const CONFIRM_DISARM_AFTER = 4000
@@ -16,6 +17,7 @@ export default class extends Controller {
     this.photoModalIndex = 0
     this.photoModalPanel = null
     this.signaturePanel = null
+    this.stopsAccordion = null
     this.onClick = this.onClick.bind(this)
     this.onChange = this.onChange.bind(this)
     this.onOnline = this.onOnline.bind(this)
@@ -31,6 +33,8 @@ export default class extends Controller {
 
   disconnect () {
     this.stopTracking()
+    this.stopsAccordion?.destroy()
+    this.stopsAccordion = null
     this.element.removeEventListener('click', this.onClick)
     this.element.removeEventListener('change', this.onChange)
     window.removeEventListener('online', this.onOnline)
@@ -42,6 +46,22 @@ export default class extends Controller {
     sessionStorage.setItem('tracking_value', enabled ? 'true' : 'false')
     if (enabled) this.startTracking()
     else this.stopTracking()
+  }
+
+  ensureStopsAccordion () {
+    if (this.stopsAccordion) return this.stopsAccordion
+    const root = this.element.querySelector('#accordion')
+    if (!root) return null
+    this.stopsAccordion = new ExclusiveAccordion({
+      root,
+      itemSelector: '.panel',
+      panelSelector: '.panel-collapse',
+      headingSelector: '[data-toggle="collapse"]',
+      stickyTopSelector: '.mobile_header',
+      mode: 'collapse',
+      openClass: 'in'
+    })
+    return this.stopsAccordion
   }
 
   startTracking () {
@@ -92,9 +112,11 @@ export default class extends Controller {
     if (target.closest('[data-toggle="collapse"]') && !target.closest('.no-toggle, .stop-status-reset, #quick-status, .radiobtn')) {
       const heading = target.closest('[data-toggle="collapse"]')
       const panel = document.querySelector(heading.getAttribute('href'))
-      if (panel) {
+      const item = panel?.closest('.panel')
+      const accordion = this.ensureStopsAccordion()
+      if (item && accordion) {
         event.preventDefault()
-        panel.classList.toggle('in')
+        accordion.toggle(item)
       }
       return
     }

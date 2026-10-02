@@ -102,23 +102,17 @@ export default class extends Controller {
   }
 
   _bindTours () {
-    this.element.addEventListener('toggle', (event) => {
+    this.element.addEventListener('exclusive-accordion:open', (event) => {
       const details = event.target
       if (!details.classList || !details.classList.contains('operation-tour')) return
-      if (!details.open) {
-        if (!this.element.querySelector('details.operation-tour[open]')) {
-          this.selectedRouteId = null
-          this._paint()
-          this._addVehicleMarker()
-        }
-        return
-      }
-      this.element.querySelectorAll('details.operation-tour[open]').forEach((other) => {
-        if (other !== details) other.open = false
-      })
       this._focusRoute(details)
       this._applyFilters()
-    }, true)
+    })
+    this.element.addEventListener('exclusive-accordion:close-all', () => {
+      this.selectedRouteId = null
+      this._paint()
+      this._addVehicleMarker()
+    })
   }
 
   filterPhase (event) {
@@ -897,8 +891,16 @@ export default class extends Controller {
 
   _openRoute (routeId) {
     const details = this.element.querySelector(`details.operation-tour[data-route-id="${routeId}"]`)
-    if (details && !details.open) details.open = true
-    else if (details) this._focusRoute(details)
+    if (!details) return
+    const host = this.element.querySelector('[data-controller~="exclusive-accordion"]')
+    const accordion = host && this.application.getControllerForElementAndIdentifier(host, 'exclusive-accordion')
+    if (accordion) {
+      if (!accordion.isItemOpen(details)) accordion.openItem(details)
+      else this._focusRoute(details)
+      return
+    }
+    if (!details.open) details.open = true
+    else this._focusRoute(details)
   }
 
   _locateRoute (routeId) {
