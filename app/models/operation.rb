@@ -6,10 +6,15 @@ class Operation < ApplicationRecord
 
   belongs_to :customer
   belongs_to :planning, optional: true
+  belongs_to :demo_job, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
   has_many :operation_routes, dependent: :destroy
   has_many :operation_stops, through: :operation_routes
   has_many :vehicle_positions, dependent: :destroy
   has_many :operation_delivery_trackings, dependent: :destroy
+
+  def demo_running?
+    demo_job_id.present?
+  end
 
   validates :customer, :name, :date, presence: true
   validates :status, inclusion: { in: STATUSES }

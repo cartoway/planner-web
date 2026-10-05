@@ -30,12 +30,21 @@ module VehiclePositions
       )
 
       # Live-only mode: keep the latest point, drop the rest for this route.
-      unless operation.customer.vehicle_position_keep_trace?
+      # Demo keeps the full trail so the map stays usable while the job ticks.
+      unless operation.customer.vehicle_position_keep_trace? || source.to_s == 'demo'
         operation_route.vehicle_positions.where.not(id: position.id).delete_all
       end
 
+      broadcast_page_refresh(operation)
       position
     end
     # rubocop:enable Metrics/ParameterLists
+
+    def self.broadcast_page_refresh(operation)
+      Turbo::StreamsChannel.broadcast_refresh_to(operation)
+    rescue StandardError => e
+      Rails.logger.warn("vehicle position turbo refresh failed: #{e.class}: #{e.message}")
+    end
+    private_class_method :broadcast_page_refresh
   end
 end

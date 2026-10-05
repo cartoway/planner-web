@@ -47,6 +47,17 @@ class VehiclePositionsRecordTest < ActiveSupport::TestCase
     assert_in_delta 48.1, @route.latest_position.lat, 0.0001
   end
 
+  test 'broadcasts a page refresh so the map moves between status changes' do
+    Turbo::StreamsChannel.expects(:broadcast_refresh_to).with(@operation).once
+    VehiclePositions::Record.call(
+      operation_route: @route,
+      lat: 48.85,
+      lng: 2.35,
+      positioned_at: Time.current,
+      source: 'demo'
+    )
+  end
+
   test 'purge_stale removes points older than customer retention' do
     @customer.update!(vehicle_position_retention_days: 60)
     VehiclePositions::Record.call(operation_route: @route, lat: 48.0, lng: 2.0, positioned_at: 90.days.ago)
