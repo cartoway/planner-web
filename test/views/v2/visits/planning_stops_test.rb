@@ -58,6 +58,8 @@ class VisitPlanningStopsPartialTest < ActionView::TestCase
 
   test 'shows photos accordion on the matching stop' do
     stop = stops(:stop_one_one)
+    stop.photos.purge if stop.photos.attached?
+    stop.signature.purge if stop.signature.attached?
     stop.photos.attach(
       io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')),
       filename: 'stop_photo.jpg',
@@ -66,15 +68,19 @@ class VisitPlanningStopsPartialTest < ActionView::TestCase
     visit = visits(:visit_one)
     render partial: 'v2/visits/planning_stops', locals: { visit: visit }
 
+    photos_id = "visit-#{visit.id}-stop-#{stop.id}-photos"
     assert_select '.visit-planning-stop .visit-planning-photos-toggle', 1
-    assert_select '.visit-planning-stop .visit-planning-photos .visit-planning-photo', 1
+    assert_select %(.visit-planning-photos##{photos_id} .visit-planning-photo), 1
     assert_select '.visit-planning-stops > .visit-planning-photos-toggle', 0
   ensure
     stop&.photos&.purge
+    stop&.signature&.purge if stop&.signature&.attached?
   end
 
   test 'photos and signature collapses share a parent accordion' do
     stop = stops(:stop_one_one)
+    stop.photos.purge if stop.photos.attached?
+    stop.signature.purge if stop.signature.attached?
     stop.photos.attach(
       io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')),
       filename: 'stop_photo.jpg',
