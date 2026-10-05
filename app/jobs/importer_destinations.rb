@@ -546,7 +546,7 @@ class ImporterDestinations < ImporterBase
 
     prepare_plannings(name, _options)
 
-    @customer.save! if tags_imported
+    persist_customer_without_stale_routes! if tags_imported
 
     # Update destinations_count and visits_count as activerecord callbacks are not called
     Customer.where(id: @customer.id).update_all(
@@ -644,10 +644,18 @@ class ImporterDestinations < ImporterBase
       }
       capture_import_states_after_finalize!
     end
-    @customer.save! && @customer.reload
+    persist_customer_without_stale_routes!
+    @customer.reload
   end
 
   private
+
+  def persist_customer_without_stale_routes!
+    # Routes are already persisted (tag sync, prepare_plannings, compute). Customer
+    # autosave would UPDATE the in-memory Route copies with a stale lock_version.
+    @customer.association(:plannings).reset
+    @customer.save!
+  end
 
   def reload_plannings_hash!
     return if @plannings_hash.blank?

@@ -1347,4 +1347,66 @@ class ImporterDestinationsTest < ActionController::TestCase
     new_destinations = @customer.destinations.where(ref: ['new_dest_1', 'new_dest_2'])
     assert_equal 2, new_destinations.size, 'Both new destinations should be created'
   end
+
+  test 'should reimport existing tagged destinations onto existing planning routes without stale update' do
+    dest_one = destinations(:destination_one)
+    dest_two = destinations(:destination_two)
+    visit_one = visits(:visit_one)
+    visit_two = visits(:visit_two)
+    dest_tag = tags(:tag_two)
+    visit_tag = tags(:tag_one)
+    planning = plannings(:planning_one)
+    planning.update!(tag_ids: [dest_tag.id, visit_tag.id])
+    route = routes(:route_one_one)
+    vehicle = vehicles(:vehicle_one)
+
+    json_destinations = [
+      {
+        ref: dest_one.ref,
+        name: dest_one.name,
+        postalcode: dest_one.postalcode,
+        city: dest_one.city,
+        country: 'FR',
+        lat: dest_one.lat,
+        lng: dest_one.lng,
+        tags: [dest_tag.label],
+        visits: [
+          {
+            ref: visit_one.ref,
+            ref_vehicle: vehicle.ref,
+            route: route.ref,
+            duration: '00:10:00',
+            tags: [visit_tag.label]
+          }
+        ]
+      },
+      {
+        ref: dest_two.ref,
+        name: dest_two.name,
+        postalcode: dest_two.postalcode,
+        city: dest_two.city,
+        country: 'FR',
+        lat: dest_two.lat,
+        lng: dest_two.lng,
+        tags: [dest_tag.label],
+        visits: [
+          {
+            ref: visit_two.ref,
+            ref_vehicle: vehicle.ref,
+            route: route.ref,
+            duration: '00:10:00',
+            tags: [visit_tag.label]
+          }
+        ]
+      }
+    ]
+
+    importer = ImporterDestinations.new(@customer, { ref: planning.ref })
+    import_json = ImportJson.new(importer: importer, replace: false, json: json_destinations)
+    assert import_json.import, "Import should succeed. Errors: #{import_json.errors.full_messages.join(', ')}"
+
+    dest_one.reload
+    assert dest_one.tags.include?(dest_tag)
+    assert_includes route.reload.stops.only_stop_visits.map(&:visit_id), visit_one.id
+  end
 end
