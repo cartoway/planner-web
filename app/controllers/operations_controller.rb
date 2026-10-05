@@ -27,11 +27,35 @@ class OperationsController < ApplicationController
     @located_route_ids = located_route_ids(@page_routes)
     @next_page = next_page
     @selector_routes = selector_routes
+    @deliver_demo_enabled = DeliverDemo.enabled?(current_user.customer)
     if @operation.open?
       @send_routes = transmittable_routes.to_a
       @send_trackings = destination_trackings_for_send.to_a
     end
     render_v2_page 'operations/show'
+  end
+
+  def demo
+    DeliverDemo::Control.start!(@operation)
+    respond_demo_actions(notice: t('operations.show.demo_started'))
+  rescue DeliverDemo::Control::NotEnabled
+    respond_demo_actions(alert: t('operations.show.demo_not_enabled'))
+  rescue DeliverDemo::Control::NotOpen, DeliverDemo::Control::AlreadyRunning => e
+    respond_demo_actions(alert: e.message)
+  end
+
+  def stop_demo
+    DeliverDemo::Control.stop!(@operation)
+    respond_demo_actions(notice: t('operations.show.demo_stopped'))
+  end
+
+  def reset_demo
+    DeliverDemo::Control.reset!(@operation)
+    redirect_to operation_path(@operation), notice: t('operations.show.demo_reset')
+  rescue DeliverDemo::Control::NotEnabled
+    redirect_to operation_path(@operation), alert: t('operations.show.demo_not_enabled')
+  rescue DeliverDemo::Control::NotOpen => e
+    redirect_to operation_path(@operation), alert: e.message
   end
 
   def fetch_device_status
@@ -167,6 +191,7 @@ class OperationsController < ApplicationController
   end
 
   def historize_operation
+    DeliverDemo::Control.stop!(@operation)
     @operation.update!(status: 'historized', closed_at: Time.current)
     redirect_to operation_path(@operation), notice: t('operations.historized')
   end
@@ -203,6 +228,16 @@ class OperationsController < ApplicationController
       { alert: t('operations.show.destinations_send_fail') }
     else
       { notice: t('operations.show.destinations_send_success', sms: result[:sms], email: result[:emailed]) }
+    end
+  end
+
+  # Turbo Frame keeps the map/Stimulus board; full redirect only for non-Turbo clients.
+  def respond_demo_actions(notice: nil, alert: nil)
+    @deliver_demo_enabled = DeliverDemo.enabled?(current_user.customer)
+    if turbo_frame_request? || request.format.turbo_stream?
+      render turbo_stream: turbo_stream.replace('operation_demo_actions', partial: 'operations/demo_actions')
+    else
+      redirect_to operation_path(@operation), notice: notice, alert: alert
     end
   end
 

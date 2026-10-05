@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class OperationStopStatusEvent < ApplicationRecord
-  SOURCES = %w[mobile api device system import backoffice].freeze
+  SOURCES = %w[mobile api device system import backoffice demo].freeze
 
   belongs_to :operation_stop
 
