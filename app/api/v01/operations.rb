@@ -59,7 +59,7 @@ class V01::Operations < Grape::API
     end
   end
 
-  resource :operations do
+  resource :operations do # rubocop:disable Metrics/BlockLength
     desc 'List operations.',
       detail: 'Lists operations for the customer. Filter with status, date, q. Default limit 100.',
       nickname: 'getOperations',
@@ -214,6 +214,7 @@ class V01::Operations < Grape::API
     post ':id/close' do
       operation = find_operation!
       authorize!(:update, operation)
+      DeliverDemo::Control.stop!(operation)
       operation.update!(status: 'historized', closed_at: Time.current)
       status 200
       present operation, with: V01::Entities::Operation
@@ -229,9 +230,62 @@ class V01::Operations < Grape::API
     post ':id/cancel' do
       operation = find_operation!
       authorize!(:update, operation)
+      DeliverDemo::Control.stop!(operation)
       operation.update!(status: 'historized', closed_at: Time.current, cancelled_at: Time.current)
       status 200
       present operation, with: V01::Entities::Operation
+    end
+
+    desc 'Start Cartoway Deliver demo simulation for an operation.',
+      nickname: 'startOperationDemo',
+      success: V01::Status.success(:code_200, V01::Entities::Operation),
+      failure: V01::Status.failures
+    params do
+      requires :id, type: Integer
+    end
+    post ':id/demo' do
+      operation = find_operation!
+      authorize!(:update, operation)
+      DeliverDemo::Control.start!(operation)
+      status 200
+      present operation.reload, with: V01::Entities::Operation
+    rescue DeliverDemo::Control::NotEnabled
+      error!({ message: 'Deliver demo is not enabled', status: 403 }, 403)
+    rescue DeliverDemo::Control::NotOpen, DeliverDemo::Control::AlreadyRunning => e
+      present_operation_error(e)
+    end
+
+    desc 'Stop Cartoway Deliver demo simulation for an operation.',
+      nickname: 'stopOperationDemo',
+      success: V01::Status.success(:code_204),
+      failure: V01::Status.failures
+    params do
+      requires :id, type: Integer
+    end
+    delete ':id/demo' do
+      operation = find_operation!
+      authorize!(:update, operation)
+      DeliverDemo::Control.stop!(operation)
+      status 204
+    end
+
+    desc 'Reset Cartoway Deliver demo execution state for an operation.',
+      nickname: 'resetOperationDemo',
+      success: V01::Status.success(:code_200, V01::Entities::Operation),
+      failure: V01::Status.failures
+    params do
+      requires :id, type: Integer
+    end
+    post ':id/demo/reset' do
+      operation = find_operation!
+      authorize!(:update, operation)
+      DeliverDemo::Control.reset!(operation)
+      status 200
+      present operation.reload, with: V01::Entities::Operation
+    rescue DeliverDemo::Control::NotEnabled
+      error!({ message: 'Deliver demo is not enabled', status: 403 }, 403)
+    rescue DeliverDemo::Control::NotOpen => e
+      present_operation_error(e)
     end
 
     desc 'GeoJSON map payload for an operation.',

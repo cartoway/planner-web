@@ -3976,6 +3976,14 @@ en:
       send_destinations_sms_title: Recipient SMS
       destinations_send_success: "%{sms} SMS and %{email} email(s) sent"
       destinations_send_fail: No recipient message could be sent
+      start_demo: Simulate
+      stop_demo: Stop simulation
+      reset_demo: Reset
+      demo_started: Simulation started
+      demo_stopped: Simulation stopped
+      demo_reset: Simulation reset
+      demo_reset_confirm: Clear GPS positions and statuses for this operation?
+      demo_not_enabled: Deliver demonstrator is not enabled
       send_route: Send this route
       clear_selection: Clear selection
       last_sent: "Last sent: %{at}"
