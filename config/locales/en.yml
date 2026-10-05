@@ -4038,6 +4038,8 @@ en:
       attributes: Properties
       planned: Planned
       actual: Actual
+      arrival: Arrival
+      departure: Departure
       center_vehicle: Center on the vehicle
       center_route: Center on the route
       hide_trace: Hide the route

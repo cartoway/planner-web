@@ -260,7 +260,28 @@ tr.is-past { color: #6b7280; }
 .operation-stop-clock {
   color: var(--op-muted);
   font-variant-numeric: tabular-nums;
+  display: flex;
+  flex-wrap: wrap;
+  gap: .15rem .35rem;
+  align-items: baseline;
 }
+
+.operation-stop-clock-sep { opacity: .55; }
+
+.operation-times { margin: .75rem 0; }
+
+.operation-time-heading {
+  margin: 0 0 .25rem;
+  font-size: .75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--op-muted);
+}
+
+.operation-time-block + .operation-time-block { margin-top: .5rem; }
+
+.operation-time-block .operation-split { margin: 0; }
 
 .operation-stop-main { flex: 1 1 auto; min-width: 0; }
 

@@ -105,15 +105,19 @@ class DeliverDemoTickTest < ActiveSupport::TestCase
     end
 
     Time.use_zone('Paris') do
-      planned = finished.planned_at
+      planned_arrival = finished.planned_at
       finish_event = finished.operation_stop_status_events.order(:id).to_a.reverse.find { |e|
         %w[delivered finished].include?(e.status.to_s)
       }
       assert finish_event
-      # Jitter ±5 min + capped service keep "Réel" near "Prévu".
+      # Demo caps on-site service; finish ≈ planned arrival + capped service (± jitter).
       slack = DeliverDemo::Tick::MAX_SERVICE_SECONDS + DeliverDemo::Tick::JITTER_SECONDS + 1
-      assert_in_delta planned.to_i, finish_event.recorded_at.to_i, slack
-      assert finished.delay_minutes.abs <= (slack / 60) + 1
+      assert_in_delta (planned_arrival + DeliverDemo::Tick::MAX_SERVICE_SECONDS).to_i, finish_event.recorded_at.to_i, slack
+      # Delay is vs planned departure — align snapshot duration with the capped service used above.
+      if finished.visit?
+        finished.update_columns(visit_snapshot: finished.visit_snapshot.merge('duration' => DeliverDemo::Tick::MAX_SERVICE_SECONDS))
+      end
+      assert finished.delay_minutes.abs <= (DeliverDemo::Tick::JITTER_SECONDS / 60) + 1
     end
   end
 
@@ -146,10 +150,10 @@ class DeliverDemoTickTest < ActiveSupport::TestCase
     }
     assert finish_event
     Time.use_zone('Paris') do
-      planned = visit.planned_at
+      planned_arrival = visit.planned_at
       slack = DeliverDemo::Tick::MAX_SERVICE_SECONDS + DeliverDemo::Tick::JITTER_SECONDS + 1
-      assert_in_delta planned.to_i, finish_event.recorded_at.to_i, slack
-      assert_in_delta planned.hour, finish_event.recorded_at.in_time_zone('Paris').hour, 1
+      assert_in_delta (planned_arrival + DeliverDemo::Tick::MAX_SERVICE_SECONDS).to_i, finish_event.recorded_at.to_i, slack
+      assert_in_delta (planned_arrival + DeliverDemo::Tick::MAX_SERVICE_SECONDS).hour, finish_event.recorded_at.in_time_zone('Paris').hour, 1
     end
   end
 

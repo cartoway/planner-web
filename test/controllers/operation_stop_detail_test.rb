@@ -35,6 +35,23 @@ class OperationStopDetailTest < ActionController::TestCase
     assert_response :success
     assert_includes response.body, '22:05 (J-1)'
     assert_includes response.body, '11:00 (J+1)'
+    assert_includes response.body, I18n.t('operations.show.arrival')
+    assert_includes response.body, I18n.t('operations.show.departure')
+  end
+
+  test 'delay is computed from planned and actual departure' do
+    day = @operation.date
+    @stop.update_columns(
+      stop_snapshot: @stop.stop_snapshot.merge('time' => 9 * 3600),
+      visit_snapshot: (@stop.visit_snapshot || {}).merge('duration' => 10 * 60),
+      status_updated_at: Time.zone.local(day.year, day.month, day.day, 9, 25)
+    )
+
+    assert_equal 15, @stop.delay_minutes
+    assert_equal '09:00', @stop.planned_arrival_clock
+    assert_equal '09:10', @stop.planned_departure_clock
+    assert_equal '09:15', @stop.actual_arrival_clock
+    assert_equal '09:25', @stop.actual_departure_clock
   end
 
   test 'show renders the stop detail and status history for the sidebar' do
@@ -91,7 +108,7 @@ class OperationStopDetailTest < ActionController::TestCase
     assert_nil @stop.reload.actual_clock
     assert_nil @stop.delay_minutes
     assert_select '.badge.text-bg-warning', count: 0
-    assert_select '.operation-split div:last-child strong', text: '—'
+    assert_select '.operation-time-block .operation-split div:last-child strong', text: '—'
   end
 
   test 'rest sidebar keeps schedule and timeline without details' do
