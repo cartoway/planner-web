@@ -13,16 +13,6 @@ class V01::Entities::RouteStatus < Grape::Entity
     convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
   }
 
-  expose(:departure_status, documentation: { type: String, desc: 'Departure status of start store.' }) { |route| route.start_route_data&.status && I18n.t('plannings.edit.stop_status.' + route.start_route_data.status.downcase, default: route.start_route_data.status) }
-  expose(:departure_status_code, documentation: { type: String, desc: 'Status code of start store.' }) { |route| route.start_route_data&.status&.downcase }
-  expose(:departure_eta, documentation: { type: DateTime, desc: 'Estimated time of departure from remote device.' }) { |route| route.start_route_data&.eta }
-  expose(:departure_eta_formated, documentation: { type: DateTime, desc: 'Estimated time of departure from remote device.' }) { |route| route.start_route_data&.eta && I18n.l(route.start_route_data.eta, format: :hour_minute) }
-
-  expose(:arrival_status, documentation: { type: String, desc: 'Arrival status of stop store.' }) { |route| route.stop_route_data&.status && I18n.t('plannings.edit.stop_status.' + route.stop_route_data.status.downcase, default: route.stop_route_data.status) }
-  expose(:arrival_status_code, documentation: { type: String, desc: 'Status code of stop store.' }) { |route| route.stop_route_data&.status&.downcase }
-  expose(:arrival_eta, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device.' }) { |route| route.stop_route_data&.eta }
-  expose(:arrival_eta_formated, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device.' }) { |route| route.arrival_eta && I18n.l(route.arrival_eta, format: :hour_minute) }
-
   expose(:size_active, documentation: { type: Integer, desc: 'Main route_data: active stops count.' })
   expose(:size_destinations, documentation: { type: Integer })
   expose(:size_store_reloads, documentation: { type: Integer })

@@ -22,6 +22,7 @@ class OperationsController < ApplicationController
   end
 
   def show
+    pull_device_status_if_needed
     @page_routes = paged_routes.to_a
     @located_route_ids = located_route_ids(@page_routes)
     @next_page = next_page
@@ -31,6 +32,14 @@ class OperationsController < ApplicationController
       @send_trackings = destination_trackings_for_send.to_a
     end
     render_v2_page 'operations/show'
+  end
+
+  def fetch_device_status
+    DeviceService.new(customer: current_user.customer).fetch_stops_status(@operation)
+    respond_to do |format|
+      format.html { redirect_to operation_path(@operation) }
+      format.json { head :no_content }
+    end
   end
 
   def routes
@@ -142,6 +151,16 @@ class OperationsController < ApplicationController
   end
 
   private
+
+  def pull_device_status_if_needed
+    return unless @operation.open?
+    return unless current_user.customer.enable_stop_status?
+    return unless current_user.customer.device.available_stop_status?
+
+    DeviceService.new(customer: current_user.customer).fetch_stops_status(@operation)
+  rescue StandardError => e
+    Rails.logger.warn("operation device status pull failed: #{e.class}: #{e.message}")
+  end
 
   def operation_params
     params.require(:operation).permit(:date, :name)

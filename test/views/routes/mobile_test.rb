@@ -102,7 +102,7 @@ class RouteMobileTest < ActiveSupport::TestCase
     refute_includes last_response.body, 'secret value'
   end
 
-  test 'should show reset status button for stops' do
+  test 'should show reset status button for stops on operations mobile' do
     stop = @route.stops.find { |s| s.is_a?(StopVisit) }
     stop.update!(status: 'delivered')
     @route.start_route_data.update!(status: 'atstore')
@@ -116,6 +116,22 @@ class RouteMobileTest < ActiveSupport::TestCase
     assert_includes last_response.body, I18n.t('stops.mobile.status_reset_confirm')
     assert_match(/data-toggle=["']route_start_route_data_status["']/, last_response.body)
     assert_match(/data-toggle=["']route_stop_route_data_status["']/, last_response.body)
+  end
+
+  test 'planning mobile v1 has no status controls' do
+    stop = @route.stops.find { |s| s.is_a?(StopVisit) }
+    stop.update!(status: 'delivered')
+    @route.start_route_data.update!(status: 'atstore')
+    vehicle = @route.vehicle_usage.vehicle
+
+    get "routes/#{@route.id}/mobile/?driver_token=#{vehicle.driver_token}"
+
+    assert last_response.ok?
+    refute_includes last_response.body, 'stop-status-reset'
+    refute_includes last_response.body, 'id="quick-status"'
+    refute_includes last_response.body, I18n.t('stops.mobile.status')
+    refute_match(/data-toggle=["']route_start_route_data_status["']/, last_response.body)
+    refute_match(/data-toggle=["']active_status["']/, last_response.body)
   end
 
   test 'should show photo capture and gallery buttons for each stop' do

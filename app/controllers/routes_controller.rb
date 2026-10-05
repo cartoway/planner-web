@@ -128,13 +128,6 @@ class RoutesController < ApplicationController
   def driver_update
     respond_to do |format|
       route_params = route_driver_params
-      # Force nested route_data ids to the current route's records (never trust client-supplied id)
-      if route_params[:start_route_data_attributes].present?
-        route_params[:start_route_data_attributes] = route_params[:start_route_data_attributes].to_h.merge(id: @route.start_route_data.id)
-      end
-      if route_params[:stop_route_data_attributes].present?
-        route_params[:stop_route_data_attributes] = route_params[:stop_route_data_attributes].to_h.merge(id: @route.stop_route_data.id)
-      end
       if @route.update(route_params)
         format.json do
           render json: { success: true }
@@ -220,15 +213,13 @@ class RoutesController < ApplicationController
   end
 
   def route_driver_params
-    permitted = params.require(:route).permit(
-      :status,
-      start_route_data_attributes: [:status],
-      stop_route_data_attributes: [:status],
-      custom_attributes: RecursiveParamsHelper.permit_recursive(params['route']['custom_attributes'])
+    route = params.require(:route)
+    return {} if route[:custom_attributes].blank?
+
+    permitted = route.permit(
+      custom_attributes: RecursiveParamsHelper.permit_recursive(route[:custom_attributes])
     )
-
-    merge_route_custom_attributes!(permitted) if permitted[:custom_attributes].present?
-
+    merge_route_custom_attributes!(permitted)
     permitted
   end
 
@@ -250,22 +241,8 @@ class RoutesController < ApplicationController
         end
       end
     else
-      # Flat: infer related_field from route_data_attributes context when keys are not already composite
-      related_field = if permitted[:start_route_data_attributes].present? && permitted[:stop_route_data_attributes].blank?
-        'start_route_data'
-      elsif permitted[:stop_route_data_attributes].present? && permitted[:start_route_data_attributes].blank?
-        'stop_route_data'
-      end
-
       incoming.each do |k, v|
-        key_s = k.to_s
-        # Keys from form may already be composite (e.g. "start_route_data:Kilométrage"), do not double-prefix
-        storage_key = if related_field && !key_s.include?(':')
-          "#{related_field}:#{key_s}"
-        else
-          key_s
-        end
-        merged[storage_key] = v
+        merged[k.to_s] = v
       end
     end
 

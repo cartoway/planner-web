@@ -32,8 +32,8 @@ customer_one:
   vehicles_count: 2
   print_barcode: code128
   devices:
-    fleet:
-      user: 'c_one_toto@example.com'
+    deliver:
+      enable: true
   router_options:
     time: true
     distance: true

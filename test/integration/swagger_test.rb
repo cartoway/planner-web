@@ -153,8 +153,10 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     content = JSON.parse(response.body, symbolize_names: true)
     paths = content[:paths].keys.map(&:to_s)
     assert paths.any? { |path| path.include?('destinations') }
+    assert paths.any? { |path| path.include?('/operations') }
     refute paths.any? { |path| path.include?('/devices/') }
     refute paths.any? { |path| path.match?(%r{/customers(\.json|/|\z)}) }
+    refute paths.any? { |path| path.include?('update_stops_status') }
     tag_names = Array(content[:tags]).map { |t| t[:name] }
     assert_includes tag_names, 'core'
     refute_includes tag_names, 'admin'
@@ -169,13 +171,18 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     operation_ids = content[:paths].values.flat_map { |item|
       item.each_value.filter_map { |op| op[:operationId] if op.is_a?(Hash) }
     }
-    %w[getDeliverableUnits getVehicles getDestinations createDestination createPlanning optimizeRoutes getJob getRoutes].each do |id|
+    %w[
+      getDeliverableUnits getVehicles getDestinations createDestination createPlanning
+      optimizeRoutes getJob getRoutes publishOperation getOperation postOperationStopStatus
+    ].each do |id|
       assert_includes operation_ids, id
     end
     refute_includes operation_ids, 'getZonings'
     refute_includes operation_ids, 'createTag'
+    refute_includes operation_ids, 'updateStopsStatus'
     paths = content[:paths].keys.map(&:to_s)
     refute paths.any? { |path| path.include?('/devices/') }
+    refute paths.any? { |path| path.include?('update_stops_status') }
     tag_names = Array(content[:tags]).map { |t| t[:name] }
     assert_includes tag_names, 'happy_path'
     refute_includes tag_names, 'admin'

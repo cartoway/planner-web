@@ -134,8 +134,6 @@ Rails.application.configure do
   config.router.url = ENV['ROUTER_URL'] || 'http://localhost:4899/0.1'
 
   config.devices.alyacom.api_url = 'http://app.alyacom.fr/ws'
-  config.devices.fleet.api_url = 'http://localhost:8084'
-  config.devices.fleet.admin_api_key = ENV['DEVICE_FLEET_ADMIN_API_KEY']
   config.devices.masternaut.api_url = 'https://masternaut.example.com'
   config.devices.orange.api_url = 'https://orange.example.com'
   config.devices.praxedo.api_url = 'https://ww2.praxedo.com/eTech/services/'

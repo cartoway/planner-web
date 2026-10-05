@@ -87,20 +87,6 @@ class UserMailer < ApplicationMailer
     end
   end
 
-  def send_fleet_drivers(user, locale, drivers, current_admin = nil)
-    I18n.with_locale(locale) do
-      @user = user
-      @reseller = user.customer&.reseller || user.reseller
-      @name, @application_name = names(user) # To deprecate
-      @template = 'fleet_drivers'
-      [user.email, current_admin && current_admin.email].compact.each do |to|
-        mail to: to, subject: I18n.t('user_mailer.fleet_drivers.subject') do |format|
-          format.html { render 'user_mailer/fleet_drivers', locals: { user: user, drivers: drivers } }
-        end
-      end
-    end
-  end
-
   private
 
   def catch_smtp_error

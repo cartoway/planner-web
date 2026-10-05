@@ -40,7 +40,6 @@ class Ability
         can [:index], Profile
         can :manage, VehicleUsage, vehicle_usage_set: { customer: { reseller_id: user.reseller_id } }
       else
-        can :index, :reporting
         can [:edit, :update, :password, :set_password], User, id: user.id
         can [:edit, :update, :external_callback], Customer, id: user.customer.id
         can [:stop_job_optimizer, :stop_job_destination_geocoding, :stop_job_store_geocoding, :stop_job_destination_import], Customer
@@ -59,9 +58,12 @@ class Ability
         if !user.customer.end_subscription || user.customer.end_subscription > Time.now
           can :manage, Planning, customer_id: user.customer.id
           can [:new, :create], Planning
-          can :manage, Operation, customer_id: user.customer.id
-          can :manage, OperationRoute, operation: { customer_id: user.customer.id }
-          can :manage, OperationStop, operation_route: { operation: { customer_id: user.customer.id } }
+          if user.customer.device.operations_enabled?
+            can :manage, Operation, customer_id: user.customer.id
+            can [:new, :create], Operation
+            can :manage, OperationRoute, operation: { customer_id: user.customer.id }
+            can :manage, OperationStop, operation_route: { operation: { customer_id: user.customer.id } }
+          end
         end
         can :manage, Route, planning: {customer_id: user.customer.id}
         can :show, Vehicle, customer_id: user.customer.id

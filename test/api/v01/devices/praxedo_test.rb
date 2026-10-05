@@ -75,51 +75,25 @@ class V01::Devices::PraxedoTest < ActiveSupport::TestCase
     end
   end
 
-  test 'should fetch stops then update quantities and out of capacity' do
+  test 'should fetch stops into operation actual quantities' do
     customers(:customer_one).update(job_optimizer_id: nil)
-    # All 3 stops in route are completed
-    # with following quantities from Praxedo:
-    # 0 => 30kg / 1 => 10kg / 2 => 5kg ==> 45kg
-    # Max quantity for associated vehicle: { 2 => nil, 1 => 1.0 }
     with_stubs [:search_events_wsdl, :search_events] do
       @customer.update_attribute(:enable_stop_status, true)
       set_route
       planning = @route.planning
+      Operation.where(customer_id: @customer.id).delete_all
+      operation = Operations::PublishFromPlanning.call(planning: planning, route_ids: [@route.id])
 
-      patch planning_api("#{planning.id}/update_stops_status", details: true)
-      assert_equal 200, last_response.status
+      Operations::FetchDeviceStopsStatus.call(operation: operation)
 
-      stops_status = JSON.parse(last_response.body)
-      route_status = stops_status.find { |status| status['id'] == @route.id }
-      assert_not_nil route_status
-      du_ids = @customer.deliverable_units.map(&:id)
-      kg_du = @customer.deliverable_units.select { |du| du.label == 'kg' }.first
-      route_status['quantities'].each do |quantity|
-        assert du_ids.include?(quantity['deliverable_unit_id'])
-        if kg_du.id == quantity['deliverable_unit_id']
-          assert_equal quantity['quantity'], 45
-        end
-      end
-
-      assert_not @route.stops[0].out_of_capacity
-      assert_not @route.stops[1].out_of_capacity
-      assert_not @route.stops[2].out_of_capacity
-
-      @route.reload
-
-      # Check for visit update
-      updated_quantities = [5, 10, 30]
-      @route.stops.each_with_index do |stop, i|
-        if stop.is_a?(StopVisit)
-          assert_equal stop.visit.deliveries[2], updated_quantities[i]
-        end
-      end
-
-      # Check for out of capacity
-      assert @route.stops[0].out_of_capacity
-      assert @route.stops[1].out_of_capacity
-      assert_not @route.stops[2].out_of_capacity
+      kg_id = @customer.deliverable_units.find { |du| du.label == 'kg' }.id.to_s
+      quantities = operation.operation_stops.where.not(visit_id: nil).map { |os|
+        os.reload.actual_quantities&.dig('deliveries', kg_id)
+      }.compact.map(&:to_f).sort
+      assert_equal [5.0, 10.0, 30.0], quantities
     end
+  ensure
+    Operation.where(customer_id: @customer.id).delete_all
   end
 
 end

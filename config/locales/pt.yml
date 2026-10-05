@@ -1554,28 +1554,6 @@ pt:
       name: nome
       comment: comentário
       total: total
-  reporting:
-    download:
-      max_interval_reached: >-
-        O intervalo entre a data de início e a data final deve ser inferior a 31
-        dias
-      end_date_inferior: A data final deve ser maior que a data de início
-      fail: 'Ocorreu um erro, por favor, tente novamente'
-      success: O relatório está sendo baixado
-      retry: Re-download
-      no_content: Nenhum relatório durante este período
-    index:
-      title: relações
-      head: >-
-        Baixe o relatório de passeios feitos com o aplicativo móvel Cartoway
-        Field
-      submit: Baixar
-      downloading: Download em andamento...
-      default_begin_date: D-8 por padrão
-      default_end_date: D-1 por padrão
-      begin_date: Data de início
-      end_date: Data final
-      with_actions: Histórico de status
   route_mailer:
     send_kmz_route:
       title: Exportação Plano KMZ
@@ -1789,8 +1767,6 @@ pt:
         Se quiser continuar essa aventuara conosco <b> pode contactar a nossa
         equipe de vendas preenchendo o formulàrio ou por telefone</b>:
       link: 'Quero subscrever ao %{name}'
-    fleet_drivers:
-      hello: Olá
   plannings:
     menu:
       plannings: Planos

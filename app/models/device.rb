@@ -22,6 +22,11 @@ class Device
     @customer = customer
   end
 
+  # True when any enabled device declares has_operations in its definition (e.g. Cartoway Deliver).
+  def operations_enabled?
+    enabled_definitions.any? { |_, definition| definition[:has_operations] }
+  end
+
   def all
     @all ||= Planner::Application.config.devices.to_h.except(
       :cache_object, :stg_telematics_cache_object, :deliver_cache_object, :sopac_cache_object

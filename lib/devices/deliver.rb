@@ -8,6 +8,7 @@ class Deliver < DeviceBase
       label_small: 'Deliver',
       route_operations: [:send, :clear],
       has_sync: true,
+      has_operations: true,
       help: true,
       forms: {
         settings: {
@@ -30,6 +31,9 @@ class Deliver < DeviceBase
   end
 
   def clear_route(customer, route)
+    # Field status lives on Operations when Deliver unlocks has_operations.
+    return true if customer.device.operations_enabled?
+
     route.start_route_data.assign_attributes status: nil, eta: nil
     route.stop_route_data.assign_attributes status: nil, eta: nil
     route.stops.each { |s| s.assign_attributes status: nil, eta: nil }
@@ -48,16 +52,9 @@ class Deliver < DeviceBase
     }
   end
 
-  def fetch_stops
-    planning.routes.select(&:vehicle_usage_id).flat_map{ |r|
-      r.stops.select(&:status).map { |s|
-        {
-          order_id: (s.is_a?(StopVisit) ? "v#{s.visit_id}" : "r#{s.id}"),
-          status: s.status,
-          eta: s.eta
-        }
-      }
-    }.compact
+  # Planning stop status is no longer the Deliver source of truth; use Operations API.
+  def fetch_stops(_customer = nil, _date = nil, _planning = nil)
+    []
   end
 
   def transfer_stops(customer, route, stop_id)

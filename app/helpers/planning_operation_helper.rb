@@ -46,6 +46,8 @@ module PlanningOperationHelper
   end
 
   def attach_open_operations!(route_data, planning, route_id = route_data[:route_id])
+    return route_data unless planning.customer.device.operations_enabled?
+
     operation = planning.open_operation_for_route_today(route_id)
     route_data[:today_operation] = if operation
       {

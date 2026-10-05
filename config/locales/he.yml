@@ -1026,24 +1026,6 @@ he:
       name: שם
       comment: הערות
       total: סך הכל
-  reporting:
-    download:
-      max_interval_reached: המרווח בין תאריך ההתחלה לבין תאריך הסיום חייב להיות פחות מ -31 ימים
-      end_date_inferior: תאריך הסיום חייב להיות גדול מתאריך ההתחלה
-      fail: 'אירעה שגיאה, נסה שוב'
-      success: הדוח מתבצע להורדה
-      retry: להוריד מחדש
-      no_content: אין דיווח בתקופה זו
-    index:
-      title: יחסים
-      head: הורד דוח של סיורים שנעשו עם היישום הנייד Cartoway Field
-      submit: הורדה
-      downloading: מוריד ...
-      default_begin_date: היום פחות 8 ימים כברירת מחדל
-      default_end_date: היום פחות 1 ימים כברירת מחדל
-      begin_date: תאריך התחלה
-      end_date: תאריך הסיום
-      with_actions: היסטוריית הסטטוס
   route_mailer:
     send_kmz_route:
       content: 'דואר אלקטרוני זה מכיל קובץ KMZ המכיל מידע על המסלול %{s}.'

@@ -1093,10 +1093,6 @@ en:
         success: Users deleted successfully
       send_email:
         success: E-Mail sent to user successfully
-    vehicles:
-      devices:
-        create_company: Initialize Cartoway Field Account
-        create_drivers: Update or create mobile drivers on Cartoway Field
   custom_attributes:
     edit:
       title: Editing additional property
@@ -1819,26 +1815,6 @@ en:
       check_custom_columns: Check your columns definition.
     reverse_geocoding:
       apply: Apply new address
-  reporting:
-    download:
-      max_interval_reached: Range between begin date and end date must be inferior to 31 days
-      end_date_inferior: End date must be superior to begin date
-      fail: 'An error has occurred, try again'
-      success: The reporting is currently downloading
-      retry: Download again
-      no_content: No report during this period
-    index:
-      title: Reporting
-      head: >-
-        Download report of routes executed with Cartoway Field mobile
-        application
-      submit: Download
-      downloading: Downloading...
-      default_begin_date: D-8 by default
-      default_end_date: D-1 by default
-      begin_date: Begin date
-      end_date: End date
-      with_actions: history of status
   index:
     motto: Welcome! The Cartoway team is here to support you on every route.
     unsupported_browser:
@@ -1960,15 +1936,6 @@ en:
         content: 'To log in, '
         id: 'please use the password you defined and your username: %{login}.'
         link: Connection
-    fleet_drivers:
-      hello: Hello
-      subject: Mobiles account
-      preheader: Mobiles account
-      content: >-
-        The following mobiles users have been created and are now available to
-        connect with a mobile (email as login and password)
-      login: 'email: %{email} / password: %{password}'
-      footer: Mobiles account
     accompanying_team:
       header: Our team supports you
       main_content: >-

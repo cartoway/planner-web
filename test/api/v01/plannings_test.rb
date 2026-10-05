@@ -533,19 +533,10 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     assert_equal 204, last_response.status
   end
 
-  test 'should update stops status' do
+  test 'planning API no longer exposes update_stops_status' do
     planning = plannings :planning_one
-
     patch api("#{planning.id}/update_stops_status")
-    assert_equal 204, last_response.status
-
-    customers(:customer_one).update(job_optimizer_id: nil)
-
-    patch api("#{planning.id}/update_stops_status")
-    assert_equal 204, last_response.status
-
-    patch api("#{planning.id}/update_stops_status", details: true)
-    assert_equal 200, last_response.status
+    assert_equal 404, last_response.status
   end
 
   test 'should return a planning with deprecated attributes' do

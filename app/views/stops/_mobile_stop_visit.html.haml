@@ -8,44 +8,42 @@
 -# - custom_attributes: custom attributes for StopVisit
 
 - in_route_data = formatted_stop_inroute_sms(stop)
+- show_status = @operation_route.present?
 
-- next_status = case stop.status
-- when 'intransit'
-  - 'delivered'
-- when nil
-  - 'intransit'
+- next_status = show_status ? { 'intransit' => 'delivered', nil => 'intransit' }[stop.status] : nil
 
 .panel.panel-default{ data: { stop_type: 'visit' } }
-  .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status.presence || 'neutral'}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+  .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{show_status ? (stop.status.presence || 'neutral') : 'neutral'}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
     .d-flex.align-items-center.justify-content-between.mb-1
       .col-xs-2.p-0
         .d-flex.align-items-center.justify-content-between
           .stop-status-label-wrap
-            #label-index.number.label.p-3{ class: ("label-#{stop.status.presence || 'neutral'}") }
+            #label-index.number.label.p-3{ class: ("label-#{show_status ? (stop.status.presence || 'neutral') : 'neutral'}") }
               = stop.index
-            %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if stop.status.blank? || stop.status == 'transferred'), data: { toggle: 'active_status', next_status: 'intransit', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
-              %span.stop-status-reset-face.btn.btn-xs.btn-default
-                %i.fa.fa-xmark
+            - if show_status
+              %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if stop.status.blank? || stop.status == 'transferred'), data: { toggle: 'active_status', next_status: 'intransit', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
+                %span.stop-status-reset-face.btn.btn-xs.btn-default
+                  %i.fa.fa-xmark
       .col-xs-6.p-0
         = stop.name
       .col-xs-4.p-0
-        - if customer.enable_sms && in_route_data[:phone_number].present?
-          = link_to "sms:#{in_route_data[:phone_number]}?body=#{sms_uri_body(in_route_data[:content])}",
-            id: "quick-status",
-            class: "col-xs-12 col-sm-6 btn btn-default no-toggle mr-2 pull-right#{' d-none' unless next_status}",
-            data: { toggle: 'active_status', title: next_status } do
-            .d-flex.align-items-center
-              .fa.fa-regular.fa-square-caret-right.mr-2
-              #quick-status-text
-                = t("plannings.edit.stop_status.#{next_status}") if next_status
-        - else
-          %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'active_status', title: next_status } }
-            .d-flex.align-items-center
-              .fa.fa-regular.fa-square-caret-right.mr-2
-              #quick-status-text
-                = t("plannings.edit.stop_status.#{next_status}") if next_status
+        - if show_status
+          - if customer.enable_sms && in_route_data[:phone_number].present?
+            = link_to "sms:#{in_route_data[:phone_number]}?body=#{sms_uri_body(in_route_data[:content])}",
+              id: "quick-status",
+              class: "col-xs-12 col-sm-6 btn btn-default no-toggle mr-2 pull-right#{' d-none' unless next_status}",
+              data: { toggle: 'active_status', title: next_status } do
+              .d-flex.align-items-center
+                .fa.fa-regular.fa-square-caret-right.mr-2
+                #quick-status-text
+                  = t("plannings.edit.stop_status.#{next_status}") if next_status
+          - else
+            %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'active_status', title: next_status } }
+              .d-flex.align-items-center
+                .fa.fa-regular.fa-square-caret-right.mr-2
+                #quick-status-text
+                  = t("plannings.edit.stop_status.#{next_status}") if next_status
     .d-flex.align-items-center
-      -# .col-xs-4.p-0{ href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
       .col-xs-12.p-0.mt-1
         .d-flex.align-items-center.justify-content-between
           .col-xs-8.p-0.mr-2
@@ -59,4 +57,3 @@
   .panel-collapse.collapse{ id: ("collapse-#{stop.id}"), role: 'tabpanel', class: ('in' unless previous) }
     .panel-body
       = render partial: 'stops/edit', locals: { stop: stop, destination: stop.visit.destination, visit: stop.visit, enable_driver_move: enable_driver_move, custom_attributes: custom_attributes, visit_custom_attributes: visit_custom_attributes, customer: customer, sms_content: in_route_data[:content], phone_number: in_route_data[:phone_number] }
-

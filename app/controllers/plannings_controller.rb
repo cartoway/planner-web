@@ -741,6 +741,7 @@ class PlanningsController < ApplicationController
   end
 
   def publish_operation
+    authorize! :create, Operation
     route_ids = params.key?(:route_ids) ? Array(params[:route_ids]) : nil
     operation = Operations::PublishFromPlanning.call(
       planning: @planning,
@@ -762,6 +763,7 @@ class PlanningsController < ApplicationController
       redirect_to edit_planning_path(@planning), alert: t('execution.missing')
       return
     end
+    authorize! :update, operation
     selection = params[:selection].present?
     route_ids = if selection || params.key?(:route_ids)
                   Array(params[:route_ids])
