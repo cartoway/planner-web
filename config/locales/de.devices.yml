@@ -3,9 +3,6 @@ de:
     attributes:
       customer:
         devices:
-          fleet:
-            user: Benutzername
-            api_key: API-Schlüssel
           tomtom:
             account: Name des Benuterkontos
             user: Benutzer
@@ -51,11 +48,6 @@ de:
             password: Passwort
       vehicle:
         devices:
-          fleet_demo:
-            title: Cartoway Field (demo)
-          fleet:
-            title: Cartoway Field
-            fleet_user: Cartoway Field Benutzername
           locster:
             title: Locster
             locster_ref: Locster-Fahrzeugnummer.
@@ -84,27 +76,6 @@ de:
             title: Praxedo
             praxedo_agent_id: Praxedo Vertreter-ID
   errors:
-    fleet:
-      invalid_account: Benutzer ungültig (ist nicht vorhanden)
-      list: Geräte können nicht aufgelistet werden
-      create_company:
-        no_admin_api_key: Kein Cartoway Field Admin-API-Schlüssel vorhanden
-        already_created: Unternehmen bereits erstellt
-        error: Unternehmen kann nicht erstellt werden
-      create_drivers:
-        no_api_key: Es wurde kein Cartoway Field API-Schlüssel für diesen Kunden angegeben
-        already_created: Bereits angelegte Benutzer
-      update_drivers:
-        update_failed: Benutzer konnte nicht aktualisiert werden
-      vehicle_pos: Fahrzeugposition kann nicht ermittelt werden
-      fetch_stops: Missionsliste kann nicht abgerufen werden
-      fetch_routes: Streckenliste kann nicht abgerufen werden
-      no_missions: Keine Missionen zu versenden
-      past_missions: Plandatum muss hinter oder gleich dem heutigen Datum sein
-      set_missions: Erstellen der Missionen fehlgeschlagen
-      clear_missions: Zerstören der Missionen fehlgeschlagen
-      unauthorized: Unbefugt
-      timeout: Timeout bei Anfrage
     tomtom:
       access_denied: >-
         Zugriff verweigert. 'Full Access Orders' (Aufträge mit vollem Zugriff)
@@ -162,16 +133,6 @@ de:
           confirm: Fahrzeuge synchronisieren?
           action: Fahrzeuge synchronisieren
           no_credentials: Es wurden keine Anmeldedaten für das Gerät angegeben
-        fleet_demo:
-          help: >-
-            (NUR DEMO) Simulieren der Position der Fahrzeuge und den
-            Besuchsstatus (wenn diese Optionen aktiviert sind) für den zuletzt
-            aktualisierten Plan.
-        fleet:
-          help: Ermöglicht das Senden von Strecken an die mobile Cartoway Field App.
-          company_created: 'Cartoway Field Unternehmen erstellt:'
-          drivers_created: 'Cartoway Field Fahrer erstellt:'
-          drivers_updated: 'Cartoway Field Fahrer aktualisiert:'
         alyacom:
           help: Ermöglicht das Senden von Strecken an die AlyaCom-Anwendung.
         tomtom:
@@ -191,28 +152,6 @@ de:
   plannings:
     edit:
       all_plannings_related: Bezieht sich auf alle Strecken
-      fleet_demo_send:
-        action: Senden an Cartoway Field demo
-        success: Senden an Cartoway Field demo erfolgreich
-        fail: Senden an Cartoway Field demo fehlgeschlagen
-      fleet_demo_clear:
-        action: Cartoway Field (demo) löschen
-        success: Cartoway Field (demo)-Interventionen wurden erfolgreich gelöscht
-        fail: Löschen der Cartoway Field (demo)-Interventionen fehlgeschlagen
-      fleet_send:
-        action: An mobile Cartoway Field App senden
-        success: Wurde erfolgreich an die mobile Cartoway Field App gesendet
-        fail: Senden an die mobile Cartoway Field App ist fehlgeschlagen
-      fleet_clear:
-        action: Mobile App Cartoway Field löschen
-        success: Fahrt in der mobilen Cartoway Field App wurde erfolgreich gelöscht
-        fail: Löschen der mobilen Cartoway Field App ist fehlgeschlagen
-        button: Auswahl aufheben
-        button_empty: Schließen
-        empty: Keine Strecken auf Cartoway Field gefunden
-        route:
-          name: Name der Strecke
-          number: Streckennummer
       teksat_send:
         action: An Teksat senden
         success: Erfolgreich an Teksat gesendet
@@ -279,12 +218,6 @@ de:
         success: Praxedo-Interventionen wurden erfolgreich gelöscht
         fail: Löschen der Praxedo-Interventionen fehlgeschlagen
       dialog:
-        fleet_demo:
-          title: Cartoway Field (demo)
-          in_progress: Bitte warten
-        fleet:
-          title: Mobile Cartoway Field App
-          in_progress: Bitte warten
         orange:
           title: Orange Fleet Performance
           in_progress: Bitte warten

@@ -64,11 +64,6 @@ fr:
             api_key: Clé API
       vehicle:
         devices:
-          fleet_demo:
-            title: Cartoway Field (démo)
-          fleet:
-            title: Cartoway Field
-            fleet_user: Nom de l'utilisateur Cartoway Field
           locster:
             title: Locster
             locster_ref: Réf. véhicule Locster
@@ -102,27 +97,6 @@ fr:
             title: Praxedo
             praxedo_agent_id: Code Technicien Praxedo
   errors:
-    fleet:
-      invalid_account: Utilisateur invalide (non existant)
-      list: Impossible de lister les appareils
-      create_company:
-        no_admin_api_key: Pas de clé admin API Cartoway Field renseignée
-        already_created: Compagnie déjà existante
-        error: Impossible de créer la compagnie
-      create_drivers:
-        no_api_key: Pas de clé API Cartoway Field renseignée pour ce compte client
-        already_created: Utilisateurs déjà existants
-      update_drivers:
-        update_failed: Échec lors de la mise à jour de l'utilisateur
-      vehicle_pos: Impossible de lister la position des véhicules
-      fetch_stops: Impossible de récupérer la liste des missions
-      fetch_routes: Impossible de récupérer la liste des tournées
-      no_missions: Aucune mission à envoyer
-      past_missions: La date du plan doit être postérieure ou égale à aujourd'hui
-      set_missions: Échec lors de la création de la mission
-      clear_missions: Échec lors de la suppression des missions
-      unauthorized: Non autorisé
-      timeout: Délai d'attente depassé
     tomtom:
       access_denied: >-
         Non Autorisé. 'Accès complet aux commandes' n'est pas activé dans
@@ -193,15 +167,6 @@ fr:
           driver_move: Autoriser transferts des arrêts
           driver_move_help: Permet de déplacer les arrêts entre tournées depuis l'application mobile
           help: Permet d'effectuer les tournées depuis les vues mobiles du planner
-        fleet_demo:
-          help: >-
-            (DEMONSTRATEUR) Simule la position des véhicules et le statut des
-            visites (si ces options sont actives) pour le dernier plan modifié.
-        fleet:
-          help: Permet d'envoyer les tournées vers l'app mobile Cartoway Field.
-          company_created: "Compagnie créée dans Cartoway Field :"
-          drivers_created: "Utilisateurs créés dans Cartoway Field :"
-          drivers_updated: 'Utilisateurs mis à jour dans Cartoway Field:'
         alyacom:
           help: Permet d'envoyer les tournées vers l'application AlyaCom.
         stg_telematics:
@@ -405,12 +370,6 @@ fr:
         vonage: Vonage SMS
         sms_partner: SMS Partner
       dialog:
-        fleet_demo:
-          title: Cartoway Field (démo)
-          in_progress: Veuillez patienter
-        fleet:
-          title: App mobile Cartoway Field
-          in_progress: Veuillez patienter
         orange:
           title: Orange Fleet Performance
           in_progress: Veuillez patienter
