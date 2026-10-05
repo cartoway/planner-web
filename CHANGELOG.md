@@ -6,10 +6,17 @@
   - REST API: OpenAPI 3.0 at `GET /api/0.1/openapi.json` and `GET /api/100/openapi.json` (`?scope=happy_path` is the getting-started flow; `?scope=core` drops admin and devices; operations tagged `happy_path` / `core` / `admin` / `devices`)
   - API 0.1: `GET /jobs` and `GET /jobs/:id` with `status` running/queued/working/failed/succeeded/killed (last job remembered on the customer, including while queued or working)
   - API 0.1 and 100: optional pagination on `GET /destinations` (`page` / `per_page` envelope)
+  - API 0.1 Operations (requires Deliver `has_operations`): publish/sync/close/cancel, list/show/map/search, route status/position/transfer, stop status/quantities/media
 
   ### Changed
   - Planning optimizer dialog: hide cancel until the job is transmitted to the solver, and when it has failed
   - REST API 0.1: unify error bodies: `{ message, status }` (import HTTP 422 may add `errors`)
+
+  ### Breaking
+  - REST planning routes/stops no longer expose field `status` / `status_code` / ETA (use `/api/0.1/operations` instead)
+  - Removed `PATCH /api/0.1/plannings/:id/update_stops_status`
+  - Removed Cartoway Field device (`fleet` / `fleet_demo`), its API endpoints, reporting UI, and `DEVICE_FLEET_ADMIN_API_KEY`
+  - Telematics stop status (TomTom, Praxedo, …) writes to Operations (`POST /operations/:id/fetch_device_status`); removed planning `fetch_stops_status` / web `update_stops_status`
 
 ## v110.0.3
   ### Fixed

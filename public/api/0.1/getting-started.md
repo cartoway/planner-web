@@ -417,46 +417,49 @@ curl -X PATCH -H "Api-Key: YOUR_API_KEY" \
   "{base}/api/0.1/plannings/1/automatic_insert.json?stop_ids=10,11"
 ```
 
-### Field execution (Cartoway Deliver)
+### Field execution (Cartoway Deliver / Operations)
 
-Prerequisites: Cartoway Deliver enabled on the account, plus customer options `enable_stop_status` and `enable_vehicle_position`.
+Prerequisites: Cartoway Deliver enabled on the account (`has_operations`). Field status lives on **Operations**, not on planning routes.
 
 1. Import (or create) the planning so stops sit on vehicle routes.
 2. Optional: [optimize](#optimizer).
-3. Send to the phones — **numeric** planning id (resolve `ref:PLAN-MON` first):
+3. Publish an operation from the planning:
+
+```sh
+curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
+  "{base}/api/0.1/plannings/ref:PLAN-MON/operations.json" \
+  -d '{"name": "Morning", "date": "2026-10-05"}'
+```
+
+4. Drivers work the operation (mobile link / Deliver). There is no REST webhook: poll the operation (about every 60 s):
 
 ```sh
 curl -H "Api-Key: YOUR_API_KEY" \
-  "{base}/api/0.1/plannings/ref:PLAN-MON.json"
-# read "id", then:
-curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
-  "{base}/api/0.1/devices/deliver/send_multiple.json" \
-  -d '{"planning_id": 7}'
+  "{base}/api/0.1/operations/OPERATION_ID.json"
 ```
 
-Without step 3 the driver does not receive the route, so **no status comes back**. There is no REST 0.1 webhook for stop status: poll (about every 60 s is enough):
-
-```sh
-curl -H "Api-Key: YOUR_API_KEY" -H "Accept-Language: en" \
-  "{base}/api/0.1/plannings/ref:PLAN-MON/routes.json"
-```
-
-For other telematics connectors, pull remote statuses first with `PATCH /plannings/:id/update_stops_status`. On Deliver the mobile app already writes into the planning; `GET …/routes` is enough.
-
-On each visit stop (`stops[]`):
+On each `operation_routes[].operation_stops[]`:
 
 | Field | Role |
 |-------|------|
-| `status` | Localized label (`Accept-Language`) |
-| `status_code` | Raw code — store this, not the label |
-| `status_updated_at` | When the driver validated the status |
-| `destination_ref` / `visit_ref` | Join back to the ERP order |
-| `custom_attributes.*` | Driver-editable fields defined on the account |
+| `status` | Raw field status (`intransit`, `delivered`, …) |
+| `status_updated_at` | When the cursor moved |
+| `eta` | Optional ETA |
+| `custom_attributes.*` | Driver-editable fields |
+| `destination_snapshot` / `visit_snapshot` | Join back to the ERP order |
 
-Deliver `status_code` values:
+Append a status event:
 
-| `status_code` | Typical meaning |
-|---------------|-----------------|
+```sh
+curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
+  "{base}/api/0.1/operations/OPERATION_ID/stops/STOP_ID/status.json" \
+  -d '{"status": "delivered", "recorded_at": "2026-10-05T10:00:00Z"}'
+```
+
+Deliver `status` values:
+
+| `status` | Typical meaning |
+|----------|-----------------|
 | `intransit` | In transit / en route |
 | `delivered` | Delivered / completed |
 | `exception` | Exception / anomaly |
@@ -474,7 +477,7 @@ curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
   -d '{"name": "anomaly", "object_type": "array", "object_class": "stop_visit", "default_value": ["Broken", "Refused", "Absent"]}'
 ```
 
-Read them back on `stops[].custom_attributes.driver_comment` / `.anomaly`. Store **status_code + list value + free text**, not a boolean.
+Read them back on operation stop `custom_attributes.driver_comment` / `.anomaly`. Store **status + list value + free text**, not a boolean.
 
 **Live GPS snapshot** (requires `enable_vehicle_position`):
 
@@ -598,7 +601,7 @@ Do not pass `global=true` here unless you want the solver to undo the sectors.
 | **VehicleUsage** | One vehicle inside one set (overrides set defaults). | `/vehicle_usage_sets/:set_id/vehicle_usages/:id` |
 | **Plannings** | A day’s (or period’s) set of routes. Creating one materializes routes and stops. | `/plannings`, `.../optimize`, `.../refresh`, `.../automatic_insert`, `.../apply_zonings` |
 | **Routes** | Track of one vehicle in a planning (or the unassigned route when `vehicle_usage_id` is null). | `/plannings/:id/routes`, `.../visits/moves`, `.../optimize` |
-| **Stops** | Occurrence of a visit, store reload or rest on a route. Created with the planning; activate, lock, or move them. Field `status` / `status_code` after Deliver (or after `update_stops_status`). | `/plannings/:id/routes/:id/stops/:id` |
+| **Stops** | Occurrence of a visit, store reload or rest on a route. Created with the planning; activate, lock, or move them. Field status for Deliver is on **Operations**, not here. | `/plannings/:id/routes/:id/stops/:id` |
 | **Tags** | Labels to subset visits when creating a planning (`tag_operation`: `and` / `or`). | `/tags` |
 | **Custom attributes** | Extra typed fields on visit, stop_visit, stop_store, vehicle or route. Driver-editable ones use `stop_visit`. | `/custom_attributes` |
 | **Zonings / Zones** | Polygons linked to vehicles; apply to a planning to assign stops. | `/zonings`, `.../automatic/:planning_id`, `/plannings/:id/apply_zonings` |

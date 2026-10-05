@@ -77,10 +77,11 @@
                       = link_to plannings_path do
                         %i.fa.fa-map-location.fa-fw
                         = t 'all.verb.list'
-                    %li
-                      = link_to operations_path do
-                        %i.fa.fa-clipboard-check.fa-fw
-                        = t 'operations.menu'
+                    - if can?(:manage, Operation)
+                      %li
+                        = link_to operations_path do
+                          %i.fa.fa-clipboard-check.fa-fw
+                          = t 'operations.menu'
                     %li.divider
                     - if current_user.customer.default_max_plannings
                       %li
@@ -220,11 +221,6 @@
                       = link_to store_import_path, disabled: !current_user_form_create?(:stores) do
                         %i.fa.fa-upload.fa-fw
                         = t 'destinations.menu.import_stores'
-                - if current_user.customer.device.configured? :fleet
-                  %li
-                    = link_to reporting_index_path do
-                      %i.fa.fa-line-chart.fa-fw
-                      %span.menu_label= t('reporting.index.title')
         - if user_signed_in?
           #menu-settings.menu-content
             .divider.solid

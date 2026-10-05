@@ -49,7 +49,7 @@ class V01::Stops < Grape::API
 
           resource :stops do
             desc 'Fetch stop.',
-              detail: 'Returns one stop of a planning route (visit, reload or rest) with planned time, alerts and device status.',
+              detail: 'Returns one stop of a planning route (visit, reload or rest) with planned time and alerts. Field status lives on Operations.',
               nickname: 'getStop',
               success: V01::Status.success(:code_200, V01::Entities::Stop),
               failure: V01::Status.failures

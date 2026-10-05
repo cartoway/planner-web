@@ -155,11 +155,11 @@ class RoutesControllerTest < ActionController::TestCase
   end
 
   # Tests for driver_update action
-  test 'should update route status via driver_update' do
+  test 'driver_update ignores planning route status' do
     vehicle = vehicles(:vehicle_one)
     route = routes(:route_one_one)
-    original_start_status = route.start_route_data.status
-    original_stop_status = route.stop_route_data.status
+    route.start_route_data.update!(status: 'atstore')
+    route.stop_route_data.update!(status: 'intransit')
 
     patch :driver_update, params: {
       id: route,
@@ -178,10 +178,8 @@ class RoutesControllerTest < ActionController::TestCase
     assert_response :success
     assert_equal({ 'success' => true }, JSON.parse(response.body))
     route.reload
-    assert_equal 'completed', route.start_route_data.status
-    assert_not_equal original_start_status, route.start_route_data.status
-    assert_equal 'completed', route.stop_route_data.status
-    assert_not_equal original_stop_status, route.stop_route_data.status
+    assert_equal 'atstore', route.start_route_data.status
+    assert_equal 'intransit', route.stop_route_data.status
   end
 
   test 'should update route custom_attributes via driver_update' do
@@ -203,9 +201,10 @@ class RoutesControllerTest < ActionController::TestCase
     assert_equal 'test_value', route.custom_attributes['test_field']
   end
 
-  test 'should update route status and custom_attributes together via driver_update' do
+  test 'should update route custom_attributes via driver_update without status' do
     vehicle = vehicles(:vehicle_one)
     route = routes(:route_one_one)
+    route.start_route_data.update!(status: 'atstore')
 
     CustomAttribute.create!(
       customer: vehicle.customer,
@@ -219,9 +218,6 @@ class RoutesControllerTest < ActionController::TestCase
       id: route,
       driver_token: vehicle.driver_token,
       route: {
-        start_route_data_attributes: {
-          status: 'in_progress'
-        },
         custom_attributes: { 'start_route_data:driver_note' => 'On route' }
       },
       format: :json
@@ -230,7 +226,7 @@ class RoutesControllerTest < ActionController::TestCase
     assert_response :success
     assert_equal({ 'success' => true }, JSON.parse(response.body))
     route.reload
-    assert_equal 'in_progress', route.start_route_data.status
+    assert_equal 'atstore', route.start_route_data.status
     assert_equal 'On route', route.custom_attributes_typed_hash(related_field: :start_route_data)['driver_note']
   end
 

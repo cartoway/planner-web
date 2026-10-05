@@ -77,7 +77,7 @@
               - path = Preferences::Catalog.toolbar_operation_partial('planning', op)
               - next if path.blank?
               = render partial: path
-        = render 'plannings/execution' if @planning.persisted?
+        = render 'plannings/execution' if @planning.persisted? && can?(:manage, Operation)
         #planning.row
 
 #map.sidebar-map
@@ -102,7 +102,7 @@
         %button#refresh-modal.btn.btn-primary{type: "button", disabled: refresh_dis}
           = t('plannings.edit.refresh')
 
-- if @planning.persisted?
+- if @planning.persisted? && can?(:manage, Operation)
   = render 'plannings/operation_modal'
   = render 'plannings/sync_modal'
 
@@ -178,8 +178,7 @@
         vehicle_usage_id: r.vehicle_usage_id,
         name: !r.vehicle_usage_id ? t("plannings.edit.out_of_route") : (r.ref ? (r.ref + ' ') : '') + r.vehicle_usage.vehicle.name,
         ref: r.ref,
-        outdated: r.outdated,
-        fleet_user: r.vehicle_usage ? r.vehicle_usage.vehicle.devices[:fleet_user] : ''
+        outdated: r.outdated
       }
     },
     zoning_ids: @planning.zonings.collect(&:id),
@@ -196,8 +195,6 @@
     url_click2call: current_user.link_phone_number,
     spreadsheet_columns: @spreadsheet_columns,
     spreadsheet_summary_columns: @spreadsheet_summary_columns,
-    available_stop_status: @planning.customer.enable_stop_status && @planning.customer.device.available_stop_status?,
-    update_stop_status: @planning.customer.enable_stop_status? && (@planning.date.nil? || @planning.date.between?(Time.now.beginning_of_day, Time.now.end_of_day)) && @planning.customer.device.available_stop_status?,
     callback_button: @callback_button,
     available_temperature: available_temperature?,
     devices: planning_devices(@planning.customer),
