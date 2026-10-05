@@ -131,7 +131,7 @@ class OptimizerJob < OptimizerJobStruct
     optimize_time = planning.customer.optimization_time || @@optimize_time
     {
       synchronous: false,
-      name: "c#{planning.customer_id} " + planning.name,
+      name: "c#{planning.customer_id}_" + planning.name,
       optimize_time: @@optimize_time_force || (optimize_time ? optimize_time * 1000 : nil),
       dicho_minimum_service_size: planning.customer.optimization_dicho_minimum_service_size || @@dicho_minimum_service_size,
       max_split_size: planning.customer.optimization_max_split_size || @@max_split_size,
