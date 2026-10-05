@@ -141,6 +141,8 @@ class CreateOperations < ActiveRecord::Migration[6.1]
       DROP TRIGGER IF EXISTS operation_stops_before_destination_delete ON destinations;
       DROP FUNCTION IF EXISTS operation_stops_null_for_destination();
     SQL
+    drop_table :operation_delivery_trackings, if_exists: true
+    drop_table :vehicle_positions, if_exists: true
     drop_table :operation_stop_status_events
     drop_table :operation_stops
     drop_table :operation_routes
