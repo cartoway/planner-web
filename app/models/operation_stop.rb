@@ -125,9 +125,52 @@ class OperationStop < ApplicationRecord
   def planned_at
     Operations::Snapshots.timestamp_on(operation_route.operation.date, stop_snapshot['time'])
   end
+  alias planned_arrival_at planned_at
 
   def passage_time
     Operations::Snapshots.clock_on(operation_route.operation.date, stop_snapshot['time'])
+  end
+  alias planned_arrival_clock passage_time
+
+  def service_duration_seconds
+    raw = visit_snapshot&.[]('duration') ||
+          destination_snapshot&.[]('duration') ||
+          store_snapshot&.[]('duration')
+    return 0 if raw.blank?
+
+    raw.to_i
+  end
+
+  def planned_departure_at
+    at = planned_arrival_at
+    return if at.blank?
+
+    at + service_duration_seconds.seconds
+  end
+
+  def planned_departure_clock
+    clock_on_operation_day(planned_departure_at)
+  end
+
+  def actual_departure_at
+    return unless treated?
+
+    status_updated_at
+  end
+
+  def actual_arrival_at
+    at = actual_departure_at
+    return if at.blank?
+
+    at - service_duration_seconds.seconds
+  end
+
+  def actual_arrival_clock
+    clock_on_operation_day(actual_arrival_at)
+  end
+
+  def actual_departure_clock
+    clock_on_operation_day(actual_departure_at)
   end
 
   FAILED_STATUSES = %w[rejected undelivered].freeze
@@ -164,13 +207,15 @@ class OperationStop < ApplicationRecord
     I18n.t("#{scope}.#{code}", default: I18n.t("plannings.edit.stop_status.#{code}", default: status))
   end
 
+  # Delay vs planned departure (service end), not arrival.
   def delay_minutes
     return unless treated?
 
-    planned = planned_at
-    return if planned.blank? || status_updated_at.blank?
+    planned = planned_departure_at
+    actual = actual_departure_at
+    return if planned.blank? || actual.blank?
 
-    ((status_updated_at - planned) / 60.0).round
+    ((actual - planned) / 60.0).round
   end
 
   def actual_quantity(kind, unit_id)
@@ -238,10 +283,9 @@ class OperationStop < ApplicationRecord
     %w[deliveries pickups].sum { |key| quantity_total(snap[key]) }
   end
 
+  # Treated status cursor is the service end (departure / livraison terminée).
   def actual_clock
-    return unless treated?
-
-    clock_on_operation_day(status_updated_at)
+    actual_departure_clock
   end
 
   def clock_on_operation_day(time)
