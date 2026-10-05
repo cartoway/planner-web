@@ -94,7 +94,7 @@ if @with_stops
         # Hash { id, quantity, icon, label } for deliverable units
         json.quantities visit_quantities(visit, route.vehicle_usage_id && route.vehicle_usage.vehicle)
       end
-      if stop.status && route.planning.customer.enable_stop_status
+      if stop.status
         json.status t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
         json.status_code stop.status.downcase
       end

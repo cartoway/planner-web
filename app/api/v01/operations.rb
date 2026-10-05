@@ -57,6 +57,12 @@ class V01::Operations < Grape::API
     def present_operation_error(exception)
       error!({ message: exception.message, status: 422 }, 422)
     end
+
+    def require_proofs_enabled!
+      return if current_customer.enable_proofs?
+
+      error!({ message: I18n.t('stops.mobile.proofs_disabled'), status: 403 }, 403)
+    end
   end
 
   resource :operations do # rubocop:disable Metrics/BlockLength
@@ -415,6 +421,7 @@ class V01::Operations < Grape::API
     post ':id/stops/:stop_id/photos' do
       operation = find_operation!
       authorize!(:update, operation)
+      require_proofs_enabled!
       stop = find_operation_stop!(operation)
       unless stop.attach_photos(params[:photos])
         error!({ message: stop.errors.full_messages.to_sentence.presence || 'photo upload failed', status: 422 }, 422)
@@ -456,6 +463,7 @@ class V01::Operations < Grape::API
     post ':id/stops/:stop_id/signature' do
       operation = find_operation!
       authorize!(:update, operation)
+      require_proofs_enabled!
       stop = find_operation_stop!(operation)
       unless stop.attach_signature(params[:signature])
         error!({ message: stop.errors.full_messages.to_sentence.presence || 'signature upload failed', status: 422 }, 422)

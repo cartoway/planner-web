@@ -5,6 +5,8 @@ class StopSignaturesController < ApplicationController
   rescue_from ActiveSupport::MessageVerifier::InvalidSignature, with: :not_found_error
 
   def create
+    return render_proofs_disabled unless proofs_enabled?
+
     if @stop.attach_signature(params[:signature])
       render json: { signature: @stop.serialized_signature }, status: :created
     else
@@ -39,5 +41,21 @@ class StopSignaturesController < ApplicationController
                    @stop.route.vehicle_usage&.vehicle_id
                  end
     raise ActiveRecord::RecordNotFound unless vehicle_id == current_vehicle.id
+  end
+
+  def proofs_enabled?
+    stop_customer.enable_proofs?
+  end
+
+  def stop_customer
+    if @stop.is_a?(OperationStop)
+      @stop.operation_route.operation.customer
+    else
+      @stop.route.planning.customer
+    end
+  end
+
+  def render_proofs_disabled
+    render json: { error: I18n.t('stops.mobile.proofs_disabled') }, status: :forbidden
   end
 end
