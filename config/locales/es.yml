@@ -1080,28 +1080,6 @@ es:
       comment: comentario
     menu:
       order_arrays: Pedidos
-  reporting:
-    download:
-      max_interval_reached: >-
-        El intervalo entre la fecha de inicio y la fecha de finalización debe
-        ser inferior a 31 días
-      end_date_inferior: La fecha de finalización debe ser mayor que la fecha de inicio.
-      fail: 'Ha ocurrido un error, por favor intente de nuevo'
-      success: El informe se está descargando.
-      retry: descargar nuevo
-      no_content: Ningún informe durante este período
-    index:
-      title: Relaciones
-      head: >-
-        Descarga el informe de los recorridos realizados con la aplicación móvil
-        Cartoway Field.
-      submit: Descargar
-      downloading: Descarga en progreso...
-      default_begin_date: D-8 por defecto
-      default_end_date: J-1 por defecto
-      begin_date: Fecha de inicio
-      end_date: Fecha final
-      with_actions: Historial de estado
   route_mailer:
     send_kmz_route:
       content: >-

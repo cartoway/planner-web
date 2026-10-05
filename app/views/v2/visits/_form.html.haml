@@ -149,4 +149,5 @@
 
       - if visit.persisted?
         = render 'v2/visits/planning_stops', visit: visit
-        = render 'v2/visits/operation_stops', visit: visit
+        - if can?(:manage, Operation)
+          = render 'v2/visits/operation_stops', visit: visit

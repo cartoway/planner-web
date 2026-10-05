@@ -748,9 +748,7 @@ export const plannings_edit = function(params) {
     nbBackgroundTaskErrors = 0,
     backgroundTaskIntervalId,
     currentZoom = 17,
-    needUpdateStopStatus = params.update_stop_status && withStopsInSidePanel,
     needUpdateTemperature = params.available_temperature,
-    availableStopStatus = params.available_stop_status,
     outOfRouteId = params.routes_array.filter(function(route) {
       return !route.vehicle_usage_id;
     }).map(function(route) {
@@ -1412,141 +1410,6 @@ export const plannings_edit = function(params) {
     }
   };
 
-  var updateStopsStatus = function(data) {
-    var updateStopAndStoreStatusContent = function(content, el) {
-      var klass = (el.store || el.stop_type === 'reload') ? 'store-row' : 'stop-row';
-      var $elt = content.find('.toggle-status, .' + klass);
-      var $toggleStatus = content.find('.toggle-status').first();
-      var $rowKlass = content.find('.' + klass).first();
-      var hadStatus;
-      if ($toggleStatus.length) {
-        hadStatus = $toggleStatus.get(0).style.display !== 'none';
-      } else if ($rowKlass.length) {
-        hadStatus = $rowKlass.get(0).style.display !== 'none';
-      } else {
-        hadStatus = false;
-      }
-
-      if (el.eta_formated) { content.find('.toggle-status-eta').show()} else { content.find('.toggle-status-eta').hide() }
-
-      $elt = content.find('.' + klass);
-
-      $.each($elt, function(i, elt) {
-        $elt = $(elt);
-        if (!el.status || el.status && !$elt.hasClass('row-status-' + el.status_code)) {
-          var match = $elt.attr("class").match(new RegExp('row-status-[a-z]*'));
-          if (match !== null) {
-            $elt.removeClass(match.shift());
-          }
-          $elt.addClass(klass + (el.status_code ? ' row-status-' + el.status_code : ''));
-        }
-      });
-      var name = content.find('.title .name');
-      if (name.attr('title')
-        && (!el.status || name.attr('title').search(el.status) == -1)) {
-        var title = name.attr('title').substr(0, hadStatus ? name.attr('title').lastIndexOf(' - ') : name.attr('title').length) + (el.status ? ' - ' + el.status : '')
-        title += (el.eta_formated ? ' - ' + I18n.t('plannings.edit.popup.eta') + ' ' + el.eta_formated : '');
-        name.attr({
-          title: title
-        });
-      }
-      name = content.find('.status');
-      if (name.text() != el.status) name.text(el.status);
-      name = content.find('.eta');
-      if (name.text() != el.eta_formated) name.text(el.eta_formated);
-      return content;
-    };
-
-    if (!data) {
-      return;
-    }
-
-    var $planningRoot = $('#planning');
-    var stopElementsById = {};
-    $planningRoot.find('[data-stop-id]').add($('.popover [data-stop-id]')).each(function() {
-      var sid = this.getAttribute('data-stop-id');
-      if (!sid) return;
-      if (!stopElementsById[sid]) stopElementsById[sid] = [];
-      stopElementsById[sid].push(this);
-    });
-
-    $.each(data, function(i, route) {
-      if (!route.vehicle_usage_id) {
-        return;
-      }
-      var $route = $planningRoot.find('li.route[data-route-id="' + route.id + '"]');
-      if (!$route.length) {
-        $route = $("[data-route-id='" + route.id + "']").first();
-      }
-
-      var startStore = $route.find('[data-store-id][data-type="start"]');
-      var stopStore = $route.find('[data-store-id][data-type="stop"]');
-
-      // Adapter pattern for stores
-      var startAdapter = { store: true, status: route.departure_status, status_code: route.departure_status_code, eta_formated: route.departure_eta_formated };
-      var stopAdapter = { store: true, status: route.arrival_status, status_code: route.arrival_status_code, eta_formated: route.arrival_eta_formated };
-
-      startStore.each(function(i, element) {
-        updateStopAndStoreStatusContent($(element), startAdapter);
-      });
-      stopStore.each(function(i, element) {
-        updateStopAndStoreStatusContent($(element), stopAdapter);
-      });
-
-      $.each(route.stops, function(i, stop) {
-        var routeL = routesLayer.clustersByRoute[route.id];
-        if (routeL) {
-          var routeStops = routeL.getLayers();
-          for (var si = 0; si < routeStops.length; si++) {
-            var layer = routeStops[si];
-            if (layer.properties && layer.properties.index == stop.index) {
-              layer.properties.tomtom = stop;
-              break;
-            }
-          }
-        }
-        var nodes = stopElementsById[stop.id];
-        if (!nodes || !nodes.length) {
-          return;
-        }
-        for (var ni = 0; ni < nodes.length; ni++) {
-          updateStopAndStoreStatusContent($(nodes[ni]), stop);
-        }
-      });
-    });
-  };
-
-  var requestUpdateStopsStatusPending = false;
-  var requestUpdateStopsStatus = function() {
-    if (!requestUpdateStopsStatusPending) {
-      $.ajax({
-        type: 'PATCH',
-        url: '/api/0.1/plannings/' + planning_id + '/update_stops_status.json',
-        dataType: 'json',
-        data: {
-          details: true
-        },
-        beforeSend: function() { requestUpdateStopsStatusPending = true },
-        complete: function() { requestUpdateStopsStatusPending = false },
-        success: function(data) {
-          if (data && data.errors) {
-            nbBackgroundTaskErrors++;
-            if (nbBackgroundTaskErrors > 1) clearInterval(backgroundTaskIntervalId);
-            $.each(data.errors, function(i, error) {
-              stickyError(I18n.t('plannings.edit.update_stops_status') + ' ' + error);
-            });
-          } else {
-            updateStopsStatus(data);
-          }
-        },
-        error: function() {
-          nbBackgroundTaskErrors++;
-          if (nbBackgroundTaskErrors > 1) clearInterval(backgroundTaskIntervalId);
-        }
-      });
-    }
-  };
-
   var requestUpdatedTemperaturePending = false;
   var requestUpdatedTemperature = function requestUpdatedTemperature(addToTooltip) {
     if (!requestUpdatedTemperaturePending) {
@@ -1599,9 +1462,6 @@ export const plannings_edit = function(params) {
     if (vehicleIdsPosition.length) {
       requestVehiclePosition();
     }
-    if (needUpdateStopStatus) {
-      requestUpdateStopsStatus();
-    }
     if (needUpdateTemperature) {
       requestUpdatedTemperature(true);
     }
@@ -1615,13 +1475,17 @@ export const plannings_edit = function(params) {
     backgroundTask();
   }
 
-  if (vehicleIdsPosition.length || needUpdateStopStatus) {
-    if (vehicleIdsPosition.length) {
-      vehicleLayer = L.featureGroup();
-      if (!params.overlay_layers) params.overlay_layers = {};
-      params.overlay_layers[I18n.t("plannings.edit.vehicles")] = vehicleLayer;
-    }
+  if (vehicleIdsPosition.length) {
+    vehicleLayer = L.featureGroup();
+    if (!params.overlay_layers) params.overlay_layers = {};
+    params.overlay_layers[I18n.t("plannings.edit.vehicles")] = vehicleLayer;
     initMarkers();
+    backgroundTaskIntervalId = setInterval(backgroundTask, 60000);
+    $(document).on('turbolinks:before-cache', function() {
+      clearInterval(backgroundTaskIntervalId);
+    });
+  } else if (needUpdateTemperature) {
+    backgroundTask();
     backgroundTaskIntervalId = setInterval(backgroundTask, 60000);
     $(document).on('turbolinks:before-cache', function() {
       clearInterval(backgroundTaskIntervalId);
@@ -4541,7 +4405,7 @@ export const plannings_edit = function(params) {
         if (from.data('type')) data.type = from.data('type');
         if (from.data('sync-user')) data.sync_user = from.data('sync-user');
 
-        if (operation != 'fetch_routes' && !confirm(I18n.t('all.verb.confirm'))) {
+        if (!confirm(I18n.t('all.verb.confirm'))) {
           return;
         }
 
@@ -4557,20 +4421,8 @@ export const plannings_edit = function(params) {
           dataDismiss: true
         });
 
-        url += ((data.planning_id && operation !== 'fetch_routes') ? '_multiple' : '');
-        var schema;
-
-        switch (operation) {
-        case 'clear':
-          schema = 'DELETE';
-          break;
-        case 'fetch_routes':
-          schema = 'GET';
-          break;
-        default:
-          schema = 'POST';
-          break;
-        }
+        url += (data.planning_id ? '_multiple' : '');
+        var schema = (operation === 'clear') ? 'DELETE' : 'POST';
 
         $.ajax({
           url: url,
@@ -4587,7 +4439,7 @@ export const plannings_edit = function(params) {
               var serviceTranslation = 'plannings.edit.' + service + '_' + operation +
                 (from.data('type') ? '_' + from.data('type') : '') +
                 (from.data('route-id') ? '.singular' : '.plural') + '.success';
-              if (operation !== 'fetch_routes') notice(I18n.t(serviceTranslation));
+              notice(I18n.t(serviceTranslation));
 
               if (from.data('planning-id') && operation === 'send')
                 _setPlanningRoutesLastSentAt(data);
@@ -4597,11 +4449,6 @@ export const plannings_edit = function(params) {
                 _setLastSentAt(data);
               else if (from.data('route-id') && operation === 'clear')
                 _clearLastSentAt(data, _context);
-              else if (operation === 'fetch_routes') {
-                if (from.data('user-label')) data.push({user_label: from.data('user-label')});
-                if (from.data('user-color')) data.push({user_color: from.data('user-color')});
-                _fetchFleetRoutes(data);
-              }
 
               callback && callback(from); // for backgroundTask
             }
@@ -4632,12 +4479,7 @@ export const plannings_edit = function(params) {
 
   })();
 
-  devicesObservePlanning.init($('#edit-planning'), function() {
-    if (availableStopStatus) {
-      needUpdateStopStatus = true;
-      requestUpdateStopsStatus();
-    }
-  });
+  devicesObservePlanning.init($('#edit-planning'));
 };
 
 var plannings_show = function(params) {

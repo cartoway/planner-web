@@ -1119,10 +1119,6 @@ fr:
         success: Utilisateurs supprimés avec succès
       send_email:
         success: Email envoyé à l'utilisateur avec succès
-    vehicles:
-      devices:
-        create_company: Initialiser le compte Cartoway Field
-        create_drivers: Mettre à jour ou créer les utilisateurs Cartoway Field
   custom_attributes:
     edit:
       title: Modifier propriété additionnelle
@@ -1929,28 +1925,6 @@ fr:
       name: nom
       comment: commentaire
       total: total
-  reporting:
-    download:
-      max_interval_reached: >-
-        L'intervalle entre la date de début et la date de fin doit être
-        inférieur à 31 jours
-      end_date_inferior: La date de fin doit être supérieure à la date de début
-      fail: 'Une erreur est survenue, veuillez réessayer'
-      success: Le rapport est en cours de téléchargement
-      retry: Re-télécharger
-      no_content: Aucun rapport durant cette période
-    index:
-      title: Rapports
-      head: >-
-        Téléchargement du rapport des tournées réalisées avec l'application
-        mobile Cartoway Field
-      submit: Télécharger
-      downloading: Téléchargement en cours...
-      default_begin_date: J-8 par défaut
-      default_end_date: J-1 par défaut
-      begin_date: Date de début
-      end_date: Date de fin
-      with_actions: Historique des statuts
   route_mailer:
     send_kmz_route:
       title: Export Plan KMZ
@@ -2018,16 +1992,6 @@ fr:
           mot de passe :
         test: ' de test'
         link: Définir mot de passe
-    fleet_drivers:
-      hello: Bonjour
-      subject: Comptes mobiles
-      preheader: Comptes mobiles
-      content: >-
-        Les utilisateurs mobiles suivant ont été créés et sont maintenant
-        disponibles pour se connecter sur le mobile (email comme login et
-        password)
-      login: 'email: %{email} / password: %{password}'
-      footer: Comptes mobiles
     connection:
       subject: 'Connexion à votre compte %{name}'
       title: Connexion à votre compte

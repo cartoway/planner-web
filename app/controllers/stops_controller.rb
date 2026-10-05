@@ -128,22 +128,18 @@ class StopsController < ApplicationController
   end
 
   def update
-    if stop_params[:status_updated_at].blank? || DateTime.parse(stop_params[:status_updated_at]) > (@stop.status_updated_at || 0)
-      respond_to do |format|
-        if @stop.update(stop_params)
-          format.json do
-            render json: { success: true }
-          end
-        else
-          format.json do
-            flash.now[:alert] = I18n.t('stops.error_messages.update.failure')
-            render json: { error: I18n.t('stops.error_messages.update.failure') }.to_json,
-                  status: :unprocessable_entity
-          end
+    respond_to do |format|
+      if @stop.update(stop_params)
+        format.json do
+          render json: { success: true }
+        end
+      else
+        format.json do
+          flash.now[:alert] = I18n.t('stops.error_messages.update.failure')
+          render json: { error: I18n.t('stops.error_messages.update.failure') }.to_json,
+                status: :unprocessable_entity
         end
       end
-    else
-      raise Exceptions::OutdatedRequestError
     end
   end
 
@@ -164,11 +160,10 @@ class StopsController < ApplicationController
   end
 
   def stop_params
-    params.require(:stop).permit(
-      :status,
-      :status_updated_at,
-      custom_attributes: RecursiveParamsHelper.permit_recursive(params['stop']['custom_attributes'])
-    )
+    stop = params.require(:stop)
+    return stop.permit if stop[:custom_attributes].blank?
+
+    stop.permit(custom_attributes: RecursiveParamsHelper.permit_recursive(stop[:custom_attributes]))
   end
 
   def set_route_context

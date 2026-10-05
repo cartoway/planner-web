@@ -52,26 +52,25 @@ class PraxedoTest < ActionController::TestCase
     end
   end
 
-  test 'should update stop status' do
+  test 'should update operation stop actual quantities' do
     # All 3 stops in route are completed
     # with following quantities from Praxedo:
     # 0 => 30kg / 1 => 10kg / 2 => 5kg
     with_stubs [:search_events_wsdl, :search_events] do
       planning = plannings(:planning_one)
-      planning.routes.select(&:vehicle_usage_id).each { |route|
-        route.last_sent_at = Time.now.utc
-      }
-      planning.save
+      Operation.where(customer_id: @customer.id).delete_all
+      operation = Operations::PublishFromPlanning.call(planning: planning, route_ids: [routes(:route_one_one).id])
 
-      planning.fetch_stops_status
-      planning.routes.select(&:vehicle_usage_id).each { |route|
-        if route.ref == 'route_one'
-          # Status are not sync (using TomTom's statuses)
-          # assert route.stops.select(&:active).all? { |stop| stop.status == 'Finished' }
-          assert_equal [5, 10, 30], route.stops.select{ |s| s.active && s.is_a?(StopVisit) }.map{ |s| s.visit.deliveries[2] }
-        end
-      }
+      Operations::FetchDeviceStopsStatus.call(operation: operation)
+
+      kg_id = @customer.deliverable_units.find { |du| du.label == 'kg' }.id.to_s
+      quantities = operation.operation_stops.where.not(visit_id: nil).map { |os|
+        os.reload.actual_quantities&.dig('deliveries', kg_id)
+      }.compact.map(&:to_f).sort
+      assert_equal [5.0, 10.0, 30.0], quantities
     end
+  ensure
+    Operation.where(customer_id: @customer.id).delete_all
   end
 
   test 'clear route' do

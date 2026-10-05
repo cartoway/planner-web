@@ -377,9 +377,11 @@ class StopsControllerTest < ActionController::TestCase
   end
 
   # Tests for update action
-  test 'planning stop status stays off the operation stop' do
+  test 'planning stop update ignores status' do
+    @stop.update!(status: 'intransit')
     operation = Operations::PublishFromPlanning.call(planning: @planning)
     operation_stop = operation.operation_stops.find_by!(stop_id: @stop.id)
+
     patch :update, params: {
       id: @stop,
       driver_token: @vehicle.driver_token,
@@ -389,53 +391,21 @@ class StopsControllerTest < ActionController::TestCase
       },
       format: :json
     }
+
     assert_response :success
-    assert_equal 'delivered', @stop.reload.status
+    assert_equal 'intransit', @stop.reload.status
     assert_nil operation_stop.reload.status
     assert_equal 0, operation_stop.operation_stop_status_events.count
   ensure
     Operation.where(customer_id: @planning.customer_id).delete_all
   end
 
-  test 'should update stop status successfully' do
-    patch :update, params: {
-      id: @stop,
-      driver_token: @vehicle.driver_token,
-      stop: {
-        status: 'completed',
-        status_updated_at: 1.hour.from_now.iso8601
-      },
-      format: :json
-    }
-    assert_response :success
-    assert_equal({ 'success' => true }, JSON.parse(response.body))
-    @stop.reload
-    assert_equal 'completed', @stop.status
-  end
-
-  test 'should reset stop status to default' do
-    @stop.update!(status: 'delivered', status_updated_at: 1.hour.ago)
-    patch :update, params: {
-      id: @stop,
-      driver_token: @vehicle.driver_token,
-      stop: {
-        status: '',
-        status_updated_at: 1.hour.from_now.iso8601
-      },
-      format: :json
-    }
-    assert_response :success
-    @stop.reload
-    assert_nil @stop.status
-  end
-
   test 'should update stop with custom attributes' do
+    @stop.update!(status: 'intransit')
     patch :update, params: {
       id: @stop,
       driver_token: @vehicle.driver_token,
       stop: {
-        status: 'in_progress',
-        status_updated_at: 1.hour.from_now.iso8601,
         custom_attributes: { 'custom_field' => 'custom_value' }
       },
       format: :json
@@ -443,7 +413,7 @@ class StopsControllerTest < ActionController::TestCase
     assert_response :success
     assert_equal({ 'success' => true }, JSON.parse(response.body))
     @stop.reload
-    assert_equal 'in_progress', @stop.status
+    assert_equal 'intransit', @stop.status
     assert_equal 'custom_value', @stop.custom_attributes['custom_field']
   end
 
@@ -451,8 +421,7 @@ class StopsControllerTest < ActionController::TestCase
     patch :update, params: {
       id: @stop,
       stop: {
-        status: 'completed',
-        status_updated_at: 1.hour.from_now.iso8601
+        custom_attributes: { 'custom_field' => 'x' }
       },
       format: :json
     }
@@ -465,8 +434,7 @@ class StopsControllerTest < ActionController::TestCase
       id: @stop,
       driver_token: 'invalid_token',
       stop: {
-        status: 'completed',
-        status_updated_at: 1.hour.from_now.iso8601
+        custom_attributes: { 'custom_field' => 'x' }
       },
       format: :json
     }
@@ -478,30 +446,14 @@ class StopsControllerTest < ActionController::TestCase
       id: 99999,
       driver_token: @vehicle.driver_token,
       stop: {
-        status: 'completed',
-        status_updated_at: 1.hour.from_now.iso8601
+        custom_attributes: { 'custom_field' => 'x' }
       },
       format: :json
     }
     assert_response :not_found
   end
 
-  test 'should not update stop with outdated status_updated_at' do
-    @stop.update!(status_updated_at: 1.hour.ago)
-    patch :update, params: {
-      id: @stop,
-      driver_token: @vehicle.driver_token,
-      stop: {
-        status: 'completed',
-        status_updated_at: 2.hours.ago
-      },
-      format: :json
-    }
-    assert_response :conflict
-  end
-
   test 'should handle update failure gracefully' do
-    # Mock the update to fail
     Stop.any_instance.stubs(:update).returns(false)
     Stop.any_instance.stubs(:errors).returns(['Some error'])
 
@@ -509,48 +461,12 @@ class StopsControllerTest < ActionController::TestCase
       id: @stop,
       driver_token: @vehicle.driver_token,
       stop: {
-        status: 'completed',
-        status_updated_at: 1.hour.from_now.iso8601
+        custom_attributes: { 'custom_field' => 'x' }
       },
       format: :json
     }
 
     assert_response :unprocessable_entity
     assert_equal({ 'error' => I18n.t('stops.error_messages.update.failure') }, JSON.parse(response.body))
-  end
-
-  test 'should update stop without status_updated_at when nil' do
-    @stop.update!(status_updated_at: nil)
-
-    patch :update, params: {
-      id: @stop,
-      driver_token: @vehicle.driver_token,
-      stop: {
-        status: 'completed',
-        status_updated_at: ''
-      },
-      format: :json
-    }
-
-    assert_response :success
-    assert_equal({ 'success' => true }, JSON.parse(response.body))
-  end
-
-  test 'should update stop with current status_updated_at' do
-    current_time = Time.current
-    @stop.update!(status_updated_at: current_time)
-
-    patch :update, params: {
-      id: @stop,
-      driver_token: @vehicle.driver_token,
-      stop: {
-        status: 'completed',
-        status_updated_at: (current_time + 1.second).iso8601
-      },
-      format: :json
-    }
-
-    assert_response :success
-    assert_equal({ 'success' => true }, JSON.parse(response.body))
   end
 end

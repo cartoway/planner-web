@@ -787,10 +787,6 @@ de:
         success: Benutzer erfolgreich gelöscht
       send_email:
         success: E-Mail an den Benutzer erfolgreich versendet
-    vehicles:
-      devices:
-        create_company: Cartoway Field-Benutzerkonto initialisieren
-        create_drivers: Aktualisieren oder Erstellen von mobilen Fahrern in Cartoway Field
   customers:
     duplicate:
       success: Kundenkonto erfolgreich dupliziert
@@ -1325,28 +1321,6 @@ de:
       name: Name
       comment: Bemerkung
       total: Summe
-  reporting:
-    download:
-      max_interval_reached: >-
-        Das Intervall zwischen dem Startdatum und dem Enddatum muss weniger als
-        31 Tage betragen
-      end_date_inferior: Das Enddatum muss größer sein als das Startdatum
-      fail: Es ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut
-      success: Der Bericht wird heruntergeladen
-      retry: Re-Download
-      no_content: Kein Bericht während dieser Zeit
-    index:
-      title: Verhältnis
-      head: >-
-        Laden Sie den Bericht über Touren herunter, die mit der mobilen
-        Anwendung Cartoway Field erstellt wurden
-      submit: Download
-      downloading: Download läuft...
-      default_begin_date: T-8 standardmäßig
-      default_end_date: T-1 standardmäßig
-      begin_date: Startdatum
-      end_date: Enddatum
-      with_actions: Statusverlauf
   route_mailer:
     send_kmz_route:
       title: KMZ-Export planen
@@ -1421,16 +1395,6 @@ de:
           Bitte verwenden Sie das von Ihnen festgelegte Passwort und Ihren
           Benutzernamen: %{login}.
         link: Verbindung
-    fleet_drivers:
-      hello: Hallo
-      subject: Mobilfunk-Benutzerkonto
-      preheader: Mobilfunk-Benutzerkonto
-      content: >-
-        Die folgenden mobilen Benutzer wurden erstellt und stehen nun für die
-        Verbindung mit einem Mobiltelefon bereit (E-Mail als Benutzername und
-        Passwort).
-      login: 'E-Mail: %{email} / Passwort: %{password}'
-      footer: Mobilfunk-Benutzerkonto
     accompanying_team:
       header: Unser Team unterstützt Sie
       main_content: >-

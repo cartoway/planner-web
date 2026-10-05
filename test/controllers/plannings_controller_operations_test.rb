@@ -138,11 +138,14 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
   end
 
   test 'planning json exposes today operation for the route toolbar button' do
-    operation = Operations::PublishFromPlanning.call(
-      planning: @planning,
-      date: Date.current,
-      route_ids: [routes(:route_one_one).id]
-    )
+    # Match ApplicationController#set_time_zone (user_one is Hawaii) so operation date equals Date.current during show.
+    operation = Time.use_zone(users(:user_one).time_zone) do
+      Operations::PublishFromPlanning.call(
+        planning: @planning,
+        date: Date.current,
+        route_ids: [routes(:route_one_one).id]
+      )
+    end
 
     get :show, params: { id: @planning.id }, format: :json
 
@@ -152,4 +155,5 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_equal operation.id, route_payload['today_operation']['id']
     assert_equal operation_path(operation), route_payload['today_operation']['path']
   end
+
 end
