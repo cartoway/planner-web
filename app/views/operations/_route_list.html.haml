@@ -86,10 +86,17 @@
                 .operation-stop-main.min-w-0
                   .operation-stop-name= label
                   .operation-stop-clock
-                    = stop.passage_time
-                    - if stop.actual_clock
-                      %span →
-                      = stop.actual_clock
+                    %span.operation-stop-clock-leg{title: t('operations.show.arrival')}
+                      = stop.planned_arrival_clock
+                      - if stop.actual_arrival_clock
+                        %span →
+                        = stop.actual_arrival_clock
+                    %span.operation-stop-clock-sep ·
+                    %span.operation-stop-clock-leg{title: t('operations.show.departure')}
+                      = stop.planned_departure_clock
+                      - if stop.actual_departure_clock
+                        %span →
+                        = stop.actual_departure_clock
                 .operation-stop-aside
                   - if stop.phase == 'failed'
                     %span.operation-gap.is-bad= stop.status_label
