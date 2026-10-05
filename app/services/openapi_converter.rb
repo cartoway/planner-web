@@ -104,6 +104,9 @@ class OpenapiConverter
       getJob
       deleteJob
       getRoutes
+      publishOperation
+      getOperation
+      postOperationStopStatus
     ].include?(operation['operationId'])
   end
 
@@ -114,8 +117,8 @@ class OpenapiConverter
       item.each_value.flat_map { |op| op.is_a?(Hash) ? Array(op['tags']) : [] }
     }.uniq
     descriptions = {
-      'happy_path' => 'Getting-started numbered flow: units, vehicles, destinations, planning, optimize, poll job, routes.',
-      'core' => 'Integration surface: destinations, visits, plannings, routes, stops, jobs, …',
+      'happy_path' => 'Getting-started numbered flow: units, vehicles, destinations, planning, optimize, poll job, routes, publish/poll operation, stop status.',
+      'core' => 'Integration surface: destinations, visits, plannings, routes, stops, jobs, operations, …',
       'admin' => 'Admin api_key: customers, users, profiles, layers, routers.',
       'devices' => 'Telematics device connectors.'
     }

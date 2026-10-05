@@ -422,33 +422,32 @@ class V01::Plannings < Grape::API
       present routes, with: V01::Entities::RouteProperties
     end
 
-    desc 'Update stops status.',
-      detail: 'Update stops status from remote devices. Only available if enable_stop_status is true for customer.',
-      nickname: 'updateStopsStatus',
-      http_codes: [
-        V01::Status.success(:code_204),
-        V01::Status.success(:code_200, V01::Entities::RouteStatus)
-      ].concat(V01::Status.failures)
+    desc 'Publish an operation from a planning.',
+      detail: 'Creates an Operation with snapshot routes/stops. Requires a device with has_operations (e.g. Cartoway Deliver).',
+      nickname: 'publishOperation',
+      success: V01::Status.success(:code_201, V01::Entities::Operation),
+      failure: V01::Status.failures
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
-      optional :with_details, type: Boolean, desc: 'Output route details', default: false
+      optional :name, type: String
+      optional :date, type: Date
+      optional :route_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, desc: 'Planning route ids to include. Defaults to all eligible routes.'
+      optional :visible_routes_only, type: Boolean, default: false
     end
-    patch ':id/update_stops_status' do
-      Route.includes_destinations_and_stores.scoping do
-        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-        if planning.customer.blocking_job(planning_id: planning.id)
-          status 204
-        else
-          service = DeviceService.new customer: @customer
-          service.fetch_stops_status(planning)
-          planning.save!
-          if params[:details] || params[:with_details]
-            present planning.routes.includes_destinations_and_stores.available, with: V01::Entities::RouteStatus
-          else
-            status 204
-          end
-        end
-      end
+    post ':id/operations' do
+      authorize!(:create, Operation)
+      planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+      operation = Operations::PublishFromPlanning.call(
+        planning: planning,
+        date: params[:date],
+        name: params[:name],
+        route_ids: params[:route_ids],
+        visible_routes_only: params[:visible_routes_only]
+      )
+      status 201
+      present operation, with: V01::Entities::Operation, type: :full
+    rescue Operations::RouteConflict, Operations::EmptyRoutes => e
+      error!({ message: e.message, status: 422 }, 422)
     end
 
     desc 'Send SMS for each stop visit.',

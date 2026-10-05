@@ -984,24 +984,6 @@ fa:
       name: ''
       comment: ''
       total: ''
-  reporting:
-    download:
-      max_interval_reached: ''
-      end_date_inferior: ''
-      fail: ''
-      success: ''
-      retry: ''
-      no_content: ''
-    index:
-      title: ''
-      head: ''
-      submit: ''
-      downloading: ''
-      default_begin_date: ''
-      default_end_date: ''
-      begin_date: ''
-      end_date: ''
-      with_actions: ''
   route_mailer:
     send_kmz_route:
       title: ''

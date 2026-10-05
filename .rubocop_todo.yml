@@ -84,7 +84,6 @@ Layout/CaseIndentation:
     - 'lib/tasks/mail.rake'
     - 'test/lib/devices/alyacom_base.rb'
     - 'test/lib/devices/api_base.rb'
-    - 'test/lib/devices/fleet_base.rb'
     - 'test/lib/devices/masternaut_base.rb'
     - 'test/lib/devices/orange_base.rb'
     - 'test/lib/devices/praxedo_base.rb'
@@ -115,7 +114,6 @@ Layout/DefEndAlignment:
 # SupportedStyles: leading, trailing
 Layout/DotPosition:
   Exclude:
-    - 'test/api/v01/devices/fleet_reporting_test.rb'
     - 'test/test_helper.rb'
     - 'test/views/plannings_test.rb'
 
@@ -141,7 +139,6 @@ Layout/EmptyLines:
     - 'app/models/visit.rb'
     - 'db/migrate/20240215103513_job_progress_as_jsonb.rb'
     - 'lib/routers/otp.rb'
-    - 'test/api/v01/devices/fleet_reporting_test.rb'
     - 'test/helpers/mobile_helper_test.rb'
     - 'test/models/customer_test.rb'
     - 'test/test_helper.rb'
@@ -365,7 +362,6 @@ Layout/MultilineMethodCallBraceLayout:
     - 'db/seeds.rb'
     - 'lib/routers/here.rb'
     - 'test/api/v01/devices/deliver_test.rb'
-    - 'test/api/v01/devices/fleet_reporting_test.rb'
     - 'test/api/v01/devices/praxedo_test.rb'
     - 'test/api/v01/devices/teksat_test.rb'
     - 'test/models/zoning_test.rb'
@@ -377,10 +373,8 @@ Layout/MultilineMethodCallBraceLayout:
 Layout/MultilineMethodCallIndentation:
   Exclude:
     - 'app/api/v01/routes.rb'
-    - 'test/api/v01/devices/fleet_reporting_test.rb'
     - 'test/api/v01/zonings_test.rb'
     - 'test/controllers/zonings_controller_test.rb'
-    - 'test/lib/devices/fleet_test.rb'
     - 'test/lib/routers/osrm_test.rb'
     - 'test/models/zoning_test.rb'
     - 'test/test_helper.rb'
@@ -507,7 +501,6 @@ Layout/SpaceInsideArrayLiteralBrackets:
     - 'lib/devices/alyacom.rb'
     - 'lib/devices/orange.rb'
     - 'public/api/0.1/examples/ruby/example.rb'
-    - 'test/lib/devices/fleet_base.rb'
     - 'test/lib/devices/masternaut_base.rb'
     - 'test/lib/devices/orange_base.rb'
 
@@ -566,7 +559,6 @@ Lint/AmbiguousOperator:
   Exclude:
     - 'test/api/v01/destinations_test.rb'
     - 'test/api/v01/devices/alyacom_test.rb'
-    - 'test/api/v01/devices/fleet_demo_test.rb'
     - 'test/api/v01/devices/masternaut_test.rb'
     - 'test/api/v01/devices/orange_test.rb'
     - 'test/api/v01/devices/teksat_test.rb'
@@ -698,7 +690,6 @@ Lint/Loop:
 # Configuration parameters: AllowedParentClasses.
 Lint/MissingSuper:
   Exclude:
-    - 'lib/devices/fleet_demo.rb'
 
 # Offense count: 1
 Lint/NoReturnInBeginEndBlocks:
@@ -720,7 +711,6 @@ Lint/OrAssignmentToConstant:
     - 'app/jobs/optimizer_job.rb'
     - 'app/jobs/simplify_geojson_tracks_job.rb'
     - 'lib/devices/alyacom.rb'
-    - 'lib/devices/fleet.rb'
     - 'lib/font_awesome.rb'
 
 # Offense count: 6
@@ -784,7 +774,6 @@ Lint/SelfAssignment:
 # Configuration parameters: IgnoreImplicitReferences.
 Lint/ShadowedArgument:
   Exclude:
-    - 'lib/devices/fleet_demo.rb'
     - 'lib/devices/masternaut.rb'
 
 # Offense count: 6
@@ -971,7 +960,6 @@ Naming/PredicateMethod:
     - 'app/models/zone.rb'
     - 'app/services/messagings/sms_partner_service.rb'
     - 'lib/devices/deliver.rb'
-    - 'lib/devices/fleet_demo.rb'
     - 'test/integration/browser_benchmark_test.rb'
 
 # Offense count: 9
@@ -1115,7 +1103,6 @@ Style/ClassVars:
     - 'app/jobs/optimizer.rb'
     - 'app/jobs/optimizer_job.rb'
     - 'config/initializers/rest_client.rb'
-    - 'lib/devices/fleet.rb'
     - 'lib/devices/masternaut.rb'
     - 'lib/devices/tomtom.rb'
     - 'lib/geocode_addok_wrapper.rb'
@@ -1167,7 +1154,6 @@ Style/CommentAnnotation:
     - 'lib/routers/osrm.rb'
     - 'lib/routers/otp.rb'
     - 'public/api/0.1/examples/ruby/example.rb'
-    - 'test/api/v01/devices/fleet_demo_test.rb'
 
 # Offense count: 2
 # This cop supports unsafe autocorrection (--autocorrect-all).
@@ -1553,7 +1539,6 @@ Style/MultilineIfModifier:
     - 'app/models/vehicle.rb'
     - 'app/views/api_web/v01/routes/index.json.jbuilder'
     - 'app/views/routes/_edit.json.jbuilder'
-    - 'lib/devices/fleet_modules/fleet_builder.rb'
     - 'lib/devices/tomtom.rb'
     - 'test/jobs/importer_destinations_test.rb'
 
@@ -1574,7 +1559,6 @@ Style/MultipleComparison:
     - 'db/migrate/20180219090520_change_hstore_to_jsonb.rb'
     - 'lib/devices/device_base.rb'
     - 'lib/devices/masternaut.rb'
-    - 'test/api/v01/devices/fleet_test.rb'
 
 # Offense count: 15
 # This cop supports unsafe autocorrection (--autocorrect-all).
@@ -1588,7 +1572,6 @@ Style/MutableConstant:
     - 'app/models/route.rb'
     - 'config/initializers/ar_datetime_mask.rb'
     - 'config/initializers/colors.rb'
-    - 'lib/devices/fleet.rb'
     - 'lib/font_awesome.rb'
     - 'lib/optim/optimizer_wrapper.rb'
     - 'public/api/0.1/examples/ruby/example.rb'
@@ -1683,7 +1666,6 @@ Style/OptionalBooleanParameter:
     - 'app/models/route.rb'
     - 'app/models/vehicle_usage.rb'
     - 'app/models/zoning.rb'
-    - 'lib/devices/fleet.rb'
     - 'lib/devices/tomtom.rb'
     - 'lib/value_to_boolean.rb'
 
@@ -1817,7 +1799,6 @@ Style/RedundantConstantBase:
 # This cop supports safe autocorrection (--autocorrect).
 Style/RedundantCurrentDirectoryInPath:
   Exclude:
-    - 'lib/devices/fleet.rb'
 
 # Offense count: 42
 # This cop supports safe autocorrection (--autocorrect).
@@ -1841,7 +1822,6 @@ Style/RedundantFetchBlock:
 # This cop supports safe autocorrection (--autocorrect).
 Style/RedundantFileExtensionInRequire:
   Exclude:
-    - 'lib/devices/fleet.rb'
     - 'test/lib/concave_hull_test.rb'
 
 # Offense count: 1
@@ -1881,7 +1861,6 @@ Style/RedundantReturn:
     - 'app/models/planning.rb'
     - 'app/models/vehicle_usage.rb'
     - 'config/initializers/rest_client.rb'
-    - 'lib/devices/fleet.rb'
     - 'lib/devices/orange.rb'
     - 'lib/devices/praxedo.rb'
     - 'lib/devices/stg_telematics.rb'
@@ -1903,7 +1882,6 @@ Style/RedundantSelfAssignmentBranch:
 # This cop supports unsafe autocorrection (--autocorrect-all).
 Style/RedundantSort:
   Exclude:
-    - 'lib/devices/fleet_demo.rb'
 
 # Offense count: 2
 # This cop supports safe autocorrection (--autocorrect).
@@ -2003,7 +1981,6 @@ Style/SlicingWithRange:
     - 'app/controllers/concerns/planning_export.rb'
     - 'app/models/router.rb'
     - 'lib/devices/device_base.rb'
-    - 'lib/devices/fleet.rb'
     - 'lib/devices/masternaut.rb'
     - 'lib/devices/tomtom.rb'
     - 'lib/devices/trimble.rb'
@@ -2087,7 +2064,6 @@ Style/SuperArguments:
     - 'app/models/concerns/quantity_attr.rb'
     - 'app/models/route.rb'
     - 'app/services/devices/deliver_service.rb'
-    - 'app/services/devices/fleet_service.rb'
     - 'app/services/devices/stg_telematics_service.rb'
     - 'app/services/devices/teksat_service.rb'
     - 'app/services/messagings/sms_partner_service.rb'

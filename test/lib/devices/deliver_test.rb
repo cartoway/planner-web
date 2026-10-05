@@ -20,17 +20,7 @@ class DeliverTest < ActionController::TestCase
     end
   end
 
-  test 'should get stop status' do
-    planning = plannings(:planning_one)
-    planning.routes.select(&:vehicle_usage_id).each{ |r|
-      r.last_sent_at = Time.now.utc
-    }
-    planning.save
-
-    planning.fetch_stops_status
-    planning.routes.select(&:vehicle_usage_id).each{ |r|
-      # FIXME: stop status is not saved for StopVisit for vehicle_three
-      # assert r.stops.select(&:active).all?{ |s| s.status } if r.vehicle_usage.vehicle.name != 'vehicle_three'
-    }
+  test 'deliver fetch_stops is a no-op for planning status' do
+    assert_equal [], @service.fetch_stops(@customer, Time.zone.now, plannings(:planning_one))
   end
 end

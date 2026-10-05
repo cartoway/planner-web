@@ -64,11 +64,6 @@ en:
             api_key: API key
       vehicle:
         devices:
-          fleet_demo:
-            title: Cartoway Field (demo)
-          fleet:
-            title: Cartoway Field
-            fleet_user: Cartoway Field user name
           locster:
             title: Locster
             locster_ref: Locster vehicle Ref.
@@ -102,27 +97,6 @@ en:
             title: Praxedo
             praxedo_agent_id: Praxedo Agent ID
   errors:
-    fleet:
-      invalid_account: User invalid (does not exist)
-      list: Can't list devices
-      create_company:
-        no_admin_api_key: No Cartoway Field admin API key given
-        already_created: Company already created
-        error: Cannot create company
-      create_drivers:
-        no_api_key: No Cartoway Field API key given for this customer
-        already_created: Users already created
-      update_drivers:
-        update_failed: Failed to update user
-      vehicle_pos: Cannot get vehicles position
-      fetch_stops: Cannot get missions list
-      fetch_routes: Cannot get routes list
-      no_missions: No missions to send
-      past_missions: Plan date must be later or equal than today
-      set_missions: Failed to create missions
-      clear_missions: Failed to destroy missions
-      unauthorized: Unauthorized
-      timeout: Request Timeout
     tomtom:
       access_denied: >-
         Access denied. 'Full Access Orders' is not enabled in WEBFLEET user
@@ -188,15 +162,6 @@ en:
           driver_move: Allow stop transfers
           driver_move_help: Allows moving stops between routes from the mobile app
           help: Allows routes to be carried out from the planner's mobile views
-        fleet_demo:
-          help: >-
-            (DEMO ONY) Simulate vehicles' position and visit status (if these
-            options are activated) for the last updated plan.
-        fleet:
-          help: Allows sending routes to Cartoway Field mobile app.
-          company_created: 'Cartoway Field company created:'
-          drivers_created: 'Cartoway Field drivers created:'
-          drivers_updated: 'Cartoway Field drivers updated:'
         alyacom:
           help: Allows sending routes to AlyaCom application.
         stg_telematics:
@@ -398,12 +363,6 @@ en:
         vonage: Vonage SMS
         sms_partner: SMS Partner
       dialog:
-        fleet_demo:
-          title: Cartoway Field (demo)
-          in_progress: Please wait
-        fleet:
-          title: Cartoway Field mobile app
-          in_progress: Please wait
         orange:
           title: Orange Fleet Performance
           in_progress: Please wait

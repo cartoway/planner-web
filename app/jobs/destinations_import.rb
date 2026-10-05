@@ -46,15 +46,34 @@ class DestinationsImport
           'import.csv'
         end
       content_type = file.respond_to?(:content_type) && file.content_type.present? ? file.content_type : 'text/csv'
-      ActiveStorage::Blob.create_and_upload!(io: io, filename: filename, content_type: content_type)
+      persist_blob!(io: io, filename: filename, content_type: content_type)
     end
 
     def persist_json!(data)
-      ActiveStorage::Blob.create_and_upload!(
+      persist_blob!(
         io: StringIO.new(JSON.generate(data.as_json)),
         filename: 'import.json',
         content_type: 'application/json'
       )
+    end
+
+    private
+
+    def persist_blob!(io:, filename:, content_type:)
+      ensure_blob_service!
+      ActiveStorage::Blob.create_and_upload!(
+        io: io,
+        filename: filename,
+        content_type: content_type,
+        service_name: ActiveStorage::Blob.service.name
+      )
+    end
+
+    def ensure_blob_service!
+      return if ActiveStorage::Blob.service&.name.present?
+
+      choice = Rails.configuration.active_storage.service.presence || :local
+      ActiveStorage::Blob.service = ActiveStorage::Blob.services.fetch(choice)
     end
   end
 end

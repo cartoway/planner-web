@@ -94,7 +94,6 @@ External resources can be configured trough environment variables:
 * HERE_APP_ID
 * HERE_APP_CODE
 * DEVICE_TOMTOM_API_KEY
-* DEVICE_FLEET_ADMIN_API_KEY
 
 ## Running
 

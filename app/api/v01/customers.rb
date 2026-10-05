@@ -29,7 +29,8 @@ class V01::Customers < Grape::API
       # Deals with deprecated speed_multiplicator
       p[:speed_multiplier] = p.delete[:speed_multiplicator] if p[:speed_multiplicator]
       p[:visit_duration] = p.delete(:take_over) if p[:take_over]
-      p[:devices] = customer[:devices].deep_merge(p[:devices] || {}) if customer && customer[:devices].size > 0
+      # Symbolize incoming keys so partial device updates deep_merge into existing settings (enable, etc.).
+      p[:devices] = customer.devices.deep_merge((p[:devices] || {}).deep_symbolize_keys) if customer && customer.devices.present?
       p[:advanced_options] = (customer[:advanced_options] || {}).merge(p[:advanced_options] || {}) if customer && customer[:advanced_options] && customer[:advanced_options].size > 0
       p = ActionController::Parameters.new(p)
 

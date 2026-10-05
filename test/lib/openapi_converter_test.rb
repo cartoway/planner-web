@@ -154,6 +154,24 @@ class OpenapiConverterTest < ActiveSupport::TestCase
             'responses' => { '204' => { 'description' => 'ok' } }
           }
         },
+        '/0.1/plannings/{id}/operations.json' => {
+          'post' => {
+            'operationId' => 'publishOperation',
+            'responses' => { '201' => { 'description' => 'ok', 'schema' => { '$ref' => '#/definitions/V01_Operation' } } }
+          }
+        },
+        '/0.1/operations/{id}.json' => {
+          'get' => {
+            'operationId' => 'getOperation',
+            'responses' => { '200' => { 'description' => 'ok', 'schema' => { '$ref' => '#/definitions/V01_Operation' } } }
+          }
+        },
+        '/0.1/operations/{id}/stops/{stop_id}/status.json' => {
+          'post' => {
+            'operationId' => 'postOperationStopStatus',
+            'responses' => { '200' => { 'description' => 'ok' } }
+          }
+        },
         '/0.1/zonings.json' => {
           'get' => {
             'operationId' => 'getZonings',
@@ -163,12 +181,16 @@ class OpenapiConverterTest < ActiveSupport::TestCase
       },
       'definitions' => {
         'V01_Destination' => { 'type' => 'object' },
+        'V01_Operation' => { 'type' => 'object' },
         'V01_Zoning' => { 'type' => 'object' }
       }
     }
 
     full = OpenapiConverter.convert(swagger)
     assert_includes full.dig('paths', '/0.1/destinations.json', 'get', 'tags'), 'happy_path'
+    assert_includes full.dig('paths', '/0.1/plannings/{id}/operations.json', 'post', 'tags'), 'happy_path'
+    assert_includes full.dig('paths', '/0.1/operations/{id}.json', 'get', 'tags'), 'happy_path'
+    assert_includes full.dig('paths', '/0.1/operations/{id}/stops/{stop_id}/status.json', 'post', 'tags'), 'happy_path'
     refute_includes Array(full.dig('paths', '/0.1/destinations.json', 'delete', 'tags')), 'happy_path'
     refute_includes Array(full.dig('paths', '/0.1/zonings.json', 'get', 'tags')), 'happy_path'
 
@@ -176,6 +198,8 @@ class OpenapiConverterTest < ActiveSupport::TestCase
     assert happy['paths'].key?('/0.1/destinations.json')
     assert happy.dig('paths', '/0.1/destinations.json').key?('get')
     refute happy.dig('paths', '/0.1/destinations.json').key?('delete')
+    assert happy['paths'].key?('/0.1/plannings/{id}/operations.json')
+    assert happy['paths'].key?('/0.1/operations/{id}.json')
     refute happy['paths'].key?('/0.1/zonings.json')
     refute happy.dig('components', 'schemas').key?('V01_Zoning')
     names = happy['tags'].map { |t| t['name'] }

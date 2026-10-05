@@ -15,7 +15,7 @@ require_relative '../lib/rack_x_robots_tag'
 
 require_relative '../lib/devices/device_base'
 [
-  'alyacom', 'fleet_demo', 'fleet', 'masternaut', 'notico', 'orange', 'deliver', 'praxedo',
+  'alyacom', 'masternaut', 'notico', 'orange', 'deliver', 'praxedo',
   'sopac', 'stg_telematics', 'suivi_de_flotte', 'teksat', 'tomtom', 'trimble'
 ].each{|name|
   require_relative "../lib/devices/#{name}"
@@ -127,8 +127,6 @@ module Planner
 
     config.devices = OpenStruct.new(
       alyacom: Alyacom.new,
-      fleet_demo: FleetDemo.new,
-      fleet: Fleet.new,
       # locster: Locster.new,
       masternaut: Masternaut.new,
       notico: Notico.new,
