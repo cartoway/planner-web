@@ -14,7 +14,7 @@ module Operations
     end
 
     def call
-      return [] unless @customer.enable_stop_status?
+      return [] unless @customer.device.available_stop_status?
 
       stops_map = build_stops_map
       return [] if stops_map.empty?

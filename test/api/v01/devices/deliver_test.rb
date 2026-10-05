@@ -11,7 +11,7 @@ class V01::Devices::DeliverTest < ActiveSupport::TestCase
 
   setup do
     @customer = customers(:customer_one)
-    @customer.update(devices: { deliver: { enable: true } }, enable_vehicle_position: true, enable_stop_status: true)
+    @customer.update(devices: { deliver: { enable: true } }, enable_vehicle_position: true, enable_proofs: true)
     set_route
   end
 

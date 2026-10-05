@@ -222,7 +222,7 @@ fr:
         enable_vehicle_position: Activer la position des véhicules
         vehicle_position_retention_days: Durée de conservation des positions (jours)
         vehicle_position_keep_trace: Conserver la trace GPS
-        enable_stop_status: Activer les statuts des visites
+        enable_proofs: Activer le stockage des preuves
         proof_retention_days: Durée de conservation des preuves (jours)
         enable_store_stops: Activer les sites intermédiaires
         enable_sms: Activer l'envoi de SMS
@@ -1233,6 +1233,9 @@ fr:
       outputs: Diffusion des tournées
       limits: Limites
       options: Options
+      suivi: Suivi
+      enable_proofs_help: >-
+        Permet de stocker des photos et signatures sur la vue mobile et via l’API.
       optimization_parameters: Paramètres d'optimisation
       operation_date_offset_help: >-
         Nombre de jours à ajouter à la date de l’opération par rapport à la date du jour.
@@ -2860,6 +2863,7 @@ fr:
       photos_empty: Aucune photo
       documents_empty: Aucun document
       photos_delete_expired: Délai de suppression dépassé
+      proofs_disabled: Le stockage des preuves n’est pas activé pour ce compte
       photo_close: Fermer
       photo_delete: Supprimer
       signature: Signature

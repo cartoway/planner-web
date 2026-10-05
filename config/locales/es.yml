@@ -177,7 +177,7 @@ es:
         description_label: Informaciones de la cuenta
         description_help: Detalles de la cuenta y los usuarios corrientes
         enable_vehicle_position: Activar la posición de los vehículos
-        enable_stop_status: Activar los estatutos de las visitas
+        enable_proofs: Activar el almacenamiento de pruebas
         name: Nombre
         profile: Perfil
         profile_id: Perfil

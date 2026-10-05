@@ -78,7 +78,7 @@ class V01::Devices::PraxedoTest < ActiveSupport::TestCase
   test 'should fetch stops into operation actual quantities' do
     customers(:customer_one).update(job_optimizer_id: nil)
     with_stubs [:search_events_wsdl, :search_events] do
-      @customer.update_attribute(:enable_stop_status, true)
+      @customer.update_attribute(:enable_proofs, true)
       set_route
       planning = @route.planning
       Operation.where(customer_id: @customer.id).delete_all

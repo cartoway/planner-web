@@ -187,7 +187,7 @@ he:
         description_label: מידע ספציפי על החשבון
         description_help: פרטי משתמש וחשבון
         enable_vehicle_position: אפשר מיקום רכבים
-        enable_stop_status: אפשר סטטוס עצירות
+        enable_proofs: אפשר אחסון הוכחות
         router_options_max_walk_distance: מרחק הליכה מקסימאלי
       deliverable_unit:
         label: תווית

@@ -35,7 +35,7 @@ class ApiWeb::V01::PlanningsTest < ActiveSupport::TestCase
   test 'stop json includes store_start and store_stop with custom_attributes when route has depots' do
     Bullet.enable = false
     customer = customers(:customer_one)
-    customer.update!(job_optimizer_id: nil, enable_stop_status: true)
+    customer.update!(job_optimizer_id: nil, enable_proofs: true)
     route = @planning.routes.joins(:vehicle_usage).first
     skip 'Route has no start/stop depots' if !route&.vehicle_usage&.default_store_start || !route&.vehicle_usage&.default_store_stop
 

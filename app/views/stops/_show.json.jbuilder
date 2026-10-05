@@ -86,7 +86,7 @@ when StopStore
     json.store_reload_id stop.store_reload.id
     json.color stop.default_color
     (json.error true) if !stop.store_reload.store.position?
-    if (store_status = stop.route_data&.status || stop.status) && stop.route.planning.customer.enable_stop_status
+    if (store_status = stop.route_data&.status || stop.status)
       json.status t("plannings.edit.stop_store_status.#{store_status.downcase}", default: store_status)
       json.status_code store_status.downcase
       json.eta_formated l(stop.route_data.eta, format: :hour_minute) if stop.route_data&.eta

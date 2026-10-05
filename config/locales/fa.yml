@@ -182,7 +182,7 @@ fa:
         description_label: ''
         description_help: ''
         enable_vehicle_position: ''
-        enable_stop_status: ''
+        enable_proofs: ''
       deliverable_unit:
         label: ''
         ref: ''

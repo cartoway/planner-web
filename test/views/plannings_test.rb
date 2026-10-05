@@ -28,7 +28,7 @@ class PlanningsTest < ActiveSupport::TestCase
   end
 
   test 'should return devices with json for planning' do
-    customers(:customer_one).update(job_optimizer_id: nil, devices: { deliver: { enable: true } }, enable_vehicle_position: true, enable_stop_status: true)
+    customers(:customer_one).update(job_optimizer_id: nil, devices: { deliver: { enable: true } }, enable_vehicle_position: true, enable_proofs: true)
 
     get "/plannings/#{@planning.id}.json?api_key=testkey1"
     assert last_response.ok?, last_response.body

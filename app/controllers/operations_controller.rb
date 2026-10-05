@@ -178,7 +178,6 @@ class OperationsController < ApplicationController
 
   def pull_device_status_if_needed
     return unless @operation.open?
-    return unless current_user.customer.enable_stop_status?
     return unless current_user.customer.device.available_stop_status?
 
     DeviceService.new(customer: current_user.customer).fetch_stops_status(@operation)
