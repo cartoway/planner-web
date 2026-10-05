@@ -14,6 +14,17 @@ class DestinationsImportTest < ActiveSupport::TestCase
     Planner::Application.config.delayed_job_use = @original_delayed_job_use
   end
 
+  test 'persist_json! stores a blob even when Blob.service name is blank' do
+    previous = ActiveStorage::Blob.service
+    ActiveStorage::Blob.service = nil
+    blob = DestinationsImport.persist_json!([{ 'ref' => 'x' }])
+    assert blob.persisted?
+    assert blob.service_name.present?
+    assert_equal [{ 'ref' => 'x' }], JSON.parse(blob.download)
+  ensure
+    ActiveStorage::Blob.service = previous
+  end
+
   test 'enqueue creates blob and assigns job when delayed_job_use' do
     Planner::Application.config.delayed_job_use = true
     file = Rack::Test::UploadedFile.new('test/fixtures/files/import_destinations_update.csv', 'text/csv')

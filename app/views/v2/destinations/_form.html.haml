@@ -159,7 +159,7 @@
       = render 'v2/visits/form', visit: @destination.visits.build, i: 0, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
   = hidden_field :destination, :geocoder_version, :value => @destination.geocoder_version
   = hidden_field :destination, :geocoded_at, :value => @destination.geocoded_at
-  - if @destination.persisted?
+  - if @destination.persisted? && can?(:manage, Operation)
     = render 'v2/destinations/operation_stops', destination: @destination
 #visits-attributes-change-bulk-modal.modal.fade{role: "dialog", tabindex: "-1", "aria-labelledby": "visits-attributes-change-bulk-modal-title", data: { controller: 'v2--visit-tags-bulk' }}
   .modal-dialog

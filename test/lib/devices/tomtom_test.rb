@@ -89,19 +89,19 @@ class TomtomTest < ActionController::TestCase
     assert decode, id
   end
 
-  test 'should update stop status' do
+  test 'should update operation stop status' do
     with_stubs [:orders_service_wsdl, :show_order_report] do
       planning = plannings(:planning_one)
-      planning.routes.select(&:vehicle_usage_id).each { |route|
-        route.last_sent_at = Time.now.utc
-      }
-      planning.save
+      Operation.where(customer_id: @customer.id).delete_all
+      operation = Operations::PublishFromPlanning.call(planning: planning, route_ids: [routes(:route_one_one).id])
 
-      planning.fetch_stops_status
-      planning.save
-      planning.reload
-      assert_equal 'Started', planning.routes.find{ |r| r.ref == 'route_one' }.stops.first.status
+      Operations::FetchDeviceStopsStatus.call(operation: operation)
+
+      stop = operation.operation_stops.find_by(visit_id: routes(:route_one_one).stops.select(&:active).first.visit_id)
+      assert_equal 'Started', stop.reload.status
     end
+  ensure
+    Operation.where(customer_id: @customer.id).delete_all
   end
 
   test 'should show explicit error on timeout' do

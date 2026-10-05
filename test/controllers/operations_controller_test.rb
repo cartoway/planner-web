@@ -189,4 +189,13 @@ class OperationsControllerTest < ActionController::TestCase
     assert_equal Date.new(2026, 9, 1), @operation.reload.date
     assert_equal I18n.t('operations.show.date_locked'), flash[:alert]
   end
+
+  test 'index is forbidden when Cartoway Deliver is not enabled' do
+    previous = @planning.customer.devices
+    @planning.customer.update!(devices: {})
+    get :index
+    assert_redirected_to root_path
+  ensure
+    @planning.customer.update!(devices: previous) if previous
+  end
 end

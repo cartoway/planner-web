@@ -55,9 +55,7 @@ class V01::Devices::DeliverTest < ActiveSupport::TestCase
     planning = plannings(:planning_one)
     route = routes(:route_one_one)
     route_three = routes(:route_three_one)
-    service = FleetService.new(customer: @customer).service
-    ref = service.send(:generate_route_id, route, service.p_time(route, route.start))
-    route.update(last_sent_at: Time.now, last_sent_to: 'Mapo.Live')
+    route.update(last_sent_at: Time.now, last_sent_to: 'Deliver')
 
     delete api('devices/deliver/clear_multiple', customer_id: @customer.id), planning_id: planning.id
     assert_equal 200, last_response.status

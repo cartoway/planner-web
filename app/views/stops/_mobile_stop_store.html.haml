@@ -5,33 +5,32 @@
 -# - agent: detected agent (:ios, :android, ...)
 -# - customer: current customer
 
-- next_status = case stop.status
-- when 'intransit'
-  - 'atstore'
-- when 'atstore'
-  - 'finished'
-- when nil
-  - 'intransit'
+- show_status = @operation_route.present?
+- operation_stop = @operation_stops_by_stop_id&.[](stop.id)
+
+- next_status = show_status ? { 'intransit' => 'atstore', 'atstore' => 'finished', nil => 'intransit' }[stop.status] : nil
 
 .panel.panel-default{ data: { stop_type: 'store' } }
-  .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop.status.presence || 'neutral'}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
+  .panel-heading{ id: ("heading-#{stop.id}"), role: 'tab', style: "padding: 5px", class: "panel-heading-#{show_status ? (stop.status.presence || 'neutral') : 'neutral'}", href: ("#collapse-#{stop.id}"), data: { toggle: 'collapse', parent: '#accordion'} }
     .d-flex.align-items-center.justify-content-between.mb-1
       .col-xs-2.p-0
         .d-flex.align-items-center.justify-content-between
           .stop-status-label-wrap
-            #label-index.label.label-default-negative.p-3{ class: "label-#{stop.status.presence || 'neutral'}" }
+            #label-index.label.label-default-negative.p-3{ class: "label-#{show_status ? (stop.status.presence || 'neutral') : 'neutral'}" }
               %i.fa.fa-fw{ class: "#{stop.default_icon}" }
-            %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if stop.status.blank?), data: { toggle: 'active_status', next_status: 'intransit', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
-              %span.stop-status-reset-face.btn.btn-xs.btn-default
-                %i.fa.fa-xmark
+            - if show_status
+              %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if stop.status.blank?), data: { toggle: 'active_status', next_status: 'intransit', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
+                %span.stop-status-reset-face.btn.btn-xs.btn-default
+                  %i.fa.fa-xmark
       .col-xs-6.p-0
         = stop.name
       .col-xs-4.p-0
-        %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'active_status', title: next_status } }
-          .d-flex.align-items-center
-            .fa.fa-regular.fa-square-caret-right.mr-2
-            #quick-status-text
-              = t("plannings.edit.stop_store_status.#{next_status}") if next_status
+        - if show_status
+          %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'active_status', title: next_status } }
+            .d-flex.align-items-center
+              .fa.fa-regular.fa-square-caret-right.mr-2
+              #quick-status-text
+                = t("plannings.edit.stop_store_status.#{next_status}") if next_status
     .d-flex.align-items-center
       .col-xs-12.p-0.mt-1
         .d-flex.align-items-center.justify-content-between
@@ -48,28 +47,28 @@
       - current_route_data_quantities = route_data_quantities(stop.route_data, stop.route.vehicle_usage&.vehicle)
       .container.mt-1
         .form-group.mb-1
-          - operation_stop = @operation_stops_by_stop_id&.[](stop.id)
           = bootstrap_form_for stop, url: (operation_stop ? operation_stop_path(operation_stop) : stop_path(stop)), method: :patch, remote: true do |f|
-            %label{ for: 'active_status' }
-              = t('stops.mobile.status')
-            .input-group.col-xs-12
-              .radiobtn
-                .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
-                  .col-xs-6.d-flex.justify-content-center
-                    %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'intransit' }, class: ('active' if stop.status == 'intransit') }
-                      = t('plannings.edit.stop_store_status.intransit')
-                  .col-xs-6.d-flex.justify-content-center
-                    %a.btn.btn-info{ data: { toggle: 'active_status', title: 'atstore' }, class: ('active' if stop.status == 'atstore') }
-                      = t('plannings.edit.stop_store_status.atstore')
-                .d-flex.align-items-center.justify-content-between
-                  .col-xs-6.d-flex.justify-content-center
-                  .col-xs-6.d-flex.justify-content-center
-                    %a.btn.btn-success{ data: { toggle: 'active_status', title: 'finished' }, class: ('active' if stop.status == 'finished') }
-                      = t('plannings.edit.stop_store_status.finished')
-              = f.hidden_field :position, { name: 'stop[position]', id: 'active_status_position' }
-              = f.hidden_field :status_updated_at, { name: 'stop[status_updated_at]', id: 'active_status_updated_at' }
-              = f.hidden_field :status, { name: 'stop[status]', id: 'active_status', onchange: "this.form.submit()" }
-              = f.hidden_field :id, { name: 'stop_id' }
+            - if show_status
+              %label{ for: 'active_status' }
+                = t('stops.mobile.status')
+              .input-group.col-xs-12
+                .radiobtn
+                  .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
+                    .col-xs-6.d-flex.justify-content-center
+                      %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'intransit' }, class: ('active' if stop.status == 'intransit') }
+                        = t('plannings.edit.stop_store_status.intransit')
+                    .col-xs-6.d-flex.justify-content-center
+                      %a.btn.btn-info{ data: { toggle: 'active_status', title: 'atstore' }, class: ('active' if stop.status == 'atstore') }
+                        = t('plannings.edit.stop_store_status.atstore')
+                  .d-flex.align-items-center.justify-content-between
+                    .col-xs-6.d-flex.justify-content-center
+                    .col-xs-6.d-flex.justify-content-center
+                      %a.btn.btn-success{ data: { toggle: 'active_status', title: 'finished' }, class: ('active' if stop.status == 'finished') }
+                        = t('plannings.edit.stop_store_status.finished')
+                = f.hidden_field :position, { name: 'stop[position]', id: 'active_status_position' }
+                = f.hidden_field :status_updated_at, { name: 'stop[status_updated_at]', id: 'active_status_updated_at' }
+                = f.hidden_field :status, { name: 'stop[status]', id: 'active_status', onchange: "this.form.submit()" }
+                = f.hidden_field :id, { name: 'stop_id' }
             - previous_route_data_quantities ||= nil
             - previous_route_data_quantities&.each do |unit|
               - if unit[:pickup].present? && unit[:pickup].to_f > 0

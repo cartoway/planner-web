@@ -39,11 +39,7 @@ class V01::Entities::Route < V01::Entities::RouteProperties
   expose(:outdated, as: :out_of_date, documentation: { type: 'Boolean', desc: 'DEPRECATED. Use outdated instead.' })
   expose(:outdated, documentation: { type: 'Boolean', desc: 'True when times/distances are stale and must be recomputed (refresh or next compute_saved).' })
 
-  expose(:departure_status, documentation: { type: String, desc: 'Departure status of start store.' }) { |route| route.start_route_data&.status && I18n.t('plannings.edit.stop_status.' + route.start_route_data.status.downcase, default: route.start_route_data.status) }
-  expose(:departure_eta, documentation: { type: DateTime, desc: 'Estimated time of departure from remote device for start store.' })
   expose(:departure, documentation: { type: DateTime, desc: 'Forced departure time of start store.' })
-  expose(:arrival_status, documentation: { type: String, desc: 'Arrival status of stop store.' }) { |route| route.stop_route_data&.status && I18n.t('plannings.edit.stop_status.' + route.stop_route_data.status.downcase, default: route.stop_route_data.status) }
-  expose(:arrival_eta, documentation: { type: DateTime, desc: 'Estimated time of arrival from remote device for stop store.' })
 
   expose(:stops, using: V01::Entities::Stop, documentation: { type: V01::Entities::Stop, is_array: true, desc: 'Ordered stops (visits, reloads, rests) on this route.' })
   expose(:stop_out_of_drive_time, documentation: { type: 'Boolean', desc: 'True when the last stop exceeds the vehicle drive-time window.' })

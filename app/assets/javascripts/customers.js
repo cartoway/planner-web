@@ -427,7 +427,6 @@ var displayLayerWarning = function() {
 };
 
 const devicesObserveCustomer = (function () {
-  var FLEET = 'fleet';
   function _devicesInitCustomer(base_name, config, params) {
     var requests = [];
 
@@ -439,11 +438,6 @@ const devicesObserveCustomer = (function () {
     function successCallback() {
       $('.' + config.name + '-api-sync').removeAttr('disabled');
       $('#' + config.name + '_container').removeClass('panel-default panel-danger').addClass('panel-success');
-
-      if (config.name == FLEET) {
-        $('#create-customer-device').attr('disabled', true);
-        $('#create-user-device').attr('disabled', false);
-      }
     }
 
     // maybe need rework on this one - WARNING -
@@ -451,11 +445,6 @@ const devicesObserveCustomer = (function () {
       stickyError(apiError);
       $('.' + config.name + '-api-sync').attr('disabled', 'disabled');
       $('#' + config.name + '_container').removeClass('panel-default panel-success').addClass('panel-danger');
-
-      if (config.name == FLEET) {
-        $('#create-customer-device').attr('disabled', false);
-        $('#create-user-device').attr('disabled', true);
-      }
     }
 
     function _userCredential() {
@@ -584,80 +573,6 @@ const devicesObserveCustomer = (function () {
     $.each(params['devices'], function (deviceName, config) {
       config.name = deviceName;
       _devicesInitCustomer('customer_devices', config, params);
-    });
-
-    var requestCompleted = function(data) {
-      if (data.error) {
-        stickyError(data.error);
-        return;
-      }
-
-      data.forEach(function(driver, index) {
-        var msg = I18n.t((driver.updated) ? 'customers.form.devices.fleet.drivers_updated' : 'customers.form.devices.fleet.drivers_created');
-        var email = (driver.updated) ? driver.email : driver.email + ' : ' + driver.password;
-        notice(msg + "\r\n" + email);
-      });
-    };
-
-    // Create company with mobile users for each vehicle with email
-    $('#create-customer-device').on('click', function(event) {
-      event.preventDefault();
-      $('#create-customer-device').attr('disabled', true);
-
-      $.ajax({
-        type: 'PATCH',
-        url: '/api/0.1/devices/fleet/create_company.json',
-        data: {
-          customer_id: params.customer_id
-        },
-        dataType: 'json',
-        beforeSend: beforeSendWaiting,
-        success: function(data) {
-          $('#create-customer-device').attr('disabled', false);
-
-          if (data.error) {
-            requestCompleted(data);
-            return;
-          }
-
-          requestCompleted(data.drivers);
-          $('#customer_devices_fleet_user').val(data.email);
-          $('#customer_devices_fleet_api_key').val(data.api_key);
-          $('#fleet_container').removeClass('panel-default panel-danger').addClass('panel-success');
-          $('#create-customer-device').attr('disabled', true);
-          $('#create-user-device').attr('disabled', false);
-        },
-        error: function(error) {
-          $('#create-customer-device').attr('disabled', false);
-          stickyError(error.statusText + ' : ' + error.responseJSON.message);
-        },
-        complete: completeWaiting
-      });
-    });
-
-    // Create mobile users for each vehicle with user
-    $('#create-user-device').on('click', function(event) {
-      event.preventDefault();
-      $('#create-user-device').attr('disabled', true);
-
-      $.ajax({
-        type: 'PATCH',
-        url: '/api/0.1/devices/fleet/create_or_update_drivers.json',
-        data: {
-          customer_id: params.customer_id
-        },
-        dataType: 'json',
-        beforeSend: beforeSendWaiting,
-        success: function(data) {
-          $('#create-user-device').attr('disabled', false);
-          requestCompleted(data);
-        },
-        error: function(error) {
-          $('#create-user-device').attr('disabled', false);
-          stickyError(error.statusText);
-        },
-        complete: completeWaiting
-      });
     });
   };
 

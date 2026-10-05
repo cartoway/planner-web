@@ -63,31 +63,31 @@
     - else
       #accordion.panel-group.route-stops{ role: 'tablist', aria_multiselectable: 'true' }
         - previous = nil
+        - show_status = @operation_route.present?
         - if @route.vehicle_usage&.default_store_start.present?
-          - next_status = case @route.start_route_data.status
-            - when 'atstore'
-              - 'finished'
-            - when nil
-              - 'atstore'
+          - next_status = show_status ? { 'atstore' => 'finished', nil => 'atstore' }[@route.start_route_data.status] : nil
+          - start_status_class = show_status ? (@route.start_route_data.status.presence || 'neutral') : 'neutral'
           .panel.panel-default{ data: { stop_type: 'store' } }
-            .panel-heading{ id: "heading-start-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{@route.start_route_data.status.presence || 'neutral'}", href: "#collapse-start-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
+            .panel-heading{ id: "heading-start-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{start_status_class}", href: "#collapse-start-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
               .d-flex.align-items-center.justify-content-between.mb-1
                 .col-xs-2.p-0
                   .d-flex.align-items-center.justify-content-between
                     .stop-status-label-wrap
-                      #label-index.label.label-default-negative.p-3{ class: "label-#{@route.start_route_data.status.presence || 'neutral'}" }
+                      #label-index.label.label-default-negative.p-3{ class: "label-#{start_status_class}" }
                         %i.fa.fa-fw{ class: "#{@route.vehicle_usage.default_store_start.default_icon}" }
-                      %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if @route.start_route_data.status.blank?), data: { toggle: 'route_start_route_data_status', next_status: 'atstore', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
-                        %span.stop-status-reset-face.btn.btn-xs.btn-default
-                          %i.fa.fa-xmark
+                      - if show_status
+                        %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if @route.start_route_data.status.blank?), data: { toggle: 'route_start_route_data_status', next_status: 'atstore', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
+                          %span.stop-status-reset-face.btn.btn-xs.btn-default
+                            %i.fa.fa-xmark
                 .col-xs-6.p-0
                   = t('routes.mobile.start_depot')
                 .col-xs-4.p-0
-                  %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'route_start_route_data_status', title: next_status } }
-                    .d-flex.align-items-center
-                      .fa.fa-regular.fa-square-caret-right.mr-2
-                      #quick-status-text
-                        = t("plannings.edit.stop_store_status.#{next_status}") if next_status
+                  - if show_status
+                    %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'route_start_route_data_status', title: next_status } }
+                      .d-flex.align-items-center
+                        .fa.fa-regular.fa-square-caret-right.mr-2
+                        #quick-status-text
+                          = t("plannings.edit.stop_store_status.#{next_status}") if next_status
               .d-flex.align-items-center
                 .col-xs-12.p-0.mt-1
                   .d-flex.align-items-center.justify-content-between
@@ -101,7 +101,7 @@
                 .fa.fa-caret-down.fa-fw
             .panel-collapse.collapse.in{ id: "collapse-start-route-data", role: 'tabpanel' }
               .panel-body
-                = render partial: 'routes/mobile_route_data', locals: { route: @route, route_data: @route.start_route_data, custom_attributes: start_route_data_custom_attributes, related_field: 'start_route_data', customer: customer, previous_route_data_quantities: previous_route_data_quantities, current_route_data_quantities: current_route_data_quantities, show_status_controls: true, status_context: 'start_route_data' }
+                = render partial: 'routes/mobile_route_data', locals: { route: @route, route_data: @route.start_route_data, custom_attributes: start_route_data_custom_attributes, related_field: 'start_route_data', customer: customer, previous_route_data_quantities: previous_route_data_quantities, current_route_data_quantities: current_route_data_quantities, show_status_controls: show_status, status_context: 'start_route_data' }
           - previous = @route.vehicle_usage&.default_store_start
         - previous_route_data_quantities = current_route_data_quantities
         - @stops.each do |stop|
@@ -115,32 +115,29 @@
             = render partial: 'stops/mobile_stop_rest', locals: { stop: stop, previous: previous, agent: agent, customer: customer }
           - previous = stop
         - if @route.vehicle_usage&.default_store_stop.present?
-          - next_status = case @route.stop_route_data.status
-            - when 'intransit'
-              - 'atstore'
-            - when 'atstore'
-              - 'finished'
-            - when nil
-              - 'intransit'
+          - next_status = show_status ? { 'intransit' => 'atstore', 'atstore' => 'finished', nil => 'intransit' }[@route.stop_route_data.status] : nil
+          - stop_status_class = show_status ? (@route.stop_route_data.status.presence || 'neutral') : 'neutral'
           .panel.panel-default{ data: { stop_type: 'store' } }
-            .panel-heading{ id: "heading-stop-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{@route.stop_route_data.status.presence || 'neutral'}", href: "#collapse-stop-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
+            .panel-heading{ id: "heading-stop-route-data", role: 'tab', style: "padding: 5px", class: "panel-heading-#{stop_status_class}", href: "#collapse-stop-route-data", data: { toggle: 'collapse', parent: '#accordion'} }
               .d-flex.align-items-center.justify-content-between.mb-1
                 .col-xs-2.p-0
                   .d-flex.align-items-center.justify-content-between
                     .stop-status-label-wrap
-                      #label-index.label.label-default-negative.p-3{ class: "label-#{@route.stop_route_data.status.presence || 'neutral'}" }
+                      #label-index.label.label-default-negative.p-3{ class: "label-#{stop_status_class}" }
                         %i.fa.fa-fw{ class: "#{@route.vehicle_usage.default_store_stop.default_icon}" }
-                      %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if @route.stop_route_data.status.blank?), data: { toggle: 'route_stop_route_data_status', next_status: 'intransit', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
-                        %span.stop-status-reset-face.btn.btn-xs.btn-default
-                          %i.fa.fa-xmark
+                      - if show_status
+                        %button.stop-status-reset.no-toggle{ type: 'button', title: t('plannings.edit.stop_status.none'), class: ('d-none' if @route.stop_route_data.status.blank?), data: { toggle: 'route_stop_route_data_status', next_status: 'intransit', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.status_reset_confirm'), ready_html: %(<i class="fa fa-check" aria-hidden="true"></i>) } }
+                          %span.stop-status-reset-face.btn.btn-xs.btn-default
+                            %i.fa.fa-xmark
                 .col-xs-6.p-0
                   = t('routes.mobile.stop_depot')
                 .col-xs-4.p-0
-                  %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'route_stop_route_data_status', title: next_status } }
-                    .d-flex.align-items-center
-                      .fa.fa-regular.fa-square-caret-right.mr-2
-                      #quick-status-text
-                        = t("plannings.edit.stop_store_status.#{next_status}") if next_status
+                  - if show_status
+                    %a#quick-status.col-xs-12.col-sm-6.btn.btn-default.no-toggle.mr-2.pull-right{ class: "#{' d-none' unless next_status}", data: { toggle: 'route_stop_route_data_status', title: next_status } }
+                      .d-flex.align-items-center
+                        .fa.fa-regular.fa-square-caret-right.mr-2
+                        #quick-status-text
+                          = t("plannings.edit.stop_store_status.#{next_status}") if next_status
               .d-flex.align-items-center
                 .col-xs-12.p-0.mt-1
                   .d-flex.align-items-center.justify-content-between
@@ -155,7 +152,7 @@
             - current_route_data_quantities = route_data_quantities(@route.stop_route_data, @route.vehicle_usage&.vehicle)
             .panel-collapse.collapse{ id: "collapse-stop-route-data", role: 'tabpanel' }
               .panel-body
-                = render partial: 'routes/mobile_route_data', locals: { route: @route, route_data: @route.stop_route_data, custom_attributes: stop_route_data_custom_attributes, related_field: 'stop_route_data', customer: customer, previous_route_data_quantities: previous_route_data_quantities, current_route_data_quantities: current_route_data_quantities, show_status_controls: true, status_context: 'stop_route_data'  }
+                = render partial: 'routes/mobile_route_data', locals: { route: @route, route_data: @route.stop_route_data, custom_attributes: stop_route_data_custom_attributes, related_field: 'stop_route_data', customer: customer, previous_route_data_quantities: previous_route_data_quantities, current_route_data_quantities: current_route_data_quantities, show_status_controls: show_status, status_context: 'stop_route_data'  }
         - if @stops&.empty?
           .alert.alert-warning
             = t("routes.mobile.empty_route")

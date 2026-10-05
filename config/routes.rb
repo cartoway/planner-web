@@ -201,7 +201,6 @@ Rails.application.routes.draw do
         patch :pin
       end
     end
-    patch 'update_stops_status'
   end
   delete 'plannings' => 'plannings#destroy_multiple'
 
@@ -252,6 +251,7 @@ Rails.application.routes.draw do
       post :transmit
       post :send_driver_sms
       post :transmit_destinations
+      post :fetch_device_status
       get :map
       get :search_stops
       get :routes
@@ -323,7 +323,6 @@ Rails.application.routes.draw do
   get '/images/point_large' => 'images#point_large'
   get '/images/point_large-:color' => 'images#point_large'
 
-  resources :reporting
   # The priority is based upon order of creation: first created -> highest priority.
   # See how all your routes lay out with "rake routes".
 

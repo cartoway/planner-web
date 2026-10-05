@@ -696,8 +696,6 @@ class Planning < ApplicationRecord
   def switch(route, vehicle_usage)
     previous_route = routes.find{ |route| route.vehicle_usage == vehicle_usage }
     if previous_route
-      need_fetch_stop_status = previous_route.stops.any?(&:status)
-
       previous_vehicle_usage = route.vehicle_usage
       route.vehicle_usage = vehicle_usage
       previous_route.vehicle_usage = previous_vehicle_usage
@@ -711,8 +709,6 @@ class Planning < ApplicationRecord
       rests.each{ |rest|
         move_stop(previous_route, rest, -1, true)
       }
-
-      fetch_stops_status if need_fetch_stop_status
 
       true
     else
@@ -1018,8 +1014,6 @@ class Planning < ApplicationRecord
       # Make sure there is at least one Zone with Vehicle, else, don't apply Zones
       return unless zonings.any?{ |zoning| zoning.zones.any?{ |zone| !zone.avoid_zone && !zone.vehicle_id.blank? } }
 
-      need_fetch_stop_status = routes.any?{ |r| r.stops.any?(&:status) }
-
       vehicles_map = Hash[routes.group_by(&:vehicle_usage).map { |vehicle_usage, routes|
         next if vehicle_usage && !vehicle_usage.active?
         [vehicle_usage && vehicle_usage.vehicle, routes[0]]
@@ -1043,8 +1037,6 @@ class Planning < ApplicationRecord
           routes.find{ |r| !r.vehicle_usage? }.add_visits(visits.collect{ |d| [d, true] }, false)
         end
       }
-
-      fetch_stops_status if need_fetch_stop_status
 
       true
     end
@@ -1198,78 +1190,6 @@ class Planning < ApplicationRecord
         self.reload # Refresh route.stops collection if stops have been moved
         raise 'Invalid stops count' unless self.routes.collect{ |r| r.stops.reject{ |s| s.is_a?(StopStore) }.size }.reduce(&:+) == stops_count + regulatory_rest_delta
         self.routes.each { |route| route.ensure_unique_stop_indices! }
-      end
-    end
-  end
-
-  def fetch_stops_status
-    Visit.transaction(requires_new: true) do
-      if customer.enable_stop_status
-        stops_map = Hash[routes.includes_destinations_and_stores.available.where.not(vehicle_usage_id: nil).flat_map(&:stops).map { |stop| [(stop.is_a?(StopVisit) ? "v#{stop.visit_id}" : "r#{stop.id}"), stop] }]
-        routes.each(&:clear_eta_data)
-        routes_quantities_changed = []
-
-        stops_status = Planner::Application.config.devices.each_pair.flat_map { |key, device|
-          if device.respond_to?(:fetch_stops) && customer.device.configured?(key)
-            device.fetch_stops(self.customer, device.planning_date(self), self) rescue nil
-          end
-        }.compact.select { |s|
-
-          # Update ETA on Routes
-          if !DeviceBase.is_a_store?(s[:order_id])
-            true
-          else
-            if DeviceBase.is_fleet_hash?(s)
-              attr = if DeviceBase.is_arrival?(s)
-                {
-                  stop_route_data_attributes: {
-                    eta: s[:eta],
-                    status: s[:status]
-                  }
-                }
-              else
-                {
-                  start_route_data_attributes: {
-                    eta: s[:eta],
-                    status: s[:status]
-                  }
-                }
-              end
-              route = routes.select { |r| r.id == s[:route_id].to_i }.first
-              route && route.update(attr)
-            end
-
-            false
-          end
-        }.each { |s|
-          if stops_map.key?(s[:order_id])
-            # Specific to Praxedo
-            if s[:update_quantities] && s[:deliveries].is_a?(Array)
-              deliveries = {}
-              du_by_label = {}
-              customer.deliverable_units.map { |du| du_by_label[du.label] = du.id }
-              s[:deliveries].map do |delivery|
-                if du_by_label.keys.include?(delivery[:label])
-                  value = Float(delivery[:delivery]) rescue nil
-                  deliveries[du_by_label[delivery[:label]]] = value if value
-                end
-              end
-
-              # Do not flag route as outdated just for quantities change, route quantities are computed after loop
-              stops_map[s[:order_id]].visit.update(deliveries: deliveries, outdate_skip: true)
-              routes_quantities_changed << stops_map[s[:order_id]].route
-            end
-
-            stops_map[s[:order_id]].update(status: s[:status], eta: s[:eta])
-          end
-        }
-
-        routes_quantities_changed.each{ |route|
-          route.compute_loads
-          route.save
-        }
-
-        stops_status
       end
     end
   end
