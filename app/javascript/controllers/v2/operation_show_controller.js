@@ -35,6 +35,7 @@ export default class extends Controller {
     this._excludedRouteIds = new Set()
     this.phase = 'all'
     this.query = ''
+    this._restorePersistedRouteSelection()
     this._beforeMorph = (event) => this._keepLiveState(event)
     document.addEventListener('turbo:before-morph-element', this._beforeMorph, true)
     this._mapHost = bindTurboMapHost({
@@ -47,6 +48,7 @@ export default class extends Controller {
     this._bindListScroll()
     const open = this.element.querySelector('details.operation-tour[open]')
     if (open) this._focusRoute(open)
+    this._syncRouteSelectionUi()
     this._loadMap()
   }
 
@@ -364,6 +366,13 @@ export default class extends Controller {
     if (current.classList.contains('operation-chip')) {
       next.classList.toggle('is-active', current.classList.contains('is-active'))
     }
+    if (current.matches('.operation-route-selector-option input[type="checkbox"]')) {
+      // Server HTML always ships checked:true; keep the live selector across demo ticks.
+      next.checked = current.checked
+    }
+    if (current.matches('.operation-route-toolbar input[type="search"]')) {
+      next.value = current.value
+    }
     if (current.id === 'operation-detail') {
       next.className = current.className
       next.innerHTML = current.innerHTML
@@ -373,6 +382,7 @@ export default class extends Controller {
   _refreshLive () {
     const open = this.element.querySelector('details.operation-tour[open]')
     if (open) this._focusRoute(open)
+    this._syncRouteSelectionUi()
     this._applyFilters()
     this._recolorMarkers()
     this._refreshGeojson()
@@ -551,7 +561,9 @@ export default class extends Controller {
   }
 
   filterRouteSelector (event) {
-    this._applyRouteSelectorFilter(event.currentTarget.value)
+    this._routeSelectorFilter = event.currentTarget.value
+    this._applyRouteSelectorFilter(this._routeSelectorFilter)
+    this._persistRouteSelection()
   }
 
   clearRouteSelectorFilter (event) {
@@ -559,7 +571,9 @@ export default class extends Controller {
     event.stopPropagation()
     const input = this.element.querySelector('.operation-route-toolbar input[type="search"]')
     if (input) input.value = ''
+    this._routeSelectorFilter = ''
     this._applyRouteSelectorFilter('')
+    this._persistRouteSelection()
   }
 
   _applyRouteSelectorFilter (raw) {
@@ -591,9 +605,35 @@ export default class extends Controller {
     const boxes = this._routeCheckboxes()
     const excluded = new Set()
     boxes.forEach((box) => {
-      if (!box.checked) excluded.add(box.value)
+      if (!box.checked) excluded.add(String(box.value))
     })
     this._excludedRouteIds = excluded
+    this._persistRouteSelection()
+    this._applyExcludedRoutes()
+    this._syncRouteSelectorLabel(boxes.length - excluded.size)
+    this._applyRouteVisibility()
+    this._addVehicleMarker()
+  }
+
+  _syncRouteSelectionUi () {
+    const excluded = this._excludedRouteIds || new Set()
+    this._routeCheckboxes().forEach((box) => {
+      box.checked = !excluded.has(String(box.value))
+    })
+    const input = this.element.querySelector('.operation-route-toolbar input[type="search"]')
+    if (input && this._routeSelectorFilter != null) {
+      input.value = this._routeSelectorFilter
+      this._applyRouteSelectorFilter(this._routeSelectorFilter)
+    }
+    this._applyExcludedRoutes()
+    this._syncRouteSelectorLabel(this._routeCheckboxes().length - excluded.size)
+    this._syncTraceButtons()
+    this._applyRouteVisibility()
+    this._addVehicleMarker()
+  }
+
+  _applyExcludedRoutes () {
+    const excluded = this._excludedRouteIds || new Set()
     this.element.querySelectorAll('details.operation-tour').forEach((tour) => {
       tour.hidden = excluded.has(String(tour.dataset.routeId))
     })
@@ -601,9 +641,33 @@ export default class extends Controller {
       const tours = [...section.querySelectorAll('details.operation-tour')]
       section.hidden = tours.length > 0 && tours.every((tour) => tour.hidden)
     })
-    this._syncRouteSelectorLabel(boxes.length - excluded.size)
-    this._applyRouteVisibility()
-    this._addVehicleMarker()
+  }
+
+  _selectionStorageKey () {
+    return `operation-route-selection:${window.location.pathname}`
+  }
+
+  _persistRouteSelection () {
+    const input = this.element.querySelector('.operation-route-toolbar input[type="search"]')
+    this._routeSelectorFilter = input ? input.value : (this._routeSelectorFilter || '')
+    try {
+      sessionStorage.setItem(this._selectionStorageKey(), JSON.stringify({
+        excluded: [...(this._excludedRouteIds || [])],
+        hidden: [...(this._hiddenRouteIds || [])],
+        filter: this._routeSelectorFilter
+      }))
+    } catch (_) {}
+  }
+
+  _restorePersistedRouteSelection () {
+    try {
+      const raw = sessionStorage.getItem(this._selectionStorageKey())
+      if (!raw) return
+      const data = JSON.parse(raw)
+      this._excludedRouteIds = new Set((data.excluded || []).map(String))
+      this._hiddenRouteIds = new Set((data.hidden || []).map(String))
+      this._routeSelectorFilter = data.filter || ''
+    } catch (_) {}
   }
 
   async _loadMap () {
@@ -842,6 +906,7 @@ export default class extends Controller {
     if (!routeId) return
     if (this._hiddenRouteIds.has(routeId)) this._hiddenRouteIds.delete(routeId)
     else this._hiddenRouteIds.add(routeId)
+    this._persistRouteSelection()
     this._syncTraceButtons()
     this._applyRouteVisibility()
     this._addVehicleMarker()
@@ -852,6 +917,7 @@ export default class extends Controller {
     const ids = this._traceRouteIds()
     const allHidden = ids.length > 0 && ids.every((id) => this._hiddenRouteIds.has(id))
     this._hiddenRouteIds = allHidden ? new Set() : new Set(ids)
+    this._persistRouteSelection()
     this._syncTraceButtons()
     this._applyRouteVisibility()
     this._addVehicleMarker()

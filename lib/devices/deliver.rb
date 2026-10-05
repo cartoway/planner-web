@@ -12,7 +12,8 @@ class Deliver < DeviceBase
       help: true,
       forms: {
         settings: {
-          driver_move: :boolean
+          driver_move: :boolean,
+          demo: :boolean
         },
         vehicle: {}
       }

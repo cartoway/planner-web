@@ -4121,6 +4121,14 @@ fr:
       send_destinations_sms_title: SMS des destinataires
       destinations_send_success: "%{sms} SMS et %{email} e-mail(s) envoyé(s)"
       destinations_send_fail: Aucun message destinataire n’a pu être envoyé
+      start_demo: Simuler
+      stop_demo: Arrêter la simulation
+      reset_demo: Réinitialiser
+      demo_started: Simulation démarrée
+      demo_stopped: Simulation arrêtée
+      demo_reset: Simulation réinitialisée
+      demo_reset_confirm: "Effacer positions GPS et statuts de cette opération ?"
+      demo_not_enabled: "Le démonstrateur Deliver n’est pas activé"
       send_route: Envoyer cette tournée
       clear_selection: Tout désélectionner
       last_sent: "Dernier envoi : %{at}"
