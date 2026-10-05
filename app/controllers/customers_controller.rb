@@ -243,7 +243,7 @@ class CustomersController < ApplicationController
         :vehicle_position_retention_days,
         :vehicle_position_keep_trace,
         :proof_retention_days,
-        :enable_stop_status,
+        :enable_proofs,
         :enable_store_stops,
         :enable_sms,
         :enable_sms_intransit,

@@ -216,7 +216,7 @@ en:
         enable_vehicle_position: Enable vehicle's position
         vehicle_position_retention_days: Vehicle position retention (days)
         vehicle_position_keep_trace: Keep GPS trace
-        enable_stop_status: Enable visits status
+        enable_proofs: Enable proof storage
         proof_retention_days: Proof retention (days)
         enable_store_stops: Enable intermediate stores
         enable_sms: Enable SMS
@@ -1207,6 +1207,9 @@ en:
       outputs: Outputs
       limits: Limits
       options: Options
+      suivi: Tracking
+      enable_proofs_help: >-
+        Allows storing photos and signatures from the mobile view and via the API.
       optimization_parameters: Optimization settings
       operation_date_offset_help: >-
         Number of days to add to the operation date compared to the current date.
@@ -2747,6 +2750,7 @@ en:
       photos_empty: No photos
       documents_empty: No documents
       photos_delete_expired: Deletion time has expired
+      proofs_disabled: Proof storage is not enabled for this account
       photo_close: Close
       photo_delete: Delete
       signature: Signature

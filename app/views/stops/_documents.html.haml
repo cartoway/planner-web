@@ -1,29 +1,32 @@
 - proof = stop
 - operation_proof = proof.is_a?(OperationStop)
+- customer = operation_proof ? proof.operation_route.operation.customer : proof.route.planning.customer
+- proofs_enabled = customer.enable_proofs?
 - photos = proof.serialized_photos
 - signature = proof.serialized_signature
 - docs_count = photos.size + (signature ? 1 : 0)
 - photos_url = operation_proof ? operation_stop_photos_path(proof) : stop_photos_path(proof)
 - signature_url = operation_proof ? operation_stop_signature_path(proof) : stop_signature_path(proof)
 .stop-documents
-  .stop-photos{ data: { url: photos_url } }
-    %label= t('stops.mobile.photos')
-    .stop-photos-actions
-      %label.btn.btn-default.stop-photos-pick.mb-0
-        .d-flex.align-items-center.justify-content-center
-          %i.fa.fa-camera.mr-2
-          = t('stops.mobile.take_photo')
-        %input.stop-photos-input.stop-photos-camera-input{ type: 'file', accept: 'image/*', capture: 'environment', name: 'photos[]' }
-      %label.btn.btn-default.stop-photos-pick.mb-0
-        .d-flex.align-items-center.justify-content-center
-          %i.fa.fa-folder-open.mr-2
-          = t('stops.mobile.from_storage')
-        %input.stop-photos-input.stop-photos-gallery-input{ type: 'file', accept: 'image/*', multiple: true, name: 'photos[]' }
-  .stop-signature{ data: { url: signature_url } }
-    %label= t('stops.mobile.signature')
-    %button.btn.btn-default.btn-block.stop-signature-open{ type: 'button' }
-      %i.fa.fa-signature.fa-fw
-      = t('stops.mobile.signature_open')
+  - if proofs_enabled
+    .stop-photos{ data: { url: photos_url } }
+      %label= t('stops.mobile.photos')
+      .stop-photos-actions
+        %label.btn.btn-default.stop-photos-pick.mb-0
+          .d-flex.align-items-center.justify-content-center
+            %i.fa.fa-camera.mr-2
+            = t('stops.mobile.take_photo')
+          %input.stop-photos-input.stop-photos-camera-input{ type: 'file', accept: 'image/*', capture: 'environment', name: 'photos[]' }
+        %label.btn.btn-default.stop-photos-pick.mb-0
+          .d-flex.align-items-center.justify-content-center
+            %i.fa.fa-folder-open.mr-2
+            = t('stops.mobile.from_storage')
+          %input.stop-photos-input.stop-photos-gallery-input{ type: 'file', accept: 'image/*', multiple: true, name: 'photos[]' }
+    .stop-signature{ data: { url: signature_url } }
+      %label= t('stops.mobile.signature')
+      %button.btn.btn-default.btn-block.stop-signature-open{ type: 'button' }
+        %i.fa.fa-signature.fa-fw
+        = t('stops.mobile.signature_open')
   .stop-documents-accordion{ class: ('d-none' if docs_count.zero?) }
     %button.stop-documents-toggle.btn.btn-default{ type: 'button', class: ('d-none' if docs_count.zero?) }
       .d-flex.align-items-center.justify-content-between
