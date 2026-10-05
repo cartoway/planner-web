@@ -330,7 +330,6 @@ module DeliveryTrackings
         departed_at = status_event_at(store, 'finished') || (departed ? store.status_updated_at : nil)
         loading_at = status_event_at(store, *DEPOT_LOADING_CODES) ||
                      (DEPOT_LOADING_CODES.include?(code) ? store.status_updated_at : nil) ||
-                     # ponytail: store cursor is single-valued once finished; reuse finish time if no atstore event
                      (departed ? departed_at : nil)
         # Visit already past this depot ⇒ show depot steps done even if store cursor lagged.
         if !departed && past_depot?(stop)
