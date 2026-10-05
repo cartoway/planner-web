@@ -18,13 +18,18 @@
       - elsif @operation_stop.phase == 'delivered' && (rest || delay&.negative?)
         %span.badge.text-bg-success= @operation_stop.status_label
       - elsif delay && delay.positive?
-    .operation-split
-      %div
-        %span= t('operations.show.planned')
-        %strong= @operation_stop.passage_time.presence || '—'
-      %div
-        %span= t('operations.show.actual')
-        %strong= @operation_stop.actual_clock.presence || '—'
+        %span.badge.text-bg-warning= "+#{delay} min"
+    .operation-times
+      - [['arrival', @operation_stop.planned_arrival_clock, @operation_stop.actual_arrival_clock], ['departure', @operation_stop.planned_departure_clock, @operation_stop.actual_departure_clock]].each do |key, planned, actual|
+        .operation-time-block
+          %p.operation-time-heading= t("operations.show.#{key}")
+          .operation-split
+            %div
+              %span= t('operations.show.planned')
+              %strong= planned.presence || '—'
+            %div
+              %span= t('operations.show.actual')
+              %strong= actual.presence || '—'
     - unless rest
       - windows = @operation_stop.time_windows_label
       - destination_duration = @operation_stop.destination_duration_label
