@@ -75,11 +75,9 @@ class RecordStatusTest < ActiveSupport::TestCase
     }
     assert route
     late, early = route.operation_stops.select { |stop| stop.kind == 'visit' && stop.stop_snapshot['time'].present? }.first(2)
-    date = @operation.date
-    late_planned = Time.zone.local(date.year, date.month, date.day) + late.stop_snapshot['time'].to_i
-    early_planned = Time.zone.local(date.year, date.month, date.day) + early.stop_snapshot['time'].to_i
-    late.update_columns(status: 'delivered', status_updated_at: late_planned + 10.minutes)
-    early.update_columns(status: 'delivered', status_updated_at: early_planned - 8.minutes)
+    # Delay is vs planned departure (arrival + service), not arrival alone.
+    late.update_columns(status: 'delivered', status_updated_at: late.planned_departure_at + 10.minutes)
+    early.update_columns(status: 'delivered', status_updated_at: early.planned_departure_at - 8.minutes)
 
     assert_equal 10, route.board[:delay]
   end

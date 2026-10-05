@@ -4183,6 +4183,8 @@ fr:
       attributes: Propriétés
       planned: Prévu
       actual: Réel
+      arrival: Arrivée
+      departure: Départ
       center_vehicle: Centrer sur le véhicule
       center_route: Centrer sur la tournée
       hide_trace: Masquer le tracé
