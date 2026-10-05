@@ -31,6 +31,7 @@ customer_one:
   plannings_count: 2
   vehicles_count: 2
   print_barcode: code128
+  enable_proofs: true
   devices:
     deliver:
       enable: true

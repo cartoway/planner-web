@@ -179,7 +179,7 @@ pt:
         description_label: Informação de conta
         description_help: Detalhes da conta e dos utilizadores
         enable_vehicle_position: Ativar posicionamento do veículo
-        enable_stop_status: Ativar estado das visitas
+        enable_proofs: Ativar armazenamento de provas
         router_options_approach: Chegada/Partida no sentido da circulação
         router_options_snap: Ligar a paragem ao cruzamento
         router_options_truck_restriction_penalty: Respeito estrito das limitações de pesados

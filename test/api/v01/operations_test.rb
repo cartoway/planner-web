@@ -83,7 +83,7 @@ class V01::OperationsTest < ActiveSupport::TestCase
 
   test 'fetch_device_status pulls telematics into the operation' do
     @planning.customer.update!(
-      enable_stop_status: true,
+      enable_proofs: true,
       devices: {
         deliver: { enable: true },
         tomtom: { enable: true, account: 'a', user: 'u', password: 'p' }

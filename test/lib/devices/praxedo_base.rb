@@ -12,7 +12,7 @@ module PraxedoBase
         code_route: 'ROUTE'
       }
     }
-    customer.enable_stop_status = true
+    customer.enable_proofs = true
     customer.save!
     customer
   end
