@@ -159,7 +159,7 @@ de:
         enable_references: Referenzen anzeigen
         enable_global_optimization: Globale Optimierung ermöglichen
         enable_vehicle_position: Aktivieren der Fahrzeugposition
-        enable_stop_status: Besuchsstatus aktivieren
+        enable_proofs: Speicherung von Nachweisen aktivieren
         enable_sms: SMS aktivieren
         sms_template: SMS-Vorlage
         sms_concat: Lange SMS
