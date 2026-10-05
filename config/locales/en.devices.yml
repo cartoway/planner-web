@@ -5,6 +5,7 @@ en:
         devices:
           deliver:
             driver_move: Allow stop transfers
+            demo: Demonstrator
           tomtom:
             account: Account name
             user: User
@@ -161,6 +162,8 @@ en:
         deliver:
           driver_move: Allow stop transfers
           driver_move_help: Allows moving stops between routes from the mobile app
+          demo: Demonstrator
+          demo_help: "Simulates vehicles along planned tracks: GPS positions and stop statuses (timestamps aligned with the plan)"
           help: Allows routes to be carried out from the planner's mobile views
         alyacom:
           help: Allows sending routes to AlyaCom application.
