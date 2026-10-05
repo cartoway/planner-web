@@ -57,6 +57,60 @@ class OperationsControllerTest < ActionController::TestCase
     assert_nil Operation.find_by(id: id)
   end
 
+  test 'show hides demo button when deliver demo is off' do
+    Rails.application.config.stubs(:url_shortener).returns(stub(shorten: 'http://short.test/route'))
+    @planning.customer.update!(devices: { deliver: { enable: true, demo: false } })
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    refute_includes response.body, I18n.t('operations.show.start_demo')
+  end
+
+  test 'show starts and stops demo when enabled' do
+    Rails.application.config.stubs(:url_shortener).returns(stub(shorten: 'http://short.test/route'))
+    @planning.customer.update!(devices: { deliver: { enable: true, demo: true } })
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_includes response.body, I18n.t('operations.show.start_demo')
+    assert_includes response.body, I18n.t('operations.show.reset_demo')
+    assert_includes response.body, 'operation_demo_actions'
+
+    post :demo, params: { id: @operation.id }
+    assert_redirected_to operation_path(@operation)
+    assert @operation.reload.demo_job_id.present?
+
+    delete :stop_demo, params: { id: @operation.id }
+    assert_redirected_to operation_path(@operation)
+    assert_nil @operation.reload.demo_job_id
+
+    post :reset_demo, params: { id: @operation.id }
+    assert_redirected_to operation_path(@operation)
+  end
+
+  test 'demo actions respond with turbo frame without redirect' do
+    Rails.application.config.stubs(:url_shortener).returns(stub(shorten: 'http://short.test/route'))
+    @planning.customer.update!(devices: { deliver: { enable: true, demo: true } })
+    request.headers['Turbo-Frame'] = 'operation_demo_actions'
+
+    post :demo, params: { id: @operation.id }
+    assert_response :success
+    assert_includes response.body, 'operation_demo_actions'
+    assert_includes response.body, I18n.t('operations.show.stop_demo')
+    assert @operation.reload.demo_job_id.present?
+
+    delete :stop_demo, params: { id: @operation.id }
+    assert_response :success
+    assert_includes response.body, I18n.t('operations.show.start_demo')
+    assert_nil @operation.reload.demo_job_id
+  end
+
+  test 'reset demo redirects for a full page reload' do
+    Rails.application.config.stubs(:url_shortener).returns(stub(shorten: 'http://short.test/route'))
+    @planning.customer.update!(devices: { deliver: { enable: true, demo: true } })
+
+    post :reset_demo, params: { id: @operation.id }
+    assert_redirected_to operation_path(@operation)
+  end
+
   test 'show renders the operation and map payload includes progress' do
     Rails.application.config.stubs(:url_shortener).returns(stub(shorten: 'http://short.test/route'))
     get :show, params: { id: @operation.id }

@@ -5,6 +5,7 @@ fr:
         devices:
           deliver:
             driver_move: Autoriser transferts des arrêts
+            demo: Démonstrateur
           tomtom:
             account: Compte
             user: Utilisateur
@@ -166,6 +167,8 @@ fr:
         deliver:
           driver_move: Autoriser transferts des arrêts
           driver_move_help: Permet de déplacer les arrêts entre tournées depuis l'application mobile
+          demo: Démonstrateur
+          demo_help: "Simule le parcours des véhicules le long des tracés : positions GPS et statuts d'arrêts (horaires calés sur le planning)"
           help: Permet d'effectuer les tournées depuis les vues mobiles du planner
         alyacom:
           help: Permet d'envoyer les tournées vers l'application AlyaCom.

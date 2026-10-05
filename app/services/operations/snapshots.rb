@@ -161,9 +161,12 @@ module Operations
         geometry = geometry.stringify_keys
         next if geometry['polylines'].blank? && Array(geometry['coordinates']).empty?
 
+        props = (feature['properties'] || feature[:properties] || {}).stringify_keys
         {
           'polylines' => geometry['polylines'],
-          'coordinates' => geometry['coordinates']
+          'coordinates' => geometry['coordinates'],
+          'stop_index' => props['stop_index'],
+          'stop_indices' => props['stop_indices']
         }.compact
       }
     rescue JSON::ParserError

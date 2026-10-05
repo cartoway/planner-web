@@ -57,7 +57,15 @@ body[data-controller~='operations'][data-action='show'] aside.form-sidebar {
 
 .operation-header-progress { flex: 1 1 auto; max-width: 28rem; }
 .operation-header-progress-label { margin-bottom: .25rem; }
-.operation-header-actions { margin-left: auto; display: flex; align-items: center; gap: .5rem; }
+.operation-header-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+
+  // Keep demo buttons in the same flex row (turbo-frame would otherwise stack forms).
+  turbo-frame#operation_demo_actions { display: contents; }
+}
 .operation-close { background: var(--op-navy); border-color: var(--op-navy); }
 
 tr.is-past { color: #6b7280; }

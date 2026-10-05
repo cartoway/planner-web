@@ -248,6 +248,9 @@ Rails.application.routes.draw do
     member do
       post :close
       post :cancel
+      post :demo
+      delete :demo, action: :stop_demo
+      post :reset_demo
       post :transmit
       post :send_driver_sms
       post :transmit_destinations

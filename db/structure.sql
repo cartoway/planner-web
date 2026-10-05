@@ -803,7 +803,8 @@ CREATE TABLE public.operations (
     deliverable_units_snapshot jsonb DEFAULT '[]'::jsonb NOT NULL,
     custom_attributes jsonb DEFAULT '{}'::jsonb NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    demo_job_id integer
 );
 
 
@@ -3343,6 +3344,13 @@ CREATE INDEX index_operations_on_customer_id ON public.operations USING btree (c
 
 
 --
+-- Name: index_operations_on_demo_job_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operations_on_demo_job_id ON public.operations USING btree (demo_job_id);
+
+
+--
 -- Name: index_operations_on_customer_id_and_date; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -4916,6 +4924,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260930130000'),
 ('20260930155200'),
 ('20260930162000'),
-('20260930181500');
+('20260930181500'),
+('20261005120000');
 
 

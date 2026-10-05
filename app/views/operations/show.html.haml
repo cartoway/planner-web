@@ -39,6 +39,7 @@
         = link_to edit_planning_path(@operation.planning), class: 'btn btn-light btn-sm', target: '_blank', rel: 'noopener', data: { turbo: false } do
           %i.fa.fa-map.fa-fw
           = t('operations.show.planning')
+      = render 'operations/demo_actions'
       - if @operation.open? && @send_routes.present?
         %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
           %i.fa.fa-envelope.fa-fw
