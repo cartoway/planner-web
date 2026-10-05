@@ -1,5 +1,9 @@
 # Changelog
 
+## v110.0.3
+  ### Fixed
+  - Destination import (API JSON): reimporting tagged destinations onto existing planning routes no longer raises `StaleObjectError` on Route
+
 ## v110.0.2
   ### Added
   - Mobile / iOS: navigate tries Benav first, then falls back to Apple Maps when Benav is not installed
