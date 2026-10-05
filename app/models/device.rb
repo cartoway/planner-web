@@ -76,11 +76,9 @@ class Device
   end
 
   def available_stop_status?
-    has_stop_status = false
-    all.each { |key, device|
-      has_stop_status ||= device.respond_to?(:fetch_stops) && @customer.device.configured?(key)
+    all.any? { |key, device|
+      device.respond_to?(:fetch_stops) && configured?(key)
     }
-    @customer.enable_stop_status? && has_stop_status
   end
 
   def available_cache_position?(vehicle)

@@ -329,10 +329,25 @@ const customers_edit = function (params) {
   syncVehiclePositionFields();
 
   var syncProofRetentionFields = function() {
-    $('#proof_retention_days_wrap').toggleClass('d-none', !$('#customer_enable_stop_status').is(':checked'));
+    $('#proof_retention_days_wrap').toggleClass('d-none', !$('#customer_enable_proofs').is(':checked'));
   };
-  $('#customer_enable_stop_status').on('change', syncProofRetentionFields);
+  $('#customer_enable_proofs').on('change', syncProofRetentionFields);
   syncProofRetentionFields();
+
+  var syncSuiviSection = function() {
+    var $section = $('#customer_suivi_section');
+    if (!$section.length) return;
+    var keys = String($section.data('operations-devices') || '').split(',').filter(Boolean);
+    var enabled = keys.some(function(key) {
+      return $('#customer_devices_' + key + '_enable').is(':checked');
+    });
+    $section.toggleClass('d-none', !enabled);
+  };
+  var operationsDeviceKeys = String($('#customer_suivi_section').data('operations-devices') || '').split(',').filter(Boolean);
+  operationsDeviceKeys.forEach(function(key) {
+    $('#customer_devices_' + key + '_enable').on('change', syncSuiviSection);
+  });
+  syncSuiviSection();
 };
 
 var customerProfileId = function() {

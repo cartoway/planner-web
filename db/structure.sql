@@ -249,7 +249,7 @@ CREATE TABLE public.customers (
     enable_global_optimization boolean DEFAULT false NOT NULL,
     optimization_vehicle_soft_upper_bound double precision,
     enable_vehicle_position boolean DEFAULT true NOT NULL,
-    enable_stop_status boolean DEFAULT false NOT NULL,
+    enable_proofs boolean DEFAULT false NOT NULL,
     router_options jsonb DEFAULT '{}'::jsonb NOT NULL,
     optimization_cost_waiting_time double precision,
     visit_duration integer,
@@ -4925,6 +4925,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260930155200'),
 ('20260930162000'),
 ('20260930181500'),
-('20261005120000');
+('20261005120000'),
+('20261005153000');
 
 

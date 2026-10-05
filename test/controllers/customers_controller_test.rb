@@ -28,6 +28,26 @@ class CustomersControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'admin edit shows suivi section when operations device is enabled' do
+    sign_in users(:user_admin)
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select '#customer_suivi_section:not(.d-none)'
+    assert_select '#customer_enable_proofs'
+    assert_select '#customer_enable_vehicle_position'
+    assert_select '#customer_enable_sms'
+    assert_select '#customer_history_cron_hour'
+    assert_select "label[for='customer_enable_proofs']", text: I18n.t('activerecord.attributes.customer.enable_proofs')
+  end
+
+  test 'admin edit hides suivi section without operations device' do
+    @customer.update!(devices: { tomtom: { enable: true, account: 'a', user: 'u', password: 'p' } })
+    sign_in users(:user_admin)
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select '#customer_suivi_section.d-none'
+  end
+
   test 'non-admin edit hides last_async_jobs' do
     @customer.update_column(:last_async_jobs, {
       'optimizer' => {
