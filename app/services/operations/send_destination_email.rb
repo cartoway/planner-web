@@ -6,7 +6,8 @@ module Operations
       customer = operation.customer
       template = customer.recipient_template || I18n.t('notifications.email.alert_plan')
       date = operation.date || Time.zone.today
-      list = trackings || operation.operation_delivery_trackings.includes(:destination)
+      list = Array(trackings || operation.operation_delivery_trackings.with_destination)
+      OperationDeliveryTracking.preload_visit_stops!(list)
 
       list.count { |tracking|
         stop = SendDestinationSms.first_visit_stop(tracking)
