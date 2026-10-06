@@ -36,7 +36,7 @@
 
     - if @vrt_enabled && @report.failed_count.positive?
       .mb-3
-        %button.btn.btn-success.btn-sm{
+        %button.btn.btn-success{
           type: 'button',
           data: {
             controller: 'confirm-click',
@@ -84,7 +84,7 @@
                     %img.border{src: preview.diff_url, alt: 'diff', style: 'max-height: 120px; max-width: 240px;'}
               %td.text-nowrap
                 - if @vrt_enabled && preview.status == 'failed' && preview.actual_url
-                  %button.btn.btn-sm.btn-success{
+                  %button.btn.btn-success{
                     type: 'button',
                     data: {
                       controller: 'confirm-click',

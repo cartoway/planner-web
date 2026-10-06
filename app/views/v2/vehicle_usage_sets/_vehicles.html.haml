@@ -6,7 +6,7 @@
         = t('vehicle_usages.index.select_unselect_all')
       - if can_update_vehicle_usage
         .dropdown
-          %button.btn.btn-light.btn-sm.dropdown-toggle{type: 'button', 'data-bs-toggle': 'dropdown'}
+          %button.btn.btn-light.dropdown-toggle{type: 'button', 'data-bs-toggle': 'dropdown'}
             %i.fa.fa-sort.fa-fw
             = t('vehicle_usages.index.sort')
           %ul.dropdown-menu.dropdown-menu-end
@@ -57,19 +57,19 @@
         %td.text-end.text-nowrap
           .btn-group{role: 'group'}
             - if vehicle_usage.active && can_view_vehicle_usage
-              = link_to edit_vehicle_usage_path(vehicle_usage, back: true), class: 'btn btn-primary btn-sm', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+              = link_to edit_vehicle_usage_path(vehicle_usage, back: true), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
                 %i.fa.fa-pencil.fa-fw
                 = t('all.verb.edit')
             - toggle_icon = vehicle_usage.active ? 'fa-power-off' : 'fa-circle-notch'
             - toggle_label = vehicle_usage.active ? t('vehicle_usages.index.disable') : t('vehicle_usages.index.enable')
             - if can_update_vehicle_usage
-              = link_to [:toggle, vehicle_usage], class: 'btn btn-light btn-sm', data: { turbo_method: :patch, turbo_confirm: (t('vehicle_usages.index.disable_confirm') if vehicle_usage.active) } do
+              = link_to [:toggle, vehicle_usage], class: 'btn btn-light', data: { turbo_method: :patch, turbo_confirm: (t('vehicle_usages.index.disable_confirm') if vehicle_usage.active) } do
                 %i.fa.fa-fw{class: toggle_icon}
                 = toggle_label
 .mt-2{id: "multiple-actions-#{vehicle_usage_set.id}"}
-  = button_tag type: :submit, class: 'btn btn-light btn-sm', name: 'disable_multiple', value: vehicle_usage_set.id.to_s, disabled: true, data: { confirm: t('vehicle_usages.index.multiple_disable_confirm') } do
+  = button_tag type: :submit, class: 'btn btn-light', name: 'disable_multiple', value: vehicle_usage_set.id.to_s, disabled: true, data: { confirm: t('vehicle_usages.index.multiple_disable_confirm') } do
     %i.fa.fa-power-off.fa-fw
     = t('vehicle_usages.index.multiple_disable')
-  = button_tag type: :submit, class: 'btn btn-light btn-sm', name: 'enable_multiple', value: vehicle_usage_set.id.to_s, disabled: true do
+  = button_tag type: :submit, class: 'btn btn-light', name: 'enable_multiple', value: vehicle_usage_set.id.to_s, disabled: true do
     %i.fa.fa-truck-field.fa-fw
     = t('vehicle_usages.index.multiple_enable')

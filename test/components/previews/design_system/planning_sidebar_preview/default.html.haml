@@ -32,9 +32,9 @@
           #planning-pane.sidebar-pane
             #extend_close_panel.row
               .pull-right
-                %button.btn.btn-light.btn-sm.extend{:title => "Agrandir le panneau", :type => "button"}
+                %button.btn.btn-light.extend{:title => "Agrandir le panneau", :type => "button"}
                   %i.fa.fa-maximize{"aria-hidden" => "true"}
-                %button.btn.btn-light.btn-sm.sidebar-close{:title => "Réduire le panneau", :type => "button"}
+                %button.btn.btn-light.sidebar-close{:title => "Réduire le panneau", :type => "button"}
                   %i.fa.fa-caret-left{"aria-hidden" => "true"}
             #route_selector.row
               .col-xs-12.multiple.ph-0
@@ -55,7 +55,7 @@
               #planning_tools.row
                 .row
                   %p.text-center.col-md-12
-                    %button#external-callback-btn.btn.btn-primary.btn-sm.customer_external_callback_url{:disabled => "disabled", :type => "button"}
+                    %button#external-callback-btn.btn.btn-primary.customer_external_callback_url{:disabled => "disabled", :type => "button"}
                       %i.fa.fa-desktop.fa-fw{"aria-hidden" => "true"}
                       Action callback (exemple)
                 .row
@@ -96,12 +96,12 @@
                           %input.btn.btn-light{"data-disable-with" => "Mettre à jour le zonage", :name => "commit", :type => "submit", :value => "Mettre à jour le zonage"}/
               #global_tools.row
                 .btn-group
-                  %button#optimize_all.btn.btn-primary.btn-sm.optimize{"data-target" => "#optimization-modal", "data-toggle" => "modal", :title => "Optimiser", :type => "button"}
+                  %button#optimize_all.btn.btn-primary.optimize{"data-target" => "#optimization-modal", "data-toggle" => "modal", :title => "Optimiser", :type => "button"}
                     %i.fa.fa-gears{"aria-hidden" => "true"}
                     Optimiser
                 .pull-right.btn-group
                   .dropdown.btn-group
-                    %a.btn.btn-light.btn-sm.right.export.dropdown-toggle{"data-toggle" => "dropdown", :href => "#", :role => "button", :title => "Exports"}
+                    %a.btn.btn-light.right.export.dropdown-toggle{"data-toggle" => "dropdown", :href => "#", :role => "button", :title => "Exports"}
                       %i.fa.fa-share-nodes{"aria-hidden" => "true"}
                       %span.caret
                     %ul.dropdown-menu.show
@@ -174,11 +174,11 @@
                         %i.fa.fa-arrows-left-right{"aria-hidden" => "true"}
                         Hors route
                         .btn-group.pull-right
-                          %button.automatic_insert_all.btn.btn-light.btn-xs{:title => "Insertion auto", :type => "button"}
+                          %button.automatic_insert_all.btn.btn-light{:title => "Insertion auto", :type => "button"}
                             %i.fa.fa-bolt{"aria-hidden" => "true"}
-                          %button.toggle.btn.btn-light.btn-xs{:title => "Afficher / masquer", :type => "button"}
+                          %button.toggle.btn.btn-light{:title => "Afficher / masquer", :type => "button"}
                             %i.fa.fa-eye{"aria-hidden" => "true"}
-                          %button.lock.btn.btn-xs.btn-light{:title => "Verrou", :type => "button"}
+                          %button.lock.btn.btn-light{:title => "Verrou", :type => "button"}
                             %i.fa.fa-unlock{"aria-hidden" => "true"}
                       #out_route_scroll.route-details.out-content.modern-scroll
                         .route-stops

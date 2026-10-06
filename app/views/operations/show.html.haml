@@ -23,7 +23,7 @@
       = form_with model: @operation, url: operation_path(@operation), method: :patch, local: true do |f|
         .d-flex.align-items-center.gap-2
           %span.operation-header-title{data: { v2__operation_show_target: 'nameLabel' }}= @operation.name
-          %button.btn.btn-link.btn-sm.p-0{type: 'button', aria: { label: t('operations.show.edit_name') }, data: { action: 'v2--operation-show#editName' }}
+          %button.btn.btn-link.p-0{type: 'button', aria: { label: t('operations.show.edit_name') }, data: { action: 'v2--operation-show#editName' }}
             %i.fa.fa-pencil
           = f.text_field :name, class: 'form-control form-control operation-name d-none', aria: { label: t('operations.index.name') }, data: { v2__operation_show_target: 'nameInput', action: 'keydown->v2--operation-show#saveNameOnEnter change->v2--operation-show#saveName' }
           %span.badge.operation-status= t("operations.statuses.#{@operation.status}")
@@ -36,25 +36,25 @@
       = render 'v2/shared/status_segments', counts: board, css_class: 'operation-segments'
     .operation-header-actions
       - if @operation.planning
-        = link_to edit_planning_path(@operation.planning), class: 'btn btn-light btn-sm', target: '_blank', rel: 'noopener', data: { turbo: false } do
+        = link_to edit_planning_path(@operation.planning), class: 'btn btn-light', target: '_blank', rel: 'noopener', data: { turbo: false } do
           %i.fa.fa-map.fa-fw
           = t('operations.show.planning')
       = render 'operations/demo_actions'
       #operation-send-buttons{data: { turbo_permanent: true }}
         - if @operation.open? && @send_routes.present?
-          %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
+          %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
             %i.fa.fa-envelope.fa-fw
             = t('operations.show.send_email')
           - if @operation.customer.enable_sms
-            %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-sms' }}
+            %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-sms' }}
               %i.fa.fa-comment-sms.fa-fw
               = t('operations.show.send_sms')
         - if @operation.open? && @send_trackings.present?
-          %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-email' }}
+          %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-email' }}
             %i.fa.fa-envelope-open-text.fa-fw
             = t('operations.show.send_destinations_email')
           - if @operation.customer.enable_sms
-            %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-sms' }}
+            %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-sms' }}
               %i.fa.fa-mobile-screen.fa-fw
               = t('operations.show.send_destinations_sms')
   .operation-body
@@ -98,7 +98,7 @@
         - selector_label = selector_count.zero? ? t('web.select2.route_none') : "#{selector_count} #{t(selector_count == 1 ? 'web.select2.route_selected' : 'web.select2.routes_selected')}"
         .d-flex.justify-content-end.px-2.pb-1
           .btn-group.operation-route-toolbar{data: { route_selector: true, none_label: t('web.select2.route_none'), one_label: t('web.select2.route_selected'), many_label: t('web.select2.routes_selected') }}
-            %button.btn.btn-sm.btn-light.dropdown-toggle{type: 'button', title: t('routes.show.selector'), aria: { label: t('routes.show.selector') }, data: { bs_toggle: 'dropdown', bs_auto_close: 'outside', bs_popper_config: '{"strategy":"fixed"}' }}
+            %button.btn.btn-light.dropdown-toggle{type: 'button', title: t('routes.show.selector'), aria: { label: t('routes.show.selector') }, data: { bs_toggle: 'dropdown', bs_auto_close: 'outside', bs_popper_config: '{"strategy":"fixed"}' }}
               %span{data: { route_selector_label: true }}= selector_label
             .dropdown-menu.dropdown-menu-end.shadow.searchable-checklist-dropdown-menu
               .searchable-checklist-dropdown-inner
@@ -127,7 +127,7 @@
                       %label.searchable-checklist-dropdown-row{for: "operation-route-selector-#{route.id}"}
                         %input.searchable-checklist-dropdown-checkbox{type: 'checkbox', checked: true, value: route.id, id: "operation-route-selector-#{route.id}", data: { action: 'change->v2--operation-show#applyRouteSelection' }}
                         %span.searchable-checklist-dropdown-label= label
-            %button.btn.btn-sm.btn-light{type: 'button', title: t('operations.show.hide_traces'), aria: { label: t('operations.show.hide_traces') }, data: { action: 'click->v2--operation-show#toggleAllTraces', hide_label: t('operations.show.hide_traces'), show_label: t('operations.show.show_traces') }}
+            %button.btn.btn-light{type: 'button', title: t('operations.show.hide_traces'), aria: { label: t('operations.show.hide_traces') }, data: { action: 'click->v2--operation-show#toggleAllTraces', hide_label: t('operations.show.hide_traces'), show_label: t('operations.show.show_traces') }}
               %i.fa.fa-eye.fa-fw
         = render 'operations/route_list'
         - if @next_page
