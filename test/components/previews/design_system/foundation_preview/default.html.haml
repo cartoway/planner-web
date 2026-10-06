@@ -12,9 +12,9 @@
         .card-body
           %h2.h6.card-title Quick samples
           .d-flex.flex-wrap.gap-2.mb-3
-            %button.btn.btn-primary.btn-sm{:type => "button"} Primary
-            %button.btn.btn-secondary.btn-sm{:type => "button"} Secondary
-            %button.btn.btn-outline-primary.btn-sm{:type => "button"} Outline
+            %button.btn.btn-primary{:type => "button"} Primary
+            %button.btn.btn-secondary{:type => "button"} Secondary
+            %button.btn.btn-outline-primary{:type => "button"} Outline
           %p.small.text-muted.mb-0
             %i.fa-solid.fa-location-dot.me-1{"aria-hidden" => "true"}
             Icons via Font Awesome (solid).
@@ -23,7 +23,7 @@
         %strong Tip:
         v2 screens often combine
         = succeed "," do
-          %code .btn.btn-sm
+          %code .btn
         = succeed "," do
           %code .table.table-striped.table-condensed
         %code .row

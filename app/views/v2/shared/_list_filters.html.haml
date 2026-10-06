@@ -26,7 +26,7 @@
       - if show_date
         = date_field_tag date_name, date, class: 'form-control form-control-sm v2-list-filters-date', data: { action: 'change->v2--list-filters#submitNow' }
     - if chips.any?
-      .btn-group.btn-group-sm.v2-list-filters-chips{role: 'group'}
+      .btn-group.v2-list-filters-chips{role: 'group'}
         - chips.each do |chip|
           - value = chip[:value].to_s
           - active = status == value
