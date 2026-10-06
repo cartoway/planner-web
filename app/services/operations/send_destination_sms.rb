@@ -7,7 +7,8 @@ module Operations
       messaging = SendDriverSms.messaging_service(customer)
       template = customer.sms_template || I18n.t('notifications.sms.alert_plan')
       date = operation.date || Time.zone.today
-      list = trackings || operation.operation_delivery_trackings.includes(:destination)
+      list = Array(trackings || operation.operation_delivery_trackings.with_destination)
+      OperationDeliveryTracking.preload_visit_stops!(list)
 
       list.count { |tracking|
         stop = first_visit_stop(tracking)

@@ -242,7 +242,8 @@ class OperationsController < ApplicationController
 
   def destination_trackings_for_send
     OperationDeliveryTracking.ensure_for!(@operation)
-    trackings = @operation.operation_delivery_trackings.includes(:destination).to_a
+    trackings = @operation.operation_delivery_trackings.with_destination.to_a
+    OperationDeliveryTracking.preload_visit_stops!(trackings)
     return trackings if params[:trackings].blank?
 
     submitted = params[:trackings].to_unsafe_h
@@ -281,7 +282,7 @@ class OperationsController < ApplicationController
   end
 
   def paged_routes
-    @filtered_routes.includes(:operation, :vehicle, { route: :route_data }, operation_stops: :operation_stop_status_events).offset((page - 1) * PER_PAGE).limit(PER_PAGE)
+    @filtered_routes.includes_for_show.offset((page - 1) * PER_PAGE).limit(PER_PAGE)
   end
 
   def next_page
