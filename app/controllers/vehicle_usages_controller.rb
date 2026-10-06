@@ -27,7 +27,10 @@ class VehicleUsagesController < ApplicationController
   include V2Layout
 
   def edit
-    render 'edit_sidebar', layout: false if v2_form_sidebar_request?
+    return if render_v2_form_or_list('edit_sidebar', 'v2/vehicle_usage_sets/index', vehicle_usage_sets_path) do
+      @customer = current_user.customer
+      @vehicle_usage_sets = @customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}])
+    end
   end
 
   def update

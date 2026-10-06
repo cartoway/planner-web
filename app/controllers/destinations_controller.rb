@@ -120,14 +120,16 @@ class DestinationsController < ApplicationController
     @destination.name = t('destinations.index.default_name')
     @destination.postalcode = current_user.customer.stores[0].postalcode
     @destination.city = current_user.customer.stores[0].city
-    if turbo_frame_request? && turbo_frame_request_id == "form_sidebar"
-      render "new_sidebar", layout: false
+    return if render_v2_form_or_list('new_sidebar', 'v2/destinations/index', destinations_path) do
+      @customer = current_user.customer
+      load_destinations_index_page
     end
   end
 
   def edit
-    if turbo_frame_request? && turbo_frame_request_id == "form_sidebar"
-      render "edit_sidebar", layout: false
+    return if render_v2_form_or_list('edit_sidebar', 'v2/destinations/index', destinations_path) do
+      @customer = current_user.customer
+      load_destinations_index_page
     end
   end
 

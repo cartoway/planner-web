@@ -28,8 +28,7 @@ class VehicleUsageSetsController < ApplicationController
   include V2Layout
 
   def index
-    @customer = current_user.customer
-    @vehicle_usage_sets = @customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}])
+    load_vehicle_usage_sets_index_page
     render_v2_page 'v2/vehicle_usage_sets/index' if layout_v2?
   end
 
@@ -52,11 +51,11 @@ class VehicleUsageSetsController < ApplicationController
     @vehicle_usage_set = current_user.customer.vehicle_usage_sets.build
     @vehicle_usage_set.store_start = current_user.customer.stores[0]
     @vehicle_usage_set.store_stop = current_user.customer.stores[0]
-    render 'new_sidebar', layout: false if v2_form_sidebar_request?
+    return if render_v2_form_or_list('new_sidebar', 'v2/vehicle_usage_sets/index', vehicle_usage_sets_path) { load_vehicle_usage_sets_index_page }
   end
 
   def edit
-    render 'edit_sidebar', layout: false if v2_form_sidebar_request?
+    return if render_v2_form_or_list('edit_sidebar', 'v2/vehicle_usage_sets/index', vehicle_usage_sets_path) { load_vehicle_usage_sets_index_page }
   end
 
   def create
@@ -199,6 +198,11 @@ class VehicleUsageSetsController < ApplicationController
   end
 
   private
+
+  def load_vehicle_usage_sets_index_page
+    @customer = current_user.customer
+    @vehicle_usage_sets = @customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}])
+  end
 
   def activate_multiple_vehicle_usage(vehicle_usage_set_id, activate)
     VehicleUsageSet.transaction do
