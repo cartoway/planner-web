@@ -216,7 +216,6 @@ Rails.application.routes.draw do
   resources :routes do
     member do
       get 'modal'
-      get 'mobile'
       patch 'driver_update'
     end
   end
