@@ -19,9 +19,11 @@ export function visit (location, options = {}) {
     const frameId = String(options.frame)
     const href = new URL(String(location), window.location.href).href
 
-    trackedFrameIds.add(frameId)
-    saveTrackedFrameIdsForPage(trackedFrameIds)
-    saveTrackedFrameIdsForPage(trackedFrameIds, pageKeyForLocation(href))
+    if (options.track !== false) {
+      trackedFrameIds.add(frameId)
+      saveTrackedFrameIdsForPage(trackedFrameIds)
+      saveTrackedFrameIdsForPage(trackedFrameIds, pageKeyForLocation(href))
+    }
 
     if (options.action === 'advance') {
       window.history.pushState({ turboFrameId: frameId }, '', href)

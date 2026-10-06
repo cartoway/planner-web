@@ -295,13 +295,16 @@
         .main-primary
           = turbo_frame_tag "main" do
             = yield
-        %aside.form-sidebar.slide-panel.slide-panel--from-right.form-sidebar--collapsed.slide-panel--collapsed.d-print-none{ role: 'complementary', 'aria-label': t('v2.layout.form_sidebar_aria'), data: { controller: 'v2--form-sidebar' } }
+        %aside.form-sidebar.slide-panel.slide-panel--from-right.form-sidebar--collapsed.slide-panel--collapsed.d-print-none{ role: 'complementary', 'aria-label': t('v2.layout.form_sidebar_aria'), data: { controller: 'v2--form-sidebar', 'v2--form-sidebar-list-url-value': (@v2_form_sidebar_list_url.presence || request.fullpath) } }
           .form-sidebar-chrome.d-none{ data: { 'v2--form-sidebar-target': 'chrome' } }
             %button.btn-close{ type: 'button', title: t('v2.layout.form_sidebar_close'), 'aria-label': t('v2.layout.form_sidebar_close'), data: { action: 'v2--form-sidebar#close' } }
           .form-sidebar-inner
-            = turbo_frame_tag 'form_sidebar', data: { 'v2--form-sidebar-target': 'frame' } do
-              - if content_for?(:form_sidebar)
-                = yield :form_sidebar
+            - if @v2_sidebar_template
+              = render template: @v2_sidebar_template
+            - else
+              = turbo_frame_tag 'form_sidebar', data: { 'v2--form-sidebar-target': 'frame' } do
+                - if content_for?(:form_sidebar)
+                  = yield :form_sidebar
         %template#form-sidebar-placeholder-template
           = render 'v2/layouts/form_sidebar_placeholder'
       %footer.d-print-none
