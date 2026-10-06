@@ -2,10 +2,10 @@
 = turbo_frame_tag "destinations_list", data: { per_page: @pagination[:per_page] } do
   .d-flex.justify-content-between.align-items-center.mb-2.p-3
     .d-flex.gap-2.align-items-center
-      = link_to new_destination_path, class: 'btn btn-primary btn-xs', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
+      = link_to new_destination_path, class: 'btn btn-primary', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
         %i.fa.fa-plus.fa-fw
         = t 'destinations.index.new'
-      %button.btn.btn-danger.btn-xs.destinations-bulk-delete{
+      %button.btn.btn-danger.destinations-bulk-delete{
         type: "button",
         disabled: !current_user_form_destroy_enabled?(:destination),
         title: t('all.verb.destroy_selection'),
@@ -21,7 +21,7 @@
         = t('all.verb.destroy_selection')
       = render 'v2/destinations/list_column_selector'
       .dropdown
-        %button.btn.btn-light.btn-xs.dropdown-toggle{type: 'button', data: { 'bs-toggle': 'dropdown' }, 'aria-expanded': 'false'}
+        %button.btn.btn-light.dropdown-toggle{type: 'button', data: { 'bs-toggle': 'dropdown' }, 'aria-expanded': 'false'}
           %i.fa.fa-list-ol.fa-fw
           = "#{@pagination[:per_page]} #{t('all.misc.per_page')}"
         %ul.dropdown-menu

@@ -60,7 +60,7 @@
       %div{class: v2_control_col}
         - if dest_form_mutable
           #destination-geocode-prompt.mb-2{ class: ('d-none' unless destination_form_address_geocodable?(@destination)), data: { v2__destination_geocoding_target: 'prompt' } }
-            %button.btn.btn-light.btn-xs.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeButton', action: 'click->v2--destination-geocoding#geocode' }}
+            %button.btn.btn-light.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeButton', action: 'click->v2--destination-geocoding#geocode' }}
               %i.fa.fa-map-marker.fa-fw{"aria-hidden": "true"}
               %span{ data: { v2__destination_geocoding_target: 'geocodeButtonLabel' } }= df.call('geocode_prompt')
         #geocoding_accuracy{ class: ('d-none' unless @destination.geocoding_accuracy) }
@@ -96,7 +96,7 @@
           %input.form-control#displayed-geocoding-result{type: 'text', value: destinations_list_geocoding_result_free(@destination), disabled: true, tabindex: -1, aria: { readonly: true }, data: { displayed_geocoding_result: true }}
       %div{class: v2_control_col}
         #destination-geocode-apply.d-none{ data: { v2__destination_geocoding_target: 'geocodeApplyPanel' } }
-          %button.btn.btn-light.btn-xs.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeApplyButton', action: 'click->v2--destination-geocoding#applyGeocodedAddress' }}
+          %button.btn.btn-light.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeApplyButton', action: 'click->v2--destination-geocoding#applyGeocodedAddress' }}
             %i.fa.fa-check.fa-fw{"aria-hidden": "true"}
             = t('destinations.reverse_geocoding.apply')
         #reverse-geocode
@@ -150,11 +150,11 @@
       - visits_to_show.each_with_index do |visit, i|
         = render 'v2/visits/form', visit: visit, i: i+1, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
     - if dest_form_mutable
-      %button#visit-new.btn.btn-light.btn-sm{type: 'button', role: 'button', title: t('destinations.form.visit.new_help'), data: {action: 'click->v2--visit-new#add'}}
+      %button#visit-new.btn.btn-light{type: 'button', role: 'button', title: t('destinations.form.visit.new_help'), data: {action: 'click->v2--visit-new#add'}}
         %i.fa.fa-plus.fa-fw
         = t('destinations.form.visit.new')
     - else
-      %button#visit-new.btn.btn-light.btn-sm{title: t('destinations.form.visit.new_help'), type: 'button', disabled: true}
+      %button#visit-new.btn.btn-light{title: t('destinations.form.visit.new_help'), type: 'button', disabled: true}
         %i.fa.fa-plus.fa-fw
         = t('destinations.form.visit.new')
     %template#visit-fieldset-template{data: {v2__visit_new_target: 'template'}}

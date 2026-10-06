@@ -17,7 +17,7 @@
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
       .d-flex.gap-2
         - if show_set_checkbox
-          = link_to new_vehicle_usage_set_path, class: 'btn btn-primary btn-sm', disabled: current_user.customer.too_many_vehicle_usage_sets? || !can_create_vehicle_usage, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+          = link_to new_vehicle_usage_set_path, class: 'btn btn-primary', disabled: current_user.customer.too_many_vehicle_usage_sets? || !can_create_vehicle_usage, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
             %i.fa.fa-plus.fa-fw
             = t 'vehicle_usage_sets.index.new'
       %span
@@ -60,18 +60,18 @@
             %td.text-end.text-nowrap
               .btn-group{role: 'group'}
                 - if show_set_checkbox
-                  = link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), class: 'btn btn-light btn-sm', method: :patch, data: { turbo_method: :patch }, title: t('all.verb.duplicate'), disabled: current_user.customer.too_many_vehicle_usage_sets? || !can_update_vehicle_usage do
+                  = link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), class: 'btn btn-light', method: :patch, data: { turbo_method: :patch }, title: t('all.verb.duplicate'), disabled: current_user.customer.too_many_vehicle_usage_sets? || !can_update_vehicle_usage do
                     %i.fa.fa-copy.fa-fw
-                = link_to vehicle_usage_set_path(vehicle_usage_set, format: :excel), class: 'btn btn-light btn-sm', data: { turbo: false } do
+                = link_to vehicle_usage_set_path(vehicle_usage_set, format: :excel), class: 'btn btn-light', data: { turbo: false } do
                   %i.fa.fa-download.fa-fw
-                = link_to edit_vehicle_usage_set_path(vehicle_usage_set, back: true), class: 'btn btn-primary btn-sm', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
+                = link_to edit_vehicle_usage_set_path(vehicle_usage_set, back: true), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
                   %i.fa.fa-pencil.fa-fw
                 - if @vehicle_usage_sets.count > 1
                   - if can_destroy_vehicle_config
-                    = link_to vehicle_usage_set, class: 'btn btn-danger btn-sm', data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do
+                    = link_to vehicle_usage_set, class: 'btn btn-danger', data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do
                       %i.fa.fa-trash.fa-fw
                   - else
-                    %button.btn.btn-danger.btn-sm{type: 'button', title: t('all.verb.destroy'), disabled: true}
+                    %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy'), disabled: true}
                       %i.fa.fa-trash.fa-fw
           %tr.vehicle_usages
             %td{colspan: nested_colspan}
@@ -80,6 +80,6 @@
                   = render 'v2/vehicle_usage_sets/vehicles', vehicle_usage_set: vehicle_usage_set, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage
     - if !@vehicle_usage_sets.empty? && show_set_checkbox
       .vehicle-usage-sets-bulk.px-3.py-2
-        = button_tag type: :submit, class: "btn btn-danger btn-sm #{invisible_class}", disabled: !can_destroy_vehicle_config, data: { v2__table_selection_target: 'bulk', confirm: t('all.verb.destroy_confirm') } do
+        = button_tag type: :submit, class: "btn btn-danger #{invisible_class}", disabled: !can_destroy_vehicle_config, data: { v2__table_selection_target: 'bulk', confirm: t('all.verb.destroy_confirm') } do
           %i.fa.fa-trash.fa-fw
           = t('all.verb.destroy_selection')

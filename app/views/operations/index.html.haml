@@ -43,7 +43,7 @@
                 %span.text-muted= t('operations.index.sync_na')
             %td
               - if operation.planning
-                = link_to edit_planning_path(operation.planning), class: 'btn btn-sm btn-secondary', target: '_blank', rel: 'noopener', data: { turbo: false } do
+                = link_to edit_planning_path(operation.planning), class: 'btn btn-secondary', target: '_blank', rel: 'noopener', data: { turbo: false } do
                   %i.fa.fa-map.fa-fw
                   = operation.planning.ref.presence || operation.planning.name
               - else
@@ -55,12 +55,12 @@
               - if operation.published_at
                 = l(operation.published_at, format: :short)
             %td.operations-index-actions.text-end.text-nowrap
-              = link_to operation_path(operation), class: (operation.open? ? 'btn btn-sm btn-primary' : 'btn btn-sm btn-secondary'), title: t('execution.open_tracking') do
+              = link_to operation_path(operation), class: (operation.open? ? 'btn btn-primary' : 'btn btn-secondary'), title: t('execution.open_tracking') do
                 %i.fa.fa-tower-broadcast.fa-fw
                 = t('execution.open_tracking')
               \
               - if can_destroy
-                %button.btn.btn-sm.btn-danger{type: 'button', title: t('all.verb.destroy'), data: { bs_toggle: 'modal', bs_target: "##{modal_id}" }}
+                %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy'), data: { bs_toggle: 'modal', bs_target: "##{modal_id}" }}
                   %i.fa.fa-trash.fa-fw
                   = t('all.verb.destroy')
   - if can_destroy

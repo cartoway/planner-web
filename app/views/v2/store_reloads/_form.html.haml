@@ -13,7 +13,7 @@
         %span.store-reload-legend{data: { index: i }}= srf.call('legend', n: i)
       - if form_mutable
         .destroy-block
-          %button.btn.btn-outline-danger.btn-sm.text-nowrap{type: "button", title: srf.call('delete_help'), data: { action: 'click->v2--nested-fields#remove' }}
+          %button.btn.btn-outline-danger.text-nowrap{type: "button", title: srf.call('delete_help'), data: { action: 'click->v2--nested-fields#remove' }}
             %i.fa.fa-trash.fa-fw
             = srf.call('delete')
     .collapse.show{id: "collapseStoreReload#{store_reload.id || i}"}
