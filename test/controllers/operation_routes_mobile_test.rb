@@ -35,10 +35,11 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
     stop = @operation_route.operation_stops.find_by!(visit_id: visits(:visit_one).id)
     stop.update_columns(status: 'delivered')
     patch "/operation_stops/#{stop.id}?driver_token=#{@vehicle.driver_token}",
-          { stop: { custom_attributes: { 'stop_custom_field' => 'note chauffeur' } } },
+          { operation_stop: { custom_attributes: { 'stop_custom_field' => 'note chauffeur' } } },
           'HTTP_ACCEPT' => 'application/json'
     assert_equal 200, last_response.status
     assert_equal 'note chauffeur', stop.reload.custom_attributes['stop_custom_field']
+    refute_equal 'note chauffeur', stop.stop.reload.custom_attributes['stop_custom_field']
     assert_equal 'delivered', stop.status
 
     patch "/operations/#{@operation.id}/routes/#{@operation_route.id}/update_status?driver_token=#{@vehicle.driver_token}",

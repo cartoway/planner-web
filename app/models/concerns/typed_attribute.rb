@@ -18,6 +18,8 @@ module TypedAttribute
         customer =
           if self.respond_to?(:customer)
             self.customer
+          elsif self.is_a?(OperationStop)
+            self.operation_route.operation.customer
           elsif self.is_a?(Stop)
             self.route.planning.customer
           elsif self.is_a?(Route)
@@ -25,7 +27,15 @@ module TypedAttribute
           end
 
         current_type =
-          CustomAttribute.object_classes[self.class.to_s.snakecase]
+          if self.is_a?(OperationStop)
+            case kind
+            when 'visit' then CustomAttribute.object_classes['stop_visit']
+            when 'store' then CustomAttribute.object_classes['stop_store']
+            end
+          else
+            CustomAttribute.object_classes[self.class.to_s.snakecase]
+          end
+        return {} if customer.nil? || current_type.nil?
 
         reference_attributes =
           if customer.association(current_attribute).loaded?

@@ -17,5 +17,5 @@ module DesignSystem
     def xl_floating_button
       render_with_template
     end
-end
+  end
 end
