@@ -22,15 +22,8 @@ module Operations
       return false if email.blank?
 
       customer = operation_route.operation.customer
-      planning_route = operation_route.route
       if Planner::Application.config.delayed_job_use
-        if planning_route
-          RouteMailer.delay.send_driver_route(customer, I18n.locale, email, planning_route)
-        else
-          RouteMailer.delay.send_operation_route(customer, I18n.locale, email, operation_route)
-        end
-      elsif planning_route
-        RouteMailer.send_driver_route(customer, I18n.locale, email, planning_route).deliver_now
+        RouteMailer.delay.send_operation_route(customer, I18n.locale, email, operation_route)
       else
         RouteMailer.send_operation_route(customer, I18n.locale, email, operation_route).deliver_now
       end

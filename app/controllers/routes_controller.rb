@@ -21,15 +21,14 @@ require 'value_to_boolean'
 require 'zip'
 
 class RoutesController < ApplicationController
-  before_action :authenticate_user!, except: [:update_position, :driver_update, :mobile]
+  before_action :authenticate_user!, except: [:update_position, :driver_update]
   before_action :set_route, only: [:update, :modal]
   before_action :authorize_route_paint_for_color!, only: [:update]
 
-  before_action :authenticate_driver!, only: [:update_position, :driver_update, :mobile]
-  before_action :set_driver_route, only: [:driver_update, :mobile]
+  before_action :authenticate_driver!, only: [:update_position, :driver_update]
+  before_action :set_driver_route, only: [:driver_update]
 
   load_and_authorize_resource
-  skip_load_and_authorize_resource only: :mobile
 
   include PlanningExport
   include PlanningToolbarPermissions
@@ -102,27 +101,6 @@ class RoutesController < ApplicationController
         format.html { render action: 'edit' }
       end
     end
-  end
-
-  def mobile
-    return if performed?
-
-    @stops = @route.stops.includes_destinations_and_stores.only_active
-    render 'routes/mobile', locals: {
-      route: @route,
-      enable_driver_move: ValueToBoolean.value_to_boolean(current_vehicle.customer.devices.dig(:deliver, :driver_move)),
-      date: @route.planning.date,
-      is_expired: @route.is_expired?,
-      visit_custom_attributes: current_vehicle.customer.custom_attributes.for_visit.visible_on_mobile,
-      vehicle_custom_attributes: current_vehicle.customer.custom_attributes.for_vehicle.visible_on_mobile,
-      route_custom_attributes: current_vehicle.customer.custom_attributes.for_route.without_related_field.visible_on_mobile,
-      stop_visit_custom_attributes: current_vehicle.customer.custom_attributes.for_stop_visit,
-      stop_store_custom_attributes: current_vehicle.customer.custom_attributes.for_stop_store,
-      start_route_data_custom_attributes: current_vehicle.customer.custom_attributes.for_route.for_related_field('start_route_data').visible_on_mobile,
-      stop_route_data_custom_attributes: current_vehicle.customer.custom_attributes.for_route.for_related_field('stop_route_data').visible_on_mobile,
-      customer: current_vehicle.customer,
-      vehicle: current_vehicle
-    }, layout: 'mobile'
   end
 
   def driver_update

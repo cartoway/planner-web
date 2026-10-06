@@ -70,7 +70,7 @@ class OperationStopsController < ApplicationController
   end
 
   def edit
-    render 'operation_stops/edit', layout: 'mobile'
+    render 'operation_stops/edit', layout: 'v2/mobile'
   end
 
   def update
