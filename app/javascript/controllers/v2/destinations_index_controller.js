@@ -12,6 +12,7 @@ import { DestinationsMapLayers, CLUSTER_LAYER_ID } from 'maplibre/destinations_m
 import { createDestinationMarkerElement } from 'maplibre/destination_markers'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
+import { bindMapViewHash, parseMapViewHash } from 'lib/map_view_hash'
 
 const DEFAULT_ZOOM = 12
 const MIN_CHARS = 3
@@ -148,6 +149,10 @@ export default class extends Controller {
   _teardownMap () {
     this._teardownPositionEdit()
     this._clearDestinationHighlight()
+    if (this._unbindMapViewHash) {
+      this._unbindMapViewHash()
+      this._unbindMapViewHash = null
+    }
     if (this._mapLayers) {
       this._mapLayers.disconnect()
       this._mapLayers = null
@@ -443,7 +448,7 @@ export default class extends Controller {
     const link = row.querySelector('a[data-turbo-frame="form_sidebar"]')
     const href = link && link.getAttribute('href')
     if (!href) return
-    visit(href, { frame: 'form_sidebar' })
+    visit(href, { frame: 'form_sidebar', track: false })
   }
 
   _initMap (maplibregl, container, params, signal) {
@@ -451,9 +456,10 @@ export default class extends Controller {
 
     const resolved = resolveMapStyle(params.map_layers)
     const { style, baseLayerIds, overlayToggles } = resolved
-    const centerLng = parseFloat(params.map_lng) || 0
-    const centerLat = parseFloat(params.map_lat) || 0
-    const zoom = params.map_zoom != null ? Number(params.map_zoom) : DEFAULT_ZOOM
+    const fromHash = parseMapViewHash()
+    const centerLng = fromHash ? fromHash.center[0] : (parseFloat(params.map_lng) || 0)
+    const centerLat = fromHash ? fromHash.center[1] : (parseFloat(params.map_lat) || 0)
+    const zoom = fromHash ? fromHash.zoom : (params.map_zoom != null ? Number(params.map_zoom) : DEFAULT_ZOOM)
 
     const map = attachMapToContainer(container, {
       style,
@@ -472,6 +478,7 @@ export default class extends Controller {
     disableMapPitchAndRotation(map)
     map.on('style.load', () => disableMapPitchAndRotation(map))
     this._map = map
+    this._unbindMapViewHash = bindMapViewHash(map)
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'top-right')
     map.addControl(new maplibregl.ScaleControl({ maxWidth: 120, unit: 'metric' }), 'bottom-left')
@@ -534,7 +541,7 @@ export default class extends Controller {
       signal
     }
     this._mapLayers = new DestinationsMapLayers(map, this._destinationsMapLayersOptions)
-    this._mapLayers.connect()
+    this._mapLayers.connect({ refitBounds: !fromHash })
 
     // Vector base: merge all overlays after style load.
     // Raster base: raster overlays are already in the composite style; only merge vector_style_url overlays.
