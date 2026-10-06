@@ -115,7 +115,6 @@ class OperationRoutesController < ApplicationController
 
       stop.status = operation_stop.status
       stop.status_updated_at = operation_stop.status_updated_at
-      stop.custom_attributes = operation_stop.custom_attributes if operation_stop.custom_attributes.present?
     end
     if @operation_route.custom_attributes.present?
       @route.custom_attributes = @operation_route.custom_attributes

@@ -69,21 +69,6 @@ module VisitsHelper
     visit.destination.customer.custom_attributes.for_stop_visit.to_a
   end
 
-  def visit_stop_filled_custom_attributes(stop, definitions)
-    raw = stop.custom_attributes || {}
-    definitions.select do |custom_attribute|
-      key = CustomAttribute.storage_key_for(custom_attribute.name)
-      next false unless raw.key?(key)
-
-      custom_attribute.boolean? || raw[key].present?
-    end
-  end
-
-  def visit_filled_custom_attributes(visit)
-    definitions = visit.destination.customer.custom_attributes.for_visit.to_a
-    visit_stop_filled_custom_attributes(visit, definitions)
-  end
-
   def visit_operation_stops(visit, include_past: false)
     OperationStop.for_visit(visit, include_past: params[:include_past].present? || include_past)
   end

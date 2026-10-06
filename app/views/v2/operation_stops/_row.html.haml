@@ -1,0 +1,64 @@
+-# locals: stop, docs_prefix
+- operation = stop.operation_route.operation
+- status_code = stop.status&.downcase.presence
+.related-item
+  .d-flex.justify-content-between.align-items-start.gap-2
+    .related-item-body.min-w-0
+      .related-item-name
+        = operation.name
+        - if operation.date
+          %span.text-muted= l(operation.date)
+      .related-item-meta.small
+        %span.related-item-index{class: ('is-unassigned' if stop.operation_route.unassigned), style: "background: #{stop.operation_route.vehicle_color}"}
+          = stop.index
+        %span.text-muted= stop.operation_route.vehicle_name
+        - if status_code
+          %span.badge.related-item-status{class: "stop-status-#{status_code}"}
+            = t("plannings.edit.stop_status.#{status_code}", default: stop.status)
+        - if stop.status_updated_at
+          %span.text-muted
+            ·
+            = l(stop.status_updated_at, format: :hour_minute)
+    .d-flex.gap-1.flex-shrink-0
+      - if stop.delivery_note_available?
+        = link_to delivery_note_operation_stop_path(stop),
+          class: 'btn btn-light',
+          target: '_blank',
+          rel: 'noopener noreferrer',
+          title: t('visits.form.delivery_note'),
+          'aria-label': t('visits.form.delivery_note') do
+          %i.fa.fa-file-lines.fa-fw
+      = link_to operation_path(operation, anchor: "stop-#{stop.id}"),
+        class: 'btn btn-light',
+        target: '_blank',
+        rel: 'noopener noreferrer',
+        title: t('operations.show.open'),
+        'aria-label': t('operations.show.open') do
+        %i.fa.fa-clipboard-check.fa-fw
+  - if stop.photos.attached? || stop.signature.attached?
+    - photos_id = "#{docs_prefix}-photos"
+    - signature_id = "#{docs_prefix}-signature"
+    - docs_id = "#{docs_prefix}-docs"
+    .related-item-docs{id: docs_id}
+      .related-item-docs-toggles.d-flex.flex-wrap.gap-1
+        - if stop.photos.attached?
+          %button.related-item-photos-toggle.btn.btn-light{type: 'button', data: { 'bs-toggle': 'collapse', 'bs-target': "##{photos_id}" }, 'aria-expanded': 'false', 'aria-controls': photos_id}
+            %i.fa.fa-camera.fa-fw
+            = t('visits.form.photos')
+            %span.badge.text-bg-secondary= stop.photos.size
+        - if stop.signature.attached?
+          %button.related-item-photos-toggle.btn.btn-light{type: 'button', data: { 'bs-toggle': 'collapse', 'bs-target': "##{signature_id}" }, 'aria-expanded': 'false', 'aria-controls': signature_id}
+            %i.fa.fa-signature.fa-fw
+            = t('visits.form.signature')
+      - if stop.photos.attached?
+        .collapse.related-item-photos{id: photos_id, data: { 'bs-parent': "##{docs_id}" }}
+          .related-item-photos-list
+            - stop.serialized_photos.each do |photo|
+              %a.related-item-photo{href: photo[:url], target: '_blank', rel: 'noopener noreferrer'}
+                %img{src: photo[:url], alt: photo[:filename]}
+      - if stop.signature.attached?
+        - signature = stop.serialized_signature
+        .collapse.related-item-photos{id: signature_id, data: { 'bs-parent': "##{docs_id}" }}
+          .related-item-photos-list
+            %a.related-item-photo{href: signature[:url], target: '_blank', rel: 'noopener noreferrer'}
+              %img{src: signature[:url], alt: signature[:filename]}

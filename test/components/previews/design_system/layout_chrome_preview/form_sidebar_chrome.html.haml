@@ -11,7 +11,11 @@
     %code .floating-btn
     expand trigger on the map edge (unlike
     %code .destinations-sidebar
-    on the left, which keeps a toggle).
+    on the left, which keeps a toggle). Related resources use
+    %code .related-list
+    /
+    %code .related-item
+    (plans, operations, or any similar association).
 
   %h2.h6.text-secondary.mb-2 Open form
   #lookbook-form-sidebar-layout.lookbook-form-sidebar-demo
@@ -29,7 +33,65 @@
         .mb-3
           %label.form-label{for: 'lookbook-fs-city'} City
           %input#lookbook-fs-city.form-control.form-control-sm{type: 'text', autocomplete: 'off', value: 'Bordeaux'}
-        %button.btn.btn-primary.btn-sm{type: 'button'} Save
+
+        .related-list
+          %h6.related-list-title Plans
+          .related-item
+            .d-flex.justify-content-between.align-items-start.gap-2
+              .related-item-body.min-w-0
+                .related-item-name
+                  Tournee lundi
+                  %span.text-muted 07/04/2026
+                .related-item-meta.small
+                  %span.related-item-index{style: 'background: #3a87ad'} 2
+                  %span.text-muted Camion A
+                  %span.text-muted
+                    ·
+                    09:15
+              .d-flex.gap-1.flex-shrink-0
+                %button.btn.btn-light{type: 'button', title: 'Open in plan', 'aria-label': 'Open in plan'}
+                  %i.fa.fa-calendar.fa-fw
+          .related-item
+            .d-flex.justify-content-between.align-items-start.gap-2
+              .related-item-body.min-w-0
+                .related-item-name
+                  Tournee mardi
+                  %span.text-muted 08/04/2026
+                .related-item-meta.small
+                  %span.related-item-index.is-unassigned{style: 'background: #ffffff'} 1
+                  %span.text-muted Unassigned
+              .d-flex.gap-1.flex-shrink-0
+                %button.btn.btn-light{type: 'button', title: 'Open in plan', 'aria-label': 'Open in plan'}
+                  %i.fa.fa-calendar.fa-fw
+
+        .related-list
+          %h6.related-list-title Operations
+          .related-item
+            .d-flex.justify-content-between.align-items-start.gap-2
+              .related-item-body.min-w-0
+                .related-item-name
+                  Op. 07/04
+                  %span.text-muted 07/04/2026
+                .related-item-meta.small
+                  %span.related-item-index{style: 'background: #468847'} 3
+                  %span.text-muted Camion B
+                  %span.badge.related-item-status.stop-status-delivered Delivered
+              .d-flex.gap-1.flex-shrink-0
+                %button.btn.btn-light{type: 'button', title: 'Delivery note', 'aria-label': 'Delivery note'}
+                  %i.fa.fa-file-lines.fa-fw
+                %button.btn.btn-light{type: 'button', title: 'Open operation', 'aria-label': 'Open operation'}
+                  %i.fa.fa-clipboard-check.fa-fw
+            .related-item-docs
+              .related-item-docs-toggles.d-flex.flex-wrap.gap-1
+                %button.related-item-photos-toggle.btn.btn-light{type: 'button'}
+                  %i.fa.fa-camera.fa-fw
+                  Photos
+                  %span.badge.text-bg-secondary 2
+                %button.related-item-photos-toggle.btn.btn-light{type: 'button'}
+                  %i.fa.fa-signature.fa-fw
+                  Signature
+
+        %button.btn.btn-primary.mt-3{type: 'button'} Save
     %button.floating-btn.form-sidebar-expand.slide-panel-expand-trigger{type: 'button', title: 'Show form', 'aria-label': 'Show form'}
       %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}
 
