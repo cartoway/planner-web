@@ -24,12 +24,37 @@ class OperationStop < ApplicationRecord
 
   scope :active_sync, -> { where(sync_state: 'active') }
   scope :executable, -> { active_sync.where.not(active: false) }
+  scope :visits, -> { where(kind: 'visit') }
   scope :past_operations, -> {
     joins(operation_route: :operation).where(operations: { status: 'historized' })
   }
   scope :current_operations, -> {
     joins(operation_route: :operation).where(operations: { status: 'in_progress' })
   }
+  scope :includes_delivery_tracking_context, -> {
+    includes(:operation_stop_status_events, operation_route: [:operation, :vehicle_positions])
+  }
+
+  def self.visit_stops_for_destinations(operation, destination_ids)
+    ids = Array(destination_ids).compact.map(&:to_i).uniq
+    return none if ids.empty?
+
+    operation.operation_stops
+             .executable
+             .visits
+             .where(
+               'operation_stops.destination_id IN (:ids) OR (operation_stops.destination_snapshot->>\'id\')::int IN (:ids)',
+               ids: ids
+             )
+             .joins(:operation_route)
+             .merge(OperationRoute.where(unassigned: false))
+             .includes_delivery_tracking_context
+             .order(Arel.sql('operation_routes.index, operation_stops.index'))
+  end
+
+  def destination_identity
+    destination_id.presence || destination_snapshot&.[]('id')&.to_i.presence
+  end
 
   def self.for_destination(destination, include_past: false)
     visit_ids = destination.visits.pluck(:id)
