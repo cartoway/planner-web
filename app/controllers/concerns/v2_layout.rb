@@ -26,4 +26,20 @@ module V2Layout
   def render_v2_close_sidebar
     render 'v2/layouts/close_sidebar', layout: false
   end
+
+  # Turbo Frame fragment, or the v2 list with the form inlined (shareable URL).
+  # Returns true when it rendered. Admins have no customer — keep the standalone form.
+  def render_v2_form_or_list(sidebar_template, index_template, list_url)
+    if v2_form_sidebar_request?
+      render sidebar_template, layout: false
+      return true
+    end
+    return false unless layout_v2? && current_user&.customer
+
+    yield if block_given?
+    @v2_sidebar_template = "#{controller_path}/#{sidebar_template}"
+    @v2_form_sidebar_list_url = list_url
+    render_v2_page index_template
+    true
+  end
 end

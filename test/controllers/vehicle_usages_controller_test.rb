@@ -32,6 +32,14 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_select '#vehicle_usage_rest_type_input', text: /#{Regexp.escape(I18n.t('vehicle_usages.form.rest_type.locked_to_set'))}/
   end
 
+  test 'v2 edit html renders the list with the form inlined so the url is shareable' do
+    enable_layout_v2!
+    get :edit, params: { id: @vehicle_usage }
+    assert_response :success
+    assert_select '.vehicle-usage-sets-index', 1
+    assert_select 'turbo-frame#form_sidebar form#vehicle-usage-form-sidebar', 1
+  end
+
   test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do
     enable_layout_v2!
     @vehicle_usage.vehicle.update!(router: routers(:router_osrm))

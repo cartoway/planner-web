@@ -49,6 +49,15 @@ class StoresControllerTest < ActionController::TestCase
     assert_equal @store.id, config['highlight_store_id']
   end
 
+  test 'v2 edit html renders the list with the form inlined so the url is shareable' do
+    enable_layout_v2!
+    get :edit, params: { id: @store }
+    assert_response :success
+    assert_select '#stores-map-layout', 1
+    assert_select 'turbo-frame#form_sidebar form#store-form-sidebar', 1
+    assert_select %(aside.form-sidebar[data-v2--form-sidebar-list-url-value="#{stores_path}"]), 1
+  end
+
   test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do
     enable_layout_v2!
     @request.headers['Turbo-Frame'] = 'form_sidebar'

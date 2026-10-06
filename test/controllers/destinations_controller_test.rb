@@ -307,6 +307,21 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select %(a[href="#{new_destination_path}"][data-turbo-frame="form_sidebar"][data-turbo-prefetch="false"]), 1
   end
 
+  test 'v2 edit html renders the list with the form inlined so the url is shareable' do
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select '#destinations-map-layout', 1
+    assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar', 1
+    assert_select %(aside.form-sidebar[data-v2--form-sidebar-list-url-value="#{destinations_path}"]), 1
+  end
+
+  test 'v2 new html renders the list with the form inlined so the url is shareable' do
+    get :new
+    assert_response :success
+    assert_select '#destinations-map-layout', 1
+    assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar', 1
+  end
+
   test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
     get :edit, params: { id: @destination.id }

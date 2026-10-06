@@ -39,7 +39,7 @@ class StoresController < ApplicationController
       flash.now[:warning] = t('stores.geocoding.geocoding_in_progress')
     end
 
-    @stores = current_user.customer.stores
+    load_stores_index_page
     respond_to do |format|
       format.html do
         render_v2_page 'v2/stores/index' if layout_v2?
@@ -69,11 +69,11 @@ class StoresController < ApplicationController
     @store = current_user.customer.stores.build
     @store.postalcode = current_user.customer.stores[0].postalcode
     @store.city = current_user.customer.stores[0].city
-    render 'new_sidebar', layout: false if v2_form_sidebar_request?
+    return if render_v2_form_or_list('new_sidebar', 'v2/stores/index', stores_path) { load_stores_index_page }
   end
 
   def edit
-    render 'edit_sidebar', layout: false if v2_form_sidebar_request?
+    return if render_v2_form_or_list('edit_sidebar', 'v2/stores/index', stores_path) { load_stores_index_page }
   end
 
   def create
@@ -226,6 +226,10 @@ class StoresController < ApplicationController
   # Use callbacks to share common setup or constraints between actions.
   def set_store
     @store = current_user.customer.stores.find params[:id] || params[:store_id]
+  end
+
+  def load_stores_index_page
+    @stores = current_user.customer.stores
   end
 
   def warnings

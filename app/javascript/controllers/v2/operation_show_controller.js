@@ -8,6 +8,7 @@ import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
+import { bindMapViewHash, parseMapViewHash } from 'lib/map_view_hash'
 
 document.addEventListener('turbo:before-stream-render', (event) => {
   const stream = event.detail.newStream
@@ -375,6 +376,10 @@ export default class extends Controller {
       this._vehicleMarker.remove()
       this._vehicleMarker = null
     }
+    if (this._unbindMapViewHash) {
+      this._unbindMapViewHash()
+      this._unbindMapViewHash = null
+    }
     if (this.map && this._onMapMoveEnd) {
       try { this.map.off('moveend', this._onMapMoveEnd) } catch (_) { /* ignore */ }
     }
@@ -723,8 +728,10 @@ export default class extends Controller {
     const mapLayers = params.map_layers || {}
     const resolved = resolveMapStyle(mapLayers)
     const { style, baseLayerIds, overlayToggles } = resolved
-    const center = this._center()
-    const zoom = params.map_zoom != null ? Number(params.map_zoom) : 12
+    const fromHash = parseMapViewHash()
+    this._mapViewFromHash = !!fromHash
+    const center = fromHash ? fromHash.center : this._center()
+    const zoom = fromHash ? fromHash.zoom : (params.map_zoom != null ? Number(params.map_zoom) : 12)
 
     const map = attachMapToContainer(this.mapTarget, {
       style,
@@ -741,6 +748,7 @@ export default class extends Controller {
     })
     if (!map) return
     this.map = map
+    this._unbindMapViewHash = bindMapViewHash(map)
     disableMapPitchAndRotation(this.map)
     this.map.on('style.load', () => disableMapPitchAndRotation(this.map))
 
@@ -816,7 +824,7 @@ export default class extends Controller {
       if (this._pendingCenter) this._flyToStop(this._pendingCenter)
       else if (this._pendingLocateRouteId) this._locateRoute(this._pendingLocateRouteId)
       else if (this._pendingFitRouteId) this._fitRoute(this._pendingFitRouteId)
-      else this._fit()
+      else if (!this._mapViewFromHash) this._fit()
       this._syncVehicleButtons()
       this.map.resize()
     }
