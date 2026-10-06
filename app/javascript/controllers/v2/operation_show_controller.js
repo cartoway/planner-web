@@ -9,9 +9,33 @@ import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
 
+document.addEventListener('turbo:before-stream-render', (event) => {
+  const stream = event.detail.newStream
+  const action = stream.getAttribute('action')
+  if (action !== 'refresh_vehicle' && action !== 'refresh_stop') return
+  event.preventDefault()
+  const el = document.querySelector('[data-controller~="v2--operation-show"]')
+  const controller = el && window.Stimulus?.getControllerForElementAndIdentifier(el, 'v2--operation-show')
+  if (!controller) return
+  if (action === 'refresh_vehicle') {
+    controller._applyVehiclePosition(
+      stream.getAttribute('data-operation-route-id'),
+      stream.getAttribute('data-lng'),
+      stream.getAttribute('data-lat')
+    )
+    return
+  }
+  const template = stream.querySelector('template')
+  const raw = template && template.content.textContent
+  if (!raw || !raw.trim()) return
+  controller._applyStopStatus(JSON.parse(raw))
+})
+
 const OPACITY_MIN = 0.4
 const OPACITY_MAX = 1
 const OPERATION_LINES_LAYER_ID = 'operation-lines'
+const OPERATION_POSITIONS_SOURCE_ID = 'operation-positions'
+const OPERATION_POSITIONS_LAYER_ID = 'operation-position-lines'
 const OPERATION_STOPS_SOURCE_ID = 'operation-stops'
 const OPERATION_STOPS_LAYER_ID = 'operation-stops-clusters'
 const OPERATION_STOPS_OPEN_SOURCE_ID = 'operation-stops-open'
@@ -33,6 +57,8 @@ export default class extends Controller {
     this.selectedRouteId = null
     this._hiddenRouteIds = new Set()
     this._excludedRouteIds = new Set()
+    this._vehicleLngLats = new Map()
+    this.positionsGeojson = { type: 'FeatureCollection', features: [] }
     this.phase = 'all'
     this.query = ''
     this._restorePersistedRouteSelection()
@@ -334,6 +360,7 @@ export default class extends Controller {
     const list = this._listScroller()
     if (list && this._onListScroll) list.removeEventListener('scroll', this._onListScroll)
     document.removeEventListener('turbo:before-morph-element', this._beforeMorph, true)
+    if (this._geojsonTimer) window.clearTimeout(this._geojsonTimer)
     if (this._mapHost) {
       this._mapHost.disconnect()
       this._mapHost = null
@@ -385,7 +412,6 @@ export default class extends Controller {
     this._syncRouteSelectionUi()
     this._applyFilters()
     this._recolorMarkers()
-    this._refreshGeojson()
     this._reloadSelectedFiche()
   }
 
@@ -397,7 +423,12 @@ export default class extends Controller {
     ;(this.geojson?.features || []).forEach((feature) => {
       const stopId = feature.properties && feature.properties.operation_stop_id
       const phase = stopId != null && phases.get(String(stopId))
-      if (phase && feature.properties) feature.properties.phase = phase
+      if (phase && feature.properties) {
+        feature.properties.phase = phase
+        const treated = phase === 'delivered' || phase === 'failed' || phase === 'exception'
+        feature.properties.treated = treated
+        feature.properties.opacity = treated ? OPACITY_MIN : OPACITY_MAX
+      }
     })
     this._syncStopClusters()
   }
@@ -407,7 +438,13 @@ export default class extends Controller {
     if (color) element.style.setProperty('--dm-flat', color)
   }
 
-  async _refreshGeojson () {
+  _refreshGeojson () {
+    if (this._geojsonTimer) window.clearTimeout(this._geojsonTimer)
+    this._geojsonTimer = window.setTimeout(() => this._fetchGeojson(), 200)
+  }
+
+  async _fetchGeojson () {
+    this._geojsonTimer = null
     if (!this.map || !this.map.getSource('operation')) {
       this._geojsonStale = true
       return
@@ -416,7 +453,9 @@ export default class extends Controller {
     if (!response.ok) return
     this.geojson = await response.json()
     this._geojsonStale = false
+    this._splitPositionsFromGeojson()
     this.map.getSource('operation').setData(this.geojson)
+    this._syncPositionsSource()
     this._syncStopClusters()
     this._addVehicleMarker()
     this._applyRouteVisibility()
@@ -788,6 +827,7 @@ export default class extends Controller {
 
   _mountOperationLayers () {
     if (!this.map || this.map.getSource('operation')) return
+    this._splitPositionsFromGeojson()
     this.map.addSource('operation', { type: 'geojson', data: this.geojson || { type: 'FeatureCollection', features: [] }, tolerance: 0 })
     this.map.addLayer({
       id: OPERATION_LINES_LAYER_ID,
@@ -796,9 +836,24 @@ export default class extends Controller {
       filter: ['==', ['geometry-type'], 'LineString'],
       paint: {
         'line-color': ['coalesce', ['get', 'color'], '#3366cc'],
-        'line-width': ['case', ['==', ['get', 'geometry_kind'], 'positions'], 4, 3],
-        'line-dasharray': ['case', ['==', ['get', 'geometry_kind'], 'positions'], ['literal', [1.5, 1.5]], ['literal', [1, 0]]],
+        'line-width': 3,
         'line-opacity': ['coalesce', ['get', 'opacity'], OPACITY_MAX]
+      }
+    })
+    this.map.addSource(OPERATION_POSITIONS_SOURCE_ID, {
+      type: 'geojson',
+      data: this.positionsGeojson || { type: 'FeatureCollection', features: [] },
+      tolerance: 0
+    })
+    this.map.addLayer({
+      id: OPERATION_POSITIONS_LAYER_ID,
+      type: 'line',
+      source: OPERATION_POSITIONS_SOURCE_ID,
+      paint: {
+        'line-color': '#111111',
+        'line-width': 4,
+        'line-dasharray': [1.5, 1.5],
+        'line-opacity': 1
       }
     })
     this._syncStopClusters()
@@ -1052,14 +1107,229 @@ export default class extends Controller {
   }
 
   _vehiclePosition (routeId) {
-    const id = routeId || this.selectedRouteId
-    if (!id || !this.geojson) return null
-    const line = (this.geojson.features || []).find((feature) => {
-      return feature.properties && feature.properties.geometry_kind === 'positions' && String(feature.properties.operation_route_id) === String(id)
+    const id = String(routeId || this.selectedRouteId || '')
+    if (!id) return null
+    const remembered = this._vehicleLngLats && this._vehicleLngLats.get(id)
+    if (remembered) return remembered
+    const line = ((this.positionsGeojson && this.positionsGeojson.features) || []).find((feature) => {
+      return feature.properties && String(feature.properties.operation_route_id) === id
     })
-    const coords = line && line.geometry && line.geometry.coordinates
-    if (!coords || !coords.length) return null
+    const geometry = line && line.geometry
+    if (!geometry || !geometry.coordinates) return null
+    if (geometry.type === 'Point') return geometry.coordinates
+    const coords = geometry.coordinates
+    if (!coords.length) return null
     return coords[coords.length - 1]
+  }
+
+  _applyVehiclePosition (routeId, lng, lat) {
+    const lngLat = [Number(lng), Number(lat)]
+    if (!routeId || !Number.isFinite(lngLat[0]) || !Number.isFinite(lngLat[1])) return
+    this._extendVehicleTrace(routeId, lngLat)
+    if (!this._vehicleLngLats) this._vehicleLngLats = new Map()
+    this._vehicleLngLats.set(String(routeId), lngLat)
+    this._syncVehicleButtons()
+    if (String(this.selectedRouteId) !== String(routeId)) return
+    if (this._concealedRouteIds().has(String(routeId))) return
+    this._setVehicleMarker(lngLat)
+  }
+
+  _applyStopStatus (payload) {
+    if (!payload || !payload.stop_id) return
+    this._patchStopRow(payload)
+    this._patchTourBoard(payload)
+    this._rollUpBoard()
+    this._paintStopPhase(payload.stop_id, payload.phase)
+    this._applyFilters()
+    const row = this.element.querySelector(`.operation-stop-row[data-stop-id="${payload.stop_id}"]`)
+    if (row && row.classList.contains('is-selected')) this._reloadSelectedFiche()
+  }
+
+  _patchStopRow (payload) {
+    const row = this.element.querySelector(`#stop-${payload.stop_id}`)
+    if (!row) return
+    row.className = `operation-stop-row is-${payload.phase}${row.classList.contains('is-selected') ? ' is-selected' : ''}${row.classList.contains('is-hidden') ? ' is-hidden' : ''}`
+    row.dataset.phase = payload.phase
+    const glyph = row.querySelector('.operation-glyph')
+    if (glyph) {
+      glyph.className = `operation-glyph is-${payload.phase}`
+      if (payload.phase === 'delivered') glyph.innerHTML = '<i class="fa fa-check"></i>'
+      else if (payload.phase === 'failed') glyph.textContent = '!'
+      else if (payload.phase === 'exception') glyph.innerHTML = '<i class="fa fa-triangle-exclamation"></i>'
+      else glyph.textContent = payload.index
+    }
+    const legs = row.querySelectorAll('.operation-stop-clock-leg')
+    this._setClockLeg(legs[0], payload.planned_arrival_clock, payload.actual_arrival_clock)
+    this._setClockLeg(legs[1], payload.planned_departure_clock, payload.actual_departure_clock)
+    const aside = row.querySelector('.operation-stop-aside')
+    if (!aside) return
+    aside.replaceChildren()
+    const text = this._asideText(payload)
+    if (!payload.aside || !text) return
+    const badge = document.createElement('span')
+    badge.className = payload.aside.css || ''
+    badge.textContent = text
+    aside.appendChild(badge)
+  }
+
+  _liveI18n () {
+    if (this._i18n) return this._i18n
+    try {
+      this._i18n = JSON.parse(this.element.dataset.liveI18n || '{}')
+    } catch (_err) {
+      this._i18n = {}
+    }
+    return this._i18n
+  }
+
+  _statusLabel (payload) {
+    const code = String(payload.status || '').toLowerCase()
+    if (!code) return ''
+    const i18n = this._liveI18n()
+    const bag = payload.kind === 'rest' ? i18n.stop_rest_status : payload.kind === 'store' ? i18n.stop_store_status : i18n.stop_status
+    return (bag && bag[code]) || (i18n.stop_status && i18n.stop_status[code]) || payload.status
+  }
+
+  _asideText (payload) {
+    const kind = payload.aside && payload.aside.kind
+    if (!kind) return payload.aside && payload.aside.text
+    const i18n = this._liveI18n()
+    if (kind === 'status') return this._statusLabel(payload)
+    if (kind === 'en_route') return i18n.en_route
+    if (kind === 'exception') return i18n.exception
+    if (kind === 'late') return String(i18n.late || '').replace('%{count}', payload.delay)
+    if (kind === 'delay') {
+      const delay = payload.delay
+      return `${delay > 0 ? '+' : ''}${delay} min`
+    }
+    if (kind === 'late_risk') return i18n.late_risk
+    return payload.aside.text
+  }
+
+  _setClockLeg (el, planned, actual) {
+    if (!el) return
+    el.replaceChildren()
+    if (planned) el.appendChild(document.createTextNode(planned))
+    if (actual) {
+      const sep = document.createElement('span')
+      sep.textContent = ' → '
+      el.append(sep, document.createTextNode(actual))
+    }
+  }
+
+  _patchTourBoard (payload) {
+    const tour = this.element.querySelector(`#route-${payload.route_id}`)
+    const board = payload.route
+    if (!tour || !board) return
+    ;['delivered', 'failed', 'exception', 'late', 'upcoming', 'current', 'total', 'delay'].forEach((key) => {
+      if (board[key] != null) tour.dataset[key] = board[key]
+    })
+    const progress = tour.querySelector('[data-tour-progress]')
+    if (progress) {
+      const treated = Number(board.delivered || 0) + Number(board.failed || 0)
+      const total = Number(board.total || 0)
+      let text = `${treated}/${total} ${this._liveI18n().stops || payload.stops_label || ''}`
+      if (total > 0) text += ` · ${Math.round(100.0 * treated / total)}%`
+      progress.textContent = text
+    }
+    if (!payload.started) return
+    const groups = this.element.querySelectorAll('.operation-group')
+    if (groups[0] && tour.parentElement !== groups[0]) groups[0].appendChild(tour)
+  }
+
+  _rollUpBoard () {
+    const totals = { delivered: 0, failed: 0, exception: 0, late: 0, upcoming: 0, current: 0, total: 0, delay: 0 }
+    this.element.querySelectorAll('details.operation-tour').forEach((tour) => {
+      Object.keys(totals).forEach((key) => {
+        totals[key] += Number(tour.dataset[key] || 0)
+      })
+    })
+    const label = this.element.querySelector('[data-board-progress]')
+    if (label) {
+      const stopsWord = this._liveI18n().stops || (label.textContent.split(' ').pop()) || ''
+      label.textContent = `${totals.delivered}/${totals.total} ${stopsWord}`
+    }
+    const stopsStat = this.element.querySelector('[data-stat="stops"]')
+    if (stopsStat) stopsStat.textContent = `${totals.delivered + totals.failed + totals.exception}/${totals.total}`
+    const delayStat = this.element.querySelector('[data-stat="delay"]')
+    if (delayStat) {
+      delayStat.textContent = totals.delay ? `${totals.delay} min` : '—'
+      delayStat.closest('.operation-stat')?.classList.toggle('is-late', totals.delay > 0)
+    }
+    this.element.querySelectorAll('.operation-chip[data-phase]').forEach((chip) => {
+      const phase = chip.dataset.phase
+      const count = phase === 'all' ? totals.total : totals[phase]
+      chip.textContent = chip.textContent.replace(/\d+\s*$/, String(count == null ? 0 : count))
+    })
+    const bar = this.element.querySelector('.operation-segments')
+    if (bar && totals.total > 0) {
+      const rest = Math.max(totals.total - totals.delivered - totals.failed - totals.exception, 0)
+      const setWidth = (name, value) => {
+        const span = bar.querySelector(`.${name}`)
+        if (span) span.style.width = `${100.0 * value / totals.total}%`
+      }
+      setWidth('is-delivered', totals.delivered)
+      setWidth('is-failed', totals.failed)
+      setWidth('is-exception', totals.exception)
+      setWidth('is-rest', rest)
+    }
+  }
+
+  _paintStopPhase (stopId, phase) {
+    ;(this.geojson?.features || []).forEach((feature) => {
+      if (!feature.properties || String(feature.properties.operation_stop_id) !== String(stopId)) return
+      feature.properties.phase = phase
+      const treated = phase === 'delivered' || phase === 'failed' || phase === 'exception'
+      feature.properties.treated = treated
+      feature.properties.opacity = treated ? OPACITY_MIN : OPACITY_MAX
+    })
+    const disc = document.querySelector(`[data-stop-id="${stopId}"]`)
+    if (disc && PHASE_COLORS[phase]) disc.style.setProperty('--dm-flat', PHASE_COLORS[phase])
+  }
+
+  _splitPositionsFromGeojson () {
+    if (!this.geojson) this.geojson = { type: 'FeatureCollection', features: [] }
+    if (!this.positionsGeojson) this.positionsGeojson = { type: 'FeatureCollection', features: [] }
+    const liveIds = new Set(this.positionsGeojson.features.map((feature) => String(feature.properties && feature.properties.operation_route_id)))
+    const rest = []
+    this.geojson.features.forEach((feature) => {
+      const props = feature.properties || {}
+      if (props.geometry_kind === 'positions') {
+        if (!liveIds.has(String(props.operation_route_id))) this.positionsGeojson.features.push(feature)
+        return
+      }
+      rest.push(feature)
+    })
+    this.geojson.features = rest
+  }
+
+  _syncPositionsSource () {
+    const source = this.map && this.map.getSource(OPERATION_POSITIONS_SOURCE_ID)
+    if (!source || !this.positionsGeojson) return
+    source.setData({ type: 'FeatureCollection', features: this.positionsGeojson.features })
+  }
+
+  _extendVehicleTrace (routeId, lngLat) {
+    if (!this.positionsGeojson) this.positionsGeojson = { type: 'FeatureCollection', features: [] }
+    const id = String(routeId)
+    const point = [lngLat[0], lngLat[1]]
+    let feature = this.positionsGeojson.features.find((item) => {
+      return item.properties && String(item.properties.operation_route_id) === id
+    })
+    if (!feature) {
+      this.positionsGeojson.features.push({
+        type: 'Feature',
+        geometry: { type: 'LineString', coordinates: [point, point] },
+        properties: { operation_route_id: Number(routeId) || routeId, geometry_kind: 'positions', color: '#111111' }
+      })
+    } else {
+      const coords = feature.geometry && feature.geometry.coordinates
+      if (!coords) return
+      const last = coords[coords.length - 1]
+      if (last && last[0] === point[0] && last[1] === point[1]) return
+      coords.push(point)
+    }
+    this._syncPositionsSource()
   }
 
   _syncStopClusters () {
@@ -1207,28 +1477,37 @@ export default class extends Controller {
     this._syncStopClusters()
     if (!this.map || !this.map.getLayer(OPERATION_LINES_LAYER_ID)) return
     const line = ['==', ['geometry-type'], 'LineString']
-    if (!hidden.length) {
-      this.map.setFilter(OPERATION_LINES_LAYER_ID, line)
-    } else {
-      this.map.setFilter(OPERATION_LINES_LAYER_ID, ['all', line, ['!', ['in', ['to-string', ['get', 'operation_route_id']], ['literal', hidden]]]])
-    }
+    const filter = hidden.length
+      ? ['all', line, ['!', ['in', ['to-string', ['get', 'operation_route_id']], ['literal', hidden]]]]
+      : line
+    this.map.setFilter(OPERATION_LINES_LAYER_ID, filter)
+    if (this.map.getLayer(OPERATION_POSITIONS_LAYER_ID)) this.map.setFilter(OPERATION_POSITIONS_LAYER_ID, filter)
     this._paint()
   }
 
   _addVehicleMarker () {
-    if (this._vehicleMarker) {
-      this._vehicleMarker.remove()
-      this._vehicleMarker = null
-    }
-    const maplibregl = window.maplibregl
-    if (!maplibregl || !this.map || !this.selectedRouteId) return
-    if (this._concealedRouteIds().has(String(this.selectedRouteId))) return
     const last = this._vehiclePosition()
-    if (!last) return
+    if (!last || !this.selectedRouteId || this._concealedRouteIds().has(String(this.selectedRouteId))) {
+      if (this._vehicleMarker) {
+        this._vehicleMarker.remove()
+        this._vehicleMarker = null
+      }
+      return
+    }
+    this._setVehicleMarker(last)
+  }
+
+  _setVehicleMarker (lngLat) {
+    const maplibregl = window.maplibregl
+    if (!maplibregl || !this.map) return
+    if (this._vehicleMarker) {
+      this._vehicleMarker.setLngLat(lngLat)
+      return
+    }
     const el = document.createElement('div')
     el.className = 'operation-vehicle-pin'
     el.innerHTML = '<i class="fa fa-truck"></i>'
-    this._vehicleMarker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(last).addTo(this.map)
+    this._vehicleMarker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(lngLat).addTo(this.map)
   }
 
   _syncDepotMarkers () {
@@ -1309,15 +1588,17 @@ export default class extends Controller {
   _paint () {
     if (!this.map || !this.map.getLayer(OPERATION_LINES_LAYER_ID)) return
     const selected = this.selectedRouteId ? String(this.selectedRouteId) : ''
-    const positions = ['==', ['get', 'geometry_kind'], 'positions']
-    const width = selected
-      ? ['case',
-          ['==', ['to-string', ['get', 'operation_route_id']], selected], 6,
-          positions, 4,
-          3]
-      : ['case', positions, 4, 3]
-    this.map.setPaintProperty(OPERATION_LINES_LAYER_ID, 'line-width', width)
+    const selectedWidth = selected
+      ? ['case', ['==', ['to-string', ['get', 'operation_route_id']], selected], 6, 3]
+      : 3
+    this.map.setPaintProperty(OPERATION_LINES_LAYER_ID, 'line-width', selectedWidth)
     this.map.setPaintProperty(OPERATION_LINES_LAYER_ID, 'line-opacity', ['coalesce', ['get', 'opacity'], OPACITY_MAX])
+    if (!this.map.getLayer(OPERATION_POSITIONS_LAYER_ID)) return
+    this.map.setPaintProperty(
+      OPERATION_POSITIONS_LAYER_ID,
+      'line-width',
+      selected ? ['case', ['==', ['to-string', ['get', 'operation_route_id']], selected], 5, 4] : 4
+    )
   }
 }
 

@@ -61,9 +61,10 @@ class OperationDeliveryTracking < ApplicationRecord
   def self.ensure_for!(operation)
     return unless connection.table_exists?(table_name)
 
+    # where(kind:), not scope :visits: has_many :through relations do not always delegate it.
     destination_ids = operation.operation_stops
                                .executable
-                               .visits
+                               .where(kind: 'visit')
                                .pluck(:destination_id, Arel.sql("destination_snapshot->>'id'"))
                                .flat_map { |destination_id, snapshot_id|
                                  [destination_id, snapshot_id.presence&.to_i].select { |id| id.to_i.positive? }
