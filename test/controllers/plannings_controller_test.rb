@@ -83,6 +83,7 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_select '#planning-spreadsheet-modal [data-v2--transfer-list-target="list"]', 2
     assert_select '#planning-spreadsheet-modal [data-action="click->v2--transfer-list#transferAll"]', 2
     assert_select '#planning-spreadsheet-modal [data-v2--plannings-index-target="detailColumnsTemplate"] .transfer-list-item .item-toggle-btn', minimum: 1
+    assert_select '#planning-spreadsheet-modal [name=spreadsheet-format]', 0
     assert_select 'button[data-action="click->v2--plannings-index#compare"][data-min="2"]', 1
   end
 
@@ -731,6 +732,15 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal User.find(users(:user_one).id).export_settings['export'], ['ref','route','planning']
     assert_equal User.find(users(:user_one).id).export_settings['skips'], ['planning_date','quantity1']
     assert_equal User.find(users(:user_one).id).export_settings['stops'], ['out-of-route','store','rest','inactive']
+  end
+
+  test 'index excel saves export column order' do
+    get :index, params: { format: :excel, ids: @planning.id.to_s, columns: 'city|name|ref', skips: 'comment', stops: 'store' }
+    assert_response :success
+    settings = users(:user_one).reload.export_settings
+    assert_equal %w[city name ref], settings['export']
+    assert_equal %w[comment], settings['skips']
+    assert_equal %w[store], settings['stops']
   end
 
   test 'should export and import with ref' do
