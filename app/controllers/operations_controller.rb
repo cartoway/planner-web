@@ -177,12 +177,17 @@ class OperationsController < ApplicationController
   private
 
   def pull_device_status_if_needed
+    return if turbo_refresh_request?
     return unless @operation.open?
     return unless current_user.customer.device.available_stop_status?
 
     DeviceService.new(customer: current_user.customer).fetch_stops_status(@operation)
   rescue StandardError => e
     Rails.logger.warn("operation device status pull failed: #{e.class}: #{e.message}")
+  end
+
+  def turbo_refresh_request?
+    request.headers['Turbo-Frame'].present? || request.headers['X-Turbo-Request-Id'].present?
   end
 
   def operation_params
