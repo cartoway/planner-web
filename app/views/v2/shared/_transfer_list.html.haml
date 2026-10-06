@@ -11,7 +11,7 @@
 - id = local_assigns[:id]
 - wrapper_class = local_assigns[:wrapper_class]
 - show_order = local_assigns.fetch(:show_order, true)
-.transfer-list.active-inactive-zones{id: id, class: [wrapper_class, ("transfer-list--#{columns.size}-cols" if columns.size != 2)], data: { controller: 'v2--transfer-list', v2__transfer_list_show_order_value: show_order }}
+.transfer-list.active-inactive-zones{id: id, class: [wrapper_class, ("transfer-list--#{columns.size}-cols" if columns.size != 2)], data: { controller: 'v2--transfer-list', v2__transfer_list_show_order_value: show_order, action: 'dragover->v2--transfer-list#allowDrop' }}
   - columns.each_with_index do |column, index|
     - key = column.fetch(:key).to_s
     - inactive = !!column[:inactive]
