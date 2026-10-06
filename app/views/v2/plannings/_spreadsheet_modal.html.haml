@@ -2,7 +2,6 @@
 - custom_columns = @customer.advanced_options&.dig('import', 'destinations', 'spreadsheetColumnsDef') || {}
 - detail_export, detail_skip = planning_spreadsheet_column_lists(@spreadsheet_columns, settings)
 - summary_export, summary_skip = planning_spreadsheet_column_lists(@spreadsheet_summary_columns, settings)
-- export_format = settings['format'].presence || 'excel'
 .modal.fade#planning-spreadsheet-modal{tabindex: '-1', role: 'dialog', 'aria-labelledby': 'planning-spreadsheet-modal-title', 'aria-hidden': 'true', data: { v2__plannings_index_target: 'modal' }}
   .modal-dialog.modal-lg.modal-dialog-scrollable
     .modal-content
@@ -24,15 +23,6 @@
         .mb-3
           %label.form-label= t('plannings.edit.dialog.spreadsheet.columns')
           = render 'v2/shared/transfer_list', id: 'spreadsheet-columns-container', active_title: t('plannings.edit.dialog.spreadsheet.columns_export'), inactive_title: t('plannings.edit.dialog.spreadsheet.columns_skip'), transfer_all_to_inactive_title: t('plannings.edit.dialog.spreadsheet.columns_skip_all'), transfer_all_to_active_title: t('plannings.edit.dialog.spreadsheet.columns_export_all'), help: t('plannings.edit.dialog.spreadsheet.columns_DnD_help')
-        .mb-0
-          %label.form-label= t('plannings.edit.dialog.spreadsheet.format')
-          .d-flex.gap-3
-            .form-check
-              %input.form-check-input{type: 'radio', name: 'spreadsheet-format', id: 'spreadsheet-format-csv', value: 'csv', checked: export_format == 'csv', data: { v2__plannings_index_target: 'format' }}
-              %label.form-check-label{for: 'spreadsheet-format-csv'}= t('plannings.edit.dialog.spreadsheet.csv')
-            .form-check
-              %input.form-check-input{type: 'radio', name: 'spreadsheet-format', id: 'spreadsheet-format-excel', value: 'excel', checked: export_format != 'csv', data: { v2__plannings_index_target: 'format' }}
-              %label.form-check-label{for: 'spreadsheet-format-excel'}= t('plannings.edit.dialog.spreadsheet.excel')
         %template{data: { v2__plannings_index_target: 'detailColumnsTemplate' }}
           - detail_export.each_with_index do |column, index|
             = render 'v2/shared/transfer_list_item', value: column, label: planning_spreadsheet_column_label(column, custom_columns), zone: 'active', order: index + 1, toggle_title: t('plannings.edit.dialog.spreadsheet.columns_toggle')

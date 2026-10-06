@@ -105,6 +105,17 @@ class PlanningsHelperTest < ActionView::TestCase
     assert_equal %w[city], skip
   end
 
+  test 'planning_spreadsheet_column_lists keeps the saved export column order' do
+    export, skip = planning_spreadsheet_column_lists(
+      %w[name city ref comment],
+      'export' => %w[ref name city],
+      'skips' => %w[comment]
+    )
+
+    assert_equal %w[ref name city], export
+    assert_equal %w[comment], skip
+  end
+
   test 'planning_spreadsheet_column_label uses export translation and optional custom suffix' do
     label = planning_spreadsheet_column_label('name', 'name' => 'Custom')
 

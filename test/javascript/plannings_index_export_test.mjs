@@ -32,6 +32,19 @@ describe('planning list export url', () => {
 
     assert.equal(url, '/plannings.excel?stops=store%7Crest&columns=name%7Cref&ids=4%2C9&skips=comment')
   })
+
+  it('keeps the given column order in the export url', () => {
+    const url = planningExportUrl({
+      format: 'excel',
+      ids: ['4'],
+      columns: 'city|name|ref',
+      skips: 'comment',
+      stops: '',
+      summary: false
+    })
+
+    assert.match(url, /columns=city%7Cname%7Cref/)
+  })
 })
 
 describe('planning list compare url', () => {
