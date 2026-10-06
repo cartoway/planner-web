@@ -24,6 +24,10 @@ Rails.application.configure do
 
   config.active_storage.service = ENV['RUSTFS_ENDPOINT'].present? ? :rustfs : :local
 
+  # Turbo Streams / Action Cable. Reseller hosts sit behind Traefik (http or https).
+  config.action_cable.mount_path = '/cable'
+  config.action_cable.allowed_request_origins = [%r{\Ahttps?://.*\z}]
+
   # Compress JavaScripts and CSS.
   config.assets.js_compressor = :uglifier
   # config.assets.css_compressor = :sass
