@@ -15,7 +15,7 @@
         %p.mb-0= t('plannings.index.over_max_limit', limit: current_user.customer.default_max_plannings)
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
       .d-flex.gap-2
-        = link_to new_planning_path, class: 'btn btn-primary btn-sm', disabled: cannot_new, data: { turbo: false } do
+        = link_to new_planning_path, class: 'btn btn-primary', disabled: cannot_new, data: { turbo: false } do
           %i.fa.fa-plus.fa-fw
           = t('plannings.index.new')
       .d-flex.gap-2.align-items-center
@@ -52,33 +52,35 @@
             %td.plannings-actions-col.text-end.text-nowrap
               .btn-group{role: 'group'}
                 - if @reseller.planning_dashboard_url && dashboard_visible
-                  = link_to @reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', class: 'btn btn-light btn-sm', disabled: !dashboard_usable, data: { turbo: false } do
+                  = link_to @reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', class: 'btn btn-light', disabled: !dashboard_usable, data: { turbo: false } do
                     %i.fa.fa-chart-line.fa-fw
                     = t('customers.menu.analytics')
-                = link_to planning_duplicate_path(planning), class: 'btn btn-light btn-sm', disabled: current_user.customer.too_many_plannings? || !current_user_planning_form_submit_enabled?(planning), data: { turbo_method: :patch, turbo_frame: '_top' }, title: t('all.verb.duplicate') do
+                = link_to planning_duplicate_path(planning), class: 'btn btn-light', disabled: current_user.customer.too_many_plannings? || !current_user_planning_form_submit_enabled?(planning), data: { turbo_method: :patch, turbo_frame: '_top' }, title: t('all.verb.duplicate') do
                   %i.fa.fa-copy.fa-fw
                   = t('all.verb.duplicate')
-                = link_to edit_planning_path(planning), class: 'btn btn-primary btn-sm', data: { turbo: false }, title: t('all.verb.edit') do
+              .btn-group{role: 'group'}
+                = link_to edit_planning_path(planning), class: 'btn btn-primary', data: { turbo: false }, title: t('all.verb.edit') do
                   %i.fa.fa-pencil.fa-fw
                   = t('all.verb.edit')
+              .btn-group{role: 'group'}
                 - if can_destroy
-                  = link_to planning, class: 'btn btn-danger btn-sm', data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do
+                  = link_to planning, class: 'btn btn-danger', data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do
                     %i.fa.fa-trash.fa-fw
                     = t('all.verb.destroy')
                 - else
-                  %button.btn.btn-danger.btn-sm{type: 'button', disabled: true, title: t('all.verb.destroy')}
+                  %button.btn.btn-danger{type: 'button', disabled: true, title: t('all.verb.destroy')}
                     %i.fa.fa-trash.fa-fw
                     = t('all.verb.destroy')
     - unless @plannings.empty?
       .plannings-bulk.px-3.py-2.d-flex.flex-wrap.gap-2.align-items-center
-        = button_tag type: :submit, class: 'btn btn-danger btn-sm', disabled: true, data: { v2__table_selection_target: 'bulk', turbo_confirm: t('all.verb.destroy_confirm') } do
+        = button_tag type: :submit, class: 'btn btn-danger', disabled: true, data: { v2__table_selection_target: 'bulk', turbo_confirm: t('all.verb.destroy_confirm') } do
           %i.fa.fa-trash.fa-fw
           = t('all.verb.destroy_selection')
-        %button.btn.btn-light.btn-sm{type: 'button', disabled: true, data: { v2__table_selection_target: 'bulk', min: '2', action: 'click->v2--plannings-index#compare' }}
+        %button.btn.btn-light{type: 'button', disabled: true, data: { v2__table_selection_target: 'bulk', min: '2', action: 'click->v2--plannings-index#compare' }}
           %i.fa.fa-chart-column.fa-fw
           = t('plannings.compare.action')
         .dropdown
-          %button#btn-export.btn.btn-light.btn-sm.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }}
+          %button#btn-export.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }}
             %i.fa.fa-share-nodes.fa-fw
             = t('plannings.index.export_selection')
           %ul.dropdown-menu
@@ -100,7 +102,7 @@
                 %i.fa.fa-table.fa-fw
                 = t('plannings.index.export.summary_spreadsheet')
         - if @customer.enable_external_callback? && @customer.external_callback_url && callback_visible
-          = button_tag type: 'button', id: 'external-url', class: 'btn btn-light btn-sm', disabled: !callback_usable, data: { action: 'click->v2--plannings-index#callback' } do
+          = button_tag type: 'button', id: 'external-url', class: 'btn btn-light', disabled: !callback_usable, data: { action: 'click->v2--plannings-index#callback' } do
             %i.fa.fa-desktop.fa-fw
             = @customer.external_callback_name || t('plannings.edit.customer_external_callback_url.action')
   = render 'v2/plannings/spreadsheet_modal', settings: settings, export_stops: export_stops
