@@ -899,6 +899,21 @@ export default class extends Controller {
     window.bootstrap.Modal.getOrCreateInstance(modal).show()
   }
 
+  shortenMobileLink (event) {
+    const link = event.currentTarget.querySelector('[data-short-url]')
+    if (!link || link.dataset.shortened === 'true') return
+    const endpoint = link.dataset.shortUrl
+    if (!endpoint) return
+    fetch(endpoint, { headers: { Accept: 'application/json' } }).then((response) => {
+      if (!response.ok) return null
+      return response.json()
+    }).then((data) => {
+      if (!data || !data.url) return
+      link.href = data.url
+      link.dataset.shortened = 'true'
+    }).catch(() => {})
+  }
+
   toggleRouteTrace (event) {
     event.preventDefault()
     event.stopPropagation()
