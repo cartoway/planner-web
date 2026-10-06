@@ -9,6 +9,11 @@ class OperationsControllerTest < ActionController::TestCase
     sign_in users(:user_one)
     @planning = plannings(:planning_one)
     @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    shortener = Object.new
+    def shortener.shorten(url)
+      url
+    end
+    Rails.application.config.stubs(:url_shortener).returns(shortener)
   end
 
   teardown do
@@ -58,7 +63,6 @@ class OperationsControllerTest < ActionController::TestCase
   end
 
   test 'show hides demo button when deliver demo is off' do
-    Rails.application.config.stubs(:url_shortener).returns(stub(shorten: 'http://short.test/route'))
     @planning.customer.update!(devices: { deliver: { enable: true, demo: false } })
     get :show, params: { id: @operation.id }
     assert_response :success
@@ -66,7 +70,6 @@ class OperationsControllerTest < ActionController::TestCase
   end
 
   test 'show starts and stops demo when enabled' do
-    Rails.application.config.stubs(:url_shortener).returns(stub(shorten: 'http://short.test/route'))
     @planning.customer.update!(devices: { deliver: { enable: true, demo: true } })
     get :show, params: { id: @operation.id }
     assert_response :success
@@ -87,7 +90,6 @@ class OperationsControllerTest < ActionController::TestCase
   end
 
   test 'demo actions respond with turbo frame without redirect' do
-    Rails.application.config.stubs(:url_shortener).returns(stub(shorten: 'http://short.test/route'))
     @planning.customer.update!(devices: { deliver: { enable: true, demo: true } })
     request.headers['Turbo-Frame'] = 'operation_demo_actions'
 
@@ -104,7 +106,6 @@ class OperationsControllerTest < ActionController::TestCase
   end
 
   test 'reset demo redirects for a full page reload' do
-    Rails.application.config.stubs(:url_shortener).returns(stub(shorten: 'http://short.test/route'))
     @planning.customer.update!(devices: { deliver: { enable: true, demo: true } })
 
     post :reset_demo, params: { id: @operation.id }
@@ -112,7 +113,6 @@ class OperationsControllerTest < ActionController::TestCase
   end
 
   test 'show renders the operation and map payload includes progress' do
-    Rails.application.config.stubs(:url_shortener).returns(stub(shorten: 'http://short.test/route'))
     get :show, params: { id: @operation.id }
     assert_response :success
     assert_includes response.body, @operation.name
@@ -186,6 +186,8 @@ class OperationsControllerTest < ActionController::TestCase
     sent = ActionMailer::Base.deliveries.drop(before)
     assert sent.any?
     assert_includes sent.flat_map(&:to), 'toto@toto.toto'
+    html = sent.last.html_part&.body&.to_s || sent.last.body.to_s
+    assert_match(%r{/operations/#{@operation.id}/routes/\d+/mobile}, html)
   end
 
   test 'sms can be sent after typing a number on a route that had none' do

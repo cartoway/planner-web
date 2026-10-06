@@ -19,7 +19,6 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
   end
 
   teardown do
-    @planning.customer.update_columns(operations_mobile: false)
     Operation.where(customer_id: @planning.customer_id).delete_all
   end
 
@@ -140,11 +139,10 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
     assert_equal 'http://short.test/abc', Operations::MobileUrl.for(@operation_route)
   end
 
-  test 'planning send keeps the planning mobile url' do
+  test 'planning send uses the operation mobile url' do
     shortener = mock
     shortener.expects(:shorten).with { |url|
-      url.include?("/routes/#{@route.id}/mobile") &&
-        url.exclude?('/operations/') &&
+      url.include?("/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile") &&
         url.include?("driver_token=#{@vehicle.driver_token}")
     }.returns('http://short.test/plan')
     Rails.application.config.stubs(:url_shortener).returns(shortener)

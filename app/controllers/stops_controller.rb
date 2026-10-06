@@ -123,7 +123,7 @@ class StopsController < ApplicationController
 
   def edit
     respond_to do |format|
-      format.html { render 'stops/edit', layout: 'mobile' }
+      format.html { render 'stops/edit', layout: 'v2/mobile' }
     end
   end
 
