@@ -20,18 +20,11 @@ module Operations
       vehicle = route&.vehicle_usage&.vehicle
       return nil if vehicle&.driver_token.blank?
 
-      if route.planning.customer.operations_mobile
-        operation_route = OperationRoute.joins(:operation)
-                                        .where(route_id: route.id, operations: { status: Operation::OPEN_STATUSES })
-                                        .order('operations.published_at DESC')
-                                        .first
-        return self.for(operation_route) if operation_route
-      end
-
-      reseller = route.planning.customer.reseller
-      path = "/routes/#{route.id}/mobile?driver_token=#{vehicle.driver_token}"
-      url = "#{reseller.url_protocol}://#{reseller.host}#{path}"
-      Rails.application.config.url_shortener.shorten(url)
+      operation_route = OperationRoute.joins(:operation)
+                                      .where(route_id: route.id, operations: { status: Operation::OPEN_STATUSES })
+                                      .order('operations.published_at DESC')
+                                      .first
+      self.for(operation_route)
     end
   end
 end
