@@ -6,6 +6,8 @@ module Operations
 
     # Shortened absolute URL of the operation route mobile page.
     def for(operation_route)
+      return nil unless operation_route
+
       vehicle = operation_route.vehicle
       return nil if vehicle&.driver_token.blank?
 
