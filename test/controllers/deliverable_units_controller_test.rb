@@ -52,6 +52,14 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     assert_select 'select#deliverable_unit_icon option[data-icon]', minimum: 1
   end
 
+  test 'v2 edit html renders the list with the form inlined so the url is shareable' do
+    enable_layout_v2!
+    get :edit, params: { id: @deliverable_unit }
+    assert_response :success
+    assert_select '.deliverable-units-index', 1
+    assert_select 'turbo-frame#form_sidebar form#deliverable-unit-form-sidebar', 1
+  end
+
   test 'v2 create from sidebar closes the form frame' do
     enable_layout_v2!
     @request.headers['Turbo-Frame'] = 'form_sidebar'

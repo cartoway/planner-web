@@ -36,11 +36,11 @@ class DeliverableUnitsController < ApplicationController
 
   def new
     @deliverable_unit = current_user.customer.deliverable_units.build
-    render 'new_sidebar', layout: false if v2_form_sidebar_request?
+    return if render_v2_form_or_list('new_sidebar', 'v2/deliverable_units/index', deliverable_units_path) { @deliverable_units = current_user.customer.deliverable_units }
   end
 
   def edit
-    render 'edit_sidebar', layout: false if v2_form_sidebar_request?
+    return if render_v2_form_or_list('edit_sidebar', 'v2/deliverable_units/index', deliverable_units_path) { @deliverable_units = current_user.customer.deliverable_units }
   end
 
   def create
@@ -114,7 +114,12 @@ class DeliverableUnitsController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_deliverable_unit
-    @deliverable_unit = current_user.customer.deliverable_units.find params[:id] || params[:deliverable_unit_id]
+    id = params[:id] || params[:deliverable_unit_id]
+    @deliverable_unit = if current_user.customer
+      current_user.customer.deliverable_units.find(id)
+    else
+      DeliverableUnit.find(id)
+    end
   end
 
   # Never trust parameters from the scary internet, only allow the white list through.
