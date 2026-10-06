@@ -5,7 +5,7 @@ require 'value_to_boolean'
 class OperationRoutesController < ApplicationController
   before_action :authenticate_user!, except: [:mobile, :update_position, :update_status, :transfer_stop]
   before_action :authenticate_driver!, only: [:mobile, :update_position, :update_status, :transfer_stop]
-  before_action :set_user_route, only: [:show, :media, :transmit]
+  before_action :set_user_route, only: [:show, :media, :transmit, :mobile_url]
   before_action :set_driver_route, only: [:mobile, :update_position, :update_status, :transfer_stop]
 
   def show
@@ -32,6 +32,10 @@ class OperationRoutesController < ApplicationController
     render(layout: false) and return if params[:modal].present?
 
     render layout: 'v2/layouts/application'
+  end
+
+  def mobile_url
+    render json: { url: Operations::MobileUrl.for(@operation_route) }
   end
 
   def mobile
