@@ -31,4 +31,27 @@ class OperationDeliveryTrackingTest < ActiveSupport::TestCase
     assert_nothing_raised { OperationDeliveryTracking.ensure_for!(operation) }
     assert_equal 0, OperationDeliveryTracking.where(operation_id: operation.id).count
   end
+
+  test 'preload_visit_stops! loads all destination stops in a constant number of queries' do
+    operation = Operations::PublishFromPlanning.call(planning: @planning)
+    trackings = operation.operation_delivery_trackings.with_destination.to_a
+    skip 'need several destination trackings' if trackings.size < 2
+
+    OperationDeliveryTracking.preload_visit_stops!(trackings)
+
+    stop_queries = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      stop_queries += 1 if payload[:sql].to_s.include?('operation_stops')
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      trackings.each do |tracking|
+        assert_kind_of Array, tracking.visit_stops
+        assert tracking.visit_stops.first
+        assert_equal tracking.destination_id, tracking.visit_stops.first.destination_identity
+      end
+    end
+
+    assert_equal 0, stop_queries, "expected memoized visit_stops, got #{stop_queries} operation_stops queries"
+  end
 end

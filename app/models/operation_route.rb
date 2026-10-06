@@ -14,6 +14,15 @@ class OperationRoute < ApplicationRecord
 
   scope :active_sync, -> { where(sync_state: 'active') }
   scope :planned, -> { active_sync.where(unassigned: false) }
+  scope :includes_for_show, -> {
+    includes(
+      :operation,
+      :vehicle,
+      :vehicle_positions,
+      { route: [:route_data, :start_route_data, :stop_route_data] },
+      operation_stops: :operation_stop_status_events
+    )
+  }
 
   def progress_counts
     stops = operation_stops.select { |stop| stop.sync_state == 'active' && stop.kind != 'rest' && stop.active != false }
