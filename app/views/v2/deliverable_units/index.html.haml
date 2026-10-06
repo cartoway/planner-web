@@ -8,7 +8,7 @@
   .deliverable-units-toolbar.px-3.pt-3
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
       .d-flex.gap-2.align-items-center
-        = link_to new_deliverable_unit_path, class: 'btn btn-primary btn-sm', disabled: !can_create, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+        = link_to new_deliverable_unit_path, class: 'btn btn-primary', disabled: !can_create, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
           %i.fa.fa-plus.fa-fw
           = t 'deliverable_units.index.new'
       .d-flex.gap-2.align-items-center
@@ -51,16 +51,16 @@
                 = deliverable_unit.localized_optimization_overload_multiplier
             %td.deliverable-units-actions-col.text-end.text-nowrap
               .btn-group{role: 'group'}
-                = link_to edit_deliverable_unit_path(deliverable_unit), class: 'btn btn-primary btn-sm', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
+                = link_to edit_deliverable_unit_path(deliverable_unit), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
                   %i.fa.fa-pencil.fa-fw
                 - if can_destroy
-                  = link_to deliverable_unit, class: 'btn btn-danger btn-sm', method: :delete, data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do
+                  = link_to deliverable_unit, class: 'btn btn-danger', method: :delete, data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do
                     %i.fa.fa-trash.fa-fw
                 - else
-                  %button.btn.btn-danger.btn-sm{type: 'button', title: t('all.verb.destroy'), disabled: true}
+                  %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy'), disabled: true}
                     %i.fa.fa-trash.fa-fw
     - unless @deliverable_units.empty?
       .deliverable-units-bulk.px-3.py-2
-        = button_tag type: :submit, form: 'deliverable-units-destroy', class: 'btn btn-danger btn-sm', disabled: !can_destroy, data: { v2__table_selection_target: 'bulk', confirm: t('all.verb.destroy_confirm') } do
+        = button_tag type: :submit, form: 'deliverable-units-destroy', class: 'btn btn-danger', disabled: !can_destroy, data: { v2__table_selection_target: 'bulk', confirm: t('all.verb.destroy_confirm') } do
           %i.fa.fa-trash.fa-fw
           = t('all.verb.destroy_selection')

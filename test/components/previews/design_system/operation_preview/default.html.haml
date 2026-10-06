@@ -4,7 +4,7 @@
     .operation-header-id
       .d-flex.align-items-center.gap-2
         %span.operation-header-title Tournée matin
-        %button.btn.btn-link.btn-sm.p-0{type: 'button', aria: { label: t('operations.show.edit_name') }}
+        %button.btn.btn-link.p-0{type: 'button', aria: { label: t('operations.show.edit_name') }}
           %i.fa.fa-pencil
         %span.operation-header-title REF-204
         %span.badge.operation-status= t('operations.statuses.in_progress')
@@ -18,10 +18,10 @@
         %span.is-exception{style: 'width: 17%'}
         %span.is-rest{style: 'width: 33%'}
     .operation-header-actions
-      %a.btn.btn-light.btn-sm{href: '#'}
+      %a.btn.btn-light{href: '#'}
         %i.fa.fa-map.fa-fw
         = t('operations.show.planning')
-      %button.btn.btn-light.btn-sm{type: 'button'}
+      %button.btn.btn-light{type: 'button'}
         %i.fa.fa-paper-plane.fa-fw
           = t('plannings.edit.deliver_send.plural.transmit')
   .operation-body
@@ -82,16 +82,16 @@
               = t('operations.show.stops')
               %i.fa.fa-chevron-down.operation-tour-chevron
           .operation-tour-tools
-            %button.btn.btn-sm.btn-light{type: 'button', title: t('operations.show.hide_trace')}
+            %button.btn.btn-light{type: 'button', title: t('operations.show.hide_trace')}
               %i.fa.fa-eye.fa-fw
-            %button.btn.btn-sm.btn-light{type: 'button', title: t('operations.show.center_route')}
+            %button.btn.btn-light{type: 'button', title: t('operations.show.center_route')}
               %i.fa.fa-expand.fa-fw
-            %button.btn.btn-sm.btn-light{type: 'button', title: t('operations.show.center_vehicle'), disabled: true}
+            %button.btn.btn-light{type: 'button', title: t('operations.show.center_vehicle'), disabled: true}
               %i.fa.fa-location-crosshairs.fa-fw
-            %button.btn.btn-sm.btn-light.dropdown-toggle{type: 'button'}
+            %button.btn.btn-light.dropdown-toggle{type: 'button'}
               %i.fa.fa-paper-plane.fa-fw
               = t('plannings.edit.deliver_send.singular.transmit')
-            %button.btn.btn-sm.btn-light{type: 'button'}
+            %button.btn.btn-light{type: 'button'}
               %i.fa.fa-images.fa-fw
               = t('operations.show.media')
         %ul.operation-stops
