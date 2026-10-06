@@ -28,7 +28,7 @@ class OperationsController < ApplicationController
     @next_page = next_page
     @selector_routes = selector_routes
     @deliver_demo_enabled = DeliverDemo.enabled?(current_user.customer)
-    if @operation.open?
+    if @operation.open? && !turbo_refresh_request?
       @send_routes = transmittable_routes.to_a
       @send_trackings = destination_trackings_for_send.to_a
     end

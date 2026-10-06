@@ -30,8 +30,8 @@ module OperationStops
         payload: @payload
       )
       cursor_updated = project_cursor
-      broadcast_page_refresh if cursor_updated
       @operation_stop.reload
+      broadcast_stop_patch if cursor_updated
       { event: event, cursor_updated: cursor_updated, operation_stop: @operation_stop }
     end
 
@@ -41,16 +41,74 @@ module OperationStops
       @operation_stop.status.to_s.downcase == 'transferred' && @status.blank?
     end
 
-    def broadcast_page_refresh
-      operation = @operation_stop.operation_route&.operation
+    def broadcast_stop_patch
+      route = @operation_stop.operation_route
+      operation = route&.operation
       return unless operation
 
-      Turbo::StreamsChannel.broadcast_refresh_to(operation)
-      OperationDeliveryTracking.where(operation_id: operation.id).find_each do |tracking|
-        Turbo::StreamsChannel.broadcast_refresh_to(tracking.turbo_stream_name)
+      Turbo::StreamsChannel.broadcast_stream_to(
+        operation,
+        content: %(<turbo-stream action="refresh_stop" target="map"><template>#{ERB::Util.html_escape(stop_patch_payload(route).to_json)}</template></turbo-stream>)
+      )
+      unless @source == 'demo'
+        OperationDeliveryTracking.where(operation_id: operation.id).find_each do |tracking|
+          Turbo::StreamsChannel.broadcast_refresh_to(tracking.turbo_stream_name)
+        end
       end
     rescue StandardError => e
       Rails.logger.warn("operation turbo refresh failed: #{e.class}: #{e.message}")
+    end
+
+    def stop_patch_payload(route)
+      board = route.board
+      stop = @operation_stop
+      delay = stop.delay_minutes
+      {
+        stop_id: stop.id,
+        route_id: route.id,
+        phase: stop.phase,
+        status: stop.status,
+        kind: stop.kind,
+        index: stop.index,
+        planned_arrival_clock: stop.planned_arrival_clock,
+        actual_arrival_clock: stop.actual_arrival_clock,
+        planned_departure_clock: stop.planned_departure_clock,
+        actual_departure_clock: stop.actual_departure_clock,
+        delay: delay,
+        aside: stop_aside(stop, delay),
+        started: route.started?,
+        route: {
+          delivered: board[:delivered],
+          failed: board[:failed],
+          exception: board[:exception],
+          late: board[:late],
+          upcoming: board[:upcoming],
+          current: board[:current],
+          total: board[:total],
+          delay: board[:delay]
+        }
+      }
+    end
+
+    def stop_aside(stop, delay)
+      phase = stop.phase
+      if phase == 'failed'
+        { css: 'operation-gap is-bad', kind: 'status' }
+      elsif phase == 'exception'
+        { css: 'operation-gap is-exception', kind: 'exception' }
+      elsif phase == 'started'
+        { css: 'badge operation-now', kind: 'status' }
+      elsif phase == 'current'
+        { css: 'badge operation-now', kind: 'en_route' }
+      elsif delay && delay > OperationStop::LATE_AFTER_MINUTES
+        { css: 'operation-gap is-late', kind: 'late' }
+      elsif phase == 'delivered' && delay&.negative?
+        { css: 'operation-gap is-ok', kind: 'status' }
+      elsif delay
+        { css: 'operation-gap is-ok', kind: 'delay' }
+      elsif phase == 'late'
+        { css: 'operation-gap is-late', kind: 'late_risk' }
+      end
     end
 
     # rubocop:disable Naming/PredicateMethod

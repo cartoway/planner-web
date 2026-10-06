@@ -25,8 +25,7 @@ class OperationStop < ApplicationRecord
   validate :visit_snapshot_present, if: -> { kind == 'visit' }
 
   scope :active_sync, -> { where(sync_state: 'active') }
-  scope :executable, -> { active_sync.where.not(active: false) }
-  scope :visits, -> { where(kind: 'visit') }
+  scope :executable, -> { active_sync.where(active: true) }
   scope :past_operations, -> {
     joins(operation_route: :operation).where(operations: { status: 'historized' })
   }
@@ -43,7 +42,7 @@ class OperationStop < ApplicationRecord
 
     operation.operation_stops
              .executable
-             .visits
+             .where(kind: 'visit')
              .where(
                'operation_stops.destination_id IN (:ids) OR (operation_stops.destination_snapshot->>\'id\')::int IN (:ids)',
                ids: ids

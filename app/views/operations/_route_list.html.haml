@@ -28,11 +28,12 @@
               - if route.unassigned || route.vehicle_id.nil?
                 %span.badge.operation-unassigned= t('operations.show.unassigned_badge')
             .operation-tour-progress
-              = "#{board[:delivered] + board[:failed]}/#{board[:total]}"
-              = t('operations.show.stops')
-              - if board[:total].positive?
-                ·
-                = "#{(100.0 * (board[:delivered] + board[:failed]) / board[:total]).round}%"
+              %span{data: { tour_progress: true }}
+                = "#{board[:delivered] + board[:failed]}/#{board[:total]}"
+                = t('operations.show.stops')
+                - if board[:total].positive?
+                  ·
+                  = "#{(100.0 * (board[:delivered] + board[:failed]) / board[:total]).round}%"
               %i.fa.fa-chevron-down.operation-tour-chevron
           .operation-tour-tools{onclick: 'event.stopPropagation();'}
             .btn-group
