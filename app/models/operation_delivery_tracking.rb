@@ -15,23 +15,39 @@ class OperationDeliveryTracking < ApplicationRecord
   before_validation :ensure_expires_at, on: :create
 
   scope :active, -> { where('expires_at > ?', Time.current) }
+  scope :with_destination, -> { includes(:destination) }
 
   def expired?
     expires_at <= Time.current
   end
 
   def visit_stops
-    operation.operation_stops
-             .executable
-             .where(kind: 'visit')
-             .where(
-               'operation_stops.destination_id = :id OR (operation_stops.destination_snapshot->>\'id\')::int = :id',
-               id: destination_id
-             )
-             .joins(:operation_route)
-             .merge(OperationRoute.where(unassigned: false))
-             .includes(:operation_stop_status_events, operation_route: [:operation, :vehicle_positions])
-             .order('operation_routes.index', 'operation_stops.index')
+    return @preloaded_visit_stops if instance_variable_defined?(:@preloaded_visit_stops)
+
+    OperationStop.visit_stops_for_destinations(operation, destination_id)
+  end
+
+  def preloaded_visit_stops=(stops)
+    @preloaded_visit_stops = Array(stops)
+  end
+
+  # Batch-load visit_stops for a tracking collection (Planning#preload_* style).
+  def self.preload_visit_stops!(trackings)
+    trackings = Array(trackings).compact
+    return trackings if trackings.empty?
+
+    pending = trackings.reject { |tracking| tracking.instance_variable_defined?(:@preloaded_visit_stops) }
+    return trackings if pending.empty?
+
+    pending.group_by(&:operation_id).each_value do |group|
+      operation = group.first.operation
+      stops = OperationStop.visit_stops_for_destinations(operation, group.map(&:destination_id)).to_a
+      by_destination = stops.group_by { |stop| stop.destination_identity }
+      group.each do |tracking|
+        tracking.preloaded_visit_stops = by_destination[tracking.destination_id] || []
+      end
+    end
+    trackings
   end
 
   def turbo_stream_name
@@ -47,8 +63,11 @@ class OperationDeliveryTracking < ApplicationRecord
 
     destination_ids = operation.operation_stops
                                .executable
-                               .where(kind: 'visit')
-                               .filter_map { |stop| stop.destination_id.presence || stop.destination_snapshot&.[]('id') }
+                               .visits
+                               .pluck(:destination_id, Arel.sql("destination_snapshot->>'id'"))
+                               .flat_map { |destination_id, snapshot_id|
+                                 [destination_id, snapshot_id.presence&.to_i].select { |id| id.to_i.positive? }
+                               }
                                .uniq
     return if destination_ids.empty?
 
