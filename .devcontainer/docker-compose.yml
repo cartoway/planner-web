@@ -24,6 +24,8 @@ x-web: &web
     POSTGRES_DB: ${POSTGRES_DB:-planner}
     POSTGRES_DB_TEST: ${POSTGRES_DB_TEST:-planner-test}
     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-planner}
+    REDIS_HOST: ${REDIS_HOST:-redis-cache}
+    REDIS_URL: ${REDIS_URL:-redis://redis-cache:6379/1}
     RUSTFS_ENDPOINT: ${RUSTFS_ENDPOINT:-http://rustfs:9000}
     RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
     RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
