@@ -82,7 +82,7 @@ export default class extends Controller {
     }
     this.dragItem = event.currentTarget
     event.dataTransfer.effectAllowed = "move"
-    event.dataTransfer.setData("text/plain", event.currentTarget.dataset.value || "")
+    event.dataTransfer.setData("text/plain", event.currentTarget.dataset.value || "column")
     event.currentTarget.classList.add("is-dragging")
   }
 
@@ -91,20 +91,25 @@ export default class extends Controller {
     this.dragItem = null
   }
 
-  dragOver (event) {
+  // Keep the node in place until drop: moving it on dragover makes the browser
+  // cancel the drag and remove the chip (flex-wrap lists are especially brittle).
+  allowDrop (event) {
     event.preventDefault()
     event.dataTransfer.dropEffect = "move"
-    if (!this.dragItem) return
-    const list = event.currentTarget
-    const after = itemAfter(list, event.clientY)
-    if (after == null) list.appendChild(this.dragItem)
-    else list.insertBefore(this.dragItem, after)
+  }
+
+  dragOver (event) {
+    this.allowDrop(event)
   }
 
   drop (event) {
     event.preventDefault()
+    event.stopPropagation()
     if (!this.dragItem) return
-    this.moveItem(this.dragItem, event.currentTarget)
+    const list = event.currentTarget
+    placeItem(list, this.dragItem, event.clientX, event.clientY)
+    this.applyListState(this.dragItem, list)
+    this.refreshOrders()
   }
 
   refreshOrders () {
@@ -144,18 +149,37 @@ export default class extends Controller {
       return acc
     }, {})
   }
+
+  // Snapshot current lists into the <template> so the next open keeps this order
+  // (the download also persists it server-side via columns/skips query params).
+  serializeToTemplate (template) {
+    if (!template?.content) return
+    template.content.replaceChildren(
+      ...this.listTargets.flatMap((list) => [...list.querySelectorAll(ITEM_SELECTOR)].map((item) => item.cloneNode(true)))
+    )
+  }
 }
 
 export function listValues (list) {
   if (!list) return []
-  return [...list.querySelectorAll(ITEM_SELECTOR)].map((item) => item.dataset.value).filter(Boolean)
+  const items = list.children
+    ? [...list.children].filter((item) => item.matches?.(ITEM_SELECTOR) || String(item.className || "").includes("transfer-list-item"))
+    : [...list.querySelectorAll(ITEM_SELECTOR)]
+  return items.map((item) => item.dataset.value).filter(Boolean)
 }
 
-export function itemAfter (list, y) {
+export function placeItem (list, item, x, y) {
+  const after = itemAfter(list, x, y)
+  if (after == null) list.appendChild(item)
+  else list.insertBefore(item, after)
+}
+
+export function itemAfter (list, x, y) {
   const items = [...list.querySelectorAll(`${ITEM_SELECTOR}:not(.is-dragging)`)]
   return items.find((item) => {
     const box = item.getBoundingClientRect()
-    return y < box.top + box.height / 2
+    if (y < box.top) return true
+    return y < box.bottom && x < box.left + box.width / 2
   }) || null
 }
 

@@ -9,7 +9,6 @@ export default class extends Controller {
     "summary",
     "stopsGroup",
     "stop",
-    "format",
     "detailColumnsTemplate",
     "summaryColumnsTemplate",
     "routeId"
@@ -56,20 +55,34 @@ export default class extends Controller {
       return
     }
     const summary = this.hasSummaryTarget && this.summaryTarget.value === "true"
-    const transfer = this.transferList()
-    const columns = transfer ? transfer.activeValues() : []
-    const skips = transfer ? transfer.inactiveValues() : []
+    const columns = this.spreadsheetValues("active")
+    const skips = this.spreadsheetValues("inactive")
     const fallback = columns.length ? columns : columns.concat(skips)
-    window.location.href = planningExportUrl({
-      format: this.selectedFormat(),
+    this.persistColumnsTemplate(summary)
+    window.location.assign(planningExportUrl({
+      format: "excel",
       ids,
       columns: (columns.length ? columns : fallback).join("|"),
       skips: columns.length ? skips.join("|") : "",
       stops: this.selectedStops().join("|"),
       summary,
       routeId: this.hasRouteIdTarget ? this.routeIdTarget.value : ""
-    })
+    }))
     this.hideModal()
+  }
+
+  spreadsheetValues (zone) {
+    const transfer = this.transferList()
+    if (transfer) return transfer.valuesFor(zone)
+    const list = this.element.querySelector(`#spreadsheet-columns-container [data-column-key="${zone}"].item-list`)
+    return list ? [...list.children].filter((item) => item.classList.contains("transfer-list-item")).map((item) => item.dataset.value).filter(Boolean) : []
+  }
+
+  persistColumnsTemplate (summary) {
+    const template = summary && this.hasSummaryColumnsTemplateTarget
+      ? this.summaryColumnsTemplateTarget
+      : this.detailColumnsTemplateTarget
+    this.transferList()?.serializeToTemplate(template)
   }
 
   openSpreadsheetModal (summary) {
@@ -84,11 +97,6 @@ export default class extends Controller {
 
   selectedStops () {
     return this.stopTargets.filter((input) => input.checked).map((input) => input.value)
-  }
-
-  selectedFormat () {
-    const checked = this.formatTargets.find((input) => input.checked)
-    return checked ? checked.value : "excel"
   }
 
   showModal () {
