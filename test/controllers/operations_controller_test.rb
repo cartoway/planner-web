@@ -162,6 +162,8 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes response.body, I18n.t('operations.show.send_email')
     assert_includes response.body, I18n.t('plannings.edit.deliver_send.singular.access')
     assert_includes response.body, media_operation_operation_route_path(@operation, @operation.operation_routes.planned.first)
+    route = @operation.operation_routes.planned.first
+    assert_includes response.body, Operations::MobileUrl.path(route)
     stop = @operation.operation_stops.where(kind: 'visit').order(:index).first
     stop.update_columns(status: 'delivered')
     get :show, params: { id: @operation.id }
@@ -177,6 +179,27 @@ class OperationsControllerTest < ActionController::TestCase
     route_feature = body['features'].find { |feature| feature.dig('properties', 'total_count') }
     assert route_feature
     assert route_feature['properties'].key?('progress')
+  end
+
+  test 'show mobile access skips the url shortener' do
+    shortener = mock
+    shortener.expects(:shorten).never
+    Rails.application.config.stubs(:url_shortener).returns(shortener)
+
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    route = @operation.operation_routes.planned.first
+    assert_includes response.body, Operations::MobileUrl.path(route)
+    assert_includes response.body, mobile_url_operation_operation_route_path(@operation, route)
+  end
+
+  test 'turbo refresh skips device status pull' do
+    Device.any_instance.stubs(:available_stop_status?).returns(true)
+    DeviceService.any_instance.expects(:fetch_stops_status).never
+    @request.headers['X-Turbo-Request-Id'] = 'refresh-1'
+
+    get :show, params: { id: @operation.id }
+    assert_response :success
   end
 
   test 'transmit emails the assigned drivers' do

@@ -45,7 +45,7 @@
                 %i.fa.fa-location-crosshairs.fa-fw
             .btn-group
               - if route.vehicle_id
-                .dropdown
+                .dropdown{data: { action: 'shown.bs.dropdown->v2--operation-show#shortenMobileLink' }}
                   %button.btn.btn-sm.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }}
                     %i.fa.fa-paper-plane.fa-fw
                     = t('plannings.edit.deliver_send.singular.transmit')
@@ -57,10 +57,10 @@
                       %li
                         %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'sms', route_id: route.id, field: 'phone_number', contact: route.driver_phone, vehicle_name: route.vehicle_name }}
                           = t('operations.show.send_sms')
-                    - mobile_url = Operations::MobileUrl.for(route)
+                    - mobile_url = Operations::MobileUrl.path(route)
                     - if mobile_url
                       %li
-                        = link_to mobile_url, class: 'dropdown-item', target: '_blank', rel: 'noopener noreferrer' do
+                        = link_to mobile_url, class: 'dropdown-item', target: '_blank', rel: 'noopener noreferrer', data: { short_url: mobile_url_operation_operation_route_path(operation, route) } do
                           = t('plannings.edit.deliver_send.singular.access')
               = link_to media_operation_operation_route_path(operation, route), class: 'btn btn-sm btn-light', data: { action: 'click->v2--operation-show#openMedia' } do
                 %i.fa.fa-images.fa-fw
