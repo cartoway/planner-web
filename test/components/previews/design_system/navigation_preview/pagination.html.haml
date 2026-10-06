@@ -5,9 +5,9 @@
     %code ul.pagination
     with
     = succeed ";" do
-      %code .btn.btn-light.btn-sm
+      %code .btn.btn-light
   %nav{"aria-label" => "Page navigation"}
-    %ul.pagination.pagination-sm.justify-content-center.mb-4
+    %ul.pagination.justify-content-center.mb-4
       %li.page-item.disabled
         %span.page-link Previous
       %li.page-item.active{"aria-current" => "page"}
@@ -19,12 +19,12 @@
       %li.page-item
         %a.page-link{:href => "#"} Next
   %p.small.text-secondary.mb-2 Legacy-style control strip (icon buttons)
-  %ul.pagination.pagination-sm.justify-content-center.mb-0
+  %ul.pagination.justify-content-center.mb-0
     %li.page-item
-      %button.btn.btn-secondary.btn-sm.disabled.rounded-0.rounded-start{:type => "button"}
+      %button.btn.btn-secondary.disabled.rounded-0.rounded-start{:type => "button"}
         %i.fa.fa-chevron-left{"aria-hidden" => "true"}
     %li.page-item.disabled
-      %span.btn.btn-secondary.btn-sm.disabled.rounded-0.border-start-0 2 / 5
+      %span.btn.btn-secondary.disabled.rounded-0.border-start-0 2 / 5
     %li.page-item
-      %button.btn.btn-secondary.btn-sm.rounded-0.rounded-end.border-start-0{:type => "button"}
+      %button.btn.btn-secondary.rounded-0.rounded-end.border-start-0{:type => "button"}
         %i.fa.fa-chevron-right{"aria-hidden" => "true"}

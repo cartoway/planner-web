@@ -9,7 +9,7 @@
         %thead
           %tr
             %th.destinations-selection-col
-              %button.btn.btn-light.btn-xs.destinations-toggle-selection{type: "button", title: t('all.verb.toggle_selection')}
+              %button.btn.btn-light.destinations-toggle-selection{type: "button", title: t('all.verb.toggle_selection')}
                 %i.fa.fa-check.fa-fw
             - list_columns.each do |column_id|
               %th{class: "#{destinations_list_column_class(column_id)} destinations-list-sortable-col"}

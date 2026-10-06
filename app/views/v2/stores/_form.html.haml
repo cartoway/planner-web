@@ -56,7 +56,7 @@
       %div{class: v2_control_col}
         - if form_mutable
           #store-geocode-prompt.mb-2{ class: ('d-none' unless store_form_address_geocodable?(@store)), data: { v2__destination_geocoding_target: 'prompt' } }
-            %button.btn.btn-light.btn-xs.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeButton', action: 'click->v2--destination-geocoding#geocode' }}
+            %button.btn.btn-light.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeButton', action: 'click->v2--destination-geocoding#geocode' }}
               %i.fa.fa-map-marker.fa-fw
               %span{ data: { v2__destination_geocoding_target: 'geocodeButtonLabel' } }= df.call('geocode_prompt')
         #geocoding_accuracy{ class: ('d-none' unless @store.geocoding_accuracy) }
@@ -77,7 +77,7 @@
           %input.form-control#displayed-geocoding-result{type: 'text', value: @store.geocoding_result.is_a?(Hash) ? @store.geocoding_result['free'] : '', disabled: true, tabindex: -1}
       %div{class: v2_control_col}
         #store-geocode-apply.d-none{ data: { v2__destination_geocoding_target: 'geocodeApplyPanel' } }
-          %button.btn.btn-light.btn-xs.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeApplyButton', action: 'click->v2--destination-geocoding#applyGeocodedAddress' }}
+          %button.btn.btn-light.w-100{type: 'button', data: { v2__destination_geocoding_target: 'geocodeApplyButton', action: 'click->v2--destination-geocoding#applyGeocodedAddress' }}
             %i.fa.fa-check.fa-fw
             = t('destinations.reverse_geocoding.apply')
     .row
@@ -119,7 +119,7 @@
     %div{data: { v2__nested_fields_target: 'list' }}
       - @store.store_reloads.each_with_index do |store_reload, i|
         = render 'v2/store_reloads/form', store_reload: store_reload, i: i + 1, customer: @store.customer, form_mutable: form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
-    %button.btn.btn-light.btn-sm{type: 'button', data: { action: 'click->v2--nested-fields#add' }}
+    %button.btn.btn-light{type: 'button', data: { action: 'click->v2--nested-fields#add' }}
       %i.fa.fa-plus.fa-fw
       = t('stores.form.store_reload.new')
     %template{data: { v2__nested_fields_target: 'template' }}
