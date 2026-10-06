@@ -8,7 +8,7 @@
       = button_to demo_operation_path(@operation), method: :post, class: 'btn btn-primary btn-sm' do
         %i.fa.fa-play.fa-fw
         = t('operations.show.start_demo')
-  -# Full reload: morph refresh does not reliably clear stop phase colors after reset.
-  = button_to reset_demo_operation_path(@operation), method: :post, class: 'btn btn-light btn-sm', form: { data: { turbo: false, turbo_confirm: t('operations.show.demo_reset_confirm') } } do
-    %i.fa.fa-rotate-left.fa-fw
-    = t('operations.show.reset_demo')
+    -# Full reload: morph refresh does not reliably clear stop phase colors after reset.
+    = button_to reset_demo_operation_path(@operation), method: :post, class: 'btn btn-light btn-sm', form: { data: { turbo: false, turbo_confirm: t('operations.show.demo_reset_confirm') } } do
+      %i.fa.fa-rotate-left.fa-fw
+      = t('operations.show.reset_demo')

@@ -97,6 +97,7 @@ class OperationsControllerTest < ActionController::TestCase
     assert_response :success
     assert_includes response.body, 'operation_demo_actions'
     assert_includes response.body, I18n.t('operations.show.stop_demo')
+    assert_equal 1, response.body.scan(I18n.t('operations.show.reset_demo')).size
     assert @operation.reload.demo_job_id.present?
 
     delete :stop_demo, params: { id: @operation.id }
@@ -196,6 +197,14 @@ class OperationsControllerTest < ActionController::TestCase
   test 'turbo refresh skips device status pull' do
     Device.any_instance.stubs(:available_stop_status?).returns(true)
     DeviceService.any_instance.expects(:fetch_stops_status).never
+    @request.headers['X-Turbo-Request-Id'] = 'refresh-1'
+
+    get :show, params: { id: @operation.id }
+    assert_response :success
+  end
+
+  test 'turbo refresh skips destination send payload' do
+    OperationDeliveryTracking.expects(:ensure_for!).never
     @request.headers['X-Turbo-Request-Id'] = 'refresh-1'
 
     get :show, params: { id: @operation.id }

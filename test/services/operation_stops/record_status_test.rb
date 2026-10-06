@@ -62,11 +62,35 @@ class RecordStatusTest < ActiveSupport::TestCase
     assert_equal 'transferred', @stop.reload.status
   end
 
-  test 'refreshes the operation page when a stop advances' do
+  test 'broadcasts a stop patch instead of a full page refresh' do
     operation = @stop.operation_route.operation
-    assert_broadcasts(operation.to_gid_param, 1) do
+    Turbo::StreamsChannel.stubs(:broadcast_refresh_to)
+    Turbo::StreamsChannel.expects(:broadcast_stream_to).at_least_once.with { |stream, kwargs|
+      html = kwargs[:content].to_s
+      stream == operation && html.include?('refresh_stop') && html.include?(@stop.id.to_s)
+    }
+
+    OperationStops::RecordStatus.call(operation_stop: @stop, status: 'delivered', recorded_at: Time.zone.parse('2026-09-25 11:00'), source: 'mobile')
+  end
+
+  test 'stop patch carries status keys instead of translated labels' do
+    content = nil
+    Turbo::StreamsChannel.stubs(:broadcast_refresh_to)
+    Turbo::StreamsChannel.stubs(:broadcast_stream_to).with { |_stream, kwargs|
+      content = kwargs[:content].to_s
+      true
+    }
+    I18n.with_locale(:en) do
       OperationStops::RecordStatus.call(operation_stop: @stop, status: 'delivered', recorded_at: Time.zone.parse('2026-09-25 11:00'), source: 'mobile')
     end
+    json = CGI.unescapeHTML(content[%r{<template>(.*)</template>}m, 1].to_s)
+    payload = JSON.parse(json)
+    assert_equal 'delivered', payload['status']
+    assert payload.dig('aside', 'kind')
+    refute payload.key?('status_label')
+    refute payload.key?('stops_label')
+    refute payload.dig('aside', 'text')
+    refute_includes json, I18n.t('operations.show.stops', locale: :en)
   end
 
   test 'board sums late minutes and ignores early arrivals' do

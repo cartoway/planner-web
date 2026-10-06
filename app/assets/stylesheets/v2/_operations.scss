@@ -324,6 +324,10 @@ tr.is-past { color: #6b7280; }
     z-index: 5 !important;
   }
 
+  .maplibregl-marker:has(.operation-vehicle-pin) {
+    z-index: 20 !important;
+  }
+
   .destinations-marker-pin-placeholder,
   .teritorio-unfolded-cluster { overflow: visible; }
 

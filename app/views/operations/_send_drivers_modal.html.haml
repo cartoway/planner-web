@@ -1,5 +1,5 @@
 - field = channel == 'sms' ? 'phone_number' : 'contact_email'
-.modal.fade{id: "operation-send-#{channel}", tabindex: '-1', aria: { hidden: 'true', labelledby: "operation-send-#{channel}-title" }}
+.modal.fade{id: "operation-send-#{channel}", tabindex: '-1', aria: { hidden: 'true', labelledby: "operation-send-#{channel}-title" }, data: { turbo_permanent: true }}
   .modal-dialog.modal-lg.modal-dialog-scrollable
     .modal-content
       = form_with url: transmit_operation_path(operation), method: :post, local: true, data: { turbo: false } do

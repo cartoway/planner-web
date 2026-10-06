@@ -35,16 +35,24 @@ module VehiclePositions
         operation_route.vehicle_positions.where.not(id: position.id).delete_all
       end
 
-      broadcast_page_refresh(operation)
+      broadcast_vehicle_pin(operation, position)
       position
     end
     # rubocop:enable Metrics/ParameterLists
 
-    def self.broadcast_page_refresh(operation)
-      Turbo::StreamsChannel.broadcast_refresh_to(operation)
+    def self.broadcast_vehicle_pin(operation, position)
+      Turbo::StreamsChannel.broadcast_stream_to(
+        operation,
+        content: format(
+          '<turbo-stream action="refresh_vehicle" target="map" data-operation-route-id="%<id>d" data-lng="%<lng>f" data-lat="%<lat>f"></turbo-stream>',
+          id: position.operation_route_id,
+          lng: position.lng,
+          lat: position.lat
+        )
+      )
     rescue StandardError => e
       Rails.logger.warn("vehicle position turbo refresh failed: #{e.class}: #{e.message}")
     end
-    private_class_method :broadcast_page_refresh
+    private_class_method :broadcast_vehicle_pin
   end
 end

@@ -16,7 +16,7 @@
 - map_cfg[:map_overlay_title] = t('destinations.index.map_overlay_layers')
 - map_cfg[:map_layers] = Hash[layers.map{ |l| l[:name] }.zip(layers)]
 - map_config = map_cfg.to_json
-.operation-board{data: { controller: 'v2--operation-show', config: map_config, v2__operation_show_map_url_value: map_operation_path(@operation), v2__operation_show_search_url_value: search_stops_operation_path(@operation), v2__operation_show_positions_url_value: map_operation_path(@operation), planned_label: t('operations.show.planned'), status_label: t('operations.index.status'), address_label: t('operations.show.address'), ref_label: t('display_ui.destinations_list_columns.ref') }}
+.operation-board{data: { controller: 'v2--operation-show', config: map_config, v2__operation_show_map_url_value: map_operation_path(@operation), v2__operation_show_search_url_value: search_stops_operation_path(@operation), v2__operation_show_positions_url_value: map_operation_path(@operation), planned_label: t('operations.show.planned'), status_label: t('operations.index.status'), address_label: t('operations.show.address'), ref_label: t('display_ui.destinations_list_columns.ref'), live_i18n: operation_live_i18n.to_json }}
   = turbo_stream_from @operation
   %header.operation-header
     .operation-header-id
@@ -32,7 +32,7 @@
             %span.operation-header-title= @operation.ref
           = f.date_field :date, class: 'form-control form-control operation-date', aria: { label: t('operations.index.date') }, disabled: !@operation.open?, data: { action: 'change->v2--operation-show#saveDate' }
     .operation-header-progress
-      .operation-header-progress-label= "#{board[:delivered]}/#{board[:total]} #{t('operations.show.stops')}"
+      .operation-header-progress-label{data: { board_progress: true }}= "#{board[:delivered]}/#{board[:total]} #{t('operations.show.stops')}"
       = render 'v2/shared/status_segments', counts: board, css_class: 'operation-segments'
     .operation-header-actions
       - if @operation.planning
@@ -40,22 +40,23 @@
           %i.fa.fa-map.fa-fw
           = t('operations.show.planning')
       = render 'operations/demo_actions'
-      - if @operation.open? && @send_routes.present?
-        %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
-          %i.fa.fa-envelope.fa-fw
-          = t('operations.show.send_email')
-        - if @operation.customer.enable_sms
-          %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-sms' }}
-            %i.fa.fa-comment-sms.fa-fw
-            = t('operations.show.send_sms')
-      - if @operation.open? && @send_trackings.present?
-        %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-email' }}
-          %i.fa.fa-envelope-open-text.fa-fw
-          = t('operations.show.send_destinations_email')
-        - if @operation.customer.enable_sms
-          %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-sms' }}
-            %i.fa.fa-mobile-screen.fa-fw
-            = t('operations.show.send_destinations_sms')
+      #operation-send-buttons{data: { turbo_permanent: true }}
+        - if @operation.open? && @send_routes.present?
+          %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
+            %i.fa.fa-envelope.fa-fw
+            = t('operations.show.send_email')
+          - if @operation.customer.enable_sms
+            %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-sms' }}
+              %i.fa.fa-comment-sms.fa-fw
+              = t('operations.show.send_sms')
+        - if @operation.open? && @send_trackings.present?
+          %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-email' }}
+            %i.fa.fa-envelope-open-text.fa-fw
+            = t('operations.show.send_destinations_email')
+          - if @operation.customer.enable_sms
+            %button.btn.btn-light.btn-sm{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-sms' }}
+              %i.fa.fa-mobile-screen.fa-fw
+              = t('operations.show.send_destinations_sms')
   .operation-body
     %aside.operation-list
       %button.operation-scroll-top.btn-close{type: 'button', aria: { label: t('operations.show.scroll_top') }, data: { action: 'click->v2--operation-show#scrollListTop' }}

@@ -47,8 +47,15 @@ class VehiclePositionsRecordTest < ActiveSupport::TestCase
     assert_in_delta 48.1, @route.latest_position.lat, 0.0001
   end
 
-  test 'broadcasts a page refresh so the map moves between status changes' do
-    Turbo::StreamsChannel.expects(:broadcast_refresh_to).with(@operation).once
+  test 'broadcasts the vehicle pin so the map marker moves without a geojson reload' do
+    Turbo::StreamsChannel.expects(:broadcast_stream_to).once.with { |operation, kwargs|
+      html = kwargs[:content].to_s
+      operation == @operation &&
+        html.include?('refresh_vehicle') &&
+        html.include?(%(data-operation-route-id="#{@route.id}")) &&
+        html.include?('48.850000') &&
+        html.include?('2.350000')
+    }
     VehiclePositions::Record.call(
       operation_route: @route,
       lat: 48.85,
