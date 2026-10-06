@@ -16,6 +16,8 @@ class OperationStop < ApplicationRecord
   has_many_attached :photos
   has_one_attached :signature
   include ProofAttachments
+  include TypedAttribute
+  typed_attr :custom_attributes
 
   validates :kind, inclusion: { in: KINDS }
   validates :sync_state, inclusion: { in: SYNC_STATES }
@@ -57,13 +59,7 @@ class OperationStop < ApplicationRecord
   end
 
   def self.for_destination(destination, include_past: false)
-    visit_ids = destination.visits.pluck(:id)
-    visit_ids = [0] if visit_ids.empty?
-    rel = linked_to_operation.where(
-      'operation_stops.destination_id = ? OR operation_stops.visit_id IN (?)',
-      destination.id,
-      visit_ids
-    )
+    rel = linked_to_operation.where(destination_id: destination.id, visit_id: nil)
     rel = rel.where(current_operation_sql) unless include_past
     rel.order('operations.date DESC', :index)
   end
