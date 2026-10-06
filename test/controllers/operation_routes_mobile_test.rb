@@ -149,4 +149,10 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
 
     assert_equal 'http://short.test/plan', Operations::MobileUrl.for_planning_route(@route)
   end
+
+  test 'planning send has no mobile url without an open operation' do
+    Operation.where(customer_id: @planning.customer_id).delete_all
+
+    assert_nil Operations::MobileUrl.for_planning_route(@route)
+  end
 end
