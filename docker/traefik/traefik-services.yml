@@ -1,5 +1,12 @@
 http:
   routers:
+    # Retry middleware breaks the WebSocket upgrade used by Action Cable.
+    web-cable:
+      service: web
+      entrypoints: web
+      rule: PathPrefix(`/cable`)
+      priority: 100
+
     web:
       service: web
       entrypoints: web

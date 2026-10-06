@@ -6,7 +6,6 @@ module ApplicationCable
 
     def connect
       self.current_user = env['warden']&.user
-      reject_unauthorized_connection unless current_user
     end
   end
 end
