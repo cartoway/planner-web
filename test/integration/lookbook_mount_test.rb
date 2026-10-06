@@ -169,6 +169,10 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_select '.form-sidebar-chrome button.btn-close', minimum: 1
     assert_select 'button.floating-btn.form-sidebar-expand.slide-panel-expand-trigger', minimum: 1
     assert_select 'header.destination-form-sidebar-header', minimum: 1
+    assert_select '.related-list', minimum: 2
+    assert_select '.related-item', minimum: 3
+    assert_select '.related-item-index', minimum: 3
+    assert_select '.related-item-status.stop-status-delivered', 1
   end
 
   test 'grid layout rows and columns preview renders' do

@@ -100,12 +100,14 @@
 
         %label
           = t('stops.mobile.form')
+      - ca_record = operation_stop || stop
+      - ca_prefix = operation_stop ? 'operation_stop' : 'stop'
       - custom_attributes.each do |custom_attribute|
         .custom_field.d-flex.align-items-center.justify-content-left.mb-1.row
           %label{class: custom_attribute.object_type == 'boolean' ? 'col-xs-8' : 'col-xs-12' }
             = custom_attribute.name
           .field.mb-0{class: custom_attribute.object_type == 'boolean' ? 'col-xs-4' : 'col-xs-12' }
-            = custom_attribute_form_field(f, stop, custom_attribute, 'stop')
+            = custom_attribute_form_field(f, ca_record, custom_attribute, ca_prefix)
           .col-xs-12
             %p.help-block
               = custom_attribute.description
