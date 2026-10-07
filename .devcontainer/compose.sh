@@ -61,13 +61,19 @@ EOF
 main() {
   local command="${1:-up}"
 
+  # Always load root .env so ${RUSTFS_*} etc. match between web and rustfs.
+  # Compose project dir is .devcontainer/ (first -f), so it would otherwise miss root .env.
+  case "$command" in
+    -h|--help|help) ;;
+    *) load_env ;;
+  esac
+
   case "$command" in
     -h|--help|help)
       usage
       ;;
     build|up|restart)
       setup_network
-      load_env
       compose "$@"
       ;;
     test-prepare)
