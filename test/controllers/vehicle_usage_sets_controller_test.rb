@@ -59,7 +59,7 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     get :index
     assert_response :success
     assert_select 'body.cartoway-v2', 1
-    assert_select 'a[data-turbo-frame=form_sidebar][href=?]', edit_vehicle_usage_set_path(@vehicle_usage_set, back: true)
+    assert_select 'a[data-turbo-frame=form_sidebar][href=?]', edit_vehicle_usage_set_path(@vehicle_usage_set)
     assert_select '.vehicle-usage-sets-index', 1
     assert_select 'table#accordion-vehicle-usage-sets', 1
     assert_select 'table#accordion-vehicle-usage-sets tr.usage-set-heading--stripe', minimum: 1
@@ -68,8 +68,13 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_select 'table.vehicle-usages-table span.default-color', minimum: 1
     assert_select 'table#accordion-vehicle-usage-sets tr.usage-set-heading > td.text-end > .btn-group', minimum: 1
     assert_select 'table.vehicle-usages-table td.text-end > .btn-group', minimum: 1
+    assert_select 'table#accordion-vehicle-usage-sets button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
+
     assert_select 'button.usage-set-toggle i.usage-set-chevron.fa-chevron-right', minimum: 1
+
     first_set = assigns(:vehicle_usage_sets).first
+    assert_select "tbody##{ActionView::RecordIdentifier.dom_id(first_set)}", 1
+    assert_select "tr##{ActionView::RecordIdentifier.dom_id(first_set.vehicle_usages.first)}", 1
     assert_select "button.usage-set-toggle[data-bs-target='#collapseUsageSet#{first_set.id}']:not(.collapsed)[aria-expanded=true]", 1
     assert_select "#collapseUsageSet#{first_set.id}.show", 1
     assert_select 'table#accordion-vehicle-usage-sets .collapse.show', 1
@@ -95,11 +100,14 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'turbo-frame#form_sidebar', 1
     assert_select 'turbo-frame#form_sidebar form#vehicle-usage-set-form-sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form#vehicle-usage-set-form-sidebar[data-turbo-frame=_top]', 1
     assert_select 'turbo-frame#form_sidebar .form-submit-bar button[type=submit][form=vehicle-usage-set-form-sidebar]', 1
     assert_select 'form#vehicle-usage-set-form-sidebar input[name="v2_sidebar"][value="1"]', 1
     assert_select 'form#vehicle-usage-set-form-sidebar .input-group-text', minimum: 1
     assert_select 'form#vehicle-usage-set-form-sidebar .input-group-addon', 0
-    assert_select 'form#vehicle-usage-set-form-sidebar .offset-md-1', minimum: 1
+    # Same field alignment as destination/visit sidebar forms.
+    assert_select 'form#vehicle-usage-set-form-sidebar.form-sidebar-form', 1
+    assert_select 'form#vehicle-usage-set-form-sidebar .col-md-10.offset-md-1', minimum: 1
     assert_select '#vehicle_usage_set_time_window_start_time_window_end_input.fleet-split .input-group', 2
     assert_select '#vehicle_usage_set_time_window_start_time_window_end_input .fleet-bound-label', 2
     assert_select '#vehicle_usage_set_display_costs.fleet-split .input-group', 3
@@ -153,6 +161,17 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_equal 'v2-updated-set', @vehicle_usage_set.reload.name
     assert_select 'turbo-frame#form_sidebar', 1
     assert_select 'form#vehicle-usage-set-form-sidebar', 0
+  end
+
+  test 'v2 update from sidebar replaces the set block via turbo stream' do
+    enable_layout_v2!
+    patch :update, params: { id: @vehicle_usage_set, v2_sidebar: '1', vehicle_usage_set: { name: 'v2-stream-set' } }, as: :turbo_stream
+    assert_response :success
+    assert_equal 'text/vnd.turbo-stream.html', response.media_type
+    assert_equal 'v2-stream-set', @vehicle_usage_set.reload.name
+    assert_select "turbo-stream[action='update'][target='form_sidebar']", 1
+    assert_select "turbo-stream[action='replace'][target='#{ActionView::RecordIdentifier.dom_id(@vehicle_usage_set)}']", 1
+    assert_includes response.body, 'v2-stream-set'
   end
 
   test 'should get new vehicle_usage_set' do
@@ -252,6 +271,17 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     end
 
     assert_redirected_to vehicle_usage_sets_path
+    assert_equal 303, response.status
+  end
+
+  test 'v2 destroy redirects with see_other so Turbo refreshes the index' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'main'
+    assert_difference('VehicleUsageSet.count', -1) do
+      delete :destroy, params: { id: @vehicle_usage_set }
+    end
+    assert_redirected_to vehicle_usage_sets_path
+    assert_equal 303, response.status
   end
 
   test 'should disable/enable multiple vehicles' do
@@ -273,6 +303,7 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     end
 
     assert_redirected_to vehicle_usage_sets_path
+    assert_equal 303, response.status
   end
 
   test 'should destroy multiple vehicle_usage_set, 0 item' do
@@ -281,6 +312,7 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     end
 
     assert_redirected_to vehicle_usage_sets_path
+    assert_equal 303, response.status
   end
 
   test 'should duplicate vehicle_usage_set' do
@@ -289,6 +321,18 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     end
 
     assert_redirected_to edit_vehicle_usage_set_path(assigns(:vehicle_usage_set))
+  end
+
+  test 'v2 duplicate appends the set block via turbo stream' do
+    enable_layout_v2!
+    assert_difference('VehicleUsageSet.count') do
+      patch :duplicate, params: { vehicle_usage_set_id: @vehicle_usage_set }, as: :turbo_stream
+    end
+    duplicated = assigns(:vehicle_usage_set)
+    assert_response :success
+    assert_equal 'text/vnd.turbo-stream.html', response.media_type
+    assert_select "turbo-stream[action='append'][target='accordion-vehicle-usage-sets']", 1
+    assert_includes response.body, ActionView::RecordIdentifier.dom_id(duplicated)
   end
 
   test 'should reorder vehicle usages' do
@@ -317,6 +361,9 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_select 'body.cartoway-v2', 1
     assert_select 'form[action=?]', import_csv_vehicle_usage_sets_path, 1
     assert_select 'form .offset-md-1.col-md-10', minimum: 1
+    assert_select 'form label.btn.btn-primary[for=import_csv_file]', text: /#{Regexp.escape(I18n.t('web.choose_file'))}/, count: 1
+    assert_select 'form .col-md-10.offset-md-1 .form-switch input#import_csv_replace_vehicles[name="import_csv[replace_vehicles]"]', 1
+    assert_select 'form .col-md-10.offset-md-1 small.help-block', text: I18n.t('vehicle_usage_sets.import.replace_vehicles_help'), count: 1
     assert_select 'form a.btn[href=?]', import_template_vehicle_usage_sets_path(format: :excel), 1
   end
 
@@ -418,6 +465,20 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     end
 
     assert_redirected_to vehicle_usage_sets_path
+    assert_equal 303, response.status
+  end
+
+  test 'v2 upload redirects with see_other so Turbo opens the index' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'main'
+    file = fixture_file_upload('import_vehicle_usage_sets_one.csv', 'text/csv')
+
+    assert_difference('VehicleUsageSet.count', 1) do
+      post :upload_csv, params: { import_csv: { replace_vehicles: true, file: file } }
+    end
+
+    assert_redirected_to vehicle_usage_sets_path
+    assert_equal 303, response.status
   end
 
   test 'should use limitation' do

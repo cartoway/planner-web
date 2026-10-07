@@ -120,14 +120,14 @@ class DestinationsController < ApplicationController
     @destination.name = t('destinations.index.default_name')
     @destination.postalcode = current_user.customer.stores[0].postalcode
     @destination.city = current_user.customer.stores[0].city
-    return if render_v2_form_or_list('new_sidebar', 'v2/destinations/index', destinations_path) do
+    render_form_or_list('new_sidebar', 'v2/destinations/index', destinations_path) do
       @customer = current_user.customer
       load_destinations_index_page
     end
   end
 
   def edit
-    return if render_v2_form_or_list('edit_sidebar', 'v2/destinations/index', destinations_path) do
+    render_form_or_list('edit_sidebar', 'v2/destinations/index', destinations_path) do
       @customer = current_user.customer
       load_destinations_index_page
     end
@@ -182,12 +182,12 @@ class DestinationsController < ApplicationController
       p = destination_params
       time_with_day_params(params, p, [:time_window_start_1, :time_window_end_1, :time_window_start_2, :time_window_end_2])
       @destination = current_user.customer.destinations.build(p)
-      @destination.visits.build if v2_sidebar_submit? && @destination.visits.empty?
+      @destination.visits.build if sidebar_submit? && @destination.visits.empty?
       apply_geocode_on_save!(@destination)
 
       if @destination.save && current_user.customer.save
         format.html do
-          if v2_sidebar_submit?
+          if sidebar_submit?
             render 'close_sidebar', layout: false
           else
             redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.created', model: @destination.class.model_name.human)
@@ -196,7 +196,7 @@ class DestinationsController < ApplicationController
       else
         flash.now[:error] = @destination.customer.errors.full_messages unless @destination.customer.errors.empty?
         format.html do
-          if v2_sidebar_submit?
+          if sidebar_submit?
             render "new_sidebar", layout: false, status: :unprocessable_entity
           else
             render action: "new"
@@ -216,7 +216,7 @@ class DestinationsController < ApplicationController
 
         if @destination.save && @destination.customer.save
           format.html do
-            if v2_sidebar_submit?
+            if sidebar_submit?
               render 'close_sidebar', layout: false
             else
               redirect_to link_back || destination_save_redirect_path, notice: t('activerecord.successful.messages.updated', model: @destination.class.model_name.human)
@@ -225,7 +225,7 @@ class DestinationsController < ApplicationController
         else
           flash.now[:error] = @destination.customer.errors.full_messages unless @destination.customer.errors.empty?
           format.html do
-            if v2_sidebar_submit?
+            if sidebar_submit?
               render "edit_sidebar", layout: false, status: :unprocessable_entity
             else
               render action: "edit"
@@ -641,7 +641,7 @@ class DestinationsController < ApplicationController
   end
 
   def destination_save_redirect_path
-    if v2_sidebar_submit?
+    if sidebar_submit?
       destinations_path(highlight_destination_id: @destination.id)
     else
       edit_destination_path(@destination)

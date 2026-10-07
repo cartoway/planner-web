@@ -8,7 +8,7 @@
   %p.help-block.offset-md-1.col-md-10.px-0.mb-3= t 'stores.import.csv.help'
   = bootstrap_form_for(@import_csv, url: stores_import_csv_path, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_label_col, control_col: v2_control_col, html: { multipart: true }) do |f|
     = render 'shared/error_messages', model: @import_csv
-    = f.file_field :file, required: true, disabled: !can_import_stores
+    = render 'v2/shared/file_input', form: f, disabled: !can_import_stores, label_col: v2_label_col, control_col: v2_control_col
     .mb-3.row
       %div{class: v2_control_col}
         %p.help-block
@@ -16,7 +16,7 @@
           %a{href: '#', 'data-bs-toggle': 'modal', 'data-bs-target': '#import-help-modal'}
             %i.fa.fa-info-circle.fa-fw
             = t('stores.import.import_template_help')
-    = f.form_group :stores, label: { text: t('stores.import.stores') } do
+    = f.form_group :stores, label: { text: t('stores.import.stores') }, class: 'mb-3' do
       = f.radio_button :replace, 0, checked: !@import_csv.replace, label: t('stores.import.replace_no')
       %p.help-block= t 'stores.import.replace_no_help'
       = f.radio_button :replace, 1, checked: @import_csv.replace, label: t('stores.import.replace_yes')

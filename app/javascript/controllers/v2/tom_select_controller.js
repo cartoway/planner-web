@@ -2,10 +2,49 @@
 // Tom Select for multi-select + search (v2 sidebar; replaces Select2 on tag fields).
 import { Controller } from "@hotwired/stimulus"
 import TomSelect from "tom-select"
+import { shouldOpenTomSelectUp } from "lib/tom_select_dropdown_flip"
 
 function escapeAttr (s) {
   if (s == null || s === "") return ""
   return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;")
+}
+
+// Tom Select's positionDropdown always opens below; flip when the viewport has more room above.
+function wireFlipPositionDropdown (ts) {
+  ts.positionDropdown = function () {
+    if (this.settings.dropdownParent !== "body") return
+
+    const rect = this.control.getBoundingClientRect()
+    const dd = this.dropdown
+    const content = dd.querySelector(".ts-dropdown-content") || dd
+    const spaceBelow = window.innerHeight - rect.bottom
+    const spaceAbove = rect.top
+    // Match body > .ts-dropdown .ts-dropdown-content max-height in application.scss
+    const preferredMax = Math.min(window.innerHeight * 0.45, 260)
+    const openUp = shouldOpenTomSelectUp(spaceBelow, spaceAbove, preferredMax)
+
+    if (content) {
+      const available = Math.max(80, Math.floor((openUp ? spaceAbove : spaceBelow) - 8))
+      content.style.maxHeight = `${Math.min(preferredMax, available)}px`
+    }
+
+    const height = dd.offsetHeight
+    const top = openUp
+      ? rect.top + window.scrollY - height
+      : rect.top + window.scrollY + this.control.offsetHeight
+
+    Object.assign(dd.style, {
+      width: `${rect.width}px`,
+      top: `${Math.max(0, top)}px`,
+      left: `${rect.left + window.scrollX}px`
+    })
+    dd.classList.toggle("ts-dropdown--dropup", openUp)
+
+    // First open can report height 0 before layout — re-measure once.
+    if (openUp && height === 0) {
+      requestAnimationFrame(() => this.positionDropdown())
+    }
+  }
 }
 
 export default class extends Controller {
@@ -99,6 +138,7 @@ export default class extends Controller {
         item: (data, escape) => this.renderSimpleOption(data, escape)
       }
     })
+    wireFlipPositionDropdown(this.instance)
   }
 
   /** Tag lists with icons/colors + optional API create (v2 destination / visit forms). */
@@ -123,6 +163,7 @@ export default class extends Controller {
         item: (data, escape) => self.renderTagItem(data, escape)
       }
     })
+    wireFlipPositionDropdown(this.instance)
   }
 
   disconnect () {

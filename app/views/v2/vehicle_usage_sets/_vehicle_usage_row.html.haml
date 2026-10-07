@@ -1,0 +1,29 @@
+-# locals: vehicle_usage, vehicle_usage_set, can_update_vehicle_usage, can_view_vehicle_usage
+%tr{id: dom_id(vehicle_usage), class: ('disabled' unless vehicle_usage.active), data: { vehicle_usage_id: vehicle_usage.id, vehicle_id: vehicle_usage.vehicle_id, vehicle_name: vehicle_usage.vehicle.name, router_sort: vehicle_usage_router_label(vehicle_usage) }}
+  - if can_update_vehicle_usage
+    %td.vehicle-usage-sort-handle{data: { action: 'pointerdown->v2--vehicle-usage-sets-index#pointerDown' }}
+      %i.fa.fa-grip-vertical.fa-fw{title: t('vehicle_usages.index.reorder'), draggable: false}
+  %td
+    %label.vehicle-usage-name
+      %input.vehicle-select{type: 'checkbox', id: "vehicle_usage_vehicle_#{vehicle_usage.id}", name: "vehicle_usages[#{vehicle_usage_set.id}][#{vehicle_usage.id}]", disabled: !can_update_vehicle_usage, data: { action: 'change->v2--vehicle-usage-sets-index#syncRow' }}
+      %span.vehicle_color{style: "background:#{vehicle_usage.vehicle.color}"}
+      = vehicle_usage.vehicle.name
+  %td= vehicle_usage_router(vehicle_usage)
+  %td= vehicle_usage_emission_consumption(vehicle_usage, current_user.prefered_unit)
+  %td= vehicle_capacities(vehicle_usage.vehicle)
+  %td= vehicle_usage_store_name(vehicle_usage)
+  %td= vehicle_usage_store_hours(vehicle_usage)
+  %td= vehicle_devices(vehicle_usage.vehicle)
+  %td.text-end.text-nowrap
+    .btn-group{role: 'group'}
+      - if vehicle_usage.active && can_view_vehicle_usage
+        = link_to edit_vehicle_usage_path(vehicle_usage), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+          %i.fa.fa-pencil.fa-fw
+          = t('all.verb.edit')
+    .btn-group{role: 'group'}
+      - toggle_icon = vehicle_usage.active ? 'fa-power-off' : 'fa-circle-notch'
+      - toggle_label = vehicle_usage.active ? t('vehicle_usages.index.disable') : t('vehicle_usages.index.enable')
+      - if can_update_vehicle_usage
+        = link_to [:toggle, vehicle_usage], class: 'btn btn-light', data: { turbo_method: :patch, turbo_confirm: (t('vehicle_usages.index.disable_confirm') if vehicle_usage.active) } do
+          %i.fa.fa-fw{class: toggle_icon}
+          = toggle_label
