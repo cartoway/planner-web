@@ -3584,6 +3584,8 @@ en:
     help_search_placeholder: Keywords to search...
     help: Online help
     contact: Contact support
+    menu_plan_burger: Show planning menu
+    menu_settings_burger: Show settings menu
     choose_file: Choose file
     geocoder:
       tooltip: Search an address
