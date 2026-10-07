@@ -1435,6 +1435,32 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_includes response.body, 'out_of_route'
   end
 
+  test 'refresh_route out of route includes focused stop beyond the first page' do
+    out_route = routes(:route_zero_one)
+    assert_nil out_route.vehicle_usage_id
+    vehicle_route = routes(:route_one_one)
+    moved = stops(:stop_one_three)
+
+    max_index = out_route.stops.maximum(:index).to_i
+    moved.update_columns(route_id: out_route.id, index: max_index + 1)
+
+    # One stop per page so the moved stop sits on page 2 without mutating Pagy::DEFAULT.
+    @controller.stubs(:out_of_route_page_limit).returns(1)
+
+    get :refresh_route, params: {
+      planning_id: @planning.id,
+      route_id: out_route.id,
+      stop_id: moved.id,
+      format: :js
+    }, xhr: true
+
+    assert_response :success
+    assert_includes response.body, "\"stop_id\":#{moved.id}"
+    assert_includes response.body, "\"stop_id\":#{stops(:stop_unaffected).id}"
+  ensure
+    moved&.update_columns(route_id: vehicle_route.id, index: 3) if moved && vehicle_route
+  end
+
   test 'refresh_routes returns JSON for multiple vehicle routes' do
     r1 = routes(:route_one_one)
     r3 = routes(:route_three_one)

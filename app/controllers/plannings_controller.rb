@@ -264,14 +264,22 @@ class PlanningsController < ApplicationController
   def refresh_route
     @route = @planning.routes.where(id: params[:route_id]).includes_vehicle_usages.first!
     @with_stops = true
-    page = params[:out_page] || 1
+    page = (params[:out_page] || 1).to_i
+    page = 1 if page < 1
     stops_for_sidebar =
       if @route.vehicle_usage_id
         current_route = @route
         # Pass the eager-loaded array to the serializer so it does not call @route.stops.to_a again.
         current_route.stops.includes_destinations_and_stores.load.to_a
       else
-        @out_pagy, @out_stops = pagy_countless(@route.stops.includes_destinations_and_stores, page: page, page_param: :out_page)
+        # Out-of-route is paginated; when focusing a stop beyond page 1, include pages 1..N
+        # so the destination-form deep link can scroll/highlight it.
+        stops_scope = @route.stops.includes_destinations_and_stores
+        limit = out_of_route_page_limit
+        focus_stop_id = Integer(params[:stop_id], exception: false) if params[:stop_id].present?
+        focus_page = page == 1 && focus_stop_id ? out_of_route_page_for_stop(stops_scope, focus_stop_id, limit) : page
+        @out_pagy, page_stops = pagy_countless(stops_scope, page: focus_page, page_param: :out_page, limit: limit)
+        @out_stops = focus_page > page ? stops_scope.limit(limit * focus_page).to_a : page_stops
         current_route = @route.dup
         current_route.stops = @out_stops
         @out_stops
@@ -807,6 +815,19 @@ class PlanningsController < ApplicationController
     stops_for_move_list(stops).map do |stop|
       stop.merge(checked: !stop[:locked])
     end
+  end
+
+  def out_of_route_page_limit
+    Pagy::DEFAULT[:limit]
+  end
+
+  # Page (1-based) that contains +stop_id+ in the out-of-route list (ordered by index).
+  def out_of_route_page_for_stop(stops_scope, stop_id, limit)
+    stop = stops_scope.find_by(id: stop_id)
+    return 1 unless stop
+
+    before = stops_scope.where(Stop.arel_table[:index].lt(stop.index)).count
+    (before / limit) + 1
   end
 
   def normalize_refresh_routes_ids(raw)
