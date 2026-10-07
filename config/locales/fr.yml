@@ -3727,6 +3727,8 @@ fr:
     help_search_placeholder: Termes à rechercher...
     help: Aide en ligne
     contact: Contacter le support
+    menu_plan_burger: Afficher le menu planification
+    menu_settings_burger: Afficher le menu paramètres
     choose_file: Sélectionner fichier
     geocoder:
       tooltip: Rechercher une adresse

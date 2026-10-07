@@ -10,15 +10,17 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  padding-top: 1rem;
+  padding-top: 10px;
   align-items: center;
   justify-content: stretch;
   transition: width $transition-duration $transition-timing-curve;
   position: sticky;
   left: 0;
+  // Match BS3/v1 link rhythm inside the sidebar
+  line-height: 1.42857143;
 
   .menu-section {
-    margin-top: 24px !important;
+    margin-top: 20px !important;
     color: white;
     font-size: 24px;
 
@@ -50,8 +52,8 @@
 
   #accordion-menu {
     flex: 1 1 auto;
+    min-height: 0; // allow flex child to scroll instead of overflowing under the dock
     overflow-y: auto;
-    padding-bottom: 220px;
   }
 
   .menu-content {
@@ -95,14 +97,105 @@
     list-style-type: none;
   }
 
-  #menu-settings {
-    position: absolute;
-    bottom: 0;
+  // In normal flex flow (not absolute) so accordion scroll never goes under the dock.
+  #menu-settings-dock {
+    flex-shrink: 0;
     width: 100%;
-    z-index: 2;
     background: $primary-color;
     margin-bottom: 0;
-    padding-bottom: 1rem;
+    padding-bottom: 10px;
+  }
+
+  #menu-settings {
+    width: 100%;
+    margin: 0;
+    flex-grow: 0;
+    max-height: 100vh;
+    opacity: 1;
+    transition: opacity $transition-duration ease, max-height $transition-duration ease;
+  }
+
+  #accordion-menu.menu-content {
+    margin: 10px 0;
+  }
+
+  #menu-help {
+    .btn {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+    }
+  }
+
+  #accordion-menu > .menu-list {
+    max-height: 100vh;
+    opacity: 1;
+    transition: opacity $transition-duration ease, max-height $transition-duration ease;
+  }
+
+  // Size comes from .menu-section on the li; visibility via opacity (display can't animate).
+  .menu-section.menu-section-burger {
+    display: list-item;
+    list-style: none;
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    overflow: hidden;
+    pointer-events: none;
+    transition: opacity $transition-duration ease, visibility $transition-duration ease, max-height $transition-duration ease, margin $transition-duration ease;
+
+    > button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      line-height: inherit;
+      cursor: pointer;
+      outline: none;
+    }
+  }
+
+  &.menu-section-plan-expanded {
+    #menu-settings {
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    #menu-settings-burger {
+      opacity: 1;
+      visibility: visible;
+      max-height: 4rem;
+      margin-top: 20px !important;
+      margin-bottom: 20px !important;
+      pointer-events: auto;
+    }
+  }
+
+  &.menu-section-settings-expanded {
+    // Keep #accordion-menu in the flex layout; only collapse its list so the burger stays in place.
+    #accordion-menu > .menu-list {
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    #menu-plan-burger {
+      opacity: 1;
+      visibility: visible;
+      max-height: 4rem;
+      margin-top: 20px !important;
+      pointer-events: auto;
+    }
   }
 }
 
@@ -120,14 +213,14 @@
   width: 100%;
   height: auto;
   opacity: 1;
-  margin-left: 1rem;
+  margin-left: 10px;
 }
 
 .menu-left .top-menu {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-bottom: 1rem;
+  padding-bottom: 10px;
 }
 
 .menu-left .logo {
@@ -211,12 +304,17 @@
   width: 250px;
 
   .logo-large {
-    width: 80%;
-    min-width: 140px;
+    width: 60%;
+    min-width: 120px;
   }
 
   .logo-small {
     display: none;
+  }
+
+  #menu-help .menu-list-doc {
+    max-height: none;
+    width: 100%;
   }
 }
 
