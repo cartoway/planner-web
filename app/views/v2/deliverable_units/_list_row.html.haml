@@ -1,0 +1,30 @@
+-# locals: deliverable_unit, can_destroy:
+%tr{id: dom_id(deliverable_unit), data: { v2__table_filter_target: 'row' }}
+  %td
+    = check_box_tag "deliverable_units[#{deliverable_unit.id}]", '1', false, disabled: !can_destroy, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
+  %td= deliverable_unit.label
+  %td= deliverable_unit.ref
+  %td
+    %i.fa.fa-fw{class: deliverable_unit.default_icon}
+  %td.du-col-sidebar-hide= deliverable_unit.localized_default_pickup
+  %td.du-col-sidebar-hide= deliverable_unit.localized_default_delivery
+  %td= deliverable_unit.localized_default_capacity
+  %td.du-col-sidebar-hide
+    - if deliverable_unit.default_optimization_overload_multiplier == 0
+      = t('deliverable_units.form.optimization_overload_multiplier_no')
+    - elsif deliverable_unit.default_optimization_overload_multiplier == -1
+      = t('deliverable_units.form.optimization_overload_multiplier_ignore')
+    - else
+      = deliverable_unit.localized_optimization_overload_multiplier
+  %td.deliverable-units-actions-col.text-end.text-nowrap
+    .btn-group{role: 'group'}
+      = link_to edit_deliverable_unit_path(deliverable_unit), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
+        %i.fa.fa-pencil.fa-fw
+      %button.btn.btn-danger{
+        type: 'button',
+        disabled: !can_destroy,
+        title: t('all.verb.destroy'),
+        data: (can_destroy ? confirm_click_destroy_data(group: 'deliverable-units-destroy', url: deliverable_unit_path(deliverable_unit)) : {})
+      }
+        %i.fa.fa-trash.fa-fw
+

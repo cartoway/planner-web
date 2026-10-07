@@ -18,7 +18,7 @@ class OperationsController < ApplicationController
       q = "%#{Operation.sanitize_sql_like(params[:q].to_s.strip)}%"
       @operations = @operations.where('operations.ref ILIKE :q OR operations.name ILIKE :q', q: q)
     end
-    render_v2_page 'operations/index'
+    render_page 'operations/index'
   end
 
   def show
@@ -32,7 +32,7 @@ class OperationsController < ApplicationController
       @send_routes = transmittable_routes.to_a
       @send_trackings = destination_trackings_for_send.to_a
     end
-    render_v2_page 'operations/show'
+    render_page 'operations/show'
   end
 
   def demo
