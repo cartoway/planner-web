@@ -109,9 +109,6 @@ class RouteSidebarSerializer
       total_balance: total_balance,
       quantities: route_quantities,
       route_averages: serialize_route_averages,
-      status_any: false,
-      status_present: [],
-      status_all: [],
       stops: serialize_stops(route_stops)
     }
 
@@ -127,7 +124,6 @@ class RouteSidebarSerializer
     data[:last_sent_to] = @route.last_sent_to
     data[:contact_email] = vehicle&.contact_email if vehicle&.contact_email.present?
     merge_device_flags!(data, vehicle_usage, vehicle)
-    merge_status_filters!(data, route_stops)
     data[:route_error] = route_error?
     merge_route_errors!(data)
     data
@@ -173,31 +169,6 @@ class RouteSidebarSerializer
       data[key] = true
       data[:driver_token] = vehicle.driver_token if key == :deliver
     end
-  end
-
-  def merge_status_filters!(data, route_stops)
-    return unless @with_stops
-
-    status_map = {}
-    route_stops.each do |stop|
-      next unless stop.status
-
-      code = stop.status.downcase
-      status_map[code] ||= {
-        code: code,
-        status: I18n.t("plannings.edit.stop_status.#{code}", default: stop.status)
-      }
-    end
-
-    default_statuses = %i[planned intransit started finished delivered exception rejected undelivered].map do |status|
-      {
-        code: status.to_s,
-        status: I18n.t("plannings.edit.stop_status.#{status}")
-      }
-    end
-    data[:status_present] = status_map.values
-    data[:status_all] = (status_map.values + default_statuses).uniq { |status| status[:code] }
-    data[:status_any] = status_map.any? || customer.device.available_stop_status?
   end
 
   def route_size_destinations(route_data)
