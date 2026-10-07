@@ -101,13 +101,6 @@
             <i class="fa fa-calendar fa-fw"></i> <%= t '.export.icalendar' %>
           <% end %>
         </li>
-        <% if @customer.vehicles.any?(&:contact_email) %>
-        <li>
-          <%= link_to api_plannings_calendar_path(api_key: current_user.api_key), class:"icalendar_email" do %>
-            <i class="fa fa-envelope fa-fw"></i> <%= t '.export.icalendar_email' %>
-          <% end %>
-        </li>
-        <% end %>
         <li>
           <a class="export_spreadsheet" href="#"><i class="fa fa-table fa-fw"></i> <%= t '.export.spreadsheet' %></a>
         </li>
