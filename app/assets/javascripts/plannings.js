@@ -1150,9 +1150,15 @@ export const plannings_edit = function(params) {
       options.updateHeader = false;
     }
     var backgroundMode = !!(options && options.background);
+    var refreshQs = 'with_stops=true';
+    // Deep-link from destination form: ask the server for out-of-route pages through this stop.
+    if (planningStopFocus && planningStopFocus.stopId &&
+        (!planningStopFocus.routeId || String(planningStopFocus.routeId) === String(route_id))) {
+      refreshQs += '&stop_id=' + encodeURIComponent(planningStopFocus.stopId);
+    }
     $.ajax({
       type: 'GET',
-      url: '/plannings/' + planning_id + '/' + route_id + '/refresh.js?with_stops=' + true,
+      url: '/plannings/' + planning_id + '/' + route_id + '/refresh.js?' + refreshQs,
       beforeSend: backgroundMode ? null : beforeSendWaiting,
       error: ajaxError,
       success: function() {
