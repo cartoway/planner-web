@@ -21,7 +21,8 @@ class OperationStopDetailTest < ActionController::TestCase
 
   test 'actual time and status history show the day offset from the operation date' do
     Time.use_zone('Hawaii') do
-      @operation.update!(date: Date.new(2026, 9, 30))
+      # Update via the association the clock reads (setup may have cached another Operation instance).
+      @stop.operation_route.operation.update!(date: Date.new(2026, 9, 30))
       @stop.update!(status_updated_at: Time.zone.local(2026, 9, 30, 9, 0))
       assert_equal '09:00', @stop.actual_clock
 
