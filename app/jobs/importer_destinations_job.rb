@@ -29,14 +29,21 @@ class ImporterDestinationsJob < ImporterDestinationsJobStruct
         importer.progress_callback = ->(progress) { job_progress_save(progress) }
         import = build_import(customer, importer, opts)
 
-        result = import.import(false)
-        unless result
-          message = Array(import.errors.full_messages).join(', ').presence || 'Import failed'
-          raise ImportBaseError, message
+        import_error = nil
+        Customer.transaction(requires_new: true) do
+          result = import.import(false)
+          unless result
+            import_error = Array(import.errors.full_messages).join(', ').presence || 'Import failed'
+            raise ActiveRecord::Rollback
+          end
+        rescue StandardError => e
+          import_error = e.message.presence || e.class.name
+          raise ActiveRecord::Rollback
         end
+        raise ImportBaseError, import_error if import_error
 
         job_progress_save('status' => 'working', 'phase' => 'done', 'first_progression' => 100, 'completed' => true)
-        result
+        true
       ensure
         Planning.optimizer_context = false
       end
