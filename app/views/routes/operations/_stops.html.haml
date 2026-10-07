@@ -22,9 +22,6 @@
         %a.active_all{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/active/all"}
           %i.fa.fa-check-square.fa-fw
           = t('plannings.edit.active_all')
-      - if route[:status_any]
-        %li.divider{role: "separator"}
-        = render partial: 'routes/operations/stop_status_filter_menu', locals: { route: route, summary: summary }
       %li.divider{role: "separator"}
       %li
         %a.reverse_order{href: "/plannings/#{summary[:planning_id]}/#{route[:route_id]}/reverse_order"}
