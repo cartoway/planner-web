@@ -13,25 +13,48 @@ export default class extends Controller {
     this.boundOnFrameLoad = this.onFrameLoad.bind(this)
     this.boundOnMainFrameLoad = this.onMainFrameLoad.bind(this)
     this.boundOnPopState = this.onPopState.bind(this)
-    const frame = this.frameEl()
-    if (frame) frame.addEventListener("turbo:frame-load", this.boundOnFrameLoad)
+    this.boundOnBeforeStreamRender = this.onBeforeStreamRender.bind(this)
+    // Listen on the aside (not the frame node): stream replace of #form_sidebar would drop a per-frame listener.
+    this.element.addEventListener("turbo:frame-load", this.boundOnFrameLoad)
     this.mainFrame = document.getElementById("main")
     if (this.mainFrame) {
       this.mainFrame.addEventListener("turbo:frame-load", this.boundOnMainFrameLoad)
     }
     window.addEventListener("popstate", this.boundOnPopState)
+    // Turbo 7/8 only exposes before-stream-render (no after-stream-render) — wrap render to run after.
+    document.addEventListener("turbo:before-stream-render", this.boundOnBeforeStreamRender)
     this.refreshState()
     this.syncHistory()
   }
 
   disconnect() {
-    const frame = this.frameEl()
-    if (frame) frame.removeEventListener("turbo:frame-load", this.boundOnFrameLoad)
+    this.element.removeEventListener("turbo:frame-load", this.boundOnFrameLoad)
     if (this.mainFrame) {
       this.mainFrame.removeEventListener("turbo:frame-load", this.boundOnMainFrameLoad)
     }
     window.removeEventListener("popstate", this.boundOnPopState)
+    document.removeEventListener("turbo:before-stream-render", this.boundOnBeforeStreamRender)
     this.mainFrame = null
+  }
+
+  // Stream update of #form_sidebar does not fire turbo:frame-load — collapse after the stream applies.
+  onBeforeStreamRender (event) {
+    if (event.detail?.newStream?.getAttribute("target") !== "form_sidebar") return
+    const render = event.detail.render
+    event.detail.render = async (streamElement) => {
+      await render(streamElement)
+      this.collapseIfEmpty()
+    }
+  }
+
+  collapseIfEmpty () {
+    const frame = this.frameEl()
+    if (!frame || frame.querySelector("form")) return
+    frame.removeAttribute("src")
+    this.refreshState()
+    this.syncHistory()
+    this._skipNextFrameHistory = true
+    frame.dispatchEvent(new CustomEvent("turbo:frame-load", { bubbles: true }))
   }
 
   onMainFrameLoad (event) {
@@ -41,7 +64,9 @@ export default class extends Controller {
     this.close()
   }
 
-  onFrameLoad() {
+  onFrameLoad(event) {
+    const frame = this.frameEl()
+    if (!frame || event.target !== frame) return
     this.refreshState()
     if (this._skipNextFrameHistory) {
       this._skipNextFrameHistory = false
@@ -131,6 +156,7 @@ export default class extends Controller {
     if (!update) return
     const state = { ...(window.history.state || {}), formSidebar: update.formSidebar, listUrl }
     if (update.formSidebar) state.turboFrameId = "form_sidebar"
+    else delete state.turboFrameId
     const url = `${update.url}${window.location.hash || ''}`
     if (update.type === "push") window.history.pushState(state, "", url)
     else window.history.replaceState(state, "", url)

@@ -1,0 +1,43 @@
+-# locals: vehicle_usage_set, index:, expanded:, show_set_checkbox:, invisible_class:, can_destroy_vehicle_config:, can_update_vehicle_usage:, can_view_vehicle_usage:, nested_colspan:, sets_count:
+%tbody{id: dom_id(vehicle_usage_set)}
+  %tr.usage-set-heading.align-middle{class: ('usage-set-heading--stripe' if index.even?)}
+    - if show_set_checkbox
+      %td
+        = check_box_tag "vehicle_usage_sets[#{vehicle_usage_set.id}]", '1', false, class: "#{invisible_class} deleter-check", disabled: !can_destroy_vehicle_config, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
+    %td
+      - if sets_count > 1
+        %button.usage-set-toggle{type: 'button', class: ('collapsed' unless expanded), 'data-bs-toggle': 'collapse', 'data-bs-target': "#collapseUsageSet#{vehicle_usage_set.id}", 'aria-expanded': (expanded ? 'true' : 'false')}
+          %i.fa.fa-chevron-right.fa-fw.usage-set-chevron{'aria-hidden': 'true'}
+          %span.usage-set-name= vehicle_usage_set.name
+      - else
+        %span.usage-set-name= vehicle_usage_set.name
+    %td= vehicle_usage_set_store_name vehicle_usage_set
+    %td
+      = vehicle_usage_set.time_window_start_time
+      = "(+#{number_of_days(vehicle_usage_set.time_window_start)})" if number_of_days(vehicle_usage_set.time_window_start)
+      \-
+      = vehicle_usage_set.time_window_end_time
+      = "(+#{number_of_days(vehicle_usage_set.time_window_end)})" if number_of_days(vehicle_usage_set.time_window_end)
+    %td.text-end.text-nowrap
+      .btn-group{role: 'group'}
+        - if show_set_checkbox
+          = link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), class: 'btn btn-light', method: :patch, data: { turbo_method: :patch }, title: t('all.verb.duplicate'), disabled: current_user.customer.too_many_vehicle_usage_sets? || !can_update_vehicle_usage do
+            %i.fa.fa-copy.fa-fw
+        = link_to vehicle_usage_set_path(vehicle_usage_set, format: :excel), class: 'btn btn-light', data: { turbo: false } do
+          %i.fa.fa-download.fa-fw
+        = link_to edit_vehicle_usage_set_path(vehicle_usage_set), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
+          %i.fa.fa-pencil.fa-fw
+        - if sets_count > 1
+          %button.btn.btn-danger{
+            type: 'button',
+            disabled: !can_destroy_vehicle_config,
+            title: t('all.verb.destroy'),
+            data: (can_destroy_vehicle_config ? confirm_click_destroy_data(group: 'vehicle-usage-sets-destroy', url: vehicle_usage_set_path(vehicle_usage_set)) : {})
+          }
+            %i.fa.fa-trash.fa-fw
+
+  %tr.vehicle_usages
+    %td{colspan: nested_colspan}
+      .collapse{id: "collapseUsageSet#{vehicle_usage_set.id}", class: ('show' if expanded || sets_count == 1), 'data-bs-parent': (sets_count > 1 ? '#accordion-vehicle-usage-sets' : nil)}
+        .vehicle-usages-inner
+          = render 'v2/vehicle_usage_sets/vehicles', vehicle_usage_set: vehicle_usage_set, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage

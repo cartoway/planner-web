@@ -170,9 +170,7 @@ export default class extends Controller {
     if (this._domMarkerId === idStr && this._domMarker) {
       this._domMarker.setLngLat(lngLat)
       if (this._domMarkerEl) this._domMarkerEl.classList.toggle('destinations-marker--active', active)
-      if (this._positionEdit && this._positionEdit.markerId === idStr) {
-        this._positionEdit.marker = this._domMarker
-      }
+      this._bindPositionEditMarker(this._domMarker)
       this._syncHiddenGeojsonPins()
       return
     }
@@ -185,10 +183,20 @@ export default class extends Controller {
     this._domMarker = marker
     this._domMarkerId = idStr
     this._domMarkerEl = el
-    if (this._positionEdit && this._positionEdit.markerId === idStr) {
-      this._positionEdit.marker = marker
-    }
+    this._bindPositionEditMarker(marker)
     this._syncHiddenGeojsonPins()
+  }
+
+  _bindPositionEditMarker (marker) {
+    const state = this._positionEdit
+    if (!state || !marker || this._domMarkerId !== state.markerId) return
+    if (state.marker !== marker) {
+      if (state.dragEndHandler && typeof marker.on === 'function') marker.on('dragend', state.dragEndHandler)
+      state.marker = marker
+    }
+    if (!state.active || typeof marker.setDraggable !== 'function') return
+    try { marker.setDraggable(true) } catch (e) { /* ignore */ }
+    if (this._domMarkerEl) this._domMarkerEl.classList.add('destinations-marker--dragging')
   }
 
   _clearStoreHighlight () {
@@ -670,7 +678,6 @@ export default class extends Controller {
     const state = this._positionEdit
     if (!state || state.active || !this._map) return
     this._refreshPositionEditMarker()
-    if (!state.marker || this._domMarkerId !== state.markerId) return
     state.mapClickHandler = (e) => {
       if (!this._positionEdit?.active) return
       const t = e.originalEvent && e.originalEvent.target
@@ -679,18 +686,33 @@ export default class extends Controller {
         if (t.closest('.maplibregl-ctrl') || t.closest('.mapboxgl-ctrl')) return
       }
       if (!e.lngLat) return
-      const mid = this._positionEdit.markerId
-      const m = this._positionEdit.marker
-      if (!m) return
-      try { m.setLngLat(e.lngLat) } catch (err) { /* ignore */ }
-      this._syncPositionFromMarker(mid, m)
+      this._applyPlacementClick(e.lngLat)
     }
     this._map.on('click', state.mapClickHandler)
-    try { state.marker.setDraggable(true) } catch (e) { /* ignore */ }
-    if (this._domMarkerEl) this._domMarkerEl.classList.add('destinations-marker--dragging')
     state.active = true
+    if (state.marker && this._domMarkerId === state.markerId && typeof state.marker.setDraggable === 'function') {
+      try { state.marker.setDraggable(true) } catch (e) { /* ignore */ }
+      if (this._domMarkerEl) this._domMarkerEl.classList.add('destinations-marker--dragging')
+    }
     this._syncPositionDragLayout(true)
     if (state.toggleButton) this._applyPositionDragToggleUi(state.toggleButton, true)
+  }
+
+  // Place or move the pin (new stores have no marker until the first map click).
+  _applyPlacementClick (lngLat) {
+    const state = this._positionEdit
+    if (!state || !lngLat) return
+    if (!state.marker || this._domMarkerId !== state.markerId) {
+      const nameInp = document.querySelector('#store_name')
+      this._showDomMarker(state.markerId, {
+        name: nameInp ? nameInp.value : '',
+        lngLat: [lngLat.lng, lngLat.lat],
+        active: true
+      })
+    } else {
+      try { state.marker.setLngLat(lngLat) } catch (err) { /* ignore */ }
+    }
+    this._syncPositionFromMarker(state.markerId, this._domMarker)
   }
 
   _togglePositionDragMode (btn) {
@@ -760,7 +782,7 @@ export default class extends Controller {
     const detail = event.detail || {}
     if (detail.resourcePrefix !== 'store') return
     const storeId = detail.id != null ? String(detail.id) : ''
-    if (!storeId || storeId === '0') return
+    if (!storeId) return
     const form = document.querySelector('#form_sidebar #store-form-sidebar')
     const formId = form?.getAttribute('data-store_id')
     if (!formId || String(formId) !== storeId) return
@@ -794,7 +816,8 @@ export default class extends Controller {
     if (!form || form.getAttribute('data-position-editable') !== 'true') return
     const rawId = form.getAttribute('data-store_id')
     const id = rawId != null ? String(rawId) : ''
-    if (!id || id === '0') return
+    // "0" = new store (same as destinations); still allow map click placement.
+    if (!id) return
     const toggleButton = form.querySelector('[data-v2-map-position-drag-toggle]')
     let rec = this._storeRecord(id)
     if (!rec) {
@@ -807,28 +830,23 @@ export default class extends Controller {
         rec = { lngLat: [lng, lat], name: nameInp ? nameInp.value : '' }
       }
     }
-    if (rec) this._showDomMarker(id, { name: rec.name, lngLat: rec.lngLat, active: true })
-    const marker = this._domMarker
-    if (toggleButton) {
-      if (!marker || typeof marker.setDraggable !== 'function') {
-        toggleButton.classList.add('d-none')
-        this._applyPositionDragToggleUi(toggleButton, false)
-        return
-      }
-      toggleButton.classList.remove('d-none')
-      this._applyPositionDragToggleUi(toggleButton, false)
+    const dragEndHandler = () => {
+      const current = this._positionEdit
+      this._syncPositionFromMarker(id, current && current.marker)
     }
-    if (!marker || typeof marker.setDraggable !== 'function') return
-    const dragEndHandler = () => { this._syncPositionFromMarker(id, marker) }
-    marker.on('dragend', dragEndHandler)
     this._positionEdit = {
       markerId: id,
-      marker,
+      marker: null,
       dragEndHandler,
       toggleButton: toggleButton || null,
       active: false,
       mapClickHandler: null,
       listSidebarHiddenForDrag: false
+    }
+    if (rec) this._showDomMarker(id, { name: rec.name, lngLat: rec.lngLat, active: true })
+    if (toggleButton) {
+      toggleButton.classList.remove('d-none')
+      this._applyPositionDragToggleUi(toggleButton, false)
     }
   }
 }

@@ -4,16 +4,42 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   connect () {
+    this.boundOnBeforeStreamRender = this.onBeforeStreamRender.bind(this)
+    document.addEventListener("turbo:before-stream-render", this.boundOnBeforeStreamRender)
     const hash = window.location.hash
     if (!hash) return
     const panel = this.element.querySelector(hash)
-    if (!panel || !panel.classList.contains("collapse")) return
-    this.element.querySelectorAll("table#accordion-vehicle-usage-sets .collapse.show").forEach((el) => {
-      if (el !== panel) el.classList.remove("show")
+    if (panel?.classList.contains("collapse")) this.openExclusivePanel(panel)
+  }
+
+  disconnect () {
+    document.removeEventListener("turbo:before-stream-render", this.boundOnBeforeStreamRender)
+    this.clearPointerListeners()
+  }
+
+  // Appended/replaced blocks with .show do not go through Bootstrap Collapse — close siblings.
+  onBeforeStreamRender (event) {
+    const render = event.detail.render
+    event.detail.render = async (streamElement) => {
+      await render(streamElement)
+      const open = this.accordionCollapses().filter((el) => el.classList.contains("show"))
+      if (open.length === 0) return
+      this.openExclusivePanel(open[open.length - 1])
+    }
+  }
+
+  accordionCollapses () {
+    return Array.from(this.element.querySelectorAll("table#accordion-vehicle-usage-sets .collapse"))
+  }
+
+  openExclusivePanel (panel) {
+    if (!panel) return
+    const target = `#${panel.id}`
+    this.accordionCollapses().forEach((el) => {
+      el.classList.toggle("show", el === panel)
     })
-    panel.classList.add("show")
     this.element.querySelectorAll(".usage-set-toggle").forEach((btn) => {
-      const open = btn.getAttribute("data-bs-target") === hash
+      const open = btn.getAttribute("data-bs-target") === target
       btn.classList.toggle("collapsed", !open)
       btn.setAttribute("aria-expanded", String(open))
     })

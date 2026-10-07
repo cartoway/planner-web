@@ -14,10 +14,22 @@
       .alert.alert-warning{data: { error: 'true' }}
         %p.mb-0= t('plannings.index.over_max_limit', limit: current_user.customer.default_max_plannings)
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
-      .d-flex.gap-2
+      .d-flex.gap-2.align-items-center
         = link_to new_planning_path, class: 'btn btn-primary', disabled: cannot_new, data: { turbo: false } do
           %i.fa.fa-plus.fa-fw
           = t('plannings.index.new')
+        %button.btn.btn-danger{
+          type: 'button',
+          disabled: true,
+          title: t('all.verb.destroy_selection'),
+          data: confirm_click_destroy_data(
+            group: 'plannings-destroy',
+            form: 'plannings-destroy',
+            ready_label: %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{t('all.verb.destroy_selection')})
+          ).merge(v2__table_selection_target: 'bulk')
+        }
+          %i.fa.fa-trash.fa-fw
+          = t('all.verb.destroy_selection')
       .d-flex.gap-2.align-items-center
         = text_field_tag :plannings_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control form-control-sm', data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
         %span
@@ -63,19 +75,16 @@
                   %i.fa.fa-pencil.fa-fw
                   = t('all.verb.edit')
               .btn-group{role: 'group'}
-                - if can_destroy
-                  = link_to planning, class: 'btn btn-danger', data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do
-                    %i.fa.fa-trash.fa-fw
-                    = t('all.verb.destroy')
-                - else
-                  %button.btn.btn-danger{type: 'button', disabled: true, title: t('all.verb.destroy')}
-                    %i.fa.fa-trash.fa-fw
-                    = t('all.verb.destroy')
+                %button.btn.btn-danger{
+                  type: 'button',
+                  disabled: !can_destroy,
+                  title: t('all.verb.destroy'),
+                  data: (can_destroy ? confirm_click_destroy_data(group: 'plannings-destroy', url: planning_path(planning), ready_label: %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{t('all.verb.destroy')})) : {})
+                }
+                  %i.fa.fa-trash.fa-fw
+                  = t('all.verb.destroy')
     - unless @plannings.empty?
       .plannings-bulk.px-3.py-2.d-flex.flex-wrap.gap-2.align-items-center
-        = button_tag type: :submit, class: 'btn btn-danger', disabled: true, data: { v2__table_selection_target: 'bulk', turbo_confirm: t('all.verb.destroy_confirm') } do
-          %i.fa.fa-trash.fa-fw
-          = t('all.verb.destroy_selection')
         %button.btn.btn-light{type: 'button', disabled: true, data: { v2__table_selection_target: 'bulk', min: '2', action: 'click->v2--plannings-index#compare' }}
           %i.fa.fa-chart-column.fa-fw
           = t('plannings.compare.action')

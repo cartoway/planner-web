@@ -42,7 +42,7 @@ class StoresController < ApplicationController
     load_stores_index_page
     respond_to do |format|
       format.html do
-        render_v2_page 'v2/stores/index' if layout_v2?
+        render_page 'v2/stores/index' if layout_v2?
       end
     end
   end
@@ -69,11 +69,11 @@ class StoresController < ApplicationController
     @store = current_user.customer.stores.build
     @store.postalcode = current_user.customer.stores[0].postalcode
     @store.city = current_user.customer.stores[0].city
-    return if render_v2_form_or_list('new_sidebar', 'v2/stores/index', stores_path) { load_stores_index_page }
+    render_form_or_list('new_sidebar', 'v2/stores/index', stores_path) { load_stores_index_page }
   end
 
   def edit
-    return if render_v2_form_or_list('edit_sidebar', 'v2/stores/index', stores_path) { load_stores_index_page }
+    render_form_or_list('edit_sidebar', 'v2/stores/index', stores_path) { load_stores_index_page }
   end
 
   def create
@@ -86,9 +86,9 @@ class StoresController < ApplicationController
     respond_to do |format|
       if current_user.customer.save
         format.html do
-          if v2_sidebar_submit?
-            @v2_sidebar_saved_id = @store.id
-            render_v2_close_sidebar
+          if sidebar_submit?
+            @sidebar_saved_id = @store.id
+            render_close_sidebar
           else
             redirect_to link_back || edit_store_path(@store), notice: t('activerecord.successful.messages.created', model: @store.class.model_name.human)
           end
@@ -96,7 +96,7 @@ class StoresController < ApplicationController
       else
         flash.now[:error] = @store.customer.errors.full_messages unless @store.customer.errors.empty?
         format.html do
-          if v2_sidebar_submit?
+          if sidebar_submit?
             render 'new_sidebar', layout: false, status: :unprocessable_entity
           else
             render action: 'new'
@@ -116,9 +116,9 @@ class StoresController < ApplicationController
 
         if @store.save && @store.customer.save
           format.html do
-          if v2_sidebar_submit?
-            @v2_sidebar_saved_id = @store.id
-            render_v2_close_sidebar
+          if sidebar_submit?
+            @sidebar_saved_id = @store.id
+            render_close_sidebar
           else
             redirect_to link_back || edit_store_path(@store), notice: t('activerecord.successful.messages.updated', model: @store.class.model_name.human)
             end
@@ -126,7 +126,7 @@ class StoresController < ApplicationController
         else
           flash.now[:error] = @store.customer.errors.full_messages unless @store.customer.errors.empty?
           format.html do
-            if v2_sidebar_submit?
+            if sidebar_submit?
               render 'edit_sidebar', layout: false, status: :unprocessable_entity
             else
               render action: 'edit'
@@ -140,9 +140,10 @@ class StoresController < ApplicationController
   def destroy
     respond_to do |format|
       if @store.destroy
-        format.html { redirect_to stores_url }
+        # Full index reload (303) so the map pins stay in sync with the list.
+        format.html { redirect_to stores_url, status: :see_other }
       else
-        format.html { redirect_to stores_path }
+        format.html { redirect_to stores_path, status: :see_other }
       end
     end
   end
@@ -154,12 +155,12 @@ class StoresController < ApplicationController
           ids = params['stores'].keys.collect{ |i| Integer(i) }
           current_user.customer.stores.select{ |store| ids.include?(store.id) }.each{ |store|
             unless store.destroy
-              format.html { redirect_to stores_path and return }
+              format.html { redirect_to stores_path, status: :see_other and return }
             end
           }
         end
       end
-      format.html { redirect_to stores_url }
+      format.html { redirect_to stores_url, status: :see_other }
     end
   end
 
@@ -176,18 +177,18 @@ class StoresController < ApplicationController
 
   def import
     @import_csv = ImportCsv.new
-    render_v2_page 'v2/stores/import' if layout_v2?
+    render_page 'v2/stores/import' if layout_v2?
   end
 
   def upload_csv
     respond_to do |format|
       @import_csv = ImportCsv.new(import_csv_params.merge(importer: ImporterStores.new(current_user.customer)))
       if @import_csv.valid? && @import_csv.import
-        format.html { redirect_to action: 'index' }
+        format.html { redirect_to action: 'index', status: :see_other }
       else
         format.html do
           if layout_v2?
-            render_v2_page 'v2/stores/import'
+            render_page 'v2/stores/import'
           else
             render action: 'import'
           end

@@ -33,7 +33,27 @@ if [[ -z "$cid" ]]; then
 fi
 
 echo "Copying ${#files[@]} file(s)…"
-tar -C "$ROOT_DIR" -cf - "${files[@]}" | docker exec -i "$cid" tar -C /srv/app -xf -
+# Some paths may be bind-mounted RO into the container (Resource busy / read-only).
+# Extract to a temp dir then overwrite when possible; skip when already current.
+tar -C "$ROOT_DIR" -cf - "${files[@]}" | docker exec -i "$cid" sh -c '
+  set -e
+  tmp=$(mktemp -d)
+  trap "rm -rf \"$tmp\"" EXIT
+  tar -C "$tmp" -xf -
+  cd "$tmp"
+  find . -type f | while IFS= read -r f; do
+    dest="/srv/app/${f#./}"
+    mkdir -p "$(dirname "$dest")"
+    if cat "$f" > "$dest" 2>/dev/null; then
+      continue
+    fi
+    if cmp -s "$f" "$dest" 2>/dev/null; then
+      echo "skip (mounted/read-only, already current): ${f#./}"
+      continue
+    fi
+    echo "WARN: could not update ${f#./}" >&2
+  done
+'
 
 needs_v2=0
 needs_v1=0

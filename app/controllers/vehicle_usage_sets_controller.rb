@@ -29,7 +29,7 @@ class VehicleUsageSetsController < ApplicationController
 
   def index
     load_vehicle_usage_sets_index_page
-    render_v2_page 'v2/vehicle_usage_sets/index' if layout_v2?
+    render_page 'v2/vehicle_usage_sets/index' if layout_v2?
   end
 
   def show
@@ -51,11 +51,11 @@ class VehicleUsageSetsController < ApplicationController
     @vehicle_usage_set = current_user.customer.vehicle_usage_sets.build
     @vehicle_usage_set.store_start = current_user.customer.stores[0]
     @vehicle_usage_set.store_stop = current_user.customer.stores[0]
-    return if render_v2_form_or_list('new_sidebar', 'v2/vehicle_usage_sets/index', vehicle_usage_sets_path) { load_vehicle_usage_sets_index_page }
+    render_form_or_list('new_sidebar', 'v2/vehicle_usage_sets/index', vehicle_usage_sets_path) { load_vehicle_usage_sets_index_page }
   end
 
   def edit
-    return if render_v2_form_or_list('edit_sidebar', 'v2/vehicle_usage_sets/index', vehicle_usage_sets_path) { load_vehicle_usage_sets_index_page }
+    render_form_or_list('edit_sidebar', 'v2/vehicle_usage_sets/index', vehicle_usage_sets_path) { load_vehicle_usage_sets_index_page }
   end
 
   def create
@@ -65,21 +65,23 @@ class VehicleUsageSetsController < ApplicationController
       @vehicle_usage_set = current_user.customer.vehicle_usage_sets.build(p)
 
       if @vehicle_usage_set.save
+        format.turbo_stream { render_streams(vehicle_usage_set_append_stream) }
         format.html do
-          if v2_sidebar_submit?
-            render_v2_close_sidebar
+          if sidebar_submit?
+            render_close_sidebar
           else
             redirect_to vehicle_usage_sets_path, notice: t('activerecord.successful.messages.created', model: @vehicle_usage_set.class.model_name.human)
           end
         end
       else
         format.html do
-          if v2_sidebar_submit?
+          if sidebar_submit?
             render 'new_sidebar', layout: false, status: :unprocessable_entity
           else
             render action: 'new'
           end
         end
+        format.turbo_stream { render_sidebar_stream('new_sidebar') }
       end
     end
   end
@@ -92,21 +94,23 @@ class VehicleUsageSetsController < ApplicationController
       @vehicle_usage_set.assign_attributes(p)
 
       if @vehicle_usage_set.save
+        format.turbo_stream { render_streams(vehicle_usage_set_replace_stream(expanded: true)) }
         format.html do
-          if v2_sidebar_submit?
-            render_v2_close_sidebar
+          if sidebar_submit?
+            render_close_sidebar
           else
             redirect_to link_back || vehicle_usage_sets_path, notice: t('activerecord.successful.messages.updated', model: @vehicle_usage_set.class.model_name.human)
           end
         end
       else
         format.html do
-          if v2_sidebar_submit?
+          if sidebar_submit?
             render 'edit_sidebar', layout: false, status: :unprocessable_entity
           else
             render action: 'edit'
           end
         end
+        format.turbo_stream { render_sidebar_stream('edit_sidebar') }
       end
     end
   end
@@ -114,7 +118,9 @@ class VehicleUsageSetsController < ApplicationController
   def destroy
     respond_to do |format|
       if @vehicle_usage_set.destroy
-        format.html { redirect_to vehicle_usage_sets_url }
+        format.turbo_stream { render_streams(stream_remove(@vehicle_usage_set), close_sidebar: false) }
+        # 303 so Turbo GETs the index (302 would re-DELETE and leave the list stale).
+        format.html { redirect_to vehicle_usage_sets_url, status: :see_other }
       else
         flash[:error] = @vehicle_usage_set.errors.full_messages
         format.html { render action: 'index' }
@@ -134,7 +140,7 @@ class VehicleUsageSetsController < ApplicationController
           current_user.customer.vehicle_usage_sets.select { |v| ids.include?(v.id) }.each(&:destroy)
         end
         respond_to do |format|
-          format.html { redirect_to vehicle_usage_sets_url }
+          format.html { redirect_to vehicle_usage_sets_url, status: :see_other }
         end
       end
     end
@@ -144,9 +150,16 @@ class VehicleUsageSetsController < ApplicationController
     respond_to do |format|
       @vehicle_usage_set = @vehicle_usage_set.duplicate
       @vehicle_usage_set.save! validate: Planner::Application.config.validate_during_duplication
+      format.turbo_stream do
+        if layout_v2?
+          render_streams(vehicle_usage_set_append_stream, close_sidebar: false)
+        else
+          head :ok
+        end
+      end
       format.html do
         if layout_v2?
-          redirect_to vehicle_usage_sets_path, notice: t('activerecord.successful.messages.updated', model: @vehicle_usage_set.class.model_name.human)
+          redirect_to vehicle_usage_sets_path, status: :see_other, notice: t('activerecord.successful.messages.updated', model: @vehicle_usage_set.class.model_name.human)
         else
           redirect_to edit_vehicle_usage_set_path(@vehicle_usage_set), notice: t('activerecord.successful.messages.updated', model: @vehicle_usage_set.class.model_name.human)
         end
@@ -176,7 +189,7 @@ class VehicleUsageSetsController < ApplicationController
     @customer = current_user.customer
     @import_csv = ImportCsv.new
     @import_csv.replace_vehicles = @customer.default_max_vehicle_usage_sets <= 1
-    render_v2_page 'v2/vehicle_usage_sets/import' if layout_v2?
+    render_page 'v2/vehicle_usage_sets/import' if layout_v2?
   end
 
   def upload_csv
@@ -184,11 +197,11 @@ class VehicleUsageSetsController < ApplicationController
       @customer = current_user.customer
       @import_csv = ImportCsv.new(import_csv_params.merge(importer: ImporterVehicleUsageSets.new(current_user.customer)))
       if @import_csv.valid? && @import_csv.import
-        format.html { redirect_to action: 'index' }
+        format.html { redirect_to action: 'index', status: :see_other }
       else
         format.html do
           if layout_v2?
-            render_v2_page 'v2/vehicle_usage_sets/import'
+            render_page 'v2/vehicle_usage_sets/import'
           else
             render action: 'import'
           end
@@ -204,6 +217,33 @@ class VehicleUsageSetsController < ApplicationController
     @vehicle_usage_sets = @customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}])
   end
 
+  def vehicle_usage_set_list_locals(expanded:)
+    sets = current_user.customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}]).to_a
+    @vehicle_usage_set = sets.find { |s| s.id == @vehicle_usage_set.id } || @vehicle_usage_set.reload
+    index = sets.index(@vehicle_usage_set) || 0
+    show_set_checkbox = current_user.customer.default_max_vehicle_usage_sets > 1
+    {
+      vehicle_usage_set: @vehicle_usage_set,
+      index: index,
+      expanded: expanded,
+      show_set_checkbox: show_set_checkbox,
+      invisible_class: sets.size > 1 ? '' : 'invisible',
+      can_destroy_vehicle_config: helpers.current_user_form_destroy_enabled?(:vehicle_usages),
+      can_update_vehicle_usage: helpers.current_user_form_update?(:vehicle_usages),
+      can_view_vehicle_usage: helpers.current_user_form_visible?(:vehicle_usages),
+      nested_colspan: show_set_checkbox ? 5 : 4,
+      sets_count: sets.size
+    }
+  end
+
+  def vehicle_usage_set_replace_stream(expanded:)
+    stream_replace(@vehicle_usage_set, partial: 'v2/vehicle_usage_sets/set_block', locals: vehicle_usage_set_list_locals(expanded: expanded))
+  end
+
+  def vehicle_usage_set_append_stream
+    stream_append('accordion-vehicle-usage-sets', partial: 'v2/vehicle_usage_sets/set_block', locals: vehicle_usage_set_list_locals(expanded: true))
+  end
+
   def activate_multiple_vehicle_usage(vehicle_usage_set_id, activate)
     VehicleUsageSet.transaction do
       if params['vehicle_usages']
@@ -214,7 +254,7 @@ class VehicleUsageSetsController < ApplicationController
         }
       end
       respond_to do |format|
-        format.html { redirect_to vehicle_usage_sets_url }
+        format.html { redirect_to vehicle_usage_sets_url, status: :see_other }
       end
     end
   end

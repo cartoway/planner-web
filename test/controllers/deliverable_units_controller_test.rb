@@ -36,8 +36,10 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     assert_select 'table#deliverable-units', 1
     assert_select 'table#deliverable-units td.deliverable-units-actions-col.text-end > .btn-group', minimum: 1
     assert_select 'table#deliverable-units td.btn-group', 0
-    assert_select 'table#deliverable-units .du-col-sidebar-hide', minimum: 1
-    assert_select '.deliverable-units-bulk [data-v2--table-selection-target=bulk]', 1
+    assert_select 'table#deliverable-units thead th.du-col-sidebar-hide', 3
+    assert_select 'table#deliverable-units tbody td.du-col-sidebar-hide', minimum: 3
+    assert_select 'table#deliverable-units button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
+    assert_select '.deliverable-units-toolbar button[data-controller~="confirm-click"][data-confirm-click-form-value][data-v2--table-selection-target=bulk]', 1
   end
 
   test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do
@@ -46,7 +48,7 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     get :edit, params: { id: @deliverable_unit }
     assert_response :success
     assert_select 'turbo-frame#form_sidebar', 1
-    assert_select 'turbo-frame#form_sidebar form#deliverable-unit-form-sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form#deliverable-unit-form-sidebar.form-sidebar-form.form-sidebar-form--full-bleed', 1
     assert_select 'input.form-check-input[name=deliverable_unit_optimization_overload_multiplier]', 2
     assert_select 'select#deliverable_unit_icon[data-controller~="v2--tom-select"]', 1
     assert_select 'select#deliverable_unit_icon option[data-icon]', minimum: 1
@@ -57,7 +59,7 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     get :edit, params: { id: @deliverable_unit }
     assert_response :success
     assert_select '.deliverable-units-index', 1
-    assert_select 'turbo-frame#form_sidebar form#deliverable-unit-form-sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form#deliverable-unit-form-sidebar.form-sidebar-form.form-sidebar-form--full-bleed', 1
   end
 
   test 'v2 create from sidebar closes the form frame' do
@@ -79,6 +81,31 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     assert_equal 'v2-updated-label', @deliverable_unit.reload.label
     assert_select 'turbo-frame#form_sidebar', 1
     assert_select 'form#deliverable-unit-form-sidebar', 0
+  end
+
+  test 'v2 create from sidebar appends the list row via turbo stream' do
+    enable_layout_v2!
+    assert_difference('DeliverableUnit.count') do
+      post :create, params: { v2_sidebar: '1', deliverable_unit: { label: 'v2-stream-label', ref: 'v2-stream-ref' } }, as: :turbo_stream
+    end
+    created = assigns(:deliverable_unit)
+    assert_response :success
+    assert_equal 'text/vnd.turbo-stream.html', response.media_type
+    assert_select "turbo-stream[action='update'][target='form_sidebar']", 1
+    assert_select "turbo-stream[action='append'][target='deliverable-units-list']", 1
+    assert_includes response.body, ActionView::RecordIdentifier.dom_id(created)
+    assert_includes response.body, 'v2-stream-label'
+  end
+
+  test 'v2 update from sidebar replaces the list row via turbo stream' do
+    enable_layout_v2!
+    patch :update, params: { id: @deliverable_unit, v2_sidebar: '1', deliverable_unit: { label: 'v2-stream-updated' } }, as: :turbo_stream
+    assert_response :success
+    assert_equal 'text/vnd.turbo-stream.html', response.media_type
+    assert_equal 'v2-stream-updated', @deliverable_unit.reload.label
+    assert_select "turbo-stream[action='update'][target='form_sidebar']", 1
+    assert_select "turbo-stream[action='replace'][target='#{ActionView::RecordIdentifier.dom_id(@deliverable_unit)}']", 1
+    assert_includes response.body, 'v2-stream-updated'
   end
 
   test 'should get new' do
