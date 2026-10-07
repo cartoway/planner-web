@@ -881,7 +881,7 @@ input.form-control.number-of-days {
   left: 0;
 
   .menu-section {
-    margin-top: 24px !important;
+    margin-top: 20px !important;
     color: white;
     font-size: 24px;
 
@@ -910,8 +910,8 @@ input.form-control.number-of-days {
 
   #accordion-menu {
     flex: 1 1 auto;
+    min-height: 0; // allow flex child to scroll instead of overflowing under the dock
     overflow-y: auto;
-    padding-bottom: 220px;
   }
 
   .menu-content {
@@ -952,14 +952,93 @@ input.form-control.number-of-days {
     list-style-type: none;
   }
 
-  #menu-settings {
-    position: absolute;
-    bottom: 0;
+  // In normal flex flow (not absolute) so accordion scroll never goes under the dock.
+  #menu-settings-dock {
+    flex-shrink: 0;
     width: 100%;
-    z-index: 2;
     background: $primary-color;
     margin-bottom: 0;
     padding-bottom: 1rem;
+  }
+
+  #menu-settings {
+    width: 100%;
+    margin-bottom: 0;
+    flex-grow: 0;
+    max-height: 100vh;
+    opacity: 1;
+    transition: opacity $transition-duration ease, max-height $transition-duration ease;
+  }
+
+  #accordion-menu > .menu-list {
+    max-height: 100vh;
+    opacity: 1;
+    transition: opacity $transition-duration ease, max-height $transition-duration ease;
+  }
+
+  // Size comes from .menu-section on the li; visibility via opacity (display can't animate).
+  .menu-section.menu-section-burger {
+    display: list-item;
+    list-style: none;
+    opacity: 0;
+    visibility: hidden;
+    max-height: 0;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    overflow: hidden;
+    pointer-events: none;
+    transition: opacity $transition-duration ease, visibility $transition-duration ease, max-height $transition-duration ease, margin $transition-duration ease;
+
+    > button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      line-height: inherit;
+      cursor: pointer;
+      outline: none;
+    }
+  }
+
+  &.menu-section-plan-expanded {
+    #menu-settings {
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    #menu-settings-burger {
+      opacity: 1;
+      visibility: visible;
+      max-height: 4rem;
+      margin-top: 20px !important;
+      margin-bottom: 20px !important;
+      pointer-events: auto;
+    }
+  }
+
+  &.menu-section-settings-expanded {
+    // Keep #accordion-menu in the flex layout; only collapse its list so the burger stays in place.
+    #accordion-menu > .menu-list {
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    #menu-plan-burger {
+      opacity: 1;
+      visibility: visible;
+      max-height: 4rem;
+      margin-top: 20px !important;
+      pointer-events: auto;
+    }
   }
 }
 
@@ -1067,8 +1146,8 @@ input.form-control.number-of-days {
   width: 250px;
 
   .logo-large {
-    width: 80%;
-    min-width: 140px;
+    width: 60%;
+    min-width: 120px;
   }
 
   .logo-small {

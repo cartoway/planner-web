@@ -60,7 +60,7 @@
   }
 
   .menu-section {
-    margin-top: 24px !important;
+    margin-top: 20px !important;
     color: #fff !important;
     font-size: 24px;
 
@@ -71,11 +71,22 @@
     }
   }
 
-  .help.menu-section {
-    .btn {
-      color: $primary-color;
-    }
+  // Beat .menu-section margin when burger is collapsed (same !important, needs higher specificity).
+  .menu-section.menu-section-burger {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+  }
 
+  &.menu-section-plan-expanded #menu-settings-burger,
+  &.menu-section-settings-expanded #menu-plan-burger {
+    margin-top: 20px !important;
+  }
+
+  &.menu-section-plan-expanded #menu-settings-burger {
+    margin-bottom: 20px !important;
+  }
+
+  .help.menu-section {
     > a {
       &:hover,
       &:focus {
@@ -98,7 +109,8 @@
     }
   }
 
-  .menu-list-item .btn {
+  // Generic menu buttons (not the help CTA)
+  .menu-list-item:not(.help) .btn {
     color: #fff !important;
     border-color: rgba(255, 255, 255, 0.45);
     background: transparent;
@@ -108,6 +120,27 @@
       color: #fff !important;
       background: rgba(255, 255, 255, 0.12);
       border-color: rgba(255, 255, 255, 0.65);
+    }
+  }
+
+  // Help button: match v1 BS3 .btn-default (no transparent border, BS3 padding)
+  #menu-help.help.menu-section .btn {
+    color: $primary-color !important;
+    background-color: #fff !important;
+    border: 1px solid #ccc !important;
+    border-radius: 4px;
+    padding: 6px 12px;
+    line-height: 1.42857143;
+    width: 100%;
+    justify-content: center;
+    box-shadow: none;
+
+    &:hover,
+    &:focus {
+      color: $primary-color !important;
+      background-color: #e6e6e6 !important;
+      border-color: #adadad !important;
+      box-shadow: none;
     }
   }
 
@@ -149,8 +182,6 @@
       justify-content: flex-start !important;
       width: 100%;
       min-width: 0;
-      padding-left: 0.5rem;
-      padding-right: 0.5rem;
     }
 
     .menu-list-item > a .hidden-menu {

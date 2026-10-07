@@ -81,18 +81,84 @@ $(document).on('turbolinks:load', function() {
 
   var menuLeft = $('.menu-left');
   var mainContent = $('.main');
+  var PLAN_EXPANDED = 'menu-section-plan-expanded';
+  var SETTINGS_EXPANDED = 'menu-section-settings-expanded';
+
+  function sectionForCollapse($el) {
+    if ($el.closest('#menu-settings').length) return 'settings';
+    if ($el.closest('#accordion-menu').length) return 'plan';
+    return null;
+  }
+
+  function applySectionExpand(section) {
+    menuLeft.removeClass(PLAN_EXPANDED + ' ' + SETTINGS_EXPANDED);
+    if (section === 'plan') menuLeft.addClass(PLAN_EXPANDED);
+    else if (section === 'settings') menuLeft.addClass(SETTINGS_EXPANDED);
+  }
+
+  function clearSectionExpand() {
+    menuLeft.removeClass(PLAN_EXPANDED + ' ' + SETTINGS_EXPANDED);
+  }
+
+  function hideAllMenuCollapses() {
+    menuLeft.find('.menu-content.collapse.in').removeClass('in').collapse('hide');
+  }
+
+  // Call on hide.bs.collapse; exclude the panel that is closing (still has .in).
+  var expandOnShow = null;
+  var syncHideTimer = null;
+
+  function syncExpandAfterHide($hiding) {
+    var $planOpen = menuLeft.find('#accordion-menu .menu-content.collapse.in');
+    var $settingsOpen = menuLeft.find('#menu-settings .menu-content.collapse.in');
+    if ($hiding && $hiding.length) {
+      $planOpen = $planOpen.not($hiding);
+      $settingsOpen = $settingsOpen.not($hiding);
+    }
+    if ($planOpen.length) applySectionExpand('plan');
+    else if ($settingsOpen.length) applySectionExpand('settings');
+    else clearSectionExpand();
+  }
 
   menuLeft.on("click", () => {
     menuLeft.addClass("open")
   });
 
-  $('.menu-content').on('show.bs.collapse', function () {
-    $('.menu-content.in').removeClass('in');
+  menuLeft.on('show.bs.collapse', '.menu-content.collapse', function (e) {
+    var $panel = $(e.target);
+    menuLeft.find('.menu-content.collapse.in').not($panel).removeClass('in');
+    expandOnShow = sectionForCollapse($panel);
+    if (expandOnShow) applySectionExpand(expandOnShow);
+  });
+
+  menuLeft.on('shown.bs.collapse', '.menu-content.collapse', function () {
+    expandOnShow = null;
+  });
+
+  menuLeft.on('hide.bs.collapse', '.menu-content.collapse', function (e) {
+    // Defer: sibling hide runs during another panel's show; keep expand if opening.
+    clearTimeout(syncHideTimer);
+    var $hiding = $(e.target);
+    syncHideTimer = setTimeout(function () {
+      if (expandOnShow) {
+        applySectionExpand(expandOnShow);
+        return;
+      }
+      syncExpandAfterHide($hiding);
+    }, 0);
+  });
+
+  menuLeft.on('click', '#menu-plan-burger, #menu-settings-burger', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    hideAllMenuCollapses();
+    clearSectionExpand();
   });
 
   mainContent.on("click", () => {
     menuLeft.removeClass("open")
-    $('.menu-content.in').removeClass('in');
+    hideAllMenuCollapses();
+    clearSectionExpand();
   });
 
   Paloma.start();
