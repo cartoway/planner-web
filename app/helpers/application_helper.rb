@@ -109,6 +109,20 @@ module ApplicationHelper
     end
   end
 
+  # Timed double-click delete via confirm-click (optional url / form → spinner + DELETE).
+  def confirm_click_destroy_data(group:, url: nil, form: nil, ready_label: nil, base_class: 'btn-danger', confirm_message: nil)
+    confirm_click_data(
+      group: group,
+      wait_message: t('all.verb.destroy_confirm_wait'),
+      confirm_message: confirm_message || t('all.verb.destroy_confirm'),
+      ready_label: ready_label || '<i class="fa fa-check fa-fw" aria-hidden="true"></i>',
+      base_class: base_class
+    ).tap do |data|
+      data[:confirm_click_url_value] = url if url.present?
+      data[:confirm_click_form_value] = form if form.present?
+    end
+  end
+
   # StopVisit JSON: tags_present = destination tags, visit_tags_present = visit tags.
   def visit_stop_tags_present_json!(json, visit)
     dest = visit.destination.tags

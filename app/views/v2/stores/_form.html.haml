@@ -1,6 +1,6 @@
 -# V2 sidebar store form (geocoding via Stimulus; map is the index background).
 - form_mutable = current_user_store_form_submit_enabled?(@store)
-- form_html = { class: 'form-horizontal', id: 'store-form-sidebar', 'data-turbo-frame' => 'form_sidebar', 'data-store_id' => (@store.id or 0), 'data-position-editable' => (form_mutable ? 'true' : 'false'), 'data-controller' => 'v2--time-fields', 'data-v2--time-fields-invalid-message-value' => t('schedule_type.invalid') }
+- form_html = { class: 'form-horizontal form-sidebar-form form-sidebar-form--full-bleed', id: 'store-form-sidebar', 'data-turbo-frame' => 'form_sidebar', 'data-store_id' => (@store.id or 0), 'data-position-editable' => (form_mutable ? 'true' : 'false'), 'data-controller' => 'v2--time-fields', 'data-v2--time-fields-invalid-message-value' => t('schedule_type.invalid') }
 - form_html['data-v2--dirty-form-submit-target'] = 'form' if form_mutable
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
 - v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
@@ -93,7 +93,8 @@
         .input-group
           = number_field :store, :lat, step: 0.000001, class: 'form-control'
           = number_field :store, :lng, step: 0.000001, class: 'form-control'
-          - show_map_drag_toggle = form_mutable && @store.persisted? && @store.lat.present? && @store.lng.present?
+          -# Same as destinations: allow map placement for new stores (id 0) before lat/lng exist.
+          - show_map_drag_toggle = form_mutable
           %span.input-group-text.p-0.d-flex.btn-container
             - if show_map_drag_toggle
               - drag_idle = df.call('v2_map_position_drag_enable')
@@ -108,7 +109,7 @@
       %div{class: v2_control_col}
         - icon_options = ->(icons) { icons.map { |icon| [icon, icon, { 'data-icon' => icon }] } }
         - default_icon = @store.customer.default_store_icon
-        - store_color = @store.color.presence || DEFAULT_COLOR
+        - store_color = @store.color.presence || Planner::Application.config.store_color_default
         .input-group.store-icon-group
           = color_field_tag 'store[color]', store_color, id: 'store_color', class: 'form-control form-control-color', title: t('activerecord.attributes.store.customised_color')
           = select_tag 'store[icon]', options_for_select([[t('web.form.default', n: default_icon), '', { 'data-icon' => default_icon }]], @store.icon.presence || '') + grouped_options_for_select([[t('stores.form.prefered_icons'), icon_options.call(@grouped_icons[0])], [t('stores.form.other_icons'), icon_options.call(@grouped_icons[1])]], @store.icon), class: 'form-select', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true }

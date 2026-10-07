@@ -1,5 +1,6 @@
 -# V2 sidebar fleet form (BS5). No Paloma/jQuery — Stimulus + Tom Select only.
-- form_html = { class: 'number-to-percentage form-horizontal', id: 'vehicle-usage-form-sidebar', 'data-turbo-frame' => 'form_sidebar', 'data-controller' => 'v2--rest-type-fields v2--router-options v2--number-to-percentage v2--vehicle-devices v2--time-fields', 'data-action' => 'change->v2--rest-type-fields#change change->v2--router-options#change submit->v2--rest-type-fields#submit submit->v2--number-to-percentage#submit', 'data-v2--rest-type-fields-prefix-value' => 'vehicle_usage', 'data-v2--number-to-percentage-prefix-value' => 'vehicle_usage[vehicle]', 'data-v2--time-fields-invalid-message-value' => t('schedule_type.invalid'), 'data-v2--rest-type-fields-duration-must-be-filled-value' => t('vehicle_usages.form.rest_type.duration_must_be_filled'), 'data-v2--rest-type-fields-lapse-must-be-filled-value' => t('vehicle_usages.form.rest_type.lapse_must_be_filled'), 'data-v2--rest-type-fields-duration-must-be-smaller-value' => t('vehicle_usages.form.rest_type.duration_must_be_smaller') }
+-# data-turbo-frame=_top: form lives inside #form_sidebar; break out so turbo_stream can close sidebar + refresh list.
+- form_html = { class: 'number-to-percentage form-horizontal form-sidebar-form', id: 'vehicle-usage-form-sidebar', 'data-turbo-frame' => '_top', 'data-controller' => 'v2--rest-type-fields v2--router-options v2--number-to-percentage v2--vehicle-devices v2--time-fields', 'data-action' => 'change->v2--rest-type-fields#change change->v2--router-options#change submit->v2--rest-type-fields#submit submit->v2--number-to-percentage#submit', 'data-v2--rest-type-fields-prefix-value' => 'vehicle_usage', 'data-v2--number-to-percentage-prefix-value' => 'vehicle_usage[vehicle]', 'data-v2--time-fields-invalid-message-value' => t('schedule_type.invalid'), 'data-v2--rest-type-fields-duration-must-be-filled-value' => t('vehicle_usages.form.rest_type.duration_must_be_filled'), 'data-v2--rest-type-fields-lapse-must-be-filled-value' => t('vehicle_usages.form.rest_type.lapse_must_be_filled'), 'data-v2--rest-type-fields-duration-must-be-smaller-value' => t('vehicle_usages.form.rest_type.duration_must_be_smaller') }
 - form_html['data-v2-js-config'] = local_assigns[:v2_js_config] if local_assigns[:v2_js_config]
 - tom_select_data = { controller: 'v2--tom-select', v2__tom_select_create_value: current_user_form_create?(:tags), v2__tom_select_placeholder_value: t('web.select2.placeholder') }
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
@@ -9,10 +10,6 @@
   = hidden_field_tag :v2_sidebar, '1'
   = render 'shared/error_messages', model: @vehicle_usage
   %fieldset
-    %legend.scheduler-border
-      %a{"data-parent": "", "data-bs-toggle": "collapse", href: "#collapseVehicle", class: ('collapsed' if @vehicle_usage_sets.count > 1) }
-        = t 'vehicle_usages.form.vehicle.legend'
-    #collapseVehicle.collapse{ class: ('show' if @vehicle_usage_sets.count < 2)}
     - if @vehicle_usage_sets[0].customer.default_max_vehicle_usage_sets > 1
       %p.help-block
         = t 'vehicle_usages.form.vehicle.help'
@@ -344,14 +341,14 @@
           %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usage.store_start'
           = collection_select :vehicle_usage, :store_start_id, @vehicle_usage.vehicle.customer.stores, :id, :name, { include_blank: start_label }, { class: 'form-select' }
           %span.input-group-text
-            %i.fa.fa-arrow-right.fa-fw
             %i.fa.fa-store.fa-fw
+            %i.fa.fa-arrow-right.fa-fw
         .input-group
           %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usage.store_stop'
           = collection_select :vehicle_usage, :store_stop_id, @vehicle_usage.vehicle.customer.stores, :id, :name, { include_blank: end_label }, { class: 'form-select' }
           %span.input-group-text
-            %i.fa.fa-store.fa-fw
             %i.fa.fa-arrow-right.fa-fw
+            %i.fa.fa-store.fa-fw
         %p.help-block= t 'vehicle_usages.form.stores_help'
     #vehicle_usage_display_costs.mb-3.row.fleet-split
       %label{class: v2_label_col}
@@ -420,7 +417,7 @@
           = text_field :vehicle_usage, :time_window_start, placeholder: t('vehicle_usages.form.time_window_start.default', n: @vehicle_usage.vehicle_usage_set.time_window_start_time),
             class: 'form-control',
             value: @vehicle_usage.time_window_start_time
-          %span.input-group-text.input-group-borderless
+          %span.input-group-text
             = t 'web.form.days'
           = number_field :vehicle_usage, :time_window_start_day,
             class: 'form-control number-of-days',
@@ -436,7 +433,7 @@
             placeholder: t('vehicle_usages.form.time_window_end.default', n: @vehicle_usage.vehicle_usage_set.time_window_end_time),
             min: 0,
             value: @vehicle_usage.time_window_end_time
-          %span.input-group-text.input-group-borderless= t 'web.form.days'
+          %span.input-group-text= t 'web.form.days'
           = number_field :vehicle_usage, :time_window_end_day,
             class: 'form-control number-of-days',
             placeholder: @vehicle_usage.time_window_end.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.time_window_end) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.time_window_end)) : 0,
@@ -560,7 +557,7 @@
             class: 'form-control',
             placeholder: !@vehicle_usage.vehicle_usage_set.rest_start.nil? ? t('vehicle_usages.form.rest_start.default', n: @vehicle_usage.vehicle_usage_set.rest_start_time) : t('all.unit.hour_minute'),
             value: @vehicle_usage.rest_start_time
-          %span.input-group-text.input-group-borderless= t 'web.form.days'
+          %span.input-group-text= t 'web.form.days'
           = number_field :vehicle_usage, :rest_start_day,
             class: 'form-control number-of-days',
             placeholder: @vehicle_usage.rest_start.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.rest_start) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.rest_start)) : 0,
@@ -575,7 +572,7 @@
             placeholder: !@vehicle_usage.vehicle_usage_set.rest_stop.nil? ? t('vehicle_usages.form.rest_stop.default', n: @vehicle_usage.vehicle_usage_set.rest_stop_time) : t('all.unit.hour_minute'),
             min: 0,
             value: @vehicle_usage.rest_stop_time
-          %span.input-group-text.input-group-borderless= t 'web.form.days'
+          %span.input-group-text= t 'web.form.days'
           = number_field :vehicle_usage, :rest_stop_day,
             class: 'form-control number-of-days',
             placeholder: @vehicle_usage.rest_stop.nil? && number_of_days(@vehicle_usage.vehicle_usage_set.rest_stop) ? t('vehicle_usages.form.time_window_start_end_days.default', n: number_of_days(@vehicle_usage.vehicle_usage_set.rest_stop)) : 0,
