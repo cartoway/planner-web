@@ -94,23 +94,20 @@ class RouteSidebarSerializerTest < ActionController::TestCase
     end
   end
 
-  test 'status_present includes only statuses on route stops' do
+  test 'as_hash omits planning stop status filters' do
     route = routes(:route_one_one)
-    planning = route.planning
     stops(:stop_one_one).update_column(:status, 'delivered')
-    stops(:stop_one_two).update_column(:status, 'intransit') if stops(:stop_one_two).route_id == route.id
 
     hash = RouteSidebarSerializer.new(
       route: route,
-      planning: planning,
+      planning: route.planning,
       with_stops: true,
       view_helpers: route_sidebar_view_helpers
     ).as_hash
 
-    present_codes = hash[:status_present].map { |s| s[:code] }
-    assert_includes present_codes, 'delivered'
-    assert_includes present_codes, 'intransit'
-    assert_operator hash[:status_all].size, :>, hash[:status_present].size
+    refute hash.key?(:status_any)
+    refute hash.key?(:status_present)
+    refute hash.key?(:status_all)
   end
 
   test 'as_hash includes regulatory_rest when vehicle usage has a regulatory rest' do
