@@ -1129,17 +1129,21 @@ export default class extends Controller {
 
     if (button.classList.contains('destinations-row-delete')) {
       const id = button.getAttribute('data-destination-id')
-      if (id) this._destroyDestinations([id])
+      if (!id) return
+      event.detail.handled = true
+      this._destroyDestinations([id], button)
       return
     }
 
     if (button.classList.contains('destinations-bulk-delete')) {
       const ids = this._selectedDestinationIds()
-      if (ids.length) this._destroyDestinations(ids)
+      if (!ids.length) return
+      event.detail.handled = true
+      this._destroyDestinations(ids, button)
     }
   }
 
-  async _destroyDestinations (ids) {
+  async _destroyDestinations (ids, button) {
     if (!this._canDestroy || !ids || !ids.length) return
 
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
@@ -1148,6 +1152,14 @@ export default class extends Controller {
       'X-CSRF-Token': token || ''
     }
     const uniqueIds = [...new Set(ids.map((id) => String(id)))]
+    // Prefer confirm-click's pre-arm HTML (trash), not the armed check label.
+    const confirmClick = button &&
+      this.application.getControllerForElementAndIdentifier(button, 'confirm-click')
+    const originalHtml = confirmClick?.originalHtml ?? button?.innerHTML ?? null
+    if (button) {
+      button.disabled = true
+      button.innerHTML = '<i class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i>'
+    }
 
     try {
       let res
@@ -1173,8 +1185,16 @@ export default class extends Controller {
 
       const text = await res.text().catch(() => '')
       window.alert(text || `HTTP ${res.status}`)
+      if (button && originalHtml != null) {
+        button.disabled = false
+        button.innerHTML = originalHtml
+      }
     } catch (e) {
       window.alert(e && e.message ? e.message : String(e))
+      if (button && originalHtml != null) {
+        button.disabled = false
+        button.innerHTML = originalHtml
+      }
     }
   }
 

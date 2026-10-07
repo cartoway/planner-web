@@ -77,6 +77,9 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_select 'table#plannings a[href=?]', edit_planning_path(@planning)
     assert_select %(table#plannings a[href="#{planning_duplicate_path(@planning)}"][data-turbo-method="patch"][data-turbo-frame="_top"]), 1
     assert_select %(table#plannings tr##{ActionView::RecordIdentifier.dom_id(@planning)}), 1
+    assert_select 'table#plannings button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
+    assert_select '.plannings-toolbar button[data-controller~="confirm-click"][data-confirm-click-form-value="plannings-destroy"]', 1
+
     assert_select 'a[data-action="click->v2--plannings-index#spreadsheet"]', 2
     assert_select '#planning-spreadsheet-modal', 1
     assert_select '#planning-spreadsheet-modal .transfer-list[data-controller~="v2--transfer-list"]', 1

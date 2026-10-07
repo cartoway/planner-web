@@ -27,7 +27,7 @@ class VehicleUsagesController < ApplicationController
   include V2Layout
 
   def edit
-    return if render_v2_form_or_list('edit_sidebar', 'v2/vehicle_usage_sets/index', vehicle_usage_sets_path) do
+    render_form_or_list('edit_sidebar', 'v2/vehicle_usage_sets/index', vehicle_usage_sets_path) do
       @customer = current_user.customer
       @vehicle_usage_sets = @customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}])
     end
@@ -41,31 +41,38 @@ class VehicleUsagesController < ApplicationController
       @vehicle_usage.assign_attributes(p)
 
       if @vehicle_usage.save
+        format.turbo_stream { render_streams(vehicle_usage_row_stream) }
         format.html do
-          if v2_sidebar_submit?
-            render_v2_close_sidebar
+          if sidebar_submit?
+            render_close_sidebar
           else
             redirect_to link_back || edit_vehicle_usage_path(@vehicle_usage), notice: t('activerecord.successful.messages.updated', model: @vehicle_usage.class.model_name.human)
           end
         end
       else
         format.html do
-          if v2_sidebar_submit?
+          if sidebar_submit?
             render 'edit_sidebar', layout: false, status: :unprocessable_entity
           else
             render action: 'edit'
           end
         end
+        format.turbo_stream { render_sidebar_stream('edit_sidebar') }
       end
     end
   end
 
   def toggle
     if @vehicle_usage.update active: !@vehicle_usage.active?
-      if layout_v2?
-        redirect_to vehicle_usage_sets_path, notice: t('.success')
-      else
-        redirect_to vehicle_usage_sets_path + "#collapseUsageSet#{@vehicle_usage.vehicle_usage_set_id}", notice: t('.success')
+      respond_to do |format|
+        format.turbo_stream { render_streams(vehicle_usage_row_stream, close_sidebar: false) }
+        format.html do
+          if layout_v2?
+            redirect_to vehicle_usage_sets_path, status: :see_other, notice: t('.success')
+          else
+            redirect_to vehicle_usage_sets_path + "#collapseUsageSet#{@vehicle_usage.vehicle_usage_set_id}", notice: t('.success')
+          end
+        end
       end
     else
       render action: :edit
@@ -73,6 +80,20 @@ class VehicleUsagesController < ApplicationController
   end
 
   private
+
+  def vehicle_usage_row_stream
+    @vehicle_usage.reload
+    stream_replace(
+      @vehicle_usage,
+      partial: 'v2/vehicle_usage_sets/vehicle_usage_row',
+      locals: {
+        vehicle_usage: @vehicle_usage,
+        vehicle_usage_set: @vehicle_usage.vehicle_usage_set,
+        can_update_vehicle_usage: helpers.current_user_form_update?(:vehicle_usages),
+        can_view_vehicle_usage: helpers.current_user_form_visible?(:vehicle_usages)
+      }
+    )
+  end
 
   def time_with_day_params(params, local_params, times_with_default, times)
     # Convert each time field into integer from hour and day value
