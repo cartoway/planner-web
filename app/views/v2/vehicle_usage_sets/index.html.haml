@@ -9,24 +9,38 @@
 - can_view_vehicle_usage = current_user_form_visible?(:vehicle_usages)
 - show_set_checkbox = current_user.customer.default_max_vehicle_usage_sets > 1
 - nested_colspan = show_set_checkbox ? 5 : 4
+- sets_count = @vehicle_usage_sets.count
 .vehicle-usage-sets-index{data: { controller: 'v2--vehicle-usage-sets-index v2--table-selection' }}
   .vehicle-usage-sets-toolbar.px-3.pt-3
     - if current_user.customer.too_many_vehicle_usage_sets? && current_user.customer.vehicle_usage_sets.size > 1
       .alert.alert-warning{data: { error: 'true' }}
         %p.mb-0= t 'vehicle_usage_sets.index.over_max_limit', limit: current_user.customer.default_max_vehicle_usage_sets
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
-      .d-flex.gap-2
+      .d-flex.gap-2.align-items-center
         - if show_set_checkbox
           = link_to new_vehicle_usage_set_path, class: 'btn btn-primary', disabled: current_user.customer.too_many_vehicle_usage_sets? || !can_create_vehicle_usage, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
             %i.fa.fa-plus.fa-fw
             = t 'vehicle_usage_sets.index.new'
+          %button{
+            type: 'button',
+            class: "btn btn-danger #{invisible_class}",
+            disabled: true,
+            title: t('all.verb.destroy_selection'),
+            data: confirm_click_destroy_data(
+              group: 'vehicle-usage-sets-destroy',
+              form: 'vehicle-usage-sets-destroy',
+              ready_label: %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{t('all.verb.destroy_selection')})
+            ).merge(v2__table_selection_target: 'bulk')
+          }
+            %i.fa.fa-trash.fa-fw
+            = t('all.verb.destroy_selection')
       %span
-        = @vehicle_usage_sets.count
-        = t 'activerecord.models.vehicle_usage_sets', count: @vehicle_usage_sets.count
+        = sets_count
+        = t 'activerecord.models.vehicle_usage_sets', count: sets_count
         \-
         = @vehicle_usage_sets[0]&.vehicle_usages&.count || 0
         = t 'activerecord.models.vehicles', count: @vehicle_usage_sets[0]&.vehicle_usages&.count || 0
-  = form_tag vehicle_usage_sets_path, method: :delete do
+  = form_tag vehicle_usage_sets_path, method: :delete, id: 'vehicle-usage-sets-destroy' do
     %table#accordion-vehicle-usage-sets.table.table-hover.table-sm.vehicle-usage-sets-table.mb-0
       %thead
         %tr
@@ -37,49 +51,5 @@
           %th= t 'vehicle_usage_sets.index.stores'
           %th= t 'vehicle_usage_sets.index.time'
           %th
-      %tbody
-        - @vehicle_usage_sets.each_with_index do |vehicle_usage_set, i|
-          %tr.usage-set-heading.align-middle{class: ('usage-set-heading--stripe' if i.even?)}
-            - if show_set_checkbox
-              %td
-                = check_box_tag "vehicle_usage_sets[#{vehicle_usage_set.id}]", '1', false, class: "#{invisible_class} deleter-check", disabled: !can_destroy_vehicle_config, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
-            %td
-              - if @vehicle_usage_sets.count > 1
-                %button.usage-set-toggle{type: 'button', class: ('collapsed' unless i.zero?), 'data-bs-toggle': 'collapse', 'data-bs-target': "#collapseUsageSet#{vehicle_usage_set.id}", 'aria-expanded': (i.zero? ? 'true' : 'false')}
-                  %i.fa.fa-chevron-right.fa-fw.usage-set-chevron{'aria-hidden': 'true'}
-                  %span.usage-set-name= vehicle_usage_set.name
-              - else
-                %span.usage-set-name= vehicle_usage_set.name
-            %td= vehicle_usage_set_store_name vehicle_usage_set
-            %td
-              = vehicle_usage_set.time_window_start_time
-              = "(+#{number_of_days(vehicle_usage_set.time_window_start)})" if number_of_days(vehicle_usage_set.time_window_start)
-              \-
-              = vehicle_usage_set.time_window_end_time
-              = "(+#{number_of_days(vehicle_usage_set.time_window_end)})" if number_of_days(vehicle_usage_set.time_window_end)
-            %td.text-end.text-nowrap
-              .btn-group{role: 'group'}
-                - if show_set_checkbox
-                  = link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), class: 'btn btn-light', method: :patch, data: { turbo_method: :patch }, title: t('all.verb.duplicate'), disabled: current_user.customer.too_many_vehicle_usage_sets? || !can_update_vehicle_usage do
-                    %i.fa.fa-copy.fa-fw
-                = link_to vehicle_usage_set_path(vehicle_usage_set, format: :excel), class: 'btn btn-light', data: { turbo: false } do
-                  %i.fa.fa-download.fa-fw
-                = link_to edit_vehicle_usage_set_path(vehicle_usage_set, back: true), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
-                  %i.fa.fa-pencil.fa-fw
-                - if @vehicle_usage_sets.count > 1
-                  - if can_destroy_vehicle_config
-                    = link_to vehicle_usage_set, class: 'btn btn-danger', data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do
-                      %i.fa.fa-trash.fa-fw
-                  - else
-                    %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy'), disabled: true}
-                      %i.fa.fa-trash.fa-fw
-          %tr.vehicle_usages
-            %td{colspan: nested_colspan}
-              .collapse{id: "collapseUsageSet#{vehicle_usage_set.id}", class: ('show' if i.zero? || @vehicle_usage_sets.count == 1), 'data-bs-parent': (@vehicle_usage_sets.count > 1 ? '#accordion-vehicle-usage-sets' : nil)}
-                .vehicle-usages-inner
-                  = render 'v2/vehicle_usage_sets/vehicles', vehicle_usage_set: vehicle_usage_set, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage
-    - if !@vehicle_usage_sets.empty? && show_set_checkbox
-      .vehicle-usage-sets-bulk.px-3.py-2
-        = button_tag type: :submit, class: "btn btn-danger #{invisible_class}", disabled: !can_destroy_vehicle_config, data: { v2__table_selection_target: 'bulk', confirm: t('all.verb.destroy_confirm') } do
-          %i.fa.fa-trash.fa-fw
-          = t('all.verb.destroy_selection')
+      - @vehicle_usage_sets.each_with_index do |vehicle_usage_set, i|
+        = render 'v2/vehicle_usage_sets/set_block', vehicle_usage_set: vehicle_usage_set, index: i, expanded: i.zero?, show_set_checkbox: show_set_checkbox, invisible_class: invisible_class, can_destroy_vehicle_config: can_destroy_vehicle_config, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage, nested_colspan: nested_colspan, sets_count: sets_count

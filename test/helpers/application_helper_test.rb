@@ -45,4 +45,12 @@ class ApplicationHelperTest < ActionView::TestCase
     t = Time.zone.parse('2024-05-21 10:53:00')
     assert_equal Time.zone.parse('2024-05-21 11:00:00'), round_time_to_nearest_quarter(t)
   end
+
+  test 'confirm_click_destroy_data adds url on confirm-click' do
+    data = confirm_click_destroy_data(group: 'test-destroy', url: '/items/1')
+    assert_equal 'confirm-click', data[:controller]
+    assert_equal 'test-destroy', data[:confirm_click_group_value]
+    assert_equal '/items/1', data[:confirm_click_url_value]
+    assert_includes data[:confirm_click_ready_label_value], 'fa-check'
+  end
 end

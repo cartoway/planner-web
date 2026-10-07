@@ -48,11 +48,14 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'turbo-frame#form_sidebar', 1
     assert_select 'turbo-frame#form_sidebar form#vehicle-usage-form-sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form#vehicle-usage-form-sidebar[data-turbo-frame=_top]', 1
     assert_select 'turbo-frame#form_sidebar .form-submit-bar button[type=submit][form=vehicle-usage-form-sidebar]', 1
     assert_select 'form#vehicle-usage-form-sidebar input[name="v2_sidebar"][value="1"]', 1
     assert_select 'form#vehicle-usage-form-sidebar .input-group-text', minimum: 1
     assert_select 'form#vehicle-usage-form-sidebar .input-group-addon', 0
-    assert_select 'form#vehicle-usage-form-sidebar .offset-md-1', minimum: 1
+    # Same field alignment as destination/visit sidebar forms.
+    assert_select 'form#vehicle-usage-form-sidebar.form-sidebar-form', 1
+    assert_select 'form#vehicle-usage-form-sidebar .col-md-10.offset-md-1', minimum: 1
     assert_select '#vehicle_usage_time_window_start_time_window_end_input.fleet-split .input-group', 2
     assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--time-fields"]', 1
     assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--rest-type-fields"]', 1
@@ -118,6 +121,27 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'turbo-frame#form_sidebar', 1
     assert_select 'form#vehicle-usage-form-sidebar', 0
+  end
+
+  test 'v2 update from sidebar replaces the vehicle_usage row via turbo stream' do
+    enable_layout_v2!
+    new_name = "vu-row-#{SecureRandom.hex(4)}"
+    patch :update, params: { id: @vehicle_usage, v2_sidebar: '1', vehicle_usage: { vehicle: { name: new_name } } }, as: :turbo_stream
+    assert_response :success
+    assert_equal 'text/vnd.turbo-stream.html', response.media_type
+    assert_select "turbo-stream[action='update'][target='form_sidebar']", 1
+    assert_select "turbo-stream[action='replace'][target='#{ActionView::RecordIdentifier.dom_id(@vehicle_usage)}']", 1
+    assert_includes response.body, new_name
+    assert_equal new_name, @vehicle_usage.vehicle.reload.name
+  end
+
+  test 'v2 invalid sidebar update re-renders the form via turbo stream' do
+    enable_layout_v2!
+    patch :update, params: { id: @vehicle_usage, v2_sidebar: '1', vehicle_usage: { vehicle: { name: '' } } }, as: :turbo_stream
+    assert_response :unprocessable_entity
+    assert_equal 'text/vnd.turbo-stream.html', response.media_type
+    assert_select "turbo-stream[action='replace'][target='form_sidebar']", 1
+    assert_includes response.body, 'vehicle-usage-form-sidebar'
   end
 
   test 'should store max_distance as an integer by converting miles or kms into meters' do
@@ -221,6 +245,18 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     patch :toggle, params: { id: @vehicle_usage.id }
     assert !@vehicle_usage.reload.active
     assert_redirected_to vehicle_usage_sets_path + "#collapseUsageSet#{vehicle_usage_sets(:vehicle_usage_set_one).id}"
+  end
+
+  test 'v2 toggle replaces the vehicle_usage row via turbo stream' do
+    enable_layout_v2!
+    assert @vehicle_usage.active?
+    patch :toggle, params: { id: @vehicle_usage.id }, as: :turbo_stream
+    assert_response :success
+    assert_equal 'text/vnd.turbo-stream.html', response.media_type
+    assert_not @vehicle_usage.reload.active?
+    row_id = ActionView::RecordIdentifier.dom_id(@vehicle_usage)
+    assert_select "turbo-stream[action='replace'][target='#{row_id}']", 1
+    assert_match(/class=['"][^'"]*disabled/, response.body)
   end
 
   test 'should set phone number' do

@@ -9,7 +9,7 @@
   = bootstrap_form_for(@import_csv, url: import_csv_vehicle_usage_sets_path, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_label_col, control_col: v2_control_col, html: { multipart: true }) do |f|
     = render 'shared/error_messages', model: @import_csv
     %fieldset{disabled: !can_import_vehicle_config}
-      = f.file_field :file, required: true, disabled: !can_import_vehicle_config
+      = render 'v2/shared/file_input', form: f, disabled: !can_import_vehicle_config, label_col: v2_label_col, control_col: v2_control_col
       .mb-3.row
         %div{class: v2_control_col}
           %p.help-block
@@ -22,7 +22,12 @@
           %div{class: v2_control_col}
             %p.mb-0
               %b= t('vehicle_usage_sets.import.default_configuration_replaced')
-      = f.check_box :replace_vehicles, label: t('vehicle_usage_sets.import.replace_vehicles'), help: t('vehicle_usage_sets.import.replace_vehicles_help')
+      .mb-3.row
+        %div{class: v2_control_col}
+          .form-check.form-switch
+            = f.check_box_without_bootstrap :replace_vehicles, { class: 'form-check-input', role: 'switch', id: 'import_csv_replace_vehicles' }, '1', '0'
+            %label.form-check-label{for: 'import_csv_replace_vehicles'}= t('vehicle_usage_sets.import.replace_vehicles')
+          %small.form-text.text-muted.help-block= t('vehicle_usage_sets.import.replace_vehicles_help')
       = f.submit message: t('all.verb.import'), icon: 'fa-upload', disabled: !can_import_vehicle_config, col_class: v2_control_col
       .mb-3.row
         %div{class: v2_control_col}

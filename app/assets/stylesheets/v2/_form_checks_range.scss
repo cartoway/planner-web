@@ -210,7 +210,6 @@ body[data-controller*='-v2'] {
     .form-check-input {
       width: $form-switch-width;
       margin-right: 0;
-      background-color: var(--bs-secondary-bg);
       background-position: left center;
       background-image: #{escape-svg($form-switch-bg-image)};
       border-color: var(--bs-border-color);

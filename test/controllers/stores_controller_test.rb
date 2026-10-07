@@ -36,7 +36,10 @@ class StoresControllerTest < ActionController::TestCase
     assert_select '#store_box tr.store-row[data-store-id=?]', @store.id.to_s, 1
     assert_select '#stores-map-layout.destinations-map-layout #map.destinations-map', 1
     assert_select '#store_box thead .stores-list-col--name', 1
+    assert_select '#store_box button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
+    assert_select 'button[data-controller~="confirm-click"][data-confirm-click-form-value="stores-destroy"]', 1
     assert_select '.destinations-position-drag-cancel', 1
+
     config = JSON.parse(css_select('#stores-map-layout').first['data-config'])
     assert config['stores'].any? { |s| s['id'] == @store.id }
   end
@@ -54,7 +57,7 @@ class StoresControllerTest < ActionController::TestCase
     get :edit, params: { id: @store }
     assert_response :success
     assert_select '#stores-map-layout', 1
-    assert_select 'turbo-frame#form_sidebar form#store-form-sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form#store-form-sidebar.form-sidebar-form.form-sidebar-form--full-bleed', 1
     assert_select %(aside.form-sidebar[data-v2--form-sidebar-list-url-value="#{stores_path}"]), 1
   end
 
@@ -64,7 +67,7 @@ class StoresControllerTest < ActionController::TestCase
     get :edit, params: { id: @store }
     assert_response :success
     assert_select 'turbo-frame#form_sidebar', 1
-    assert_select 'turbo-frame#form_sidebar form#store-form-sidebar', 1
+    assert_select 'turbo-frame#form_sidebar form#store-form-sidebar.form-sidebar-form.form-sidebar-form--full-bleed', 1
     assert_select 'form#store-form-sidebar[data-position-editable=true]', 1
     assert_select '[data-v2-map-position-drag-toggle]', 1
     assert_select '#store_reloads [data-v2--nested-fields-target=list] .store-reload-fieldset', minimum: 1
@@ -78,6 +81,7 @@ class StoresControllerTest < ActionController::TestCase
     assert_select 'select#store_icon option[data-icon]', minimum: 1
     assert_select 'select#store_icon option[value=""][data-icon]', 1
     assert_select 'input#store_color[type=color][name="store[color]"]', 1
+    assert_select 'input#store_color[value=?]', Planner::Application.config.store_color_default
     assert_select 'select#store_color', 0
     assert_select '.store-icon-group input#store_color', 1
     assert_select '.store-icon-group select#store_icon', 1
@@ -127,6 +131,15 @@ class StoresControllerTest < ActionController::TestCase
     get :new
     assert_response :success
     assert_valid response
+  end
+
+  test 'v2 new store sidebar includes map placement toggle' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :new
+    assert_response :success
+    assert_select 'form#store-form-sidebar[data-store_id="0"][data-position-editable="true"]', 1
+    assert_select 'button[data-v2-map-position-drag-toggle]', 1
   end
 
   test 'should create store' do
@@ -224,6 +237,7 @@ class StoresControllerTest < ActionController::TestCase
     assert_select 'body.cartoway-v2', 1
     assert_select 'form[action=?]', stores_import_csv_path, 1
     assert_select 'form .offset-md-1.col-md-10', minimum: 1
+    assert_select 'form label.btn.btn-primary[for=import_csv_file]', text: /#{Regexp.escape(I18n.t('web.choose_file'))}/, count: 1
     assert_select 'form a.btn[href=?]', store_import_template_path(format: :excel), 1
   end
 
@@ -237,6 +251,20 @@ class StoresControllerTest < ActionController::TestCase
     end
 
     assert_redirected_to stores_path
+    assert_equal 303, response.status
+  end
+
+  test 'v2 upload redirects with see_other so Turbo opens the index' do
+    enable_layout_v2!
+    @request.headers['Turbo-Frame'] = 'main'
+    file = fixture_file_upload('test/fixtures/files/import_stores_one.csv')
+
+    assert_difference('Store.count', 1) do
+      post :upload_csv, params: { import_csv: { replace: false, file: file } }
+    end
+
+    assert_redirected_to stores_path
+    assert_equal 303, response.status
   end
 
   test 'should not upload' do

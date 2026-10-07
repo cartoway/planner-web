@@ -64,7 +64,7 @@ class PlanningsController < ApplicationController
     @params = params
     respond_to do |format|
       format.html do
-        render_v2_page 'v2/plannings/index' if layout_v2?
+        render_page 'v2/plannings/index' if layout_v2?
       end
       format.json
       format_csv_stream(format)
@@ -94,7 +94,7 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       format.html do
         if layout_v2?
-          render_v2_page 'v2/plannings/compare'
+          render_page 'v2/plannings/compare'
         else
           redirect_to plannings_path, alert: t('plannings.compare.v2_only')
         end

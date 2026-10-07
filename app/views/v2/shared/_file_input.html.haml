@@ -1,0 +1,17 @@
+-# Copyright © Cartoway
+-# locals: form:, field: (:file), disabled:, required:, label_col:, control_col:
+- field = local_assigns.fetch(:field, :file)
+- disabled = local_assigns.fetch(:disabled, false)
+- required = local_assigns.fetch(:required, true)
+- label_col = local_assigns.fetch(:label_col, 'col-form-label col-md-10 offset-md-1 fw-bold')
+- control_col = local_assigns.fetch(:control_col, 'col-md-10 offset-md-1 field')
+- input_id = "#{form.object_name}_#{field}"
+.row{data: { controller: 'v2--file-input' }}
+  %label{class: label_col, for: input_id}= form.object.class.human_attribute_name(field)
+  %div{class: control_col}
+    = form.file_field_without_bootstrap field, id: input_id, required: required, disabled: disabled, class: 'visually-hidden', data: { v2__file_input_target: 'input', action: 'change->v2--file-input#changed' }
+    .input-group
+      %input.form-control{type: 'text', readonly: true, tabindex: '-1', disabled: true, 'aria-hidden': true, data: { v2__file_input_target: 'name' }}
+      %label.btn.btn-primary.mb-0{for: input_id, class: ('disabled' if disabled)}
+        %i.fa.fa-folder-open.fa-fw
+        = t('web.choose_file')

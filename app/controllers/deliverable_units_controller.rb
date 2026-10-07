@@ -31,16 +31,16 @@ class DeliverableUnitsController < ApplicationController
 
   def index
     @deliverable_units = current_user.customer.deliverable_units
-    render_v2_page 'v2/deliverable_units/index' if layout_v2?
+    render_page 'v2/deliverable_units/index' if layout_v2?
   end
 
   def new
     @deliverable_unit = current_user.customer.deliverable_units.build
-    return if render_v2_form_or_list('new_sidebar', 'v2/deliverable_units/index', deliverable_units_path) { @deliverable_units = current_user.customer.deliverable_units }
+    render_form_or_list('new_sidebar', 'v2/deliverable_units/index', deliverable_units_path) { @deliverable_units = current_user.customer.deliverable_units }
   end
 
   def edit
-    return if render_v2_form_or_list('edit_sidebar', 'v2/deliverable_units/index', deliverable_units_path) { @deliverable_units = current_user.customer.deliverable_units }
+    render_form_or_list('edit_sidebar', 'v2/deliverable_units/index', deliverable_units_path) { @deliverable_units = current_user.customer.deliverable_units }
   end
 
   def create
@@ -48,21 +48,23 @@ class DeliverableUnitsController < ApplicationController
       DeliverableUnit.transaction do
         @deliverable_unit = current_user.customer.deliverable_units.build(deliverable_unit_params)
         if current_user.customer.save
+          format.turbo_stream { render_streams(deliverable_unit_append_stream) }
           format.html do
-            if v2_sidebar_submit?
-              render_v2_close_sidebar
+            if sidebar_submit?
+              render_close_sidebar
             else
               redirect_to deliverable_units_path, notice: t('activerecord.successful.messages.created', model: @deliverable_unit.class.model_name.human)
             end
           end
         else
           format.html do
-            if v2_sidebar_submit?
+            if sidebar_submit?
               render 'new_sidebar', layout: false, status: :unprocessable_entity
             else
               render action: 'new'
             end
           end
+          format.turbo_stream { render_sidebar_stream('new_sidebar') }
         end
       end
     end
@@ -71,29 +73,34 @@ class DeliverableUnitsController < ApplicationController
   def update
     respond_to do |format|
       if @deliverable_unit.update(deliverable_unit_params) && @deliverable_unit.customer.save
+        format.turbo_stream { render_streams(deliverable_unit_replace_stream) }
         format.html do
-          if v2_sidebar_submit?
-            render_v2_close_sidebar
+          if sidebar_submit?
+            render_close_sidebar
           else
             redirect_to deliverable_units_path, notice: t('activerecord.successful.messages.updated', model: @deliverable_unit.class.model_name.human)
           end
         end
       else
         format.html do
-          if v2_sidebar_submit?
+          if sidebar_submit?
             render 'edit_sidebar', layout: false, status: :unprocessable_entity
           else
             render action: 'edit'
           end
         end
+        format.turbo_stream { render_sidebar_stream('edit_sidebar') }
       end
     end
   end
 
   def destroy
-    @deliverable_unit && current_user.customer.deliverable_units.delete(@deliverable_unit) && current_user.customer.save
+    destroyed = @deliverable_unit && current_user.customer.deliverable_units.delete(@deliverable_unit) && current_user.customer.save
     respond_to do |format|
-      format.html { redirect_to deliverable_units_url }
+      if destroyed
+        format.turbo_stream { render_streams(stream_remove(@deliverable_unit), close_sidebar: false) }
+      end
+      format.html { redirect_to deliverable_units_url, status: :see_other }
     end
   end
 
@@ -105,12 +112,27 @@ class DeliverableUnitsController < ApplicationController
         current_user.customer.save
       end
       respond_to do |format|
-        format.html { redirect_to deliverable_units_url }
+        format.html { redirect_to deliverable_units_url, status: :see_other }
       end
     end
   end
 
   private
+
+  def deliverable_unit_row_locals
+    {
+      deliverable_unit: @deliverable_unit,
+      can_destroy: helpers.current_user_form_destroy_enabled?(:deliverable_units)
+    }
+  end
+
+  def deliverable_unit_replace_stream
+    stream_replace(@deliverable_unit, partial: 'v2/deliverable_units/list_row', locals: deliverable_unit_row_locals)
+  end
+
+  def deliverable_unit_append_stream
+    stream_append('deliverable-units-list', partial: 'v2/deliverable_units/list_row', locals: deliverable_unit_row_locals)
+  end
 
   # Use callbacks to share common setup or constraints between actions.
   def set_deliverable_unit
