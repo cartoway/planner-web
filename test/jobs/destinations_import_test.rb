@@ -56,7 +56,8 @@ class DestinationsImportTest < ActiveSupport::TestCase
     before = Destination.count
 
     result = DestinationsImport.enqueue(@customer, source: 'csv', blob: blob, options: { replace: false })
-    assert result
+    # API presents this with V01::Entities::Destination — must not be a bare true.
+    assert_kind_of Array, result
     assert_operator Destination.count, :>, before
     @customer.reload
     assert_nil @customer.job_destination_import
