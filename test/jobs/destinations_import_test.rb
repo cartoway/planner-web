@@ -89,6 +89,26 @@ class DestinationsImportTest < ActiveSupport::TestCase
     assert_equal true, ImporterDestinationsJob.new(1, 'tomtom', nil, {}).destroy_failed_jobs?
   end
 
+  test 'failed import rolls back destinations when Delayed::Worker rescues inside its transaction' do
+    Planner::Application.config.delayed_job_use = true
+    file = Rack::Test::UploadedFile.new('test/fixtures/files/import_invalid.csv', 'text/csv')
+    blob = DestinationsImport.persist_upload!(file)
+    job = ImporterDestinationsJob.new(@customer.id, 'csv', blob.id, { replace: false, locale: 'en' })
+    before = Destination.count
+
+    # Mimic Delayed::Worker#run: rescue failure inside the outer transaction (would commit otherwise).
+    Customer.transaction(isolation: :read_committed) do
+      begin
+        job.perform
+        flunk 'expected ImportBaseError'
+      rescue ImportBaseError
+        false
+      end
+    end
+
+    assert_equal before, Destination.count
+  end
+
   test 'perform sets optimizer_context so import is not self-blocked by blocking_job' do
     Planner::Application.config.delayed_job_use = true
     file = Rack::Test::UploadedFile.new('test/fixtures/files/import_destinations_without_visit.csv', 'text/csv')
