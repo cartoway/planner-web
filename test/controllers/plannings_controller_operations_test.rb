@@ -17,7 +17,7 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     Operation.where(customer_id: @planning.customer_id).delete_all
   end
 
-  test 'publish_operation creates from selected routes and stays on edit' do
+  test 'publish_operation creates from selected routes and opens the operation' do
     route = routes(:route_one_one)
     post :publish_operation, params: {
       id: @planning.id,
@@ -26,8 +26,8 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
       route_ids: [route.id]
     }
 
-    assert_redirected_to edit_planning_path(@planning)
     operation = @planning.operations.open_status.last
+    assert_redirected_to operation_path(operation)
     assert_equal 'Secteur A', operation.name
     assert_equal Date.new(2026, 9, 30), operation.date
     assert_equal [route.id], operation.operation_routes.pluck(:route_id)
