@@ -3729,6 +3729,7 @@ fr:
     contact: Contacter le support
     menu_plan_burger: Afficher le menu planification
     menu_settings_burger: Afficher le menu paramètres
+    open_menu: Ouvrir le menu
     choose_file: Sélectionner fichier
     geocoder:
       tooltip: Rechercher une adresse
@@ -4168,6 +4169,9 @@ fr:
       cancel: Annuler
       cancel_confirm: Annuler cette opération ?
       more_actions: Autres actions
+      mobile_panes: Affichage
+      pane_list: Liste
+      pane_map: Carte
       started_group: Démarrées
       waiting_group: En attente
       unassigned_badge: Non assigné

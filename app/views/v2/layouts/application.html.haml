@@ -6,6 +6,12 @@
     = render partial: 'v2/layouts/head'
   %body.cartoway-v2{"data-controller": "#{controller.controller_path.gsub('/', '_')} #{controller.controller_path.gsub('/', '-')}-v2", "data-action": "#{controller.action_name}"}
     #wrapper{data: { controller: 'menu-left' }}
+      .menu-left-backdrop.d-print-none{data: { action: 'click->menu-left#closeMobile' }, 'aria-hidden': 'true'}
+      .menu-mobile-topbar.d-print-none
+        %a.menu-mobile-topbar-logo{href: '/', title: @reseller.name, data: { turbo: false }}
+          = image_tag @reseller.logo_small.url || 'logo.svg', alt: @reseller.name
+        %button.menu-mobile-topbar-burger{type: 'button', title: t('web.open_menu'), aria: { label: t('web.open_menu'), expanded: 'false' }, data: { action: 'click->menu-left#toggleMobile' }}
+          %i.fa.fa-bars.fa-fw{'aria-hidden': 'true'}
       .menu-left.d-print-none{style: "overflow: hidden;"}
         .top-menu
           %a#logo.logo.logo-small{href: "/", data: { turbo: false }}= image_tag @reseller.logo_small.url || "logo.svg", alt: @reseller.name

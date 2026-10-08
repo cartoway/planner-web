@@ -51,7 +51,7 @@ const PHASE_COLORS = {
 }
 
 export default class extends Controller {
-  static targets = ['map', 'list', 'more', 'stopQuery', 'nameLabel', 'nameInput']
+  static targets = ['map', 'list', 'more', 'stopQuery', 'nameLabel', 'nameInput', 'body', 'mobilePane', 'detailBackdrop']
   static values = { mapUrl: String, searchUrl: String, positionsUrl: String }
 
   connect () {
@@ -274,7 +274,22 @@ export default class extends Controller {
   _openDetail () {
     const panel = document.getElementById('operation-detail')
     if (panel) panel.classList.add('is-open')
+    if (this.hasDetailBackdropTarget) this.detailBackdropTarget.classList.add('is-visible')
     this._compactAttribution()
+  }
+
+  setMobilePane (event) {
+    const pane = event.currentTarget.dataset.pane
+    if (!pane || !this.hasBodyTarget) return
+    this.bodyTarget.classList.toggle('is-mobile-pane-list', pane === 'list')
+    this.bodyTarget.classList.toggle('is-mobile-pane-map', pane === 'map')
+    this.mobilePaneTargets.forEach((button) => {
+      const active = button.dataset.pane === pane
+      button.classList.toggle('btn-primary', active)
+      button.classList.toggle('btn-outline-secondary', !active)
+      button.setAttribute('aria-selected', active ? 'true' : 'false')
+    })
+    requestAnimationFrame(() => this._resizeMap())
   }
 
   // Collapse the OSM attribution when the right panel steals map width.
@@ -316,6 +331,7 @@ export default class extends Controller {
   closeDetail () {
     const panel = document.getElementById('operation-detail')
     if (panel) panel.classList.remove('is-open')
+    if (this.hasDetailBackdropTarget) this.detailBackdropTarget.classList.remove('is-visible')
     this.element.querySelectorAll('.operation-stop-row.is-selected').forEach((item) => item.classList.remove('is-selected'))
     this._activeStopId = null
     this._paintActiveStop()

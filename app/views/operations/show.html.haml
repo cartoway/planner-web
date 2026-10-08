@@ -35,29 +35,79 @@
       .operation-header-progress-label{data: { board_progress: true }}= "#{board[:delivered]}/#{board[:total]} #{t('operations.show.stops')}"
       = render 'v2/shared/status_segments', counts: board, css_class: 'operation-segments'
     .operation-header-actions
-      - if @operation.planning
-        = link_to edit_planning_path(@operation.planning), class: 'btn btn-light', target: '_blank', rel: 'noopener', data: { turbo: false } do
-          %i.fa.fa-map.fa-fw
-          = t('operations.show.planning')
-      = render 'operations/demo_actions'
-      #operation-send-buttons{data: { turbo_permanent: true }}
-        - if @operation.open? && @send_routes.present?
-          %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
-            %i.fa.fa-envelope.fa-fw
-            = t('operations.show.send_email')
-          - if @operation.customer.enable_sms
-            %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-sms' }}
-              %i.fa.fa-comment-sms.fa-fw
-              = t('operations.show.send_sms')
-        - if @operation.open? && @send_trackings.present?
-          %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-email' }}
-            %i.fa.fa-envelope-open-text.fa-fw
-            = t('operations.show.send_destinations_email')
-          - if @operation.customer.enable_sms
-            %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-sms' }}
-              %i.fa.fa-mobile-screen.fa-fw
-              = t('operations.show.send_destinations_sms')
-  .operation-body
+      .operation-header-actions-desktop.d-flex.align-items-center.gap-2
+        - if @operation.planning
+          = link_to edit_planning_path(@operation.planning), class: 'btn btn-light', target: '_blank', rel: 'noopener', data: { turbo: false } do
+            %i.fa.fa-map.fa-fw
+            = t('operations.show.planning')
+        = render 'operations/demo_actions'
+        #operation-send-buttons{data: { turbo_permanent: true }}
+          - if @operation.open? && @send_routes.present?
+            %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
+              %i.fa.fa-envelope.fa-fw
+              = t('operations.show.send_email')
+            - if @operation.customer.enable_sms
+              %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-sms' }}
+                %i.fa.fa-comment-sms.fa-fw
+                = t('operations.show.send_sms')
+          - if @operation.open? && @send_trackings.present?
+            %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-email' }}
+              %i.fa.fa-envelope-open-text.fa-fw
+              = t('operations.show.send_destinations_email')
+            - if @operation.customer.enable_sms
+              %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-sms' }}
+                %i.fa.fa-mobile-screen.fa-fw
+                = t('operations.show.send_destinations_sms')
+      .dropdown.operation-header-actions-mobile
+        %button.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
+          = t('operations.show.more_actions')
+        %ul.dropdown-menu.dropdown-menu-end
+          - if @operation.planning
+            %li
+              = link_to edit_planning_path(@operation.planning), class: 'dropdown-item', target: '_blank', rel: 'noopener', data: { turbo: false } do
+                %i.fa.fa-map.fa-fw
+                = t('operations.show.planning')
+          - if @operation.open? && @send_routes.present?
+            %li
+              %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
+                %i.fa.fa-envelope.fa-fw
+                = t('operations.show.send_email')
+            - if @operation.customer.enable_sms
+              %li
+                %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-sms' }}
+                  %i.fa.fa-comment-sms.fa-fw
+                  = t('operations.show.send_sms')
+          - if @operation.open? && @send_trackings.present?
+            %li
+              %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-email' }}
+                %i.fa.fa-envelope-open-text.fa-fw
+                = t('operations.show.send_destinations_email')
+            - if @operation.customer.enable_sms
+              %li
+                %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-sms' }}
+                  %i.fa.fa-mobile-screen.fa-fw
+                  = t('operations.show.send_destinations_sms')
+          - if @operation.open? && @deliver_demo_enabled
+            %li
+              %hr.dropdown-divider
+            - if @operation.demo_running?
+              %li
+                = button_to demo_operation_path(@operation), method: :delete, class: 'dropdown-item' do
+                  %i.fa.fa-stop.fa-fw
+                  = t('operations.show.stop_demo')
+            - else
+              %li
+                = button_to demo_operation_path(@operation), method: :post, class: 'dropdown-item' do
+                  %i.fa.fa-play.fa-fw
+                  = t('operations.show.start_demo')
+            %li
+              = button_to reset_demo_operation_path(@operation), method: :post, class: 'dropdown-item', form: { data: { turbo: false, turbo_confirm: t('operations.show.demo_reset_confirm') } } do
+                %i.fa.fa-rotate-left.fa-fw
+                = t('operations.show.reset_demo')
+  .operation-mobile-panes{role: 'tablist', 'aria-label': t('operations.show.mobile_panes')}
+    %button.btn.btn-primary{type: 'button', role: 'tab', 'aria-selected': 'true', data: { pane: 'list', action: 'click->v2--operation-show#setMobilePane', v2__operation_show_target: 'mobilePane' }}= t('operations.show.pane_list')
+    %button.btn.btn-outline-secondary{type: 'button', role: 'tab', 'aria-selected': 'false', data: { pane: 'map', action: 'click->v2--operation-show#setMobilePane', v2__operation_show_target: 'mobilePane' }}= t('operations.show.pane_map')
+  .operation-body.is-mobile-pane-list{data: { v2__operation_show_target: 'body' }}
     %aside.operation-list
       %button.operation-scroll-top.btn-close{type: 'button', aria: { label: t('operations.show.scroll_top') }, data: { action: 'click->v2--operation-show#scrollListTop' }}
         %i.fa.fa-chevron-up
@@ -153,6 +203,7 @@
         %span
           %i.fa.fa-circle{style: 'color:#7c3aed'}
           = t('operations.show.filter_exception')
+    %button.operation-detail-backdrop{type: 'button', 'aria-label': t('web.dialog.close'), data: { action: 'click->v2--operation-show#closeDetail', v2__operation_show_target: 'detailBackdrop' }}
     %aside#operation-detail.operation-detail
       .operation-detail-bar
         %button.btn-close{type: 'button', data: { action: 'click->v2--operation-show#closeDetail' }, 'aria-label': t('web.dialog.close')}

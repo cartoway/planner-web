@@ -30,7 +30,19 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes response.body, 'v2-list-filters'
     assert_includes response.body, 'typed-confirm'
     assert_includes response.body, 'btn-danger'
+    assert_includes response.body, 'operations-index-col-sync'
     assert_not_includes response.body, %(<a href="#{operation_path(@operation)}">#{@operation.ref.presence || @operation.name}</a>)
+  end
+
+  test 'show exposes mobile panes and detail sheet chrome' do
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_includes response.body, 'operation-mobile-panes'
+    assert_includes response.body, 'is-mobile-pane-list'
+    assert_includes response.body, 'operation-detail-backdrop'
+    assert_includes response.body, I18n.t('operations.show.pane_list')
+    assert_includes response.body, I18n.t('operations.show.pane_map')
+    assert_includes response.body, 'setMobilePane'
   end
 
   test 'index filters by status chip and search' do
