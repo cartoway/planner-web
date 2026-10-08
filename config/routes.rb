@@ -264,6 +264,7 @@ Rails.application.routes.draw do
         get :mobile
         get :media
         get :mobile_url
+        get :depot
         post :transmit
         patch :update_position
         patch :update_status

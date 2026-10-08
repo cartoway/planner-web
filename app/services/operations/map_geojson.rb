@@ -48,7 +48,7 @@ module Operations
         {
           type: 'Feature',
           geometry: { type: 'Point', coordinates: [depot[:lng].to_f, depot[:lat].to_f] },
-          properties: props.except(:color).merge(
+          properties: props.merge(
             label: depot[:name],
             kind: 'depot',
             depot_role: role,

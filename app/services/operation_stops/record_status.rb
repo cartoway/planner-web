@@ -100,10 +100,10 @@ module OperationStops
         { css: 'badge operation-now', kind: 'status' }
       elsif phase == 'current'
         { css: 'badge operation-now', kind: 'en_route' }
+      elsif (stop.kind == 'store' && stop.treated?) || (phase == 'delivered' && delay&.negative?)
+        { css: 'operation-gap is-ok', kind: 'status' }
       elsif delay && delay > OperationStop::LATE_AFTER_MINUTES
         { css: 'operation-gap is-late', kind: 'late' }
-      elsif phase == 'delivered' && delay&.negative?
-        { css: 'operation-gap is-ok', kind: 'status' }
       elsif delay
         { css: 'operation-gap is-ok', kind: 'delay' }
       elsif phase == 'late'

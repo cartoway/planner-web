@@ -43,13 +43,14 @@ class V01::Operations < Grape::API
     end
 
     def stash_departure_loading_at!(operation_route, leg, status)
-      return unless leg == 'departure'
+      return unless %w[departure arrival].include?(leg)
       return unless status.to_s.downcase == 'finished'
-      return unless operation_route.departure_status.to_s.downcase == 'atstore'
-      return if operation_route.departure_status_updated_at.blank?
+      return unless operation_route.public_send("#{leg}_status").to_s.downcase == 'atstore'
+      updated_at = operation_route.public_send("#{leg}_status_updated_at")
+      return if updated_at.blank?
 
       attrs = (operation_route.custom_attributes || {}).merge(
-        '_departure_loading_at' => operation_route.departure_status_updated_at.iso8601
+        "_#{leg}_loading_at" => updated_at.iso8601
       )
       operation_route.custom_attributes = attrs
     end

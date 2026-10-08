@@ -1,0 +1,65 @@
+- role = @role
+- depot = @depot
+- title = depot[:name]
+- status = depot[:status].to_s.downcase.presence
+- status_label = @operation_route.depot_status_label(status)
+- loading_at = @operation_route.depot_loading_at(role)
+- updated_at = @operation_route.depot_status_updated_at(role)
+- if role == 'start'
+  - planned_arrival = nil
+  - planned_departure = depot[:time]
+  - actual_arrival = @operation_route.clock_on_operation_day(status == 'atstore' ? updated_at : loading_at)
+  - actual_departure = status == 'finished' ? @operation_route.clock_on_operation_day(updated_at) : nil
+- else
+  - planned_arrival = depot[:time]
+  - planned_departure = nil
+  - actual_arrival = @operation_route.clock_on_operation_day(status == 'atstore' ? updated_at : (loading_at || updated_at))
+  - actual_departure = nil
+.operation-fiche.operation-stop-detail
+  .d-flex.align-items-start.justify-content-between.gap-2
+    %div
+      %h2.mb-0= title
+      %p.small.text-muted.mb-0= t(role == 'start' ? 'activerecord.attributes.store.store_start' : 'activerecord.attributes.store.store_end')
+    - if status_label
+      - if status == 'finished'
+        %span.badge.text-bg-success= status_label
+      - elsif status == 'atstore'
+        %span.badge.text-bg-info= status_label
+      - else
+        %span.badge.operation-status= status_label
+  .operation-times
+    - [['arrival', planned_arrival, actual_arrival], ['departure', planned_departure, actual_departure]].each do |key, planned, actual|
+      .operation-time-block
+        %p.operation-time-heading= t("operations.show.#{key}")
+        .operation-split
+          %div
+            %span= t('operations.show.planned')
+            %strong= planned.presence || '—'
+          %div
+            %span= t('operations.show.actual')
+            %strong= actual.presence || '—'
+  - if depot[:ref].present?
+    %section.operation-section
+      %h3= t('operations.show.details')
+      %p.mb-1
+        %span.text-muted= t('operations.show.destination_ref')
+        = depot[:ref]
+  %section.operation-section
+    %h3= t('operations.show.address')
+    .operation-field
+      %p.mb-1= depot[:address].presence || '—'
+      - if depot[:phone].present?
+        %p.mb-0
+          %i.fa.fa-phone.fa-fw{"aria-hidden": "true"}
+          = link_to depot[:phone], "tel:#{depot[:phone]}"
+  %section.operation-section
+    %h3= t('operations.show.timeline')
+    %ul.operation-timeline
+      - @status_events.reverse.each_with_index do |event, index|
+        - status_key = event[:status].to_s.downcase.presence || 'none'
+        - label = @operation_route.depot_status_label(event[:status])
+        %li{class: ["is-#{status_key}", ('is-latest' if index.zero?)]}
+          %span.operation-timeline-label= label
+          %time= @operation_route.clock_on_operation_day(event[:recorded_at])
+      - if @status_events.empty?
+        %li.is-empty= t('operations.show.no_status_history')

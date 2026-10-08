@@ -74,19 +74,25 @@
         .operation-tour-body
           %ul.operation-stops
             - if departure
-              = render 'operations/depot_row', depot: departure, route: route, label_key: 'activerecord.attributes.store.store_start'
+              = render 'operations/depot_row', depot: departure, route: route, operation: operation, role: 'start', label_key: 'activerecord.attributes.store.store_start'
             - route.operation_stops.sort_by(&:index).each do |stop|
               - next unless stop.sync_state == 'active' && stop.active?
               - label = (stop_list_primary_line(stop.list_fields).presence || stop.address_label).to_s
               - delay = stop.delay_minutes
-              %li.operation-stop-row{id: "stop-#{stop.id}", class: "is-#{stop.phase}", data: { stop_id: stop.id, phase: stop.phase, label: label, lat: stop.lat, lng: stop.lng, url: operation_stop_path(stop), action: 'click->v2--operation-show#selectStop' }}
+              %li.operation-stop-row{id: "stop-#{stop.id}", class: "is-#{stop.phase}", data: { stop_id: stop.id, kind: stop.kind, phase: stop.phase, label: label, lat: stop.lat, lng: stop.lng, url: operation_stop_path(stop), action: 'click->v2--operation-show#selectStop' }}
                 %span.operation-glyph{class: "is-#{stop.phase}"}
                   - if stop.phase == 'delivered'
                     %i.fa.fa-check
                   - elsif stop.phase == 'failed'
                     !
+                  - elsif stop.phase == 'finished'
+                    %i.fa.fa-check
                   - elsif stop.phase == 'exception'
                     %i.fa.fa-triangle-exclamation
+                  - elsif stop.kind == 'rest'
+                    %i.fa.fa-pause
+                  - elsif stop.kind == 'store'
+                    %i.fa.fa-house
                   - else
                     = stop.index
                 .operation-stop-main.min-w-0
@@ -112,6 +118,8 @@
                     %span.badge.operation-now= stop.status_label
                   - elsif stop.phase == 'current'
                     %span.badge.operation-now= t('operations.show.en_route')
+                  - elsif stop.kind == 'store' && stop.treated?
+                    %span.operation-gap.is-ok= stop.status_label
                   - elsif delay && delay > OperationStop::LATE_AFTER_MINUTES
                     %span.operation-gap.is-late= t('operations.show.late', count: delay)
                   - elsif stop.phase == 'delivered' && delay&.negative?
@@ -121,4 +129,4 @@
                   - elsif stop.phase == 'late'
                     %span.operation-gap.is-late= t('operations.show.late_risk')
             - if arrival
-              = render 'operations/depot_row', depot: arrival, route: route, label_key: 'activerecord.attributes.store.store_end'
+              = render 'operations/depot_row', depot: arrival, route: route, operation: operation, role: 'end', label_key: 'activerecord.attributes.store.store_end'

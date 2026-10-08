@@ -133,6 +133,37 @@ class OperationStopDetailTest < ActionController::TestCase
     assert_not_includes response.body, I18n.t('operations.show.proof')
   end
 
+  test 'store timeline translates atstore via stop_store_status' do
+    store = stores(:store_one)
+    reload_stop = @operation.operation_routes.planned.first.operation_stops.create!(
+      kind: 'store',
+      index: 99,
+      sync_state: 'active',
+      active: true,
+      store: store,
+      store_snapshot: { 'name' => store.name, 'lat' => store.lat, 'lng' => store.lng }
+    )
+    OperationStops::RecordStatus.call(
+      operation_stop: reload_stop,
+      status: 'atstore',
+      recorded_at: Time.zone.parse('2026-09-25 10:54'),
+      source: 'demo'
+    )
+    OperationStops::RecordStatus.call(
+      operation_stop: reload_stop,
+      status: 'finished',
+      recorded_at: Time.zone.parse('2026-09-25 10:56'),
+      source: 'demo'
+    )
+
+    get :show, params: { id: reload_stop.id }
+
+    assert_response :success
+    assert_includes response.body, I18n.t('plannings.edit.stop_store_status.atstore')
+    assert_includes response.body, I18n.t('plannings.edit.stop_store_status.finished')
+    assert_not_includes response.body, '>atstore<'
+  end
+
   test 'delivery note opens the printable note for a delivered visit' do
     get :delivery_note, params: { id: @stop.id }
     assert_response :success

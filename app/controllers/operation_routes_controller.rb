@@ -5,11 +5,22 @@ require 'value_to_boolean'
 class OperationRoutesController < ApplicationController
   before_action :authenticate_user!, except: [:mobile, :update_position, :update_status, :transfer_stop]
   before_action :authenticate_driver!, only: [:mobile, :update_position, :update_status, :transfer_stop]
-  before_action :set_user_route, only: [:show, :media, :transmit, :mobile_url]
+  before_action :set_user_route, only: [:show, :media, :transmit, :mobile_url, :depot]
   before_action :set_driver_route, only: [:mobile, :update_position, :update_status, :transfer_stop]
 
   def show
     redirect_to operation_path(@operation_route.operation, route_id: @operation_route.id)
+  end
+
+  def depot
+    @role = params[:role].to_s
+    return head :not_found unless %w[start end].include?(@role)
+
+    @depot = @operation_route.depot_for(@role)
+    return head :not_found if @depot.blank?
+
+    @status_events = @operation_route.depot_status_events(@role)
+    render layout: false
   end
 
   def transmit
@@ -65,7 +76,7 @@ class OperationRoutesController < ApplicationController
       leg = params[:leg] == 'arrival' ? 'arrival' : 'departure'
       status = params[:status].presence
       recorded_at = Time.zone.parse(params[:status_updated_at].to_s) || Time.current
-      stash_departure_loading_at!(leg, status)
+      stash_depot_loading_at!(leg, status)
       @operation_route.update!(
         "#{leg}_status" => status,
         "#{leg}_status_updated_at" => recorded_at
@@ -144,15 +155,16 @@ class OperationRoutesController < ApplicationController
     Rails.logger.warn("operation turbo refresh failed: #{e.class}: #{e.message}")
   end
 
-  # Route departure has a single cursor; keep the atstore timestamp for the public timeline.
-  def stash_departure_loading_at!(leg, status)
-    return unless leg == 'departure'
+  # Route depot legs have a single cursor; keep the atstore timestamp for the timeline.
+  def stash_depot_loading_at!(leg, status)
+    return unless %w[departure arrival].include?(leg)
     return unless status.to_s.downcase == 'finished'
-    return unless @operation_route.departure_status.to_s.downcase == 'atstore'
-    return if @operation_route.departure_status_updated_at.blank?
+    return unless @operation_route.public_send("#{leg}_status").to_s.downcase == 'atstore'
+    updated_at = @operation_route.public_send("#{leg}_status_updated_at")
+    return if updated_at.blank?
 
     attrs = (@operation_route.custom_attributes || {}).merge(
-      '_departure_loading_at' => @operation_route.departure_status_updated_at.iso8601
+      "_#{leg}_loading_at" => updated_at.iso8601
     )
     @operation_route.custom_attributes = attrs
   end
