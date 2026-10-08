@@ -59,7 +59,8 @@ export default class extends Controller {
     const skips = this.spreadsheetValues("inactive")
     const fallback = columns.length ? columns : columns.concat(skips)
     this.persistColumnsTemplate(summary)
-    window.location.assign(planningExportUrl({
+    // POST body: Puma rejects QUERY_STRING > 10KB. Switch to HTTP QUERY when Rails supports it.
+    planningExportDownload({
       format: "excel",
       ids,
       columns: (columns.length ? columns : fallback).join("|"),
@@ -67,7 +68,7 @@ export default class extends Controller {
       stops: this.selectedStops().join("|"),
       summary,
       routeId: this.hasRouteIdTarget ? this.routeIdTarget.value : ""
-    }))
+    })
     this.hideModal()
   }
 
@@ -189,16 +190,43 @@ export default class extends Controller {
   }
 }
 
-export function planningExportUrl ({ format, ids, columns, skips, stops, summary, routeId }) {
-  const params = new URLSearchParams({
+// POST form download — prefer HTTP QUERY (RFC 10008) once Rails has via: :query.
+export function planningExportDownload ({ format, ids, columns, skips, stops, summary, routeId }) {
+  const fields = {
     stops: summary ? "" : (stops || ""),
     columns: columns || "",
     ids: ids.join(","),
     skips: skips || ""
+  }
+  if (summary) fields.summary = "true"
+  const base = routeId ? `/routes/${routeId}/export` : "/plannings/export"
+  postFormDownload(`${base}.${format}`, fields)
+}
+
+function postFormDownload (action, fields) {
+  const form = document.createElement("form")
+  form.method = "post"
+  form.action = action
+  form.style.display = "none"
+  const token = document.querySelector('meta[name="csrf-token"]')?.content
+  if (token) {
+    const csrf = document.createElement("input")
+    csrf.type = "hidden"
+    csrf.name = "authenticity_token"
+    csrf.value = token
+    form.appendChild(csrf)
+  }
+  Object.entries(fields).forEach(([name, value]) => {
+    if (value === undefined || value === null) return
+    const input = document.createElement("input")
+    input.type = "hidden"
+    input.name = name
+    input.value = value
+    form.appendChild(input)
   })
-  if (summary) params.set("summary", "true")
-  const base = routeId ? `/routes/${routeId}` : "/plannings"
-  return `${base}.${format}?${params.toString()}`
+  document.body.appendChild(form)
+  form.submit()
+  form.remove()
 }
 
 export { planningCompareUrl }
