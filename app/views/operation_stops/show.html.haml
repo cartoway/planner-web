@@ -118,6 +118,8 @@
             - t('operations.show.status_transferred', from: event.payload['from_route_name'], to: event.payload['to_route_name'])
           - elsif rest
             - t("plannings.edit.stop_rest_status.#{status_key}", default: t("plannings.edit.stop_status.#{status_key}", default: event.status))
+          - elsif @operation_stop.kind == 'store'
+            - t("plannings.edit.stop_store_status.#{status_key}", default: t("plannings.edit.stop_status.#{status_key}", default: event.status))
           - else
             - t("plannings.edit.stop_status.#{status_key}", default: event.status)
           %li{class: ["is-#{status_key}", ('is-latest' if index.zero?)]}

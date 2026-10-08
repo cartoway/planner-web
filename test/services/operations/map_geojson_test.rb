@@ -89,7 +89,8 @@ class OperationsMapGeojsonTest < ActiveSupport::TestCase
     assert point
     assert_equal [depot[:lng].to_f, depot[:lat].to_f], point[:geometry][:coordinates]
     refute point[:properties][:returns_complete]
-    refute point[:properties].key?(:color)
+    # Tour color on depot markers (house glyph); painted by MapGeojson from the route.
+    assert_equal @operation_route.vehicle_color, point[:properties][:color]
   end
 
   test 'a depot place turns complete only when every existing return there is finished' do

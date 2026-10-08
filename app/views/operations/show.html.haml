@@ -16,7 +16,7 @@
 - map_cfg[:map_overlay_title] = t('destinations.index.map_overlay_layers')
 - map_cfg[:map_layers] = Hash[layers.map{ |l| l[:name] }.zip(layers)]
 - map_config = map_cfg.to_json
-.operation-board{data: { controller: 'v2--operation-show', config: map_config, v2__operation_show_map_url_value: map_operation_path(@operation), v2__operation_show_search_url_value: search_stops_operation_path(@operation), v2__operation_show_positions_url_value: map_operation_path(@operation), planned_label: t('operations.show.planned'), status_label: t('operations.index.status'), address_label: t('operations.show.address'), ref_label: t('display_ui.destinations_list_columns.ref'), live_i18n: operation_live_i18n.to_json }}
+.operation-board{data: { controller: 'v2--operation-show', config: map_config, v2__operation_show_map_url_value: map_operation_path(@operation), v2__operation_show_search_url_value: search_stops_operation_path(@operation), v2__operation_show_positions_url_value: map_operation_path(@operation), live_i18n: operation_live_i18n.to_json }}
   = turbo_stream_from @operation
   %header.operation-header
     .operation-header-id

@@ -244,6 +244,7 @@ module DeliverDemo
     end
 
     def finish_status_for(stop)
+      # Visits are delivered; store reloads / rests / other kinds close as finished (Terminé).
       stop.kind == 'visit' ? 'delivered' : 'finished'
     end
 
