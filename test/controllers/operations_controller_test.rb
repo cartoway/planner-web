@@ -57,6 +57,23 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes response.body, '--operation-tour-color: #336699'
   end
 
+  test 'show renders status segments on each tour' do
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_includes response.body, 'operation-tour-segments'
+    assert_select '.operation-header-progress .operation-segments', 1
+    assert_select '.operation-tour-segments', minimum: 1
+  end
+
+  test 'show structures tour header zones' do
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_select 'details.operation-tour summary.operation-tour-summary', minimum: 1
+    assert_select '.operation-tour-head .operation-tour-identity', minimum: 1
+    assert_select '.operation-tour-head .operation-tour-progress', minimum: 1
+    assert_select '.operation-tour-tools', minimum: 1
+  end
+
   test 'index filters by status chip and search' do
     open_op = @operation
     open_op.update_columns(ref: 'ref-open', name: 'Open Op', status: 'in_progress')
