@@ -43,7 +43,7 @@ class PlanningsHelperTest < ActionView::TestCase
     assert row, 'expected an assigned route with stops in fixtures'
     html = planning_route_checklist_label(row)
     assert_includes html, row[:name]
-    assert_match(/\d+\/\d+/, html)
+    assert_match(%r{\d+/\d+}, html)
   end
 
   test 'planning_route_checklist_label includes alert badges for route errors' do
