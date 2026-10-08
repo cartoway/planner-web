@@ -145,8 +145,8 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     with_stops = routes(:route_one_one)
     empty = routes(:route_three_one)
     empty.route_data.update_columns(size_active: 0, stops_size: 0)
-    with_stops.update_columns(hidden: false)
-    empty.update_columns(hidden: false)
+    with_stops.update_columns(hidden: false, locked: false)
+    empty.update_columns(hidden: false, locked: false)
     tag = tags(:tag_one)
     with_stops.vehicle_usage.vehicle.tags << tag unless with_stops.vehicle_usage.vehicle.tags.include?(tag)
 
@@ -154,10 +154,11 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
 
     assert_response :success
     assert_select "#execution_route_#{with_stops.id}[checked]"
-    assert_select "#execution_route_#{empty.id}", count: 0
-    assert_select "#execution_route_selector-#{empty.id}", count: 0
+    assert_select "#execution_route_#{empty.id}:not([checked])"
+    assert_select "#execution_route_selector-#{empty.id}"
+    assert_select "#execution-route-selector .searchable-checklist-dropdown-option[data-item-id=#{empty.id}][data-unavailable=true]"
     assert_select ".planning-execution-route[data-route-id=#{with_stops.id}][data-default-on=true][data-stops='#{with_stops.route_data.size_active}']"
-    assert_select ".planning-execution-route[data-route-id=#{empty.id}]", count: 0
+    assert_select ".planning-execution-route.hidden[data-route-id=#{empty.id}][data-default-on=false][data-stops='0']"
     assert_select '#execution-route-selector[data-searchable-checklist-dropdown]'
     assert_select '#execution-route-selector [data-searchable-checklist-toggle]'
     assert_select '#execution-route-selector .searchable-checklist-dropdown-menu'
@@ -172,6 +173,53 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_select '.planning-execution-route-extras'
     assert_includes @response.body, I18n.t('execution.modal.routes_with_stops_only')
     assert_includes @response.body, I18n.t('execution.modal.filter_by_tag')
+  end
+
+  test 'operation modal treats !(hidden && locked) as visible' do
+    locked_only = routes(:route_one_one)
+    filtered_out = routes(:route_three_one)
+    locked_only.route_data.update_columns(size_active: 2, stops_size: 2)
+    filtered_out.route_data.update_columns(size_active: 2, stops_size: 2)
+    locked_only.update_columns(hidden: false, locked: true)
+    filtered_out.update_columns(hidden: true, locked: true)
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_select "#execution_route_#{locked_only.id}[checked]"
+    assert_select ".planning-execution-route[data-route-id=#{locked_only.id}][data-default-on=true][data-locked=true][data-hidden=false]"
+    assert_select "#execution_route_#{filtered_out.id}:not([checked])"
+    assert_select ".planning-execution-route[data-route-id=#{filtered_out.id}][data-default-on=false][data-locked=true][data-hidden=true]"
+  end
+
+  test 'summary json exposes route sizes and names for the operation modal refresh' do
+    route = routes(:route_one_one)
+    route.route_data.update_columns(size_active: 4, stops_size: 5)
+    route.update_columns(hidden: false, locked: true, ref: 'REF-OP')
+
+    get :summary, params: { planning_id: @planning.id, format: :json }
+
+    assert_response :success
+    body = JSON.parse(@response.body)
+    assert_equal @planning.id, body['planning_id']
+    row = body['routes'].find { |r| r['route_id'] == route.id }
+    assert row
+    assert_equal false, row['hidden']
+    assert_equal true, row['locked']
+    assert_includes row['name'], 'REF-OP'
+    assert_equal 4, row['data']['size_active']
+    assert_equal 5, row['data']['size']
+  end
+
+  test 'operation modal renders route name span for live ref updates' do
+    route = routes(:route_one_one)
+    route.update_columns(ref: 'LIVE-REF', hidden: false)
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_select ".planning-execution-route[data-route-id=#{route.id}] .execution-route-name", text: /LIVE-REF/
+    assert_select ".planning-execution-route[data-route-id=#{route.id}][data-hidden=false]"
   end
 
   test 'planning json exposes today operation for the route toolbar button' do

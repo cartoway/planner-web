@@ -37,6 +37,31 @@ class PlanningsHelperTest < ActionView::TestCase
     end
   end
 
+  test 'planning_route_checklist_label includes stop counts' do
+    planning = plannings(:planning_one)
+    row = planning_summary(planning)[:routes].find { |r| r[:data][:size].to_i.positive? && !r[:data][:out_of_route] }
+    assert row, 'expected an assigned route with stops in fixtures'
+    html = planning_route_checklist_label(row)
+    assert_includes html, row[:name]
+    assert_match(/\d+\/\d+/, html)
+  end
+
+  test 'planning_route_checklist_label includes alert badges for route errors' do
+    row = {
+      name: 'Vehicle A',
+      data: {
+        size: 3,
+        size_active: 2,
+        out_of_window: true,
+        out_of_capacity: true
+      }
+    }
+    html = planning_route_checklist_label(row)
+    assert_includes html, 'badge badge-danger'
+    assert_includes html, 'fa-stopwatch'
+    assert_includes html, 'fa-dumpster'
+  end
+
   test 'planning_statistics_routes returns sidebar routes when filter_planning_route_data is enabled' do
     planning = plannings(:planning_one)
     sidebar = planning.routes.available.to_a
