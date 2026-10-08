@@ -79,6 +79,11 @@ class RoutesControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  test 'should export route as excel via post body' do
+    post :show, params: { id: @route, format: :excel, columns: 'ref|name|city', skips: 'comment', stops: 'store' }
+    assert_response :success
+  end
+
   test 'should show route as gpx' do
     get :show, params: { id: @route, format: :gpx }
     assert_response :success

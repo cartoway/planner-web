@@ -567,6 +567,33 @@ const iCalendarExport = function(planningId) {
   });
 };
 
+// POST body for spreadsheet export (Puma QUERY_STRING cap is 10KB). Prefer HTTP QUERY when Rails supports it.
+const postSpreadsheetExport = function(action, fields) {
+  var form = document.createElement('form');
+  form.method = 'post';
+  form.action = action;
+  form.style.display = 'none';
+  var token = document.querySelector('meta[name="csrf-token"]');
+  if (token) {
+    var csrf = document.createElement('input');
+    csrf.type = 'hidden';
+    csrf.name = 'authenticity_token';
+    csrf.value = token.content || token.getAttribute('content');
+    form.appendChild(csrf);
+  }
+  Object.keys(fields).forEach(function(name) {
+    if (fields[name] === undefined || fields[name] === null) return;
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = fields[name];
+    form.appendChild(input);
+  });
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+};
+
 const spreadsheetModalExport = function(columns, planningId, export_settings, custom_columns, summaryColumns) {
   custom_columns = custom_columns || {};
   summaryColumns = summaryColumns || [];
@@ -711,15 +738,18 @@ const spreadsheetModalExport = function(columns, planningId, export_settings, cu
       spreadsheetColumnsSkip = '';
     }
     var spreadsheetFormat = $('[name=spreadsheet-format]:checked').val() || 'excel';
-    var basePath = $('[name=spreadsheet-route]').val() ? ('/routes/' + $('[name=spreadsheet-route]').val()) : (planningId) ? '/plannings/' + planningId : '/plannings';
+    var routeId = $('[name=spreadsheet-route]').val();
+    var basePath = routeId ? ('/routes/' + routeId + '/export') : (planningId) ? '/plannings/' + planningId + '/export' : '/plannings/export';
     var summary = $('#spreadsheet-summary').val() === 'true' || isSummaryExport;
 
-    window.location.href = basePath + '.' + spreadsheetFormat +
-      '?stops=' + encodeURIComponent(spreadsheetStops) +
-      '&columns=' + encodeURIComponent(spreadsheetColumnsExport) +
-      '&ids=' + encodeURIComponent(planningsId.join(',')) +
-      '&skips=' + encodeURIComponent(spreadsheetColumnsSkip) +
-      (summary ? '&summary=true' : '');
+    // POST body: Puma rejects QUERY_STRING > 10KB. Switch to HTTP QUERY when Rails supports it.
+    postSpreadsheetExport(basePath + '.' + spreadsheetFormat, {
+      stops: spreadsheetStops,
+      columns: spreadsheetColumnsExport,
+      ids: planningsId.join(','),
+      skips: spreadsheetColumnsSkip,
+      summary: summary ? 'true' : undefined
+    });
 
     $('#planning-spreadsheet-modal').modal('toggle');
   });
