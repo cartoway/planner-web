@@ -51,4 +51,22 @@ class DestinationsMapGeojsonTest < ActiveSupport::TestCase
     ids = payload[:points].map(&:first)
     assert_includes ids, destination.id
   end
+
+  # visit_ref search adds joins + DISTINCT; ORDER BY must not stay on that pluck (PG error).
+  test 'build works with distinct visit_ref search scope' do
+    scope = DestinationSearchScope.apply(
+      @customer.destinations.reorder(
+        Arel.sql('destinations.geocoding_accuracy ASC NULLS LAST, destinations.id ASC')
+      ),
+      [{ key: 'visit_ref', value: 'v' }]
+    )
+    payload = DestinationsMapGeojson.build(scope: scope, per_page: 25)
+    assert payload[:points].is_a?(Array)
+    payload[:points].each do |id, lng, lat, page|
+      assert id.present?
+      assert_kind_of Numeric, lng
+      assert_kind_of Numeric, lat
+      assert page.present?
+    end
+  end
 end
