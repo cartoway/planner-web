@@ -3542,6 +3542,7 @@ en:
       form_sidebar_aria: Form panel
       form_sidebar_placeholder: Use the pencil button on a row to open the edit form here.
       form_sidebar_close: Close panel
+      server_unavailable: The server is unavailable. Please try again.
     transfer_list:
       toggle: Transfer
       transfer_all: Transfer all

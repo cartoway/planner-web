@@ -13,6 +13,7 @@ pin "@hotwired/stimulus", to: "https://unpkg.com/@hotwired/stimulus@3.2.2/dist/s
 pin "@hotwired/stimulus-loading", to: "stimulus_loading.js", preload: true
 pin "turbo/frame_promoted_visit", to: "turbo/frame_promoted_visit.js", preload: true
 pin "turbo/frame_tracking_store", to: "turbo/frame_tracking_store.js", preload: true
+pin "turbo/network_error", to: "turbo/network_error.js", preload: true
 pin_all_from "app/javascript/maplibre", under: "maplibre"
 pin_all_from "app/javascript/controllers", under: "controllers"
 pin_all_from "app/javascript/lib", under: "lib"
