@@ -28,8 +28,8 @@ Rails.application.configure do
   config.action_cable.mount_path = '/cable'
   config.action_cable.allowed_request_origins = [%r{\Ahttps?://.*\z}]
 
-  # Compress JavaScripts and CSS.
-  config.assets.js_compressor = :uglifier
+  # Uglifier 3 / uglify-js 2 cannot parse Turbo 8 / modern Sprockets JS (optional chaining, private fields).
+  config.assets.js_compressor = :uglifier unless ENV['SKIP_JS_COMPRESSOR'] == '1'
   # config.assets.css_compressor = :sass
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
