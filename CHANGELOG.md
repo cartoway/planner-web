@@ -1,5 +1,9 @@
 # Changelog
 
+## v110.0.4
+  ### Fixed
+  - Planning / route spreadsheet export: send columns and skips in a POST body instead of the query string, so large column lists no longer hit Puma’s 10KB `QUERY_STRING` limit
+
 ## v110.0.3
   ### Fixed
   - Destination import (API JSON): reimporting tagged destinations onto existing planning routes no longer raises `StaleObjectError` on Route

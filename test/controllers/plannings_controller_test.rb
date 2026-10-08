@@ -522,6 +522,21 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :success
   end
 
+  # POST /plannings/:id/export.excel — body params avoid Puma's 10KB QUERY_STRING limit.
+  test 'should export planning as excel via post body' do
+    long_columns = ([@export_settings_params[:columns]] * 20).join('|')
+    assert_operator long_columns.bytesize, :>, 10_240
+
+    post :show, params: { id: @planning, format: :excel, columns: long_columns, skips: @export_settings_params[:skips], stops: @export_settings_params[:stops] }
+    assert_response :success
+  end
+
+  test 'should export plannings index as excel via post body' do
+    post :index, params: { format: :excel, ids: @planning.id.to_s, **@export_settings_params }
+    assert_response :success
+    assert_match(/planning1/, response.body)
+  end
+
   test 'should show planning without date as excel' do
     @planning.update(date: nil)
     get :show, params: { id: @planning, format: :excel, **@export_settings_params }
