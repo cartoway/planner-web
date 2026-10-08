@@ -154,6 +154,11 @@ Rails.application.routes.draw do
   post 'stores/upload_csv' => 'stores#upload_csv', :as => 'stores_import_csv'
   delete 'stores' => 'stores#destroy_multiple'
 
+  # Spreadsheet export: columns/skips in the request body (Puma caps QUERY_STRING at 10KB).
+  # Prefer HTTP QUERY (RFC 10008) via: :query once Rails supports that verb natively.
+  post 'plannings/export(.:format)' => 'plannings#index', as: :export_plannings, constraints: { format: /excel|csv/ }
+  post 'plannings/:id/export(.:format)' => 'plannings#show', as: :export_planning, constraints: { format: /excel|csv/ }
+
   resources :plannings do
     patch ':route_id/:stop_id/move' => 'plannings#move'
     patch ':route_id/:stop_id/driver_move' => 'plannings#driver_move'
@@ -205,6 +210,9 @@ Rails.application.routes.draw do
 
   resources :products
   delete 'products' => 'products#destroy_multiple'
+
+  # Same body-export note as plannings/export above (switch to via: :query when Rails allows).
+  post 'routes/:id/export(.:format)' => 'routes#show', as: :export_route, constraints: { format: /excel|csv/ }
 
   resources :routes do
     member do
