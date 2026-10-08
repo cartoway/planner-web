@@ -26,11 +26,14 @@ class OperationsControllerTest < ActionController::TestCase
     assert_response :success
     assert_includes response.body, @operation.name
     assert_includes response.body, 'operations-index'
+    assert_includes response.body, 'operations-index-cards'
+    assert_includes response.body, 'operations-index-card'
+    assert_includes response.body, 'operations-index-card-actions'
     assert_includes response.body, I18n.t('execution.open_tracking')
     assert_includes response.body, 'v2-list-filters'
     assert_includes response.body, 'typed-confirm'
     assert_includes response.body, 'btn-danger'
-    assert_includes response.body, 'operations-index-col-sync'
+    assert_not_includes response.body, 'operations-index-table'
     assert_not_includes response.body, %(<a href="#{operation_path(@operation)}">#{@operation.ref.presence || @operation.name}</a>)
   end
 

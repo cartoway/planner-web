@@ -644,21 +644,117 @@ tr.is-past { color: #6b7280; }
     max-width: 11rem;
   }
 
-  .operations-index-progress {
-    min-width: 9rem;
+  .operations-index-progress-label {
+    font-size: .8rem;
+  }
+
+  // Shared column tracks so cards line up vertically (subgrid).
+  .operations-index-cards {
+    display: grid;
+    grid-template-columns: minmax(16rem, 1.5fr) minmax(14rem, 1fr) max-content;
+    gap: .75rem;
+  }
+
+  .operations-index-card-empty {
+    grid-column: 1 / -1;
+  }
+
+  .operations-index-card {
+    display: grid;
+    grid-template-columns: subgrid;
+    grid-column: 1 / -1;
+    column-gap: 1.25rem;
+    align-items: center;
+    background: #fff;
+    border: 1px solid var(--status-line);
+    border-radius: .75rem;
+    padding: .85rem 1rem;
+  }
+
+  .operations-index-card-main {
+    min-width: 0;
+  }
+
+  .operations-index-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-bottom: .25rem;
+  }
+
+  .operations-index-card-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .operations-index-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  .operations-index-card-meta {
+    font-size: .85rem;
+  }
+
+  .operations-index-card-progress {
+    min-width: 0;
 
     .status-segments {
       margin-bottom: .35rem;
     }
   }
 
-  .operations-index-progress-label {
-    font-size: .8rem;
+  // Fixed slots: tracking | planning | destroy — same columns on every card.
+  .operations-index-card-actions {
+    display: grid;
+    grid-template-columns: max-content 10rem max-content;
+    gap: .4rem;
+    align-items: center;
+    justify-items: stretch;
+
+    > .btn {
+      grid-column: 1;
+      white-space: nowrap;
+    }
   }
 
-  .operations-index-actions {
-    width: 1%;
-    white-space: nowrap;
+  .operations-index-card-secondary {
+    display: contents;
+
+    > .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: .35rem;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    > a.btn {
+      grid-column: 2;
+      width: 100%;
+    }
+
+    .btn-danger {
+      grid-column: 3;
+      white-space: nowrap;
+    }
+
+    .operations-index-card-secondary-label {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
   }
 }
 
@@ -847,13 +943,66 @@ tr.is-past { color: #6b7280; }
   }
 
   .operations-index {
-    .operations-index-col-sync,
-    .operations-index-col-published {
-      display: none;
+    .operations-index-cards {
+      display: flex;
+      flex-direction: column;
     }
 
-    .operations-index-btn-label {
-      display: none;
+    .operations-index-card {
+      display: grid;
+      grid-template-columns: 1fr;
+      grid-column: auto;
+      gap: 0;
+    }
+
+    .operations-index-card-title {
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .operations-index-card-header {
+      align-items: flex-start;
+      margin-bottom: .35rem;
+    }
+
+    .operations-index-card-meta {
+      margin-bottom: .65rem;
+    }
+
+    .operations-index-card-progress {
+      margin-bottom: .75rem;
+    }
+
+    .operations-index-card-actions {
+      display: flex;
+      flex-direction: column;
+      grid-template-columns: none;
+
+      > .btn {
+        width: 100%;
+        grid-column: auto;
+      }
+    }
+
+    .operations-index-card-secondary {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      width: 100%;
+      gap: .4rem;
+
+      > .btn {
+        grid-column: auto;
+        width: auto;
+      }
+
+      > a.btn {
+        grid-column: 1;
+        width: auto;
+      }
+
+      .btn-danger {
+        grid-column: 2;
+      }
     }
 
     .v2-list-filters-search {
@@ -874,10 +1023,6 @@ tr.is-past { color: #6b7280; }
       .btn {
         flex: 1 1 auto;
       }
-    }
-
-    .operations-index-progress {
-      min-width: 0;
     }
   }
 }
