@@ -333,4 +333,5 @@
             %button.btn.btn-primary{"data-bs-dismiss": "modal", style: "display:none;", type: "button"}
               = t('web.dialog.close')
     = render 'shared/flash_messages'
+    .v2-toast-stack{ data: { controller: 'v2--toast', 'v2-toast-stack': true }, 'aria-live': 'polite', 'aria-relevant': 'additions' }
     = render 'v2/layouts/javascript'
