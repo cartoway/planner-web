@@ -48,6 +48,14 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes response.body, 'setMobilePane'
   end
 
+  test 'show paints tour left border with vehicle color' do
+    route = @operation.operation_routes.first
+    route.update_columns(color: '#336699')
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_includes response.body, '--operation-tour-color: #336699'
+  end
+
   test 'index filters by status chip and search' do
     open_op = @operation
     open_op.update_columns(ref: 'ref-open', name: 'Open Op', status: 'in_progress')

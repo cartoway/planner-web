@@ -10,7 +10,7 @@
     - group.each do |route|
       - board = route.board
       - departure, arrival = route.list_depots
-      %details.operation-tour{id: "route-#{route.id}", open: route == open_route, data: { route_id: route.id, delivered: board[:delivered], failed: board[:failed], exception: board[:exception], late: board[:late], upcoming: board[:upcoming], current: board[:current], total: board[:total], delay: board[:delay], distance_label: locale_distance(board[:distance], current_user.prefered_unit), units: board[:units].to_json }}
+      %details.operation-tour{id: "route-#{route.id}", open: route == open_route, style: "--operation-tour-color: #{route.vehicle_color}", data: { route_id: route.id, delivered: board[:delivered], failed: board[:failed], exception: board[:exception], late: board[:late], upcoming: board[:upcoming], current: board[:current], total: board[:total], delay: board[:delay], distance_label: locale_distance(board[:distance], current_user.prefered_unit), units: board[:units].to_json }}
         %summary.operation-tour-summary
           .d-flex.justify-content-between.gap-2
             .min-w-0
