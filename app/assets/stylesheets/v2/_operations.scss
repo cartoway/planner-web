@@ -615,12 +615,22 @@ tr.is-past { color: #6b7280; }
   justify-content: center;
 }
 
-@media (max-width: 1199.98px) {
-  .operation-board { height: auto; }
-  .operation-body { flex-direction: column; }
-  .operation-list,
-  .operation-detail.is-open { width: 100%; max-width: none; }
-  .operation-map { min-height: 50vh; }
+.operation-mobile-panes {
+  display: none;
+}
+
+.operation-detail-backdrop {
+  display: none;
+}
+
+.operation-header-actions-mobile {
+  display: none;
+}
+
+.operation-header-actions-desktop {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
 }
 
 .operations-index {
@@ -649,5 +659,239 @@ tr.is-past { color: #6b7280; }
   .operations-index-actions {
     width: 1%;
     white-space: nowrap;
+  }
+}
+
+// Operations mobile desk (< Bootstrap lg).
+@media (max-width: 991.98px) {
+  body[data-controller~='operations'] {
+    --menu-mobile-topbar-height: 3rem;
+
+    .menu-mobile-topbar {
+      display: flex;
+      // Below the off-canvas menu so open slides over the bar (no diagonal resize).
+      z-index: 1038;
+    }
+
+    .menu-left-backdrop.is-visible {
+      top: 0;
+      z-index: 1039;
+    }
+
+    .menu-left {
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 1040;
+      width: 250px;
+      height: 100dvh;
+      transform: translateX(-100%);
+      transition: transform 0.2s ease;
+      overflow-y: auto;
+
+      &.is-mobile-open {
+        transform: translateX(0);
+      }
+
+      .logo-large {
+        display: block;
+        width: 60%;
+        min-width: 120px;
+      }
+
+      .logo-small {
+        display: none;
+      }
+
+      .hidden-menu {
+        width: 100%;
+        height: auto;
+        opacity: 1;
+        margin-left: 10px;
+      }
+
+      .menu-list-item {
+        justify-content: flex-start;
+      }
+    }
+
+    .main {
+      width: 100%;
+      padding-top: var(--menu-mobile-topbar-height);
+    }
+  }
+
+  body[data-controller~='operations'][data-action='show'] {
+    .main {
+      overflow: hidden;
+      height: 100dvh;
+      max-height: 100dvh;
+    }
+  }
+
+  .operation-board {
+    height: calc(100dvh - var(--menu-mobile-topbar-height, 3rem));
+    max-height: calc(100dvh - var(--menu-mobile-topbar-height, 3rem));
+  }
+
+  .operation-header {
+    flex-wrap: wrap;
+    gap: .5rem;
+    padding: .5rem .75rem;
+  }
+
+  .operation-header-id {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .operation-name {
+    width: auto;
+    max-width: 100%;
+  }
+
+  .operation-header-progress {
+    order: 5;
+    flex: 1 1 100%;
+    max-width: none;
+  }
+
+  .operation-header-actions-desktop {
+    display: none !important;
+  }
+
+  .operation-header-actions-mobile {
+    display: block;
+    margin-left: auto;
+  }
+
+  .operation-mobile-panes {
+    display: flex;
+    gap: .35rem;
+    padding: .35rem .75rem;
+    background: #fff;
+    border-bottom: 1px solid var(--status-line);
+
+    .btn {
+      flex: 1 1 0;
+    }
+  }
+
+  .operation-body {
+    flex-direction: column;
+    min-height: 0;
+
+    &.is-mobile-pane-list {
+      .operation-map { display: none; }
+      .operation-list {
+        display: flex;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        border-right: 0;
+      }
+    }
+
+    &.is-mobile-pane-map {
+      .operation-list { display: none; }
+      .operation-map {
+        display: block;
+        flex: 1 1 auto;
+        min-height: 0;
+      }
+    }
+  }
+
+  .operation-list,
+  .operation-detail.is-open {
+    min-width: 0;
+  }
+
+  .operation-detail-backdrop.is-visible {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 1050;
+    background: rgba(0, 0, 0, 0.35);
+    border: 0;
+  }
+
+  .operation-detail {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1055;
+    width: 100% !important;
+    max-width: none !important;
+    max-height: 0;
+    overflow: hidden;
+    pointer-events: none;
+    border-left: 0;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
+    transition: max-height 0.2s ease;
+
+    &.is-open {
+      flex: none;
+      width: 100% !important;
+      max-height: 75dvh;
+      overflow: hidden;
+      pointer-events: auto;
+    }
+  }
+
+  .operation-detail-body {
+    max-height: calc(75dvh - 2.5rem);
+  }
+
+  .operations-index {
+    .operations-index-col-sync,
+    .operations-index-col-published {
+      display: none;
+    }
+
+    .operations-index-btn-label {
+      display: none;
+    }
+
+    .v2-list-filters-search {
+      min-width: 0;
+      max-width: none;
+      width: 100%;
+    }
+
+    .v2-list-filters-date {
+      max-width: none;
+      width: 100%;
+    }
+
+    .v2-list-filters-chips {
+      flex-wrap: wrap;
+      width: 100%;
+
+      .btn {
+        flex: 1 1 auto;
+      }
+    }
+
+    .operations-index-progress {
+      min-width: 0;
+    }
+  }
+}
+
+@media (max-width: 991.98px) {
+  body.cartoway-v2,
+  body[data-controller*='-v2'] {
+    .operation-legend {
+      flex-wrap: wrap;
+      width: auto;
+      max-width: calc(100% - 1.5rem);
+      white-space: normal;
+      border-radius: .75rem;
+      justify-content: center;
+    }
   }
 }

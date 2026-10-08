@@ -3586,6 +3586,7 @@ en:
     contact: Contact support
     menu_plan_burger: Show planning menu
     menu_settings_burger: Show settings menu
+    open_menu: Open menu
     choose_file: Choose file
     geocoder:
       tooltip: Search an address
@@ -4023,6 +4024,9 @@ en:
       cancel: Cancel
       cancel_confirm: Cancel this operation?
       more_actions: More actions
+      mobile_panes: View
+      pane_list: List
+      pane_map: Map
       started_group: Started
       waiting_group: Waiting
       unassigned_badge: Unassigned

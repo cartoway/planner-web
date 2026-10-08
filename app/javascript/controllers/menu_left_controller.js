@@ -17,6 +17,8 @@ export default class extends Controller {
   connect () {
     this.sidebar = this.element.querySelector('.menu-left')
     this.main = this.element.querySelector('.main')
+    this.backdrop = this.element.querySelector('.menu-left-backdrop')
+    this.burger = this.element.querySelector('.menu-mobile-topbar-burger')
     if (!this.sidebar || !this.main) return
 
     this._captureOpts = { capture: true }
@@ -27,6 +29,10 @@ export default class extends Controller {
     }
 
     this._closeSidebar = () => {
+      if (this.sidebar.classList.contains('is-mobile-open')) {
+        this.closeMobile()
+        return
+      }
       this.sidebar.classList.remove('open')
       this._hideAllCollapses()
       clearSectionExpand(this.sidebar)
@@ -84,6 +90,37 @@ export default class extends Controller {
 
   restoreCompact (event) {
     if (event) event.preventDefault()
+    this._hideAllCollapses()
+    clearSectionExpand(this.sidebar)
+  }
+
+  toggleMobile (event) {
+    if (event) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    if (this.sidebar.classList.contains('is-mobile-open')) this.closeMobile()
+    else this.openMobile()
+  }
+
+  openMobile () {
+    if (!this.sidebar) return
+    this.sidebar.classList.add('is-mobile-open', 'open')
+    document.body.classList.add('menu-left-mobile-open')
+    if (this.backdrop) this.backdrop.classList.add('is-visible')
+    if (this.burger) this.burger.setAttribute('aria-expanded', 'true')
+  }
+
+  closeMobile (event) {
+    if (event) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    if (!this.sidebar) return
+    this.sidebar.classList.remove('is-mobile-open', 'open')
+    document.body.classList.remove('menu-left-mobile-open')
+    if (this.backdrop) this.backdrop.classList.remove('is-visible')
+    if (this.burger) this.burger.setAttribute('aria-expanded', 'false')
     this._hideAllCollapses()
     clearSectionExpand(this.sidebar)
   }
