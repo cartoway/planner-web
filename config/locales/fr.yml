@@ -3684,6 +3684,7 @@ fr:
       form_sidebar_aria: Panneau latéral de formulaire
       form_sidebar_placeholder: "Astuce : utilisez le bouton crayon d'une ligne pour ouvrir le formulaire de modification ici."
       form_sidebar_close: Fermer le panneau latéral
+      server_unavailable: Le serveur n’est pas disponible. Veuillez réessayer.
     transfer_list:
       toggle: Transférer
       transfer_all: Tout transférer

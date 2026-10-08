@@ -3,3 +3,6 @@
 // Named hotwire_entry.js so Sprockets does not resolve pin "application" to app/assets/javascripts/application.js (jQuery / I18n bundle).
 import "@hotwired/turbo"
 import "controllers"
+import { installTurboNetworkErrorHandling } from "turbo/network_error"
+
+installTurboNetworkErrorHandling()

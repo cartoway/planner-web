@@ -1,0 +1,21 @@
+.container.py-4{ data: { controller: 'v2--toast' } }
+  %h1.h4.mb-3 Toasts
+  %p.text-muted.small.mb-4
+    Bottom-right stack (v1 PNotify equivalent). Pass
+    %code message
+    and
+    %code className
+    via Stimulus params or
+    %code showToast({ message, className, sticky })
+    from JS.
+  .d-flex.flex-wrap.gap-2
+    %button.btn.btn-danger{ type: 'button', data: { action: 'v2--toast#notify', 'v2--toast-message-param': 'Le serveur n’est pas disponible. Veuillez réessayer.', 'v2--toast-class-name-param': 'alert-danger', 'v2--toast-sticky-param': true } }
+      Danger sticky
+    %button.btn.btn-success{ type: 'button', data: { action: 'v2--toast#notify', 'v2--toast-message-param': 'Enregistré', 'v2--toast-class-name-param': 'alert-success' } }
+      Success
+    %button.btn.btn-warning{ type: 'button', data: { action: 'v2--toast#notify', 'v2--toast-message-param': 'Attention', 'v2--toast-class-name-param': 'alert-warning' } }
+      Warning
+    %button.btn.btn-info{ type: 'button', data: { action: 'v2--toast#notify', 'v2--toast-message-param': 'Info', 'v2--toast-class-name-param': 'alert-info' } }
+      Info
+    %button.btn.btn-outline-secondary{ type: 'button', data: { action: 'v2--toast#clear' } }
+      Clear
