@@ -174,101 +174,21 @@ export default class extends Controller {
     this._addVehicleMarker()
   }
 
-  selectDepot (event) {
+  async selectDepot (event) {
     if (event.target.closest('a, button')) return
     const row = event.currentTarget
-    this._openDetail()
+    if (!row.dataset.url) return
     this.element.querySelectorAll('.operation-stop-row.is-selected').forEach((item) => item.classList.remove('is-selected'))
     row.classList.add('is-selected')
+    this._openDetail()
     const body = document.getElementById('operation-detail-body')
-    if (!body) return
-    body.replaceChildren(this._depotFiche(row.dataset))
-    this._centerRow(row)
-  }
-
-  _depotFiche (data) {
-    const labels = this.element.dataset
-    const root = document.createElement('div')
-    root.className = 'operation-fiche operation-stop-detail'
-
-    const head = document.createElement('div')
-    head.className = 'd-flex align-items-start justify-content-between gap-2'
-    const titleWrap = document.createElement('div')
-    const title = document.createElement('h2')
-    title.className = 'mb-0'
-    title.textContent = data.name || data.role || ''
-    titleWrap.appendChild(title)
-    if (data.role) {
-      const role = document.createElement('p')
-      role.className = 'small text-muted mb-0'
-      role.textContent = data.role
-      titleWrap.appendChild(role)
+    const response = await fetch(row.dataset.url, { headers: { Accept: 'text/html' } })
+    if (response.ok && body) {
+      const doc = new DOMParser().parseFromString(await response.text(), 'text/html')
+      const fiche = doc.querySelector('.operation-stop-detail')
+      if (fiche) body.replaceChildren(fiche)
     }
-    head.appendChild(titleWrap)
-    if (data.statusLabel) {
-      const badge = document.createElement('span')
-      badge.className = 'badge operation-status'
-      badge.textContent = data.statusLabel
-      head.appendChild(badge)
-    }
-    root.appendChild(head)
-
-    const split = document.createElement('div')
-    split.className = 'operation-split'
-    split.appendChild(this._splitCell(labels.plannedLabel || '', data.time || '—'))
-    split.appendChild(this._splitCell(labels.statusLabel || '', data.statusLabel || '—'))
-    root.appendChild(split)
-
-    if (data.ref) {
-      const details = this._section(labels.refLabel || '')
-      const ref = document.createElement('p')
-      ref.className = 'small mb-0'
-      ref.textContent = data.ref
-      details.appendChild(ref)
-      root.appendChild(details)
-    }
-
-    const address = this._section(labels.addressLabel || '')
-    const field = document.createElement('div')
-    field.className = 'operation-field'
-    const line = document.createElement('p')
-    line.className = data.phone ? 'mb-1' : 'mb-0'
-    line.textContent = data.address || '—'
-    field.appendChild(line)
-    if (data.phone) {
-      const phone = document.createElement('p')
-      phone.className = 'mb-0'
-      const icon = document.createElement('i')
-      icon.className = 'fa fa-phone fa-fw'
-      icon.setAttribute('aria-hidden', 'true')
-      const link = document.createElement('a')
-      link.href = `tel:${data.phone}`
-      link.textContent = data.phone
-      phone.append(icon, link)
-      field.appendChild(phone)
-    }
-    address.appendChild(field)
-    root.appendChild(address)
-    return root
-  }
-
-  _section (title) {
-    const section = document.createElement('section')
-    section.className = 'operation-section'
-    const heading = document.createElement('h3')
-    heading.textContent = title
-    section.appendChild(heading)
-    return section
-  }
-
-  _splitCell (label, value) {
-    const cell = document.createElement('div')
-    const caption = document.createElement('span')
-    caption.textContent = label
-    const strong = document.createElement('strong')
-    strong.textContent = value
-    cell.append(caption, strong)
-    return cell
+    this._centerMap(row)
   }
 
   _openDetail () {
@@ -1172,15 +1092,23 @@ export default class extends Controller {
   _patchStopRow (payload) {
     const row = this.element.querySelector(`#stop-${payload.stop_id}`)
     if (!row) return
-    row.className = `operation-stop-row is-${payload.phase}${row.classList.contains('is-selected') ? ' is-selected' : ''}${row.classList.contains('is-hidden') ? ' is-hidden' : ''}`
+    const kind = payload.kind || row.dataset.kind
+    const store = kind === 'store'
+    row.className = `operation-stop-row is-${payload.phase}${store ? ' operation-depot-row' : ''}${row.classList.contains('is-selected') ? ' is-selected' : ''}${row.classList.contains('is-hidden') ? ' is-hidden' : ''}`
     row.dataset.phase = payload.phase
+    if (kind) row.dataset.kind = kind
     const glyph = row.querySelector('.operation-glyph')
     if (glyph) {
-      glyph.className = `operation-glyph is-${payload.phase}`
-      if (payload.phase === 'delivered') glyph.innerHTML = '<i class="fa fa-check"></i>'
-      else if (payload.phase === 'failed') glyph.textContent = '!'
-      else if (payload.phase === 'exception') glyph.innerHTML = '<i class="fa fa-triangle-exclamation"></i>'
-      else glyph.textContent = payload.index
+      if (store) {
+        glyph.className = 'operation-glyph is-depot'
+        glyph.innerHTML = '<i class="fa fa-house"></i>'
+      } else {
+        glyph.className = `operation-glyph is-${payload.phase}`
+        if (payload.phase === 'delivered') glyph.innerHTML = '<i class="fa fa-check"></i>'
+        else if (payload.phase === 'failed') glyph.textContent = '!'
+        else if (payload.phase === 'exception') glyph.innerHTML = '<i class="fa fa-triangle-exclamation"></i>'
+        else glyph.textContent = payload.index
+      }
     }
     const legs = row.querySelectorAll('.operation-stop-clock-leg')
     this._setClockLeg(legs[0], payload.planned_arrival_clock, payload.actual_arrival_clock)
@@ -1308,15 +1236,22 @@ export default class extends Controller {
   }
 
   _paintStopPhase (stopId, phase) {
+    let storeLike = false
+    let tourColor = null
     ;(this.geojson?.features || []).forEach((feature) => {
       if (!feature.properties || String(feature.properties.operation_stop_id) !== String(stopId)) return
       feature.properties.phase = phase
       const treated = phase === 'delivered' || phase === 'failed' || phase === 'exception'
       feature.properties.treated = treated
       feature.properties.opacity = treated ? OPACITY_MIN : OPACITY_MAX
+      storeLike = feature.properties.kind === 'store' || feature.properties.kind === 'depot'
+      tourColor = feature.properties.color
     })
     const disc = document.querySelector(`[data-stop-id="${stopId}"]`)
-    if (disc && PHASE_COLORS[phase]) disc.style.setProperty('--dm-flat', PHASE_COLORS[phase])
+    if (!disc) return
+    // Store reloads keep the tour color; visits follow phase colours.
+    if (storeLike) disc.style.setProperty('--dm-flat', tourColor || '#888888')
+    else if (PHASE_COLORS[phase]) disc.style.setProperty('--dm-flat', PHASE_COLORS[phase])
   }
 
   _splitPositionsFromGeojson () {
@@ -1462,15 +1397,20 @@ export default class extends Controller {
     const props = (feature && feature.properties) || {}
     const phase = props.phase
     const stopId = props.operation_stop_id != null ? String(props.operation_stop_id) : ''
+    const storeLike = props.kind === 'depot' || props.kind === 'store'
     // The outer node is the MapLibre marker: its transform is the position.
     element.replaceChildren()
     element.className = 'operation-stop-marker'
     const disc = document.createElement('div')
     fillDestinationMarker(disc, { name: props.label, anchored: true })
     if (stopId) disc.dataset.stopId = stopId
-    disc.style.setProperty('--dm-flat', PHASE_COLORS[phase] || props.color || '#3366cc')
-    if (props.kind === 'depot') disc.classList.add('is-depot')
-    if (phase) this._paintMarker(disc, phase)
+    if (storeLike) {
+      disc.classList.add('is-depot')
+      disc.style.setProperty('--dm-flat', props.color || '#888888')
+    } else {
+      disc.style.setProperty('--dm-flat', PHASE_COLORS[phase] || props.color || '#3366cc')
+      if (phase) this._paintMarker(disc, phase)
+    }
     disc.classList.toggle('destinations-marker--active', this._activeStopId != null && stopId === String(this._activeStopId))
     element.appendChild(disc)
   }
@@ -1557,7 +1497,11 @@ export default class extends Controller {
       const disc = document.createElement('div')
       fillDestinationMarker(disc, { name: props.label, anchored: true })
       disc.classList.add('is-depot')
-      if (props.returns_complete) disc.classList.add('is-returned')
+      if (props.returns_complete) {
+        disc.classList.add('is-returned')
+      } else {
+        disc.style.setProperty('--dm-flat', props.color || '#888888')
+      }
       el.appendChild(disc)
       return new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(feature.geometry.coordinates).addTo(this.map)
     })

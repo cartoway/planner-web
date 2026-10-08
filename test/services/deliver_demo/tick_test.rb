@@ -207,4 +207,44 @@ class DeliverDemoTickTest < ActiveSupport::TestCase
     offset = tick.send(:sample_offset_seconds, @route, @stops, stop_index)
     assert_equal(-90, offset)
   end
+
+  test 'tick finishes store reloads as finished not delivered' do
+    visit = @stops.find(&:visit?)
+    assert visit
+    store = stores(:store_one)
+    reload_stop = @route.operation_stops.create!(
+      kind: 'store',
+      index: visit.index + 50,
+      sync_state: 'active',
+      active: true,
+      store: store,
+      store_snapshot: { 'name' => store.name, 'lat' => store.lat, 'lng' => store.lng, 'duration' => 60 },
+      stop_snapshot: { 'time' => 16 * 3600 }
+    )
+    @stops = @route.operation_stops.executable.order(:index).to_a
+    tracks = @stops.map.with_index { |stop, position|
+      base_lng = 2.35 + (position * 0.1)
+      base_lat = 48.85 + (position * 0.1)
+      {
+        'stop_index' => stop.index,
+        'coordinates' => [
+          [[base_lng, base_lat], [base_lng + 0.001, base_lat + 0.001]],
+          [[base_lng + 0.001, base_lat + 0.001], [base_lng + 0.002, base_lat + 0.002]]
+        ]
+      }
+    }
+    @route.update_columns(route_snapshot: @route.route_snapshot.merge('tracks' => tracks))
+
+    cursors = {}
+    120.times do
+      cursors, done = DeliverDemo::Tick.call(operation: @operation, cursors: cursors)
+      break if done || reload_stop.reload.treated?
+    end
+
+    assert_equal 'finished', reload_stop.reload.status
+    refute_equal 'delivered', reload_stop.status
+    assert reload_stop.operation_stop_status_events.exists?(status: 'atstore')
+    assert reload_stop.operation_stop_status_events.exists?(status: 'finished')
+    refute reload_stop.operation_stop_status_events.exists?(status: 'delivered')
+  end
 end
