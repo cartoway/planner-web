@@ -100,8 +100,8 @@ module Operations
         'rest_stop' => schedule_seconds(usage, :rest_stop),
         'rest_duration' => schedule_seconds(usage, :rest_duration),
         'max_reload' => usage.max_reload,
-        'store_start' => place(usage.store_start),
-        'store_stop' => place(usage.store_stop),
+        'store_start' => place(usage.default_store_start),
+        'store_stop' => place(usage.default_store_stop),
         'store_rest' => place(usage.default_store_rest)
       }
     end

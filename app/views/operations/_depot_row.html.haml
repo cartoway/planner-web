@@ -1,6 +1,7 @@
 - title = t(label_key)
-- status_label = depot[:status].present? ? t("plannings.edit.stop_store_status.#{depot[:status].downcase}", default: t("plannings.edit.stop_status.#{depot[:status].downcase}", default: depot[:status])) : nil
-%li.operation-depot-row.operation-stop-row{data: { phase: 'depot', label: depot[:name], lat: depot[:lat], lng: depot[:lng], name: depot[:name], time: depot[:time], status_label: status_label, address: depot[:address], phone: depot[:phone], ref: depot[:ref], role: title, action: 'click->v2--operation-show#selectDepot' }}
+- status_label = depot[:status].present? ? route.depot_status_label(depot[:status]) : nil
+- depot_url = depot_operation_operation_route_path(operation, route, role: role)
+%li.operation-depot-row.operation-stop-row{data: { phase: 'depot', label: depot[:name], lat: depot[:lat], lng: depot[:lng], url: depot_url, action: 'click->v2--operation-show#selectDepot' }}
   %span.operation-glyph.is-depot{title: title}
     %i.fa.fa-house
   .operation-stop-main.min-w-0

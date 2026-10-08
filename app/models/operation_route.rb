@@ -76,6 +76,62 @@ class OperationRoute < ApplicationRecord
     ]
   end
 
+  def depot_for(role)
+    case role.to_s
+    when 'start' then list_depot('store_start', 'start', departure_status)
+    when 'end' then list_depot('store_stop', 'end', arrival_status)
+    end
+  end
+
+  # Route depots have no status_events table; rebuild from cursor + loading stash.
+  def depot_status_events(role)
+    case role.to_s
+    when 'start'
+      reconstruct_depot_events(
+        status: departure_status,
+        updated_at: departure_status_updated_at,
+        loading_at: stashed_loading_at('departure')
+      )
+    when 'end'
+      reconstruct_depot_events(
+        status: arrival_status,
+        updated_at: arrival_status_updated_at,
+        loading_at: stashed_loading_at('arrival')
+      )
+    else
+      []
+    end
+  end
+
+  def depot_status_label(status)
+    return if status.blank?
+
+    key = status.to_s.downcase
+    I18n.t("plannings.edit.stop_store_status.#{key}", default: I18n.t("plannings.edit.stop_status.#{key}", default: status))
+  end
+
+  def depot_status_updated_at(role)
+    role.to_s == 'start' ? departure_status_updated_at : arrival_status_updated_at
+  end
+
+  def depot_loading_at(role)
+    role.to_s == 'start' ? stashed_loading_at('departure') : stashed_loading_at('arrival')
+  end
+
+  def clock_on_operation_day(time)
+    return if time.blank?
+
+    date = operation.date
+    clock = I18n.l(time, format: :hour_minute)
+    return clock if date.blank?
+
+    offset = (time.to_date - date).to_i
+    return clock if offset.zero?
+
+    delta = offset.positive? ? "+#{offset}" : offset.to_s
+    "#{clock} #{I18n.t('operations.show.day_shift', delta: delta)}"
+  end
+
   def started?
     return false if unassigned || vehicle_id.nil?
 
@@ -113,6 +169,27 @@ class OperationRoute < ApplicationRecord
   end
 
   private
+
+  def stashed_loading_at(leg)
+    raw = custom_attributes.is_a?(Hash) && custom_attributes["_#{leg}_loading_at"]
+    return if raw.blank?
+
+    Time.zone.parse(raw.to_s)
+  rescue ArgumentError, TypeError
+    nil
+  end
+
+  def reconstruct_depot_events(status:, updated_at:, loading_at:)
+    code = status.to_s.downcase.presence
+    return [] if code.blank?
+
+    events = []
+    if code == 'finished' && loading_at.present?
+      events << { status: 'atstore', recorded_at: loading_at }
+    end
+    events << { status: code, recorded_at: updated_at } if updated_at.present?
+    events
+  end
 
   def unit_totals(stops)
     catalog = operation.quantity_catalog
@@ -158,7 +235,8 @@ class OperationRoute < ApplicationRecord
 
   def list_depot(store_key, time_key, status)
     place = (vehicle_usage_snapshot || {})[store_key]
-    place = Operations::Snapshots.place(vehicle_usage&.public_send(store_key)) if place.blank?
+    # Snapshot may be empty when the depot comes from the usage set default.
+    place = Operations::Snapshots.place(vehicle_usage&.public_send("default_#{store_key}")) if place.blank?
     return if place.blank? || place['name'].blank?
 
     seconds = (route_snapshot || {})[time_key].presence
