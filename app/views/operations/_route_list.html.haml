@@ -11,61 +11,66 @@
       - board = route.board
       - departure, arrival = route.list_depots
       %details.operation-tour{id: "route-#{route.id}", open: route == open_route, style: "--operation-tour-color: #{route.vehicle_color}", data: { route_id: route.id, delivered: board[:delivered], failed: board[:failed], exception: board[:exception], late: board[:late], upcoming: board[:upcoming], current: board[:current], total: board[:total], delay: board[:delay], distance_label: locale_distance(board[:distance], current_user.prefered_unit), units: board[:units].to_json }}
+        - title = route.ref.presence || route.vehicle_name || t('operations.show.unassigned')
+        - meta_bits = []
+        - meta_bits << route.vehicle_name if route.vehicle_name.present? && route.vehicle_name != title
+        - meta_bits << route.vehicle_snapshot['ref'] if route.vehicle_snapshot['ref'].present?
+        - meta_bits << route.router_name if route.router_name.present?
+        - meta_bits << t('operations.show.last_sent', at: (route.last_sent_at ? l(route.last_sent_at, format: :short) : '—'))
         %summary.operation-tour-summary
-          .d-flex.justify-content-between.gap-2
-            .min-w-0
-              .operation-tour-title.text-truncate
-                = route.ref.presence || route.vehicle_name || t('operations.show.unassigned')
-                - if route.router_name.present?
-                  %span.text-muted= "· #{route.router_name}"
-              .operation-tour-meta.text-truncate
-                = route.vehicle_name
-                - if route.vehicle_snapshot['ref'].present?
-                  = "· #{route.vehicle_snapshot['ref']}"
-                ·
-                = t('operations.show.last_sent', at: (route.last_sent_at ? l(route.last_sent_at, format: :short) : '—'))
-              = render 'operations/quantity_stats', units: board[:units], compact: true
-              - if route.unassigned || route.vehicle_id.nil?
-                %span.badge.operation-unassigned= t('operations.show.unassigned_badge')
-            .operation-tour-progress
-              %span{data: { tour_progress: true }}
-                = "#{board[:delivered] + board[:failed]}/#{board[:total]}"
-                = t('operations.show.stops')
-                - if board[:total].positive?
-                  ·
-                  = "#{(100.0 * (board[:delivered] + board[:failed]) / board[:total]).round}%"
-              %i.fa.fa-chevron-down.operation-tour-chevron
-          .operation-tour-tools{onclick: 'event.stopPropagation();'}
-            .btn-group
-              - has_position = (@located_route_ids || Set.new).include?(route.id)
-              %button.btn.btn-light{type: 'button', title: t('operations.show.hide_trace'), aria: { label: t('operations.show.hide_trace') }, data: { action: 'click->v2--operation-show#toggleRouteTrace', route_id: route.id, hide_label: t('operations.show.hide_trace'), show_label: t('operations.show.show_trace') }}
-                %i.fa.fa-eye.fa-fw
-              %button.btn.btn-light{type: 'button', title: t('operations.show.center_route'), aria: { label: t('operations.show.center_route') }, data: { action: 'click->v2--operation-show#centerRoute', route_id: route.id }}
-                %i.fa.fa-expand.fa-fw
-              %button.btn.btn-light{type: 'button', title: t('operations.show.center_vehicle'), aria: { label: t('operations.show.center_vehicle') }, disabled: !has_position, data: { action: 'click->v2--operation-show#centerVehicle', route_id: route.id }}
-                %i.fa.fa-location-crosshairs.fa-fw
-            .btn-group
-              - if route.vehicle_id
-                .dropdown{data: { action: 'shown.bs.dropdown->v2--operation-show#shortenMobileLink' }}
-                  %button.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }}
-                    %i.fa.fa-paper-plane.fa-fw
-                    = t('plannings.edit.deliver_send.singular.transmit')
-                  %ul.dropdown-menu
-                    %li
-                      %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'email', route_id: route.id, field: 'contact_email', contact: route.driver_email, vehicle_name: route.vehicle_name }}
-                        = t('operations.show.send_email')
-                    - if operation.customer.enable_sms
+          .operation-tour-summary-inner
+            .operation-tour-head
+              .operation-tour-identity
+                .operation-tour-title-row
+                  %i.fa.fa-chevron-down.operation-tour-chevron{'aria-hidden': 'true'}
+                  .operation-tour-title.text-truncate= title
+                  - if route.unassigned || route.vehicle_id.nil?
+                    %span.badge.operation-unassigned= t('operations.show.unassigned_badge')
+                - if meta_bits.any?
+                  .operation-tour-meta.text-truncate= meta_bits.join(' · ')
+              .operation-tour-progress
+                %span.operation-tour-progress-label{data: { tour_progress: true }}
+                  = "#{board[:delivered] + board[:failed]}/#{board[:total]}"
+                  = t('operations.show.stops')
+                  - if board[:total].positive?
+                    ·
+                    = "#{(100.0 * (board[:delivered] + board[:failed]) / board[:total]).round}%"
+                = render 'v2/shared/status_segments', counts: board, css_class: 'operation-segments operation-tour-segments'
+            - tour_units = Array(board[:units]).select { |unit| unit[:delivery].to_f.positive? || unit[:pickup].to_f.positive? }
+            - if tour_units.any?
+              .operation-tour-stats
+                = render 'operations/quantity_stats', units: tour_units
+            .operation-tour-tools{onclick: 'event.stopPropagation();'}
+              .btn-group
+                - has_position = (@located_route_ids || Set.new).include?(route.id)
+                %button.btn.btn-light{type: 'button', title: t('operations.show.hide_trace'), aria: { label: t('operations.show.hide_trace') }, data: { action: 'click->v2--operation-show#toggleRouteTrace', route_id: route.id, hide_label: t('operations.show.hide_trace'), show_label: t('operations.show.show_trace') }}
+                  %i.fa.fa-eye.fa-fw
+                %button.btn.btn-light{type: 'button', title: t('operations.show.center_route'), aria: { label: t('operations.show.center_route') }, data: { action: 'click->v2--operation-show#centerRoute', route_id: route.id }}
+                  %i.fa.fa-expand.fa-fw
+                %button.btn.btn-light{type: 'button', title: t('operations.show.center_vehicle'), aria: { label: t('operations.show.center_vehicle') }, disabled: !has_position, data: { action: 'click->v2--operation-show#centerVehicle', route_id: route.id }}
+                  %i.fa.fa-location-crosshairs.fa-fw
+              .btn-group
+                - if route.vehicle_id
+                  .dropdown{data: { action: 'shown.bs.dropdown->v2--operation-show#shortenMobileLink' }}
+                    %button.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }}
+                      %i.fa.fa-paper-plane.fa-fw
+                      = t('plannings.edit.deliver_send.singular.transmit')
+                    %ul.dropdown-menu
                       %li
-                        %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'sms', route_id: route.id, field: 'phone_number', contact: route.driver_phone, vehicle_name: route.vehicle_name }}
-                          = t('operations.show.send_sms')
-                    - mobile_url = Operations::MobileUrl.path(route)
-                    - if mobile_url
-                      %li
-                        = link_to mobile_url, class: 'dropdown-item', target: '_blank', rel: 'noopener noreferrer', data: { short_url: mobile_url_operation_operation_route_path(operation, route) } do
-                          = t('plannings.edit.deliver_send.singular.access')
-              = link_to media_operation_operation_route_path(operation, route), class: 'btn btn-light', data: { action: 'click->v2--operation-show#openMedia' } do
-                %i.fa.fa-images.fa-fw
-                = t('operations.show.media')
+                        %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'email', route_id: route.id, field: 'contact_email', contact: route.driver_email, vehicle_name: route.vehicle_name }}
+                          = t('operations.show.send_email')
+                      - if operation.customer.enable_sms
+                        %li
+                          %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'sms', route_id: route.id, field: 'phone_number', contact: route.driver_phone, vehicle_name: route.vehicle_name }}
+                            = t('operations.show.send_sms')
+                      - mobile_url = Operations::MobileUrl.path(route)
+                      - if mobile_url
+                        %li
+                          = link_to mobile_url, class: 'dropdown-item', target: '_blank', rel: 'noopener noreferrer', data: { short_url: mobile_url_operation_operation_route_path(operation, route) } do
+                            = t('plannings.edit.deliver_send.singular.access')
+                = link_to media_operation_operation_route_path(operation, route), class: 'btn btn-light', data: { action: 'click->v2--operation-show#openMedia' } do
+                  %i.fa.fa-images.fa-fw
+                  = t('operations.show.media')
         .operation-tour-body
           %ul.operation-stops
             - if departure

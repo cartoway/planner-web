@@ -47,7 +47,6 @@
           %div
             %strong 42 km
             %span= t('display_ui.header_blocks.distance')
-      .operation-stats
         .operation-stat
           %i.fa.fa-fw.fa-box
           %div
@@ -63,37 +62,53 @@
         %button.operation-chip{type: 'button'}= "#{t('operations.show.filter_delivered')} 1"
       %details.operation-tour{open: true, style: '--operation-tour-color: #3366cc'}
         %summary.operation-tour-summary
-          .d-flex.justify-content-between.gap-2
-            .min-w-0
-              .operation-tour-title
-                Véhicule 1
-                %span.text-muted · Voiture
-              .operation-tour-meta Véhicule 1 · 001
-              .operation-tour-quantities
-                %span
-                  Colis
-                  1 / 4
-                  = t('operations.show.deliveries')
-                  ·
-                  3 / 4
-                  = t('operations.show.pickups')
-            .operation-tour-progress
-              3/4
-              = t('operations.show.stops')
-              %i.fa.fa-chevron-down.operation-tour-chevron
-          .operation-tour-tools
-            %button.btn.btn-light{type: 'button', title: t('operations.show.hide_trace')}
-              %i.fa.fa-eye.fa-fw
-            %button.btn.btn-light{type: 'button', title: t('operations.show.center_route')}
-              %i.fa.fa-expand.fa-fw
-            %button.btn.btn-light{type: 'button', title: t('operations.show.center_vehicle'), disabled: true}
-              %i.fa.fa-location-crosshairs.fa-fw
-            %button.btn.btn-light.dropdown-toggle{type: 'button'}
-              %i.fa.fa-paper-plane.fa-fw
-              = t('plannings.edit.deliver_send.singular.transmit')
-            %button.btn.btn-light{type: 'button'}
-              %i.fa.fa-images.fa-fw
-              = t('operations.show.media')
+          .operation-tour-summary-inner
+            .operation-tour-head
+              .operation-tour-identity
+                .operation-tour-title-row
+                  %i.fa.fa-chevron-down.operation-tour-chevron{'aria-hidden': 'true'}
+                  .operation-tour-title Véhicule 1
+                .operation-tour-meta 001 · Voiture · #{t('operations.show.last_sent', at: '—')}
+              .operation-tour-progress
+                %span.operation-tour-progress-label
+                  3/4
+                  = t('operations.show.stops')
+                  · 75%
+                .operation-segments.operation-tour-segments
+                  %span.is-delivered{style: 'width: 50%'}
+                  %span.is-failed{style: 'width: 25%'}
+                  %span.is-exception{style: 'width: 0%'}
+                  %span.is-rest{style: 'width: 25%'}
+            .operation-tour-stats
+              .operation-stat
+                %i.fa.fa-fw.fa-box
+                %div
+                  %strong 1 / 4
+                  %span
+                    Colis
+                    ·
+                    = t('operations.show.deliveries')
+              .operation-stat
+                %i.fa.fa-fw.fa-box
+                %div
+                  %strong 3 / 4
+                  %span
+                    Colis
+                    ·
+                    = t('operations.show.pickups')
+            .operation-tour-tools
+              %button.btn.btn-light{type: 'button', title: t('operations.show.hide_trace')}
+                %i.fa.fa-eye.fa-fw
+              %button.btn.btn-light{type: 'button', title: t('operations.show.center_route')}
+                %i.fa.fa-expand.fa-fw
+              %button.btn.btn-light{type: 'button', title: t('operations.show.center_vehicle'), disabled: true}
+                %i.fa.fa-location-crosshairs.fa-fw
+              %button.btn.btn-light.dropdown-toggle{type: 'button'}
+                %i.fa.fa-paper-plane.fa-fw
+                = t('plannings.edit.deliver_send.singular.transmit')
+              %button.btn.btn-light{type: 'button'}
+                %i.fa.fa-images.fa-fw
+                = t('operations.show.media')
         %ul.operation-stops
           %li.operation-depot-row
             %span.operation-glyph.is-depot
