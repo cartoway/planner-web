@@ -187,11 +187,11 @@ tr.is-past { color: #6b7280; }
 
 .operation-tour {
   border: 1px solid var(--status-line);
+  border-left: 4px solid var(--operation-tour-color, #888888);
   border-radius: 0;
   margin-bottom: .55rem;
   background: #fff;
 
-  &[open] { border-left: 4px solid var(--op-red); }
   &[open] .operation-tour-chevron { transform: rotate(180deg); }
 }
 
