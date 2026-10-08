@@ -476,3 +476,61 @@ body > .ts-dropdown {
     max-height: min(45vh, 260px) !important;
   }
 }
+
+// Turbo loading: spinner overlay while a frame/form fetch is in flight (busy / aria-busy).
+// display:contents frames do not generate a box — no spinner there (by design).
+turbo-frame[busy],
+form[aria-busy="true"] {
+  position: relative;
+  pointer-events: none;
+  min-height: 3rem;
+}
+
+turbo-frame[busy]::before,
+form[aria-busy="true"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  background: rgba(var(--bs-body-bg-rgb, 255, 255, 255), 0.55);
+}
+
+turbo-frame[busy]::after,
+form[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  z-index: 6;
+  top: 50%;
+  left: 50%;
+  width: 1.75rem;
+  height: 1.75rem;
+  margin: -0.875rem 0 0 -0.875rem;
+  border: 0.2em solid var(--bs-primary, #0d6efd);
+  border-right-color: transparent;
+  border-radius: 50%;
+  opacity: 0.85;
+  animation: turbo-busy-spinner 0.75s linear infinite;
+}
+
+@keyframes turbo-busy-spinner {
+  to { transform: rotate(360deg); }
+}
+
+// Bottom-right toast stack (v1 PNotify equivalent).
+.v2-toast-stack {
+  position: fixed;
+  right: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 1080;
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 0.5rem;
+  max-width: min(22rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.v2-toast-stack .v2-toast {
+  pointer-events: auto;
+  box-shadow: 0 0.35rem 1rem rgba(0, 0, 0, 0.15);
+  padding-right: 2.5rem;
+}

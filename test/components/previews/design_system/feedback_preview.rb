@@ -6,6 +6,10 @@ module DesignSystem
       render_with_template
     end
 
+    def toasts
+      render_with_template
+    end
+
     def badges_and_pills
       render_with_template
     end
