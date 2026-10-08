@@ -311,6 +311,13 @@ tr.is-past { color: #6b7280; }
   cursor: pointer;
 }
 
+// Start/end depots and mid-route store reloads: house glyph in the tour color.
+.operation-tour .operation-glyph.is-depot {
+  background: #fff;
+  color: var(--operation-tour-color, #888888);
+  border: 1px solid var(--operation-tour-color, #888888);
+}
+
 .operation-stop-row.is-selected {
   background: #eef3fb;
   box-shadow: inset 3px 0 0 var(--op-navy);
