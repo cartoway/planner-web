@@ -35,6 +35,7 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes response.body, 'btn-danger'
     assert_not_includes response.body, 'operations-index-table'
     assert_not_includes response.body, %(<a href="#{operation_path(@operation)}">#{@operation.ref.presence || @operation.name}</a>)
+    assert_select %(a[href="#{operation_path(@operation)}"][data-turbo-frame="main"][data-turbo-action="advance"]), 1
   end
 
   test 'show exposes mobile panes and detail sheet chrome' do

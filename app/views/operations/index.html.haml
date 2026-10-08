@@ -34,7 +34,7 @@
           = render 'v2/shared/status_segments', counts: counts
           %span.operations-index-progress-label.text-muted= t('operations.index.stops_count', treated: counts[:delivered] + counts[:failed] + counts[:exception], total: counts[:total])
         .operations-index-card-actions
-          = link_to operation_path(operation), class: (operation.open? ? 'btn btn-primary' : 'btn btn-secondary') do
+          = link_to operation_path(operation), class: (operation.open? ? 'btn btn-primary' : 'btn btn-secondary'), data: { turbo_frame: 'main', turbo_action: 'advance' } do
             %i.fa.fa-tower-broadcast.fa-fw
             = t('execution.open_tracking')
           .operations-index-card-secondary
