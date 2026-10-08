@@ -1256,9 +1256,28 @@ export default class extends Controller {
       if (total > 0) text += ` · ${Math.round(100.0 * treated / total)}%`
       progress.textContent = text
     }
+    this._paintSegments(tour.querySelector('.operation-tour-segments'), board)
     if (!payload.started) return
     const groups = this.element.querySelectorAll('.operation-group')
     if (groups[0] && tour.parentElement !== groups[0]) groups[0].appendChild(tour)
+  }
+
+  _paintSegments (bar, counts) {
+    if (!bar) return
+    const total = Number(counts.total || 0)
+    if (total <= 0) return
+    const delivered = Number(counts.delivered || 0)
+    const failed = Number(counts.failed || 0)
+    const exception = Number(counts.exception || 0)
+    const rest = Math.max(total - delivered - failed - exception, 0)
+    const setWidth = (name, value) => {
+      const span = bar.querySelector(`.${name}`)
+      if (span) span.style.width = `${100.0 * value / total}%`
+    }
+    setWidth('is-delivered', delivered)
+    setWidth('is-failed', failed)
+    setWidth('is-exception', exception)
+    setWidth('is-rest', rest)
   }
 
   _rollUpBoard () {
@@ -1285,18 +1304,7 @@ export default class extends Controller {
       const count = phase === 'all' ? totals.total : totals[phase]
       chip.textContent = chip.textContent.replace(/\d+\s*$/, String(count == null ? 0 : count))
     })
-    const bar = this.element.querySelector('.operation-segments')
-    if (bar && totals.total > 0) {
-      const rest = Math.max(totals.total - totals.delivered - totals.failed - totals.exception, 0)
-      const setWidth = (name, value) => {
-        const span = bar.querySelector(`.${name}`)
-        if (span) span.style.width = `${100.0 * value / totals.total}%`
-      }
-      setWidth('is-delivered', totals.delivered)
-      setWidth('is-failed', totals.failed)
-      setWidth('is-exception', totals.exception)
-      setWidth('is-rest', rest)
-    }
+    this._paintSegments(this.element.querySelector('.operation-header-progress .operation-segments'), totals)
   }
 
   _paintStopPhase (stopId, phase) {

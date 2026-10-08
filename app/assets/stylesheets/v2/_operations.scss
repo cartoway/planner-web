@@ -47,7 +47,7 @@ body[data-controller~='operations'][data-action='show'] aside.form-sidebar {
   a { color: var(--op-navy); }
 }
 
-.operation-date { width: 9.2rem; }
+.operation-date { width: 11rem; }
 
 .operation-status {
   background: #e8eef8;
@@ -196,6 +196,7 @@ tr.is-past { color: #6b7280; }
 }
 
 .operation-tour-summary {
+  // Avoid display:flex on <summary> — it breaks nested Bootstrap rows in some browsers.
   list-style: none;
   cursor: pointer;
   padding: .65rem .75rem;
@@ -203,30 +204,97 @@ tr.is-past { color: #6b7280; }
   &::-webkit-details-marker { display: none; }
 }
 
-.operation-tour-title { font-weight: 700; }
-
-.operation-tour-quantities {
+.operation-tour-summary-inner {
   display: flex;
-  flex-wrap: wrap;
-  gap: .15rem .6rem;
-  margin-top: .15rem;
-  color: var(--op-muted);
-  font-size: .8rem;
+  flex-direction: column;
+  gap: .55rem;
 }
 
-.operation-tour-meta,
+.operation-tour-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: .5rem .75rem;
+  align-items: start;
+}
+
+.operation-tour-identity {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+}
+
+.operation-tour-title-row {
+  display: flex;
+  align-items: center;
+  gap: .45rem;
+  min-width: 0;
+}
+
+.operation-tour-title {
+  font-weight: 700;
+  min-width: 0;
+}
+
+.operation-tour-chevron {
+  flex-shrink: 0;
+  color: var(--op-navy);
+  font-size: .95rem;
+  line-height: 1;
+  transition: transform .15s ease;
+}
+
+.operation-tour-meta {
+  color: var(--op-muted);
+  font-size: .85rem;
+  // Indent under title, past the chevron.
+  padding-left: 1.4rem;
+}
+
+.operation-tour-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: .35rem;
+  width: 100%;
+
+  .operation-stat {
+    min-width: 0;
+    height: 100%;
+    padding: .4rem .55rem;
+
+    i { font-size: 1rem; }
+
+    strong { font-size: .9rem; }
+  }
+}
+
 .operation-tour-progress {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: .25rem;
+  min-width: 7.5rem;
   color: var(--op-muted);
 }
 
-.operation-tour-progress { text-align: right; white-space: nowrap; }
+.operation-tour-progress-label {
+  white-space: nowrap;
+}
+
+.operation-tour-segments {
+  width: 100%;
+  min-width: 7.5rem;
+}
+
 .operation-unassigned { background: #fff4e5; color: #b45309; }
 
 .operation-tour-tools {
   display: flex;
   flex-wrap: wrap;
   gap: .35rem;
-  margin-top: .4rem;
+  padding-top: .45rem;
+  border-top: 1px solid var(--status-line);
 
   form { display: inline; }
 }

@@ -391,6 +391,8 @@ body[data-controller*='-v2'] {
   .operation-stats {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
+    // Equalize every row to the tallest card in the whole grid.
+    grid-auto-rows: 1fr;
     gap: .5rem;
     margin-bottom: .85rem;
   }
@@ -403,6 +405,9 @@ body[data-controller*='-v2'] {
     display: flex;
     gap: .55rem;
     align-items: center;
+    min-width: 0;
+    height: 100%;
+    box-sizing: border-box;
 
     i {
       color: var(--status-navy);
