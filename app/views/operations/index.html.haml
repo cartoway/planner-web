@@ -5,64 +5,47 @@
   .px-3
     %h1.h3.mb-3= t('operations.index.title')
     = render 'v2/shared/list_filters', url: operations_path, q: params[:q], date: params[:date], status: params[:status], search_placeholder: t('operations.index.search_placeholder'), chips: filter_chips
-  .table-responsive
-    %table.table.table-striped.table-hover.table-sm.operations-index-table.mb-0
-      %thead
-        %tr
-          %th= t('operations.index.ref')
-          %th= t('operations.index.date')
-          %th= t('operations.index.lifecycle')
-          %th.operations-index-col-sync= t('operations.index.sync')
-          %th= t('operations.index.planning')
-          %th= t('operations.index.progress')
-          %th.operations-index-col-published= t('operations.index.published_at')
-          %th
-      %tbody
-        - if @operations.empty?
-          %tr
-            %td.text-muted{colspan: 8}= t('operations.index.empty')
-        - @operations.each do |operation|
-          - counts = operation.board_counts
-          - label = operation.ref.presence || operation.name
-          - modal_id = "operation-destroy-#{operation.id}"
-          %tr
-            %td= label
-            %td= l(operation.date)
-            %td
+  .operations-index-cards.px-3.pb-3
+    - if @operations.empty?
+      %p.operations-index-card-empty.text-muted.mb-0= t('operations.index.empty')
+    - @operations.each do |operation|
+      - counts = operation.board_counts
+      - label = operation.ref.presence || operation.name
+      - modal_id = "operation-destroy-#{operation.id}"
+      .operations-index-card
+        .operations-index-card-main
+          .operations-index-card-header
+            %h2.operations-index-card-title= label
+            .operations-index-card-badges
               - if operation.open?
                 %span.badge.text-bg-primary= t('operations.statuses.in_progress')
-              - else
-                %span.badge.text-bg-secondary= t('operations.statuses.historized')
-            %td.operations-index-col-sync
-              - if operation.open?
                 - if operation.current_structure?
                   %span.badge.text-bg-success= t('execution.badge_fresh')
                 - else
                   %span.badge.text-bg-warning= t('execution.badge_dirty')
               - else
-                %span.text-muted= t('operations.index.sync_na')
-            %td
-              - if operation.planning
-                = link_to edit_planning_path(operation.planning), class: 'btn btn-secondary', target: '_blank', rel: 'noopener', data: { turbo: false }, title: (operation.planning.ref.presence || operation.planning.name) do
-                  %i.fa.fa-map.fa-fw
-                  %span.operations-index-btn-label= operation.planning.ref.presence || operation.planning.name
-              - else
-                %span.text-muted —
-            %td.operations-index-progress
-              = render 'v2/shared/status_segments', counts: counts
-              %span.operations-index-progress-label.text-muted= t('operations.index.stops_count', treated: counts[:delivered] + counts[:failed] + counts[:exception], total: counts[:total])
-            %td.text-muted.operations-index-col-published
-              - if operation.published_at
-                = l(operation.published_at, format: :short)
-            %td.operations-index-actions.text-end.text-nowrap
-              = link_to operation_path(operation), class: (operation.open? ? 'btn btn-primary' : 'btn btn-secondary'), title: t('execution.open_tracking') do
-                %i.fa.fa-tower-broadcast.fa-fw
-                %span.operations-index-btn-label= t('execution.open_tracking')
-              \
-              - if can_destroy
-                %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy'), data: { bs_toggle: 'modal', bs_target: "##{modal_id}" }}
-                  %i.fa.fa-trash.fa-fw
-                  %span.operations-index-btn-label= t('all.verb.destroy')
+                %span.badge.text-bg-secondary= t('operations.statuses.historized')
+          .operations-index-card-meta.text-muted
+            %span= l(operation.date)
+            - if operation.published_at
+              %span ·
+              %span= l(operation.published_at, format: :short)
+        .operations-index-card-progress
+          = render 'v2/shared/status_segments', counts: counts
+          %span.operations-index-progress-label.text-muted= t('operations.index.stops_count', treated: counts[:delivered] + counts[:failed] + counts[:exception], total: counts[:total])
+        .operations-index-card-actions
+          = link_to operation_path(operation), class: (operation.open? ? 'btn btn-primary' : 'btn btn-secondary') do
+            %i.fa.fa-tower-broadcast.fa-fw
+            = t('execution.open_tracking')
+          .operations-index-card-secondary
+            - if operation.planning
+              = link_to edit_planning_path(operation.planning), class: 'btn btn-secondary', target: '_blank', rel: 'noopener', data: { turbo: false }, title: (operation.planning.ref.presence || operation.planning.name) do
+                %i.fa.fa-map.fa-fw
+                %span.operations-index-card-secondary-label= operation.planning.ref.presence || operation.planning.name
+            - if can_destroy
+              %button.btn.btn-danger{type: 'button', data: { bs_toggle: 'modal', bs_target: "##{modal_id}" }}
+                %i.fa.fa-trash.fa-fw
+                = t('all.verb.destroy')
   - if can_destroy
     - @operations.each do |operation|
       = render 'v2/shared/typed_confirm_modal', id: "operation-destroy-#{operation.id}", expected: operation.name, url: operation_path(operation), title: t('operations.index.destroy_title'), body: t('operations.index.destroy_body', name: operation.name), confirm_label: t('operations.index.destroy_confirm'), input_label: t('operations.index.destroy_input_label')
