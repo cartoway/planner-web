@@ -4066,6 +4066,8 @@ fr:
       title: Créer une opération
       name: Nom
       routes: Tournées
+      routes_with_stops_only: Seules les tournées avec des arrêts peuvent être envoyées en opération.
+      filter_by_tag: Filtrer par tag
       select_all: Toutes
       select_none: Aucune
       select_visible: Visibles

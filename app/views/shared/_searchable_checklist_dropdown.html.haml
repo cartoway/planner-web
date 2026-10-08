@@ -1,0 +1,71 @@
+-# Searchable checklist dropdown for Bootstrap 3 / planning (v1).
+-# locals:
+-#   id: root element id (optional)
+-#   items: [{ id:, label:, checked:, filter_label:, data: {}, disabled: }]
+-#   global_actions: [{ mode:, label:, icon_class: }] (optional; defaults to all/clear/reverse)
+-#   checkbox_name: 'route_ids[]' (nil = not submitted)
+-#   id_prefix: 'searchable-checklist'
+-#   toggle_title:, toggle_class: 'btn btn-default'
+-#   none_label:, one_label:, many_label:
+-#   search_placeholder:, clear_filter_title:
+-#   filter_tags: [{ id:, label:, color:, icon: }] (optional tag chips filter)
+-#   tag_filter_label:
+-#   wrapper_class:, menu_class:
+- items = Array(local_assigns[:items])
+- filter_tags = Array(local_assigns[:filter_tags])
+- global_actions = local_assigns[:global_actions]
+- global_actions = [{ mode: 'all', label: t('web.select2.route_all'), icon_class: 'fa fa-check-square fa-fw' }, { mode: 'clear', label: t('web.select2.route_clear'), icon_class: 'fa fa-regular fa-square fa-fw' }, { mode: 'reverse', label: t('web.select2.route_reverse'), icon_class: 'fa fa-random fa-fw' }] if global_actions.nil?
+- checkbox_name = local_assigns.fetch(:checkbox_name, 'route_ids[]')
+- id_prefix = local_assigns.fetch(:id_prefix, 'searchable-checklist')
+- toggle_title = local_assigns.fetch(:toggle_title, t('routes.show.selector'))
+- toggle_class = local_assigns.fetch(:toggle_class, 'btn btn-default')
+- none_label = local_assigns.fetch(:none_label, t('web.select2.route_none'))
+- one_label = local_assigns.fetch(:one_label, t('web.select2.route_selected'))
+- many_label = local_assigns.fetch(:many_label, t('web.select2.routes_selected'))
+- search_placeholder = local_assigns.fetch(:search_placeholder, t('web.select2.search_placeholder'))
+- clear_filter_title = local_assigns.fetch(:clear_filter_title, t('operations.show.clear_route_filter'))
+- tag_filter_label = local_assigns.fetch(:tag_filter_label, t('execution.modal.filter_by_tag'))
+- wrapper_class = local_assigns[:wrapper_class]
+- menu_class = local_assigns[:menu_class]
+- root_id = local_assigns[:id]
+- selected_count = items.count { |item| item[:checked] && !item[:disabled] }
+- selector_label = selected_count.zero? ? none_label : (selected_count == 1 ? "1 #{one_label}" : "#{selected_count} #{many_label}")
+.searchable-checklist-dropdown{ id: root_id, class: wrapper_class, data: { searchable_checklist_dropdown: true, none_label: none_label, one_label: one_label, many_label: many_label } }
+  %button{ type: 'button', class: toggle_class, title: toggle_title, aria: { label: toggle_title, expanded: 'false', haspopup: 'listbox' }, data: { searchable_checklist_toggle: true } }
+    %span{ data: { searchable_checklist_label: true } }= selector_label
+    %span.caret
+  .dropdown-menu.searchable-checklist-dropdown-menu{ class: menu_class, data: { searchable_checklist_menu: true } }
+    .searchable-checklist-dropdown-inner
+      .searchable-checklist-dropdown-search
+        .searchable-checklist-dropdown-search-field
+          %input.form-control.input-sm{ type: 'search', autocomplete: 'off', placeholder: search_placeholder, aria: { label: search_placeholder }, data: { searchable_checklist_filter: true } }
+          %button.searchable-checklist-dropdown-clear.hidden{ type: 'button', title: clear_filter_title, aria: { label: clear_filter_title }, data: { searchable_checklist_clear: true } }
+            %i.fa.fa-times
+        - if filter_tags.present?
+          .searchable-checklist-dropdown-tag-filters{ role: 'group', 'aria-label': tag_filter_label }
+            %span.searchable-checklist-dropdown-tag-filters-label
+              %i.fa.fa-tags.fa-fw
+              = tag_filter_label
+            - filter_tags.each do |tag|
+              - tag_id = tag[:id].to_s
+              - icon_class = tag[:icon].presence || 'fa-flag'
+              - icon_style = tag[:color].present? ? "color: #{tag[:color]}" : nil
+              %label.searchable-checklist-dropdown-tag
+                %input{ type: 'checkbox', value: tag_id, autocomplete: 'off', data: { searchable_checklist_tag_filter: true } }
+                %i.fa{ class: icon_class, style: icon_style, 'aria-hidden': true }
+                %span= tag[:label]
+      %ul.searchable-checklist-dropdown-results.list-unstyled{ role: 'listbox' }
+        - global_actions.each do |action|
+          %li.searchable-checklist-dropdown-option--global
+            %button{ type: 'button', data: { searchable_checklist_action: action[:mode] } }
+              %i{ class: action[:icon_class] }
+              = action[:label]
+        - items.each do |item|
+          - item_id = item[:id].to_s
+          - input_id = "#{id_prefix}-#{item_id}"
+          - filter_label = item[:filter_label].presence || item[:label].to_s.downcase
+          - option_data = { filter_label: filter_label, item_id: item_id }.merge(item[:data] || {})
+          %li.searchable-checklist-dropdown-option{ data: option_data }
+            %label.searchable-checklist-dropdown-row{ for: input_id }
+              %input.searchable-checklist-dropdown-checkbox{ type: 'checkbox', name: checkbox_name.presence, value: item_id, checked: !!item[:checked], disabled: !!item[:disabled], id: input_id, data: (item[:data] || {}) }
+              %span.searchable-checklist-dropdown-label= item[:label]
