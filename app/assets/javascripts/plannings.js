@@ -35,11 +35,8 @@ import {
   continuousListLoading,
   mapInitialize,
   initializeMapHash,
-  selectFormatOption,
-  selectGlobalActions,
   templateSelectionColor,
   templateResultColor,
-  updateSelectionCount,
   dropdownAutoDirection,
   modal_options,
   camelToSnake,
@@ -308,18 +305,32 @@ var initPlanningExecution = function() {
     var tpl = stops === 1 ? ($modal.data('stops-count-one') || '') : ($modal.data('stops-count-other') || '');
     return String(tpl).replace('%{count}', stops);
   };
+  var flagTrue = function(value) {
+    return value === true || value === 'true' || value === 1 || value === '1';
+  };
+  var readDataFlag = function($el, $option, key) {
+    var attr = 'data-' + key;
+    var value = $el.attr(attr);
+    if (value == null || value === '') value = $option.attr(attr);
+    if (value == null || value === '') value = $el.data(key);
+    if ((value == null || value === '') && $option.length) value = $option.data(key);
+    return flagTrue(value);
+  };
   var routeMeta = function($el) {
     var $option = $el.closest('.searchable-checklist-dropdown-option');
     var stops = $el.attr('data-stops');
     if (stops == null || stops === '') stops = $option.attr('data-stops');
     if (stops == null || stops === '') stops = $el.data('stops');
-    var hidden = $el.attr('data-hidden');
-    if (hidden == null || hidden === '') hidden = $option.attr('data-hidden');
-    if (hidden == null || hidden === '') hidden = $el.data('hidden');
-    return { stops: parseInt(stops, 10) || 0, hidden: String(hidden) === 'true' };
+    return {
+      stops: parseInt(stops, 10) || 0,
+      hidden: readDataFlag($el, $option, 'hidden'),
+      locked: readDataFlag($el, $option, 'locked')
+    };
   };
+  // Same visibility rule as the planning route selector: !(hidden && locked).
   var routeIsVisible = function($el) {
-    return !routeMeta($el).hidden;
+    var meta = routeMeta($el);
+    return !(meta.hidden && meta.locked);
   };
   var refreshCount = function() {
     var n = enabledBoxes().filter(':checked').length;
@@ -347,14 +358,34 @@ var initPlanningExecution = function() {
     syncing = false;
     refreshCount();
   };
-  var setRouteMeta = function($row, hidden, stops) {
+  var setRouteLabel = function(routeId, name) {
+    if (!name) return;
+    var id = String(routeId);
+    rows().filter(function() {
+      return String($(this).data('route-id')) === id;
+    }).find('.execution-route-name').text(name);
+    var $option = $selector.find('.searchable-checklist-dropdown-option').filter(function() {
+      return String($(this).data('item-id')) === id;
+    });
+    if (!$option.length) return;
+    $option.find('.searchable-checklist-dropdown-label').text(name);
+    var filterLabel = String(name).toLowerCase();
+    $option.attr('data-filter-label', filterLabel).data('filter-label', filterLabel);
+  };
+  var setRouteMeta = function($row, hidden, locked, stops) {
     var $box = $row.find('.execution-route-checkbox');
-    var defaultOn = !hidden && stops > 0;
+    var routeId = $row.data('route-id');
+    var visible = !(hidden && locked);
+    var defaultOn = visible && stops > 0;
     var empty = stops <= 0;
-    $row.attr('data-hidden', hidden).data('hidden', hidden);
+    var hiddenStr = hidden ? 'true' : 'false';
+    var lockedStr = locked ? 'true' : 'false';
+    $row.attr('data-hidden', hiddenStr).data('hidden', hiddenStr);
+    $row.attr('data-locked', lockedStr).data('locked', lockedStr);
     $row.attr('data-stops', stops).data('stops', stops);
     $row.attr('data-default-on', defaultOn).data('default-on', defaultOn);
-    $box.attr('data-hidden', hidden).data('hidden', hidden);
+    $box.attr('data-hidden', hiddenStr).data('hidden', hiddenStr);
+    $box.attr('data-locked', lockedStr).data('locked', lockedStr);
     $box.attr('data-stops', stops).data('stops', stops);
     $row.find('.execution-route-stops').text(formatStopsCount(stops));
     if (empty) {
@@ -362,31 +393,28 @@ var initPlanningExecution = function() {
       $row.addClass('hidden');
     }
     if (routeChecklist) {
-      routeChecklist.setItemData($row.data('route-id'), { stops: stops, hidden: hidden });
-      routeChecklist.setItemVisible($row.data('route-id'), !empty);
+      routeChecklist.setItemData(routeId, { stops: stops, hidden: hiddenStr, locked: lockedStr });
+      routeChecklist.setItemVisible(routeId, !empty);
     }
   };
-  // Keep modal selection aligned with the live planning route selector.
-  var syncFromPlanningRouteSelector = function() {
-    var $select = $('#planning_route_ids');
-    if (!$select.length) return;
-    var visible = {};
-    ($select.val() || []).forEach(function(id) {
-      if (['clear', 'reverse', 'all'].indexOf(String(id)) === -1) visible[String(id)] = true;
+  // Refresh sizes/visibility/names from planning summary (moves/optim/ref edits).
+  var applyRoutesFromSummary = function(summary) {
+    var byId = {};
+    ((summary && summary.routes) || []).forEach(function(route) {
+      byId[String(route.route_id)] = route;
     });
     var defaults = [];
     rows().each(function() {
       var $row = $(this);
       var routeId = String($row.data('route-id'));
-      var $opt = $select.find('option').filter(function() { return String(this.value) === routeId; });
-      var stops = parseInt($row.data('stops'), 10) || 0;
-      if ($opt.length) {
-        var fromOpt = parseInt($opt.data('size-active'), 10);
-        if (!isNaN(fromOpt)) stops = fromOpt;
-      }
-      var hidden = !visible[routeId];
-      setRouteMeta($row, hidden, stops);
-      if (!hidden && stops > 0) defaults.push(routeId);
+      var route = byId[routeId];
+      if (!route) return;
+      var stops = parseInt((route.data || {}).size_active, 10) || 0;
+      var hidden = flagTrue(route.hidden);
+      var locked = flagTrue(route.locked);
+      setRouteMeta($row, hidden, locked, stops);
+      setRouteLabel(routeId, route.name);
+      if (!(hidden && locked) && stops > 0) defaults.push(routeId);
     });
     if (routeChecklist) {
       syncing = true;
@@ -394,6 +422,23 @@ var initPlanningExecution = function() {
       syncing = false;
     }
     syncListFromSelector(defaults);
+  };
+  var refreshRoutesOnOpen = function() {
+    var planningId = $modal.data('planning-id');
+    if (!planningId) {
+      applyAvailabilityForDate();
+      return;
+    }
+    $.ajax({
+      url: '/plannings/' + planningId + '/summary.json',
+      type: 'GET',
+      dataType: 'json'
+    }).done(function(summary) {
+      applyRoutesFromSummary(summary);
+      applyAvailabilityForDate();
+    }).fail(function() {
+      applyAvailabilityForDate();
+    });
   };
   var applyAvailabilityForDate = function() {
     var date = $date.val();
@@ -420,7 +465,7 @@ var initPlanningExecution = function() {
     else refreshCount();
   };
 
-  // Selector only lists routes with stops; "visible" still respects planning visibility.
+  // "Visibles" = !(hidden && locked), same as the planning route selector.
   routeChecklist = initSearchableChecklistDropdown($selector, {
     applyBox: function($box, mode) {
       if (mode === 'all') $box.prop('checked', true);
@@ -445,8 +490,7 @@ var initPlanningExecution = function() {
   $date.off('change.planningExecution').on('change.planningExecution', applyAvailabilityForDate);
   $modal.off('shown.bs.modal.planningExecution').on('shown.bs.modal.planningExecution', function() {
     rows().find('.execution-route-checkbox').removeData('user-touched');
-    syncFromPlanningRouteSelector();
-    applyAvailabilityForDate();
+    refreshRoutesOnOpen();
   });
   applyAvailabilityForDate();
 };
@@ -2664,17 +2708,21 @@ export const plannings_edit = function(params) {
     return (ref ? (ref + ' ') : '') + vehicleUsage.name;
   };
 
+  var planningRouteChecklist = null;
+
+  var planningRouteSelectorRoot = function() {
+    return $('#planning-route-selector');
+  };
+
   var captureRouteSelectorSummary = function() {
     var summaryRoutes = [];
-    $('#planning_route_ids option').each(function() {
+    planningRouteSelectorRoot().find('.searchable-checklist-dropdown-option').each(function() {
       var $opt = $(this);
-      var routeId = $opt.val();
-      if (['clear', 'reverse', 'all'].indexOf(routeId) !== -1) {
-        return;
-      }
-      var routeFromModel = routes.find(function(r) { return String(r.route_id) === String(routeId); });
+      var routeId = String($opt.data('item-id') || '');
+      if (!routeId) return;
+      var routeFromModel = routes.find(function(r) { return String(r.route_id) === routeId; });
       var data = {};
-      $.each($opt[0].attributes, function(_i, attr) {
+      $.each(this.attributes, function(_i, attr) {
         if (attr.name.indexOf('data-') === 0) {
           var key = attr.name.slice(5).replace(/-([a-z])/g, function(_m, c) { return c.toUpperCase(); });
           data[key] = attr.value;
@@ -2682,7 +2730,7 @@ export const plannings_edit = function(params) {
       });
       summaryRoutes.push({
         route_id: routeId,
-        name: routeFromModel ? routeFromModel.name : $opt.text(),
+        name: routeFromModel ? routeFromModel.name : $.trim($opt.find('.searchable-checklist-dropdown-label').text()),
         hidden: data.hidden === true || data.hidden === 'true',
         locked: data.locked === true || data.locked === 'true',
         data: data
@@ -2693,9 +2741,10 @@ export const plannings_edit = function(params) {
 
   var syncRouteRefAfterUpdate = function(routeId, ref, vehicleUsageId) {
     var displayName = buildRouteDisplayName(ref, vehicleUsageId);
+    var id = String(routeId);
 
     routes.forEach(function(route) {
-      if (String(route.route_id) === String(routeId)) {
+      if (String(route.route_id) === id) {
         route.ref = ref;
         route.name = displayName;
       }
@@ -2705,154 +2754,183 @@ export const plannings_edit = function(params) {
       planningPopoverSnapshot :
       captureRouteSelectorSummary();
     summary.routes.forEach(function(r) {
-      if (String(r.route_id) === String(routeId)) {
+      if (String(r.route_id) === id) {
         r.name = displayName;
       }
     });
     setPlanningPopoverSnapshot(summary);
+
+    // Keep operation modal labels in sync without waiting for reopen.
+    var $operationModal = $('#planning-operation-modal');
+    if ($operationModal.length) {
+      $operationModal.find('.planning-execution-route[data-route-id="' + id + '"] .execution-route-name').text(displayName);
+      var $option = $operationModal.find('#execution-route-selector .searchable-checklist-dropdown-option').filter(function() {
+        return String($(this).data('item-id')) === id;
+      });
+      $option.find('.searchable-checklist-dropdown-label').text(displayName);
+      var filterLabel = String(displayName).toLowerCase();
+      $option.attr('data-filter-label', filterLabel).data('filter-label', filterLabel);
+    }
+  };
+
+  var routeFlagOn = function(data, key) {
+    var value = data[key];
+    return value === true || value === 'true' || value === 1 || value === '1';
+  };
+
+  var formatPlanningRouteChecklistLabel = function(route) {
+    var data = route.data || {};
+    var label = route.name || '';
+    var size = parseInt(data.size, 10);
+    if (!isNaN(size) && size > 0) {
+      if (routeFlagOn(data, 'out_of_route')) {
+        label += ' - ' + size;
+      } else {
+        var active = parseInt(data.size_active, 10);
+        if (isNaN(active)) active = size;
+        label += ' - ' + active + '/' + size;
+      }
+    }
+
+    var $span = $('<span></span>').text(label);
+    var sizeStoreReloads = parseInt(data.size_store_reloads, 10);
+    if (!isNaN(sizeStoreReloads) && sizeStoreReloads > 0) {
+      $span.append('&nbsp;<i class="fa fa-arrows-rotate fa-fw fa-route-selector" title="' + I18n.t('plannings.edit.sub_tour.reloads') + '"></i>&nbsp;' + sizeStoreReloads);
+    }
+
+    var badges = [
+      ['out_of_window', 'fa-stopwatch', 'plannings.edit.error.out_of_window_help'],
+      ['out_of_capacity', 'fa-dumpster', 'plannings.edit.error.out_of_capacity_help'],
+      ['out_of_drive_time', 'fa-power-off', 'plannings.edit.error.out_of_drive_time_help'],
+      ['out_of_work_time', 'fa-repeat', 'plannings.edit.error.out_of_work_time_help'],
+      ['out_of_max_distance', 'fa-ruler', 'plannings.edit.error.out_of_max_distance_help'],
+      ['out_of_max_ride_distance', 'fa-compass-drafting', 'plannings.edit.error.out_of_max_ride_distance_help'],
+      ['out_of_max_ride_duration', 'fa-stopwatch-20', 'plannings.edit.error.out_of_max_ride_duration_help'],
+      ['out_of_max_reload', 'fa-arrows-rotate', 'plannings.edit.error.out_of_max_reload_help'],
+      ['out_of_relation', 'fa-link', 'plannings.edit.error.out_of_relation_help'],
+      ['out_of_skill', 'fa-user-check', 'plannings.edit.error.out_of_skill_help'],
+      ['no_path', 'fa-road', 'plannings.edit.error.no_path_help'],
+      ['unmanageable_capacity', 'fa-times', 'plannings.edit.error.unmanageable_capacity_help']
+    ];
+    var icons = [];
+    badges.forEach(function(badge) {
+      if (!routeFlagOn(data, badge[0])) return;
+      icons.push('<span class="badge badge-danger" title="' + I18n.t(badge[2]) + '"><i class="fa ' + badge[1] + ' fa-fw"></i></span>');
+    });
+    if (icons.length) {
+      $span.append(' ');
+      $span.append(icons.join(''));
+    }
+    return $span.html();
   };
 
   var refreshRouteSelectorFromSummary = function(summary) {
-    var $select = $('#planning_route_ids');
-    if (!$select.length || !summary || !summary.routes) {
+    var $root = planningRouteSelectorRoot();
+    if (!$root.length || !summary || !summary.routes) {
       return;
     }
 
-    var previousSelection = ($select.val() || []).slice();
-    if ($select.hasClass('select2-hidden-accessible')) {
-      $select.select2('destroy');
-    }
-
-    $select.empty();
-    [
-      { id: 'clear', text: I18n.t('web.select2.route_clear'), className: 'global' },
-      { id: 'reverse', text: I18n.t('web.select2.route_reverse'), className: 'global' },
-      { id: 'all', text: I18n.t('web.select2.route_all'), className: 'global' }
-    ].forEach(function(option) {
-      $select.append(
-        $('<option></option>')
-          .val(option.id)
-          .text(option.text)
-          .addClass(option.className)
-      );
-    });
-
+    var previousSelection = planningRouteChecklist ? planningRouteChecklist.values() : [];
+    var byId = {};
     summary.routes.forEach(function(route) {
-      var $option = $('<option></option>')
-        .val(String(route.route_id))
-        .text(route.name || '');
-
-      if (route.data) {
-        Object.keys(route.data).forEach(function(key) {
-          $option.attr('data-' + key.replace(/_/g, '-'), route.data[key]);
-        });
-      }
-
-      $select.append($option);
+      byId[String(route.route_id)] = route;
     });
 
-    var validSelection = previousSelection.filter(function(value) {
-      return $select.find('option[value="' + value + '"]').length > 0;
-    });
-    if (validSelection.length) {
-      $select.val(validSelection);
-    } else {
-      $select.find('option').each(function() {
-        var routeId = $(this).val();
-        if (['clear', 'reverse', 'all'].includes(routeId)) {
-          return;
-        }
-        var route = summary.routes.find(function(r) { return String(r.route_id) === routeId; });
-        if (route && !(route.hidden && route.locked)) {
-          $(this).prop('selected', true);
-        }
+    $root.find('.searchable-checklist-dropdown-option').each(function() {
+      var $opt = $(this);
+      var routeId = String($opt.data('item-id') || '');
+      var route = byId[routeId];
+      if (!route) return;
+      var data = $.extend({}, route.data || {}, {
+        hidden: route.hidden,
+        locked: route.locked
       });
-    }
+      Object.keys(data).forEach(function(key) {
+        var attr = 'data-' + key.replace(/_/g, '-');
+        $opt.attr(attr, data[key]).data(key, data[key]);
+        $opt.find('.searchable-checklist-dropdown-checkbox').attr(attr, data[key]).data(key, data[key]);
+      });
+      $opt.find('.searchable-checklist-dropdown-label').html(formatPlanningRouteChecklistLabel(route));
+      var filterParts = [route.name || ''];
+      $opt.attr('data-filter-label', filterParts.join(' ').toLowerCase()).data('filter-label', filterParts.join(' ').toLowerCase());
+    });
 
     initRouteSelector();
-    updateSelectionCount('#route_selector', '#planning_route_ids');
+
+    var validSelection = previousSelection.filter(function(value) {
+      return !!byId[String(value)];
+    });
+    if (!validSelection.length) {
+      validSelection = summary.routes.filter(function(route) {
+        return !(route.hidden && route.locked);
+      }).map(function(route) { return String(route.route_id); });
+    }
+    if (planningRouteChecklist) {
+      planningRouteChecklist.setValues(validSelection);
+    }
+  };
+
+  var applyPlanningRouteVisibility = function(selectedIds) {
+    var selectedRouteIds = (selectedIds || []).map(function(id) {
+      var parsedId = parseInt(id, 10);
+      return isNaN(parsedId) ? null : parsedId;
+    }).filter(function(id) { return id !== null; });
+
+    var displayedRouteIds = Object.keys(routesLayer.clustersByRoute).map(function(id) { return parseInt(id, 10); })
+      .concat(Object.keys(routesLayer.layersByRoute).map(function(id) { return parseInt(id, 10); }));
+
+    var routesToHide = displayedRouteIds.filter(function(id) {
+      return selectedRouteIds.indexOf(id) === -1;
+    });
+    var routesToShow = selectedRouteIds.filter(function(id) {
+      return displayedRouteIds.indexOf(id) === -1;
+    });
+
+    if (routesToHide.length > 0) routesLayer.hideRoutes(routesToHide);
+    if (routesToShow.length > 0) routesLayer.showRoutes(routesToShow);
+  };
+
+  var persistPlanningRouteFilter = function(selectedIds) {
+    $.ajax({
+      type: 'PATCH',
+      url: '/plannings/' + planning_id + '/filter_routes.json',
+      contentType: 'application/json',
+      data: JSON.stringify({ route_ids: selectedIds }),
+      dataType: 'json',
+      beforeSend: beforeSendWaiting,
+      success: function() {
+        initPlanningDisplay(planning_id, { fitbound: true, firstTime: true });
+      },
+      complete: completeAjaxMap,
+      error: ajaxError
+    });
   };
 
   var initRouteSelector = function() {
+    var $root = planningRouteSelectorRoot();
+    if (!$root.length) return;
+
     var previousSelection = [];
-    var $planningRouteIds = $('#planning_route_ids');
-    if (!$planningRouteIds.length) {
-      return;
-    }
-    var $routeDropdownParent = $planningRouteIds.closest('.multiple');
-    $planningRouteIds.select2({
-      dropdownParent: $routeDropdownParent.length ? $routeDropdownParent : $('#route_selector'),
-      closeOnSelect : false,
-      allowClear: true,
-      theme: 'bootstrap',
-      placeholder: I18n.t('web.select2.search_placeholder'),
-      templateSelection: selectFormatOption,
-      templateResult: selectFormatOption,
-    })
-    .off('select2:close select2:open select2:select select2:unselect change')
-    .on('select2:open', function(e) {
-      previousSelection = $(this).val() || [];
-      $('#route_selector').addClass('is-open');
-      setTimeout(function() {
-        $('#route_selector .select2-results__option').each(function() {
-          var optionValue = $(this).attr('id').split('-').pop();
-          if (['clear', 'reverse', 'all'].includes(optionValue)) {
-            $(this).addClass('global');
-          }
-        });
-      }, 0);
-    }).on('select2:close', function() {
-      $('#route_selector').removeClass('is-open');
-    }).on('select2:select', function(e) {
-      selectGlobalActions($(this), e);
-    }).on('select2:select select2:unselect', function() {
-      updateSelectionCount('#route_selector', '#planning_route_ids');
-    })
-    .on('change', function() {
-      var selectedIds = $(this).val() || [];
-      var selectedRouteIds = selectedIds.map(function(id) {
-        var parsedId = parseInt(id);
-        return isNaN(parsedId) ? null : parsedId;
-      }).filter(function(id) { return id !== null; });
 
-      var displayedRouteIds = Object.keys(routesLayer.clustersByRoute).map(function(id) { return parseInt(id); })
-        .concat(Object.keys(routesLayer.layersByRoute).map(function(id) { return parseInt(id); }));
+    if (planningRouteChecklist) planningRouteChecklist.destroy();
+    planningRouteChecklist = initSearchableChecklistDropdown($root);
 
-      var routesToHide = displayedRouteIds.filter(function(id) {
-        return selectedRouteIds.indexOf(id) === -1;
+    $root
+      .off('.planningRouteSelector')
+      .on('searchable-checklist-dropdown:open.planningRouteSelector', function() {
+        previousSelection = planningRouteChecklist ? planningRouteChecklist.values().slice() : [];
+        $('#route_selector').addClass('is-open');
+      })
+      .on('searchable-checklist-dropdown:close.planningRouteSelector', function() {
+        $('#route_selector').removeClass('is-open');
+        if (!planningRouteChecklist) return;
+        var selectedIds = planningRouteChecklist.values();
+        if (JSON.stringify(previousSelection) === JSON.stringify(selectedIds)) return;
+        persistPlanningRouteFilter(selectedIds);
+      })
+      .on('searchable-checklist-dropdown:change.planningRouteSelector', function(_event, detail) {
+        applyPlanningRouteVisibility(detail && detail.checkedValues);
       });
-
-      var routesToShow = selectedRouteIds.filter(function(id) {
-        return displayedRouteIds.indexOf(id) === -1;
-      });
-
-      if (routesToHide.length > 0) {
-        routesLayer.hideRoutes(routesToHide);
-      }
-
-      if (routesToShow.length > 0) {
-        routesLayer.showRoutes(routesToShow);
-      }
-    })
-      .on('select2:close', function(e) {
-      var selectedIds = $(this).val();
-
-      if (JSON.stringify(previousSelection)==JSON.stringify(selectedIds)) return;
-
-      $.ajax({
-        type: 'PATCH',
-        url: '/plannings/' + planning_id + '/filter_routes.json',
-        contentType: 'application/json',
-        data: JSON.stringify({ route_ids: selectedIds }),
-        dataType: 'json',
-        beforeSend: beforeSendWaiting,
-        success: function() {
-          initPlanningDisplay(planning_id, { fitbound: true, firstTime: true })
-        },
-        complete: completeAjaxMap,
-        error: ajaxError
-      });
-    });
   };
 
   // Single delegated bindings on #planning (re-bound on each full sidebar refresh)

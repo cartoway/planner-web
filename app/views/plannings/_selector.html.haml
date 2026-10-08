@@ -3,11 +3,18 @@
 - selector_hidden = !manage_toggle_routes && !manage_lock_routes
 - selector_disabled = (@manage_planning && @manage_planning[:disable_toggle_routes]) && (@manage_planning && @manage_planning[:disable_lock_routes])
 - unless selector_hidden
+  - summary_routes = Array(local_assigns.dig(:summary, :routes))
+  - routes_by_id = @planning.routes.index_by(&:id)
+  - route_skills_by_id = summary_routes.to_h { |row| [row[:route_id], routes_by_id[row[:route_id]]&.route_skills || []] }
+  - filter_tag_ids = route_skills_by_id.values.flatten.map(&:id).uniq
+  - filter_tags = @planning.customer.tags.select { |tag| filter_tag_ids.include?(tag.id) }.map { |tag| { id: tag.id, label: tag.label, color: tag.default_color, icon: tag.default_icon } }
+  - checklist_items = summary_routes.map do |row|
+    - skills = route_skills_by_id[row[:route_id]] || []
+    - data = (row[:data] || {}).merge(hidden: row[:hidden], locked: row[:locked], tag_ids: skills.map(&:id).join(','))
+    - filter_label = [row[:name], *skills.map(&:label)].compact.map { |part| part.to_s.downcase }.uniq.join(' ')
+    - { id: row[:route_id], label: row[:name], label_html: planning_route_checklist_label(row), checked: !(row[:hidden] && row[:locked]), disabled: selector_disabled, filter_label: filter_label, data: data }
+  - checklist_actions = [{ mode: 'all', label: t('web.select2.route_all'), icon_class: 'fa fa-check-square fa-fw' }, { mode: 'clear', label: t('web.select2.route_clear'), icon_class: 'fa fa-regular fa-square fa-fw' }, { mode: 'reverse', label: t('web.select2.route_reverse'), icon_class: 'fa fa-random fa-fw' }]
   .col-xs-12.multiple.ph-0
     %label
       = t('routes.show.selector')
-    - to_select_options = [{name: t('web.select2.route_clear'), route_id: 'clear', hidden: true, locked: true, class: 'global'}]
-    - to_select_options << {name: t('web.select2.route_reverse'), route_id: 'reverse', hidden: true, locked: true, class: 'global'}
-    - to_select_options << {name: t('web.select2.route_all'), route_id: 'all', hidden: true, locked: true, class: 'global'}
-    - to_select_options += local_assigns[:summary][:routes]
-    = select_tag :planning_route_ids, options_for_select(to_select_options.map{ |r| [r[:name], r[:route_id], { class: r[:class], data: r[:data] }] }, to_select_options.select{ |r| !(r[:hidden] && r[:locked]) }.map{ |r| r[:route_id] }), { multiple: true, include_blank: false, class: 'form-control width_1_2 selectpicker', disabled: selector_disabled, 'data-live-search': true, 'data-placeholder': ['', nil] }
+    = render 'shared/searchable_checklist_dropdown', id: 'planning-route-selector', id_prefix: 'planning_route_selector', checkbox_name: nil, items: checklist_items, filter_tags: filter_tags, global_actions: checklist_actions, toggle_class: (selector_disabled ? 'btn btn-default disabled' : 'btn btn-default'), wrapper_class: 'planning-route-selector'
