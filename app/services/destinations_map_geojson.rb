@@ -55,11 +55,17 @@ class DestinationsMapGeojson
   end
 
   def page_by_destination_id
-    @scope.pluck(:id).each_with_index.to_h { |id, idx| [id, (idx / @per_page) + 1] }
+    order_sql = DestinationListPage.order_sql(@scope).presence || 'destinations.id ASC'
+    ids = Destination.unscoped.where(id: distinct_destination_ids).order(Arel.sql(order_sql)).pluck(:id)
+    ids.each_with_index.to_h { |id, idx| [id, (idx / @per_page) + 1] }
+  end
+
+  def distinct_destination_ids
+    @scope.except(:order, :includes, :preload, :eager_load).reselect(Arel.sql('destinations.id')).distinct
   end
 
   def positioned_rows_in_bbox
-    scope = @scope.positioned
+    scope = @scope.positioned.except(:order)
     scope = apply_bbox(scope) if @bbox
     scope.pluck(:id, :lat, :lng)
   end
@@ -76,7 +82,7 @@ class DestinationsMapGeojson
     return rows unless @highlight_id
     return rows if rows.any? { |row| row[0] == @highlight_id }
 
-    extra = @scope.where(id: @highlight_id).pick(:id, :lat, :lng)
+    extra = @scope.except(:order).where(id: @highlight_id).pick(:id, :lat, :lng)
     return rows unless extra
     return rows if extra[1].nil? || extra[2].nil?
 
