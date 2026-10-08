@@ -1,32 +1,16 @@
 - units = Array(local_assigns[:units])
-- compact = local_assigns[:compact]
 - fmt = ->(number) { number_with_precision(number, precision: 2, strip_insignificant_zeros: true, delimiter: t('number.format.delimiter')) }
 - visible = units.select { |unit| unit[:delivery].to_f.positive? || unit[:pickup].to_f.positive? }
-- if visible.any?
-  - if compact
-    .operation-tour-quantities
-      - visible.each do |unit|
-        %span
-          = unit[:label]
-          - if unit[:delivery].to_f.positive?
-            = "#{fmt.call(unit[:delivered])} / #{fmt.call(unit[:delivery])}"
-            = t('operations.show.deliveries')
-          - if unit[:pickup].to_f.positive?
-            - if unit[:delivery].to_f.positive?
-              ·
-            = "#{fmt.call(unit[:collected])} / #{fmt.call(unit[:pickup])}"
-            = t('operations.show.pickups')
-  - else
-    - visible.each do |unit|
-      - if unit[:delivery].to_f.positive?
-        .operation-stat
-          %i.fa.fa-fw{class: unit[:icon]}
-          %div
-            %strong= "#{fmt.call(unit[:delivered])} / #{fmt.call(unit[:delivery])}"
-            %span= "#{unit[:label]} · #{t('operations.show.deliveries')}"
-      - if unit[:pickup].to_f.positive?
-        .operation-stat
-          %i.fa.fa-fw{class: unit[:icon]}
-          %div
-            %strong= "#{fmt.call(unit[:collected])} / #{fmt.call(unit[:pickup])}"
-            %span= "#{unit[:label]} · #{t('operations.show.pickups')}"
+- visible.each do |unit|
+  - if unit[:delivery].to_f.positive?
+    .operation-stat
+      %i.fa.fa-fw{class: unit[:icon]}
+      %div
+        %strong= "#{fmt.call(unit[:delivered])} / #{fmt.call(unit[:delivery])}"
+        %span= "#{unit[:label]} · #{t('operations.show.deliveries')}"
+  - if unit[:pickup].to_f.positive?
+    .operation-stat
+      %i.fa.fa-fw{class: unit[:icon]}
+      %div
+        %strong= "#{fmt.call(unit[:collected])} / #{fmt.call(unit[:pickup])}"
+        %span= "#{unit[:label]} · #{t('operations.show.pickups')}"
