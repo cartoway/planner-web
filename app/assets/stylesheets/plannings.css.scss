@@ -860,7 +860,64 @@ $sidebar-margins: 10px;
     }
   }
 
-  #planning-operation-modal,
+  #planning-operation-modal {
+    .modal-dialog,
+    .modal-content,
+    .modal-body {
+      overflow: visible;
+    }
+
+    .planning-execution-route-selector {
+      margin-bottom: 10px;
+    }
+
+    .planning-execution-routes {
+      margin-top: 8px;
+      clear: both;
+    }
+
+    .planning-execution-route {
+      margin-bottom: 8px;
+
+      .planning-execution-route-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .form-switch {
+        flex-shrink: 0;
+        margin: 0;
+        padding-left: 0;
+      }
+
+      label {
+        margin: 0;
+        font-weight: normal;
+
+        .text-muted {
+          margin-left: 6px;
+        }
+      }
+
+      .execution-route-taken-hint {
+        margin: 2px 0 0 2.5rem;
+      }
+
+      .planning-execution-route-extras {
+        margin-left: 2.5rem;
+      }
+
+      &.is-taken {
+        opacity: 0.75;
+
+        label {
+          color: #777;
+        }
+      }
+    }
+  }
+
   #planning-sync-modal {
     .planning-execution-route {
       margin-bottom: 8px;

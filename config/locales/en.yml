@@ -3921,6 +3921,8 @@ en:
       title: Create an operation
       name: Name
       routes: Routes
+      routes_with_stops_only: Only routes with stops can be sent to an operation.
+      filter_by_tag: Filter by tag
       select_all: All
       select_none: None
       select_visible: Visible
