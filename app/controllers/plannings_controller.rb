@@ -764,7 +764,7 @@ class PlanningsController < ApplicationController
       route_ids: route_ids,
       visible_routes_only: params[:visible_routes_only].present?
     )
-    redirect_to edit_planning_path(@planning), notice: t('execution.published')
+    redirect_to operation_path(operation), notice: t('execution.published')
   rescue Operations::RouteConflict
     redirect_to edit_planning_path(@planning), alert: t('execution.route_conflict')
   rescue Operations::EmptyRoutes
