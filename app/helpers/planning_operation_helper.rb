@@ -58,4 +58,46 @@ module PlanningOperationHelper
     end
     route_data
   end
+
+  # HTML label for planning route checklist (name + stops + error badges).
+  def planning_route_checklist_label(route_summary)
+    data = (route_summary[:data] || {}).with_indifferent_access
+    label = route_summary[:name].to_s
+    size = data[:size].to_i
+    if size.positive?
+      label += if data[:out_of_route]
+        " - #{size}"
+      else
+        active = data[:size_active].nil? ? size : data[:size_active].to_i
+        " - #{active}/#{size}"
+      end
+    end
+
+    parts = [ERB::Util.html_escape(label)]
+    size_store_reloads = data[:size_store_reloads].to_i
+    if size_store_reloads.positive?
+      parts << " <i class=\"fa fa-arrows-rotate fa-fw fa-route-selector\" title=\"#{ERB::Util.html_escape(t('plannings.edit.sub_tour.reloads'))}\"></i> #{size_store_reloads}"
+    end
+
+    error_badges = [
+      [:out_of_window, 'fa-stopwatch', 'plannings.edit.error.out_of_window_help'],
+      [:out_of_capacity, 'fa-dumpster', 'plannings.edit.error.out_of_capacity_help'],
+      [:out_of_drive_time, 'fa-power-off', 'plannings.edit.error.out_of_drive_time_help'],
+      [:out_of_work_time, 'fa-repeat', 'plannings.edit.error.out_of_work_time_help'],
+      [:out_of_max_distance, 'fa-ruler', 'plannings.edit.error.out_of_max_distance_help'],
+      [:out_of_max_ride_distance, 'fa-compass-drafting', 'plannings.edit.error.out_of_max_ride_distance_help'],
+      [:out_of_max_ride_duration, 'fa-stopwatch-20', 'plannings.edit.error.out_of_max_ride_duration_help'],
+      [:out_of_max_reload, 'fa-arrows-rotate', 'plannings.edit.error.out_of_max_reload_help'],
+      [:out_of_relation, 'fa-link', 'plannings.edit.error.out_of_relation_help'],
+      [:out_of_skill, 'fa-user-check', 'plannings.edit.error.out_of_skill_help'],
+      [:no_path, 'fa-road', 'plannings.edit.error.no_path_help'],
+      [:unmanageable_capacity, 'fa-times', 'plannings.edit.error.unmanageable_capacity_help']
+    ]
+    error_badges.each do |key, icon, help_key|
+      next unless ActiveModel::Type::Boolean.new.cast(data[key])
+
+      parts << " <span class=\"badge badge-danger\" title=\"#{ERB::Util.html_escape(t(help_key))}\"><i class=\"fa #{icon} fa-fw\"></i></span>"
+    end
+    parts.join.html_safe
+  end
 end

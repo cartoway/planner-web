@@ -525,12 +525,83 @@ $sidebar-margins: 10px;
           z-index: 20;
         }
 
-        .select2-container {
-          padding: 0 2px;
-        }
+        // Match former select2 multi route selector look (focus glow lives in searchable_checklist_dropdown.scss).
+        .planning-route-selector {
+          width: 100%;
 
-        .select2-dropdown {
-          z-index: 21;
+          .searchable-checklist-dropdown-menu {
+            z-index: 21;
+            border-radius: 6px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+          }
+
+          .searchable-checklist-dropdown-results {
+            max-height: 400px;
+          }
+
+          .searchable-checklist-dropdown-option--global button {
+            padding-right: 20px;
+          }
+
+          .searchable-checklist-dropdown-row {
+            padding-right: 20px;
+            color: inherit;
+
+            .searchable-checklist-dropdown-checkbox {
+              appearance: none;
+              -webkit-appearance: none;
+              flex: 0 0 20px;
+              width: 20px;
+              height: 20px;
+              margin: 0 20px 0 0 !important;
+              border: 2px solid #e9e9e9;
+              border-radius: 4px;
+              background: #fff;
+              vertical-align: middle;
+              cursor: pointer;
+
+              &:checked {
+                border: 0;
+                background-color: $primary-color;
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='%23fff' d='M13.5 3.5 6 11 2.5 7.5l1.4-1.4L6 8.2l6.1-6.1z'/%3E%3C/svg%3E");
+                background-position: center;
+                background-repeat: no-repeat;
+                background-size: 12px 12px;
+              }
+            }
+          }
+
+          .searchable-checklist-dropdown-checkbox:not(:checked) {
+            border-color: rgba($grey-color, 0.85);
+            background-color: #f5f5f5;
+          }
+
+          .searchable-checklist-dropdown-checkbox:not(:checked) ~ .searchable-checklist-dropdown-label {
+            color: $grey-color;
+            opacity: $btn-disabled-opacity;
+          }
+
+          .searchable-checklist-dropdown-row:hover,
+          .searchable-checklist-dropdown-row:focus-within,
+          .searchable-checklist-dropdown-option--global button:hover {
+            background-color: #eaeaeb;
+            color: #272727;
+          }
+
+          .searchable-checklist-dropdown-row:hover .searchable-checklist-dropdown-checkbox:not(:checked) ~ .searchable-checklist-dropdown-label {
+            color: $grey-color;
+          }
+
+          .searchable-checklist-dropdown-label .badge-danger {
+            background-color: transparent;
+            border: 1px solid $danger-color;
+            color: $danger-color;
+          }
+
+          .searchable-checklist-dropdown-row:hover .badge-danger {
+            background-color: $danger-color;
+            color: $lightgrey-color;
+          }
         }
       }
 

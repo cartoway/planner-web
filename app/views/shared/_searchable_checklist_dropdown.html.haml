@@ -1,7 +1,7 @@
 -# Searchable checklist dropdown for Bootstrap 3 / planning (v1).
 -# locals:
 -#   id: root element id (optional)
--#   items: [{ id:, label:, checked:, filter_label:, data: {}, disabled: }]
+-#   items: [{ id:, label:, label_html:, checked:, filter_label:, data: {}, disabled: }]
 -#   global_actions: [{ mode:, label:, icon_class: }] (optional; defaults to all/clear/reverse)
 -#   checkbox_name: 'route_ids[]' (nil = not submitted)
 -#   id_prefix: 'searchable-checklist'
@@ -68,4 +68,8 @@
           %li.searchable-checklist-dropdown-option{ data: option_data }
             %label.searchable-checklist-dropdown-row{ for: input_id }
               %input.searchable-checklist-dropdown-checkbox{ type: 'checkbox', name: checkbox_name.presence, value: item_id, checked: !!item[:checked], disabled: !!item[:disabled], id: input_id, data: (item[:data] || {}) }
-              %span.searchable-checklist-dropdown-label= item[:label]
+              %span.searchable-checklist-dropdown-label
+                - if item[:label_html].present?
+                  != item[:label_html]
+                - else
+                  = item[:label]
