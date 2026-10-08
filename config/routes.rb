@@ -173,6 +173,7 @@ Rails.application.routes.draw do
     post ':route_id/:store_reload_id/create_store_reload' => 'stops#create_store_reload'
     post ':route_id/create_regulatory_rest' => 'stops#create_regulatory_rest'
     get 'data_header'
+    get 'summary'
     patch 'filter_routes'
     get 'refresh'
     get 'refresh_routes' => 'plannings#refresh_routes'

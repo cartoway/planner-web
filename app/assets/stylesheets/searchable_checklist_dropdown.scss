@@ -3,6 +3,10 @@
 // Bootstrap 3 searchable checklist dropdown (v1).
 // Same interaction model as the operation-page route selector.
 
+// Match select2-bootstrap focus/open used by other planning selectors.
+$searchable-checklist-focus-border: #66afe9;
+$searchable-checklist-focus-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+
 .searchable-checklist-dropdown {
   position: relative;
   display: block;
@@ -11,10 +15,22 @@
   > [data-searchable-checklist-toggle] {
     width: 100%;
     text-align: left;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+    transition: border-color ease-in-out 0.15s, box-shadow ease-in-out 0.15s;
 
     .caret {
       float: right;
       margin-top: 8px;
+    }
+
+    &:focus,
+    &:focus-visible,
+    &:active:focus {
+      border-color: $searchable-checklist-focus-border;
+      outline: 0;
+      box-shadow: $searchable-checklist-focus-shadow;
     }
   }
 
@@ -22,6 +38,18 @@
   &.open > .searchable-checklist-dropdown-menu {
     display: flex !important;
     flex-direction: column;
+    margin-top: -1px;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+  }
+
+  &.open > [data-searchable-checklist-toggle] {
+    border-color: $searchable-checklist-focus-border;
+    border-bottom-color: transparent;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    outline: 0;
+    box-shadow: $searchable-checklist-focus-shadow;
   }
 }
 

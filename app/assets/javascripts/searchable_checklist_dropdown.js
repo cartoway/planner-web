@@ -62,11 +62,15 @@ function applyFilter($root) {
 }
 
 function setOpen($root, open) {
+  var wasOpen = $root.hasClass('open');
   $root.toggleClass('open', !!open);
   $root.find('[data-searchable-checklist-toggle]').attr('aria-expanded', open ? 'true' : 'false');
   if (open) {
     var $input = $root.find('[data-searchable-checklist-filter]');
     if ($input.length) setTimeout(function() { $input.trigger('focus'); }, 0);
+    if (!wasOpen) $root.trigger('searchable-checklist-dropdown:open');
+  } else if (wasOpen) {
+    $root.trigger('searchable-checklist-dropdown:close');
   }
 }
 
