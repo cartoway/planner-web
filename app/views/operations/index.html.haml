@@ -12,10 +12,10 @@
           %th= t('operations.index.ref')
           %th= t('operations.index.date')
           %th= t('operations.index.lifecycle')
-          %th= t('operations.index.sync')
+          %th.operations-index-col-sync= t('operations.index.sync')
           %th= t('operations.index.planning')
           %th= t('operations.index.progress')
-          %th= t('operations.index.published_at')
+          %th.operations-index-col-published= t('operations.index.published_at')
           %th
       %tbody
         - if @operations.empty?
@@ -33,7 +33,7 @@
                 %span.badge.text-bg-primary= t('operations.statuses.in_progress')
               - else
                 %span.badge.text-bg-secondary= t('operations.statuses.historized')
-            %td
+            %td.operations-index-col-sync
               - if operation.open?
                 - if operation.current_structure?
                   %span.badge.text-bg-success= t('execution.badge_fresh')
@@ -43,26 +43,26 @@
                 %span.text-muted= t('operations.index.sync_na')
             %td
               - if operation.planning
-                = link_to edit_planning_path(operation.planning), class: 'btn btn-secondary', target: '_blank', rel: 'noopener', data: { turbo: false } do
+                = link_to edit_planning_path(operation.planning), class: 'btn btn-secondary', target: '_blank', rel: 'noopener', data: { turbo: false }, title: (operation.planning.ref.presence || operation.planning.name) do
                   %i.fa.fa-map.fa-fw
-                  = operation.planning.ref.presence || operation.planning.name
+                  %span.operations-index-btn-label= operation.planning.ref.presence || operation.planning.name
               - else
                 %span.text-muted —
             %td.operations-index-progress
               = render 'v2/shared/status_segments', counts: counts
               %span.operations-index-progress-label.text-muted= t('operations.index.stops_count', treated: counts[:delivered] + counts[:failed] + counts[:exception], total: counts[:total])
-            %td.text-muted
+            %td.text-muted.operations-index-col-published
               - if operation.published_at
                 = l(operation.published_at, format: :short)
             %td.operations-index-actions.text-end.text-nowrap
               = link_to operation_path(operation), class: (operation.open? ? 'btn btn-primary' : 'btn btn-secondary'), title: t('execution.open_tracking') do
                 %i.fa.fa-tower-broadcast.fa-fw
-                = t('execution.open_tracking')
+                %span.operations-index-btn-label= t('execution.open_tracking')
               \
               - if can_destroy
                 %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy'), data: { bs_toggle: 'modal', bs_target: "##{modal_id}" }}
                   %i.fa.fa-trash.fa-fw
-                  = t('all.verb.destroy')
+                  %span.operations-index-btn-label= t('all.verb.destroy')
   - if can_destroy
     - @operations.each do |operation|
       = render 'v2/shared/typed_confirm_modal', id: "operation-destroy-#{operation.id}", expected: operation.name, url: operation_path(operation), title: t('operations.index.destroy_title'), body: t('operations.index.destroy_body', name: operation.name), confirm_label: t('operations.index.destroy_confirm'), input_label: t('operations.index.destroy_input_label')
