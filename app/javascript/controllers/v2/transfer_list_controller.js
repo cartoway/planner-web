@@ -151,7 +151,7 @@ export default class extends Controller {
   }
 
   // Snapshot current lists into the <template> so the next open keeps this order
-  // (the download also persists it server-side via columns/skips query params).
+  // (the download also persists it server-side via columns/skips POST body fields).
   serializeToTemplate (template) {
     if (!template?.content) return
     template.content.replaceChildren(
