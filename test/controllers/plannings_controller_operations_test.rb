@@ -129,12 +129,49 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_includes @response.body, 'form-switch'
     assert_includes @response.body, 'execution-route-checkbox'
     assert_includes @response.body, 'sync-route-checkbox'
+    assert_includes @response.body, 'searchable-checklist-dropdown-menu'
+    assert_includes @response.body, 'data-searchable-checklist-filter'
+    assert_includes @response.body, 'execution-route-selector'
+    assert_includes @response.body, 'planning-execution-route-extras'
     assert_includes @response.body, 'data-taken-by-date'
     assert_includes @response.body, I18n.t('execution.open_tracking')
     assert_includes @response.body, I18n.t('execution.badge_dirty')
     assert_includes @response.body, I18n.t('execution.modal.stops_count', count: routes(:route_one_one).size_active)
     assert_operator @response.body.index('planning-execution-card'), :<, @response.body.index('planning-execution-historized')
     assert_includes @response.body, open_op.ref.presence || open_op.name
+  end
+
+  test 'operation modal defaults to visible routes that have stops' do
+    with_stops = routes(:route_one_one)
+    empty = routes(:route_three_one)
+    empty.route_data.update_columns(size_active: 0, stops_size: 0)
+    with_stops.update_columns(hidden: false)
+    empty.update_columns(hidden: false)
+    tag = tags(:tag_one)
+    with_stops.vehicle_usage.vehicle.tags << tag unless with_stops.vehicle_usage.vehicle.tags.include?(tag)
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_select "#execution_route_#{with_stops.id}[checked]"
+    assert_select "#execution_route_#{empty.id}", count: 0
+    assert_select "#execution_route_selector-#{empty.id}", count: 0
+    assert_select ".planning-execution-route[data-route-id=#{with_stops.id}][data-default-on=true][data-stops='#{with_stops.route_data.size_active}']"
+    assert_select ".planning-execution-route[data-route-id=#{empty.id}]", count: 0
+    assert_select '#execution-route-selector[data-searchable-checklist-dropdown]'
+    assert_select '#execution-route-selector [data-searchable-checklist-toggle]'
+    assert_select '#execution-route-selector .searchable-checklist-dropdown-menu'
+    assert_select '[data-searchable-checklist-action=all]'
+    assert_select '[data-searchable-checklist-action=clear]'
+    assert_select '[data-searchable-checklist-action=reverse]'
+    assert_select '[data-searchable-checklist-action=visible]'
+    assert_select '[data-searchable-checklist-filter]'
+    assert_select "[data-searchable-checklist-tag-filter][value=#{tag.id}]"
+    assert_select "#execution-route-selector .searchable-checklist-dropdown-option[data-tag-ids='#{tag.id}']"
+    assert_select ".planning-execution-route[data-route-id=#{with_stops.id}] .planning-execution-route-row .form-switch .execution-route-checkbox.form-check-input"
+    assert_select '.planning-execution-route-extras'
+    assert_includes @response.body, I18n.t('execution.modal.routes_with_stops_only')
+    assert_includes @response.body, I18n.t('execution.modal.filter_by_tag')
   end
 
   test 'planning json exposes today operation for the route toolbar button' do

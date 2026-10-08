@@ -1,0 +1,210 @@
+@import "variables";
+
+// Bootstrap 3 searchable checklist dropdown (v1).
+// Same interaction model as the operation-page route selector.
+
+.searchable-checklist-dropdown {
+  position: relative;
+  display: block;
+  width: 100%;
+
+  > [data-searchable-checklist-toggle] {
+    width: 100%;
+    text-align: left;
+
+    .caret {
+      float: right;
+      margin-top: 8px;
+    }
+  }
+
+  // Flex column so results scroll inside max-height (search + tags stay pinned).
+  &.open > .searchable-checklist-dropdown-menu {
+    display: flex !important;
+    flex-direction: column;
+  }
+}
+
+.searchable-checklist-dropdown-menu.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1060;
+  display: none;
+  float: none;
+  min-width: 100%;
+  width: 100%;
+  max-width: min(90vw, 28rem);
+  max-height: min(70vh, 70rem);
+  margin: 2px 0 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.searchable-checklist-dropdown-inner {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: inherit;
+  overflow: hidden;
+}
+
+.searchable-checklist-dropdown-search {
+  flex-shrink: 0;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.searchable-checklist-dropdown-search-field {
+  position: relative;
+
+  input[type='search'] {
+    padding-right: 1.75rem;
+
+    &::-webkit-search-cancel-button {
+      -webkit-appearance: none;
+    }
+  }
+}
+
+// Match planning tag chips (`.planning-tags-item` / select2 tag choices).
+.searchable-checklist-dropdown-tag-filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.searchable-checklist-dropdown-tag-filters-label {
+  flex: 0 0 100%;
+  margin: 0 0 0.15rem;
+  color: #777;
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.searchable-checklist-dropdown-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  float: none;
+  margin: 5px 0 0 6px;
+  padding: 0 6px;
+  border: 1px solid $grey-color;
+  border-radius: 4px;
+  background: #fff;
+  color: #555;
+  font-size: 12px;
+  font-weight: normal;
+  line-height: 1.428571429;
+  cursor: pointer;
+
+  &:first-of-type {
+    margin-left: 0;
+  }
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  > .fa {
+    font-size: 14px;
+  }
+
+  &.is-active {
+    border-color: darken($grey-color, 18%);
+    background: #eee;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.searchable-checklist-dropdown-clear {
+  position: absolute;
+  top: 50%;
+  right: 0.35rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  line-height: 1;
+  transform: translateY(-50%);
+}
+
+.searchable-checklist-dropdown-results {
+  list-style: none;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0.25rem 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+
+$searchable-checklist-control-gap: 0.65rem;
+$searchable-checklist-row-pad-x: 0.75rem;
+
+.searchable-checklist-dropdown-option {
+  margin: 0;
+  padding: 0;
+}
+
+.searchable-checklist-dropdown-row,
+.searchable-checklist-dropdown-option--global button {
+  display: flex;
+  align-items: center;
+  gap: $searchable-checklist-control-gap;
+  width: 100%;
+  margin: 0;
+  padding: 0.45rem $searchable-checklist-row-pad-x;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  line-height: 1.25;
+  min-height: 2.1rem;
+  box-sizing: border-box;
+  cursor: pointer;
+  font-weight: normal;
+
+  &:hover,
+  &:focus,
+  &:focus-within {
+    background: #eaeaeb;
+    outline: none;
+  }
+
+  > .fa {
+    text-align: center;
+  }
+}
+
+.searchable-checklist-dropdown-checkbox {
+  margin: 0 2px 0 0 !important;
+  accent-color: $primary-color;
+}
+
+.searchable-checklist-dropdown-checkbox:disabled {
+  opacity: $btn-disabled-opacity;
+}
+
+.searchable-checklist-dropdown-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.searchable-checklist-dropdown-option--global button {
+  color: inherit;
+}
