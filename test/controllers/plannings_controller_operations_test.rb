@@ -123,6 +123,9 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_response :success
     assert_includes @response.body, 'planning-execution'
     assert_includes @response.body, 'planning-execution-card'
+    assert_includes @response.body, 'planning-execution-progress'
+    assert_includes @response.body, 'status-segments'
+    assert_includes @response.body, I18n.t('operations.index.stops_count', treated: open_op.board_counts.values_at(:delivered, :failed, :exception).sum, total: open_op.board_counts[:total])
     assert_includes @response.body, 'planning-execution-historized'
     assert_includes @response.body, 'is-historized'
     assert_includes @response.body, 'planning-operation-modal'
