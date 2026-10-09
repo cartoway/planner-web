@@ -89,9 +89,13 @@
           - address = [place['street'], place['postalcode'], place['city']].compact_blank.join(', ')
           %p.mb-1= address.presence || '—'
           - if place['phone_number'].present?
-            %p.mb-0
+            %p.mb-1
               %i.fa.fa-phone.fa-fw{"aria-hidden": "true"}
               = link_to place['phone_number'], "tel:#{place['phone_number']}"
+          - if place['email'].present?
+            %p.mb-0
+              %i.fa.fa-envelope.fa-fw{"aria-hidden": "true"}
+              = link_to place['email'], "mailto:#{place['email']}"
       - documents = @operation_stop.document_items
       %section.operation-section
         %h3= t('operations.show.proof')

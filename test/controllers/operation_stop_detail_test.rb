@@ -19,6 +19,20 @@ class OperationStopDetailTest < ActionController::TestCase
     Operation.where(customer_id: @planning.customer_id).delete_all
   end
 
+  test 'fiche shows destination email from the snapshot' do
+    email = 'client@example.com'
+    @stop.update_columns(
+      destination_snapshot: (@stop.destination_snapshot || {}).merge('email' => email, 'phone_number' => '0600000000')
+    )
+
+    get :show, params: { id: @stop.id }
+
+    assert_response :success
+    assert_includes response.body, email
+    assert_includes response.body, "mailto:#{email}"
+    assert_includes response.body, 'fa-envelope'
+  end
+
   test 'actual time and status history show the day offset from the operation date' do
     Time.use_zone('Hawaii') do
       # Update via the association the clock reads (setup may have cached another Operation instance).

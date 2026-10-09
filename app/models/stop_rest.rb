@@ -168,6 +168,10 @@ class StopRest < Stop
     nil
   end
 
+  def email
+    nil
+  end
+
   def color
     route.vehicle_usage.default_store_rest && route.vehicle_usage.default_store_rest.color
   end
