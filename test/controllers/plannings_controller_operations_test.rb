@@ -149,6 +149,7 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_kind_of Array, route_ids
     assert_includes route_ids, route_id
     assert changes[route_id.to_s]['in_operation']
+    assert changes[route_id.to_s].key?('dirty'), 'sync modal JS needs dirty flags from SyncPreview'
   end
 
   test 'operation modal defaults to visible routes that have stops' do
