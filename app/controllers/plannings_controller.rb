@@ -761,6 +761,7 @@ class PlanningsController < ApplicationController
       planning: @planning,
       date: params[:date],
       name: params[:name],
+      ref: params[:ref],
       route_ids: route_ids,
       visible_routes_only: params[:visible_routes_only].present?
     )

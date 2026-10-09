@@ -131,13 +131,14 @@ class V01::Operations < Grape::API
       present operation, with: V01::Entities::Operation, type: :full
     end
 
-    desc 'Update operation name or date.',
+    desc 'Update operation name, ref or date.',
       nickname: 'updateOperation',
       success: V01::Status.success(:code_200, V01::Entities::Operation),
       failure: V01::Status.failures
     params do
       requires :id, type: Integer
       optional :name, type: String
+      optional :ref, type: String
       optional :date, type: Date
     end
     patch ':id' do
@@ -145,6 +146,7 @@ class V01::Operations < Grape::API
       authorize!(:update, operation)
       attrs = {}
       attrs[:name] = params[:name] if params.key?(:name)
+      attrs[:ref] = params[:ref] if params.key?(:ref)
       attrs[:date] = params[:date] if params.key?(:date)
       unless operation.update(attrs)
         error!({ message: operation.errors.full_messages.to_sentence, status: 422 }, 422)

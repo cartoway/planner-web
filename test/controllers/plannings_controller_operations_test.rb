@@ -22,6 +22,7 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     post :publish_operation, params: {
       id: @planning.id,
       name: 'Secteur A',
+      ref: 'OP-A',
       date: '2026-09-30',
       route_ids: [route.id]
     }
@@ -29,6 +30,7 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     operation = @planning.operations.open_status.last
     assert_redirected_to operation_path(operation)
     assert_equal 'Secteur A', operation.name
+    assert_equal 'OP-A', operation.ref
     assert_equal Date.new(2026, 9, 30), operation.date
     assert_equal [route.id], operation.operation_routes.pluck(:route_id)
   end

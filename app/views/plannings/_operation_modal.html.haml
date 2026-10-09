@@ -26,6 +26,10 @@
           .form-group
             = label_tag :name, t('execution.modal.name')
             = text_field_tag :name, @planning.name, class: 'form-control', required: true
+          - if @planning.customer.enable_references
+            .form-group
+              = label_tag :ref, t('execution.modal.ref')
+              = text_field_tag :ref, @planning.ref, class: 'form-control'
           .form-group
             = label_tag :date, t('execution.date')
             = date_field_tag :date, operation_date, class: 'form-control', required: true, id: 'execution-operation-date'

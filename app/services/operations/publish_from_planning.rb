@@ -13,14 +13,15 @@ module Operations
   class EmptyRoutes < StandardError; end
 
   class PublishFromPlanning
-    def self.call(planning:, date: nil, name: nil, route_ids: nil, visible_routes_only: false)
-      new(planning, date, name, route_ids, visible_routes_only: visible_routes_only).call
+    def self.call(planning:, date: nil, name: nil, ref: nil, route_ids: nil, visible_routes_only: false)
+      new(planning, date, name, ref, route_ids, visible_routes_only: visible_routes_only).call
     end
 
-    def initialize(planning, date = nil, name = nil, route_ids = nil, visible_routes_only: false)
+    def initialize(planning, date = nil, name = nil, ref = nil, route_ids = nil, visible_routes_only: false)
       @planning = planning
       @date = date
       @name = name
+      @ref = ref
       @route_ids = route_ids&.map(&:to_i)&.uniq
       @visible_routes_only = visible_routes_only
     end
@@ -168,8 +169,9 @@ module Operations
     end
 
     # (customer, lower(ref), date) is unique when ref is present.
+    # nil @ref keeps the planning default; blank string clears the ref.
     def unique_ref(date)
-      base = @planning.ref
+      base = @ref.nil? ? @planning.ref : @ref.to_s.strip.presence
       return if base.blank?
       return base unless Operation.where(customer_id: @planning.customer_id, date: date)
                                   .where('lower(ref) = ?', base.downcase)

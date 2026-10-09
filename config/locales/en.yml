@@ -3922,6 +3922,7 @@ en:
     modal:
       title: Create an operation
       name: Name
+      ref: Reference
       routes: Routes
       routes_with_stops_only: Only routes with stops can be sent to an operation.
       filter_by_tag: Filter by tag
@@ -3946,7 +3947,7 @@ en:
       filter: Filter
       any_status: Any status
       chip_all: All
-      search_placeholder: Search a reference…
+      search_placeholder: Search an operation…
       ref: Reference
       date: Date
       name: Name
@@ -4003,7 +4004,9 @@ en:
       sms_unavailable: SMS sending is not available
       date_updated: Date updated
       name_updated: Name updated
+      ref_updated: Reference updated
       edit_name: Edit the name
+      edit_ref: Edit the reference
       date_locked: The date of a historized operation cannot be changed
       date_taken: An operation with this ref already exists on that date
       route_date_conflict: A route of this operation is already used by another open operation on that date
