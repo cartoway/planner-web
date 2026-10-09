@@ -4068,6 +4068,7 @@ fr:
     modal:
       title: Créer une opération
       name: Nom
+      ref: Référence
       routes: Tournées
       routes_with_stops_only: Seules les tournées avec des arrêts peuvent être envoyées en opération.
       filter_by_tag: Filtrer par tag
@@ -4092,7 +4093,7 @@ fr:
       filter: Filtrer
       any_status: Tous les statuts
       chip_all: Tous
-      search_placeholder: Rechercher une référence…
+      search_placeholder: Rechercher une opération…
       ref: Référence
       date: Date
       name: Nom
@@ -4149,7 +4150,9 @@ fr:
       sms_unavailable: L’envoi de SMS n’est pas disponible
       date_updated: Date mise à jour
       name_updated: Nom mis à jour
+      ref_updated: Référence mise à jour
       edit_name: Modifier le nom
+      edit_ref: Modifier la référence
       date_locked: La date d'une opération historisée ne peut pas être modifiée
       date_taken: Une opération avec cette référence existe déjà à cette date
       route_date_conflict: Une tournée de cette opération est déjà utilisée par une autre opération ouverte à cette date

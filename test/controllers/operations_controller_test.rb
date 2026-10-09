@@ -21,10 +21,12 @@ class OperationsControllerTest < ActionController::TestCase
   end
 
   test 'index lists the published operation' do
-    @operation.update_columns(date: Date.current - 1)
+    @operation.update_columns(date: Date.current - 1, name: 'Named Op', ref: 'REF-OP')
     get :index
     assert_response :success
-    assert_includes response.body, @operation.name
+    assert_includes response.body, 'Named Op'
+    assert_includes response.body, 'REF-OP'
+    assert_select '.operations-index-card-title', text: 'Named Op'
     assert_includes response.body, 'operations-index'
     assert_includes response.body, 'operations-index-cards'
     assert_includes response.body, 'operations-index-card'
@@ -292,6 +294,7 @@ class OperationsControllerTest < ActionController::TestCase
     get :show, params: { id: @operation.id }
     assert_includes response.body, 'fa-pencil'
     assert_includes response.body, 'nameInput'
+    assert_includes response.body, 'refInput'
     assert_includes response.body, 'd-none'
     @operation.update_columns(status: 'historized')
     patch :update, params: { id: @operation.id, operation: { name: 'Tournée matin' } }
@@ -300,6 +303,19 @@ class OperationsControllerTest < ActionController::TestCase
     patch :update, params: { id: @operation.id, operation: { name: 'Tournée soir' }, format: :json }
     assert_response :success
     assert_equal 'Tournée soir', JSON.parse(response.body)['name']
+  end
+
+  test 'update changes the operation ref' do
+    patch :update, params: { id: @operation.id, operation: { ref: 'OP-42' }, format: :json }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal 'OP-42', body['ref']
+    assert_equal 'OP-42', @operation.reload.ref
+
+    patch :update, params: { id: @operation.id, operation: { ref: '  ' }, format: :json }
+    assert_response :success
+    assert_nil JSON.parse(response.body)['ref']
+    assert_nil @operation.reload.ref
   end
 
   test 'update changes the operation date' do

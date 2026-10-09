@@ -10,12 +10,11 @@
       %p.operations-index-card-empty.text-muted.mb-0= t('operations.index.empty')
     - @operations.each do |operation|
       - counts = operation.board_counts
-      - label = operation.ref.presence || operation.name
       - modal_id = "operation-destroy-#{operation.id}"
       .operations-index-card
         .operations-index-card-main
           .operations-index-card-header
-            %h2.operations-index-card-title= label
+            %h2.operations-index-card-title= operation.name
             .operations-index-card-badges
               - if operation.open?
                 %span.badge.text-bg-primary= t('operations.statuses.in_progress')
@@ -26,6 +25,9 @@
               - else
                 %span.badge.text-bg-secondary= t('operations.statuses.historized')
           .operations-index-card-meta.text-muted
+            - if operation.ref.present?
+              %span= operation.ref
+              %span ·
             %span= l(operation.date)
             - if operation.published_at
               %span ·

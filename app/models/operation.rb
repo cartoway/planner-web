@@ -16,10 +16,15 @@ class Operation < ApplicationRecord
     demo_job_id.present?
   end
 
+  include RefSanitizer
+
   validates :customer, :name, :date, presence: true
   validates :status, inclusion: { in: STATUSES }
   validate :date_locked_when_historized
   validate :routes_available_on_date, if: -> { open? && date_changed? && planning_id.present? }
+
+  # Aligns with DB partial unique index (customer_id, lower(ref), date) WHERE ref IS NOT NULL.
+  before_validation { self.ref = ref&.strip.presence }
 
   scope :open_status, -> { where(status: OPEN_STATUSES) }
 

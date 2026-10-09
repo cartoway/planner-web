@@ -38,6 +38,11 @@ body[data-controller~='operations'][data-action='show'] aside.form-sidebar {
   max-width: 40vw;
 }
 
+.operation-ref {
+  width: 12rem;
+  max-width: 40vw;
+}
+
 .operation-header-sub {
   color: var(--op-muted);
   display: flex;
@@ -916,7 +921,8 @@ tr.is-past { color: #6b7280; }
     min-width: 0;
   }
 
-  .operation-name {
+  .operation-name,
+  .operation-ref {
     width: auto;
     max-width: 100%;
   }

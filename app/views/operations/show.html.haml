@@ -28,7 +28,12 @@
           = f.text_field :name, class: 'form-control form-control operation-name d-none', aria: { label: t('operations.index.name') }, data: { v2__operation_show_target: 'nameInput', action: 'keydown->v2--operation-show#saveNameOnEnter change->v2--operation-show#saveName' }
           %span.badge.operation-status= t("operations.statuses.#{@operation.status}")
         .operation-header-sub
-          - if @operation.ref.present?
+          - if @operation.customer.enable_references
+            %span.operation-header-title{data: { v2__operation_show_target: 'refLabel' }}= @operation.ref
+            %button.btn.btn-link.p-0{type: 'button', aria: { label: t('operations.show.edit_ref') }, data: { action: 'v2--operation-show#editRef' }}
+              %i.fa.fa-pencil
+            = f.text_field :ref, class: 'form-control form-control operation-ref d-none', aria: { label: t('operations.index.ref') }, data: { v2__operation_show_target: 'refInput', action: 'keydown->v2--operation-show#saveRefOnEnter change->v2--operation-show#saveRef' }
+          - elsif @operation.ref.present?
             %span.operation-header-title= @operation.ref
           = f.date_field :date, class: 'form-control form-control operation-date', aria: { label: t('operations.index.date') }, disabled: !@operation.open?, data: { action: 'change->v2--operation-show#saveDate' }
     .operation-header-progress
