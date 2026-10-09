@@ -179,14 +179,48 @@ var initPlanningExecution = function() {
     $('#planning-operation-modal').modal('show');
   });
 
-  var $syncModal = $('#planning-sync-modal');
+  // Always query live nodes — Turbo/morph can replace the modal after init.
+  var syncModal = function() { return $('#planning-sync-modal'); };
+  var syncSelector = function() { return $('#sync-route-selector'); };
   var $syncCountEl = $('#sync-route-count');
   var syncTemplate = $syncCountEl.data('template');
-  var syncLabels = $syncModal.data('labels') || {};
-  if (typeof syncLabels === 'string') {
-    try { syncLabels = JSON.parse(syncLabels); } catch (_e) { syncLabels = {}; }
-  }
+  var syncLabels = {};
+  try {
+    syncLabels = JSON.parse(syncModal().attr('data-labels') || '{}');
+  } catch (_e) { syncLabels = {}; }
   var syncChanges = {};
+  var syncOpenSelectedIds = [];
+  var syncingSync = false;
+  var syncRouteChecklist = null;
+  var syncFlagTrue = function(value) {
+    return value === true || value === 'true' || value === 1 || value === '1';
+  };
+  var syncReadDataFlag = function($el, $option, key) {
+    var attr = 'data-' + key;
+    var value = $el.attr(attr);
+    if (value == null || value === '') value = $option.attr(attr);
+    if (value == null || value === '') value = $el.data(key);
+    if ((value == null || value === '') && $option.length) value = $option.data(key);
+    return syncFlagTrue(value);
+  };
+  var syncRouteMeta = function($el) {
+    var $option = $el.closest('.searchable-checklist-dropdown-option');
+    return {
+      hidden: syncReadDataFlag($el, $option, 'hidden'),
+      locked: syncReadDataFlag($el, $option, 'locked')
+    };
+  };
+  // Same visibility rule as the create-operation modal: !(hidden && locked).
+  var syncRouteIsVisible = function($el) {
+    var meta = syncRouteMeta($el);
+    return !(meta.hidden && meta.locked);
+  };
+  var syncRows = function() {
+    return syncModal().find('ul.planning-execution-routes > li.planning-execution-route');
+  };
+  var syncEnabledBoxes = function() {
+    return syncRows().find('.sync-route-checkbox:enabled');
+  };
   var formatStopsDelta = function(change) {
     var parts = [];
     if (change.added) parts.push('+' + change.added);
@@ -195,34 +229,82 @@ var initPlanningExecution = function() {
     var template = syncLabels.stops_delta || '%{delta}';
     return String(template).replace('%{delta}', parts.join(' '));
   };
+  var syncRouteId = function($row) {
+    return String($row.find('.sync-route-checkbox').val() || $row.attr('data-route-id') || '');
+  };
+  var syncInOperation = function(routeId) {
+    var change = syncChanges[String(routeId)] || {};
+    return !!(change.in_operation || change.inOperation);
+  };
+  // Rails data-* JSON, with tolerance for accidental double-encoding (.to_json in the view).
+  var parseSyncJsonAttr = function($el, name, fallback) {
+    var raw = $el.attr('data-' + name);
+    if (raw == null || raw === '') return fallback;
+    try {
+      var value = JSON.parse(raw);
+      if (typeof value === 'string') {
+        try { value = JSON.parse(value); } catch (_e2) { /* keep string */ }
+      }
+      return value;
+    } catch (_e) {
+      return fallback;
+    }
+  };
+  var operationRouteIdsFromChanges = function() {
+    return Object.keys(syncChanges || {}).filter(function(id) { return syncInOperation(id); });
+  };
+  var ensureSyncChecklist = function() {
+    var $selector = syncSelector();
+    if (!$selector.length) return null;
+    if (syncRouteChecklist && syncRouteChecklist.root && syncRouteChecklist.root[0] === $selector[0]) {
+      return syncRouteChecklist;
+    }
+    syncRouteChecklist = initSearchableChecklistDropdown($selector, {
+      applyBox: function($box, mode) {
+        if (mode === 'all') $box.prop('checked', true);
+        else if (mode === 'clear') $box.prop('checked', false);
+        else if (mode === 'reverse') $box.prop('checked', !$box.prop('checked'));
+        else if (mode === 'visible') $box.prop('checked', syncRouteIsVisible($box));
+      }
+    });
+    $selector.off('searchable-checklist-dropdown:change.planningSync')
+      .on('searchable-checklist-dropdown:change.planningSync', function(_event, detail) {
+        if (syncingSync) return;
+        syncOpenSelectedIds = (detail && detail.checkedValues) || [];
+        syncListFromSelector(syncOpenSelectedIds);
+      });
+    return syncRouteChecklist;
+  };
   var refreshSyncChanges = function() {
     var syncCount = 0;
     var desyncCount = 0;
-    $syncModal.find('.planning-execution-route').each(function() {
+    syncRows().each(function() {
       var $row = $(this);
-      var routeId = String($row.data('route-id'));
+      var routeId = syncRouteId($row);
       var checked = $row.find('.sync-route-checkbox').prop('checked');
       var change = syncChanges[routeId] || {};
+      var inOperation = syncInOperation(routeId);
+      var dirty = !!(change.dirty);
       var $hint = $row.find('.sync-route-change');
       var text = '';
       if (checked) {
-        if (!change.in_operation) {
+        if (!inOperation) {
           text = syncLabels.add || '';
           syncCount += 1;
-        } else if (change.dirty) {
+        } else if (dirty) {
           var delta = formatStopsDelta(change);
           text = [syncLabels.update, delta].filter(Boolean).join(' · ');
           syncCount += 1;
         } else {
           text = syncLabels.unchanged || '';
         }
-      } else if (change.in_operation) {
+      } else if (inOperation) {
         text = syncLabels.desync || '';
         desyncCount += 1;
       }
       $hint.text(text ? '· ' + text : '');
-      $row.toggleClass('is-sync-change', !!(checked && (change.dirty || !change.in_operation)));
-      $row.toggleClass('is-sync-desync', !!(!checked && change.in_operation));
+      $row.toggleClass('is-sync-change', !!(checked && (dirty || !inOperation)));
+      $row.toggleClass('is-sync-desync', !!(!checked && inOperation));
     });
     var $summary = $('#sync-change-summary');
     if ($summary.length) {
@@ -234,50 +316,95 @@ var initPlanningExecution = function() {
   };
   var refreshSyncCount = function() {
     if (!$syncCountEl.length || !syncTemplate) return;
-    var n = $syncModal.find('.sync-route-checkbox:checked').length;
+    var n = syncEnabledBoxes().filter(':checked').length;
     $syncCountEl.text(String(syncTemplate).replace('%{count}', n));
     $('#sync-submit').prop('disabled', n === 0);
     refreshSyncChanges();
   };
+  var syncListFromSelector = function(checkedIds) {
+    var ids = (checkedIds || []).map(String);
+    if (!ids.length) {
+      ids = syncSelector().find('.searchable-checklist-dropdown-checkbox:enabled:checked').map(function() {
+        return String(this.value);
+      }).get();
+    }
+    var selected = {};
+    ids.forEach(function(id) { selected[id] = true; });
+    // Visible = selected, or in-operation but unchecked (desync hint).
+    syncRows().each(function() {
+      var $row = $(this);
+      var routeId = syncRouteId($row);
+      var on = !!selected[routeId];
+      var show = on || syncInOperation(routeId);
+      var $box = $row.find('.sync-route-checkbox');
+      if (!$box.prop('disabled')) $box.prop('checked', on);
+      $row.toggleClass('hidden', !show);
+    });
+    refreshSyncCount();
+  };
+  var syncSelectorFromList = function() {
+    var checklist = ensureSyncChecklist();
+    if (!checklist) return;
+    var ids = syncEnabledBoxes().filter(':checked').map(function() { return String(this.value); }).get();
+    syncingSync = true;
+    checklist.setValues(ids);
+    syncingSync = false;
+    refreshSyncCount();
+  };
+
+  ensureSyncChecklist();
+
+  $(document).off('change.planningSync', '#planning-sync-modal .sync-route-checkbox')
+    .on('change.planningSync', '#planning-sync-modal .sync-route-checkbox', function() {
+      var $box = $(this);
+      var $row = $box.closest('.planning-execution-route');
+      var show = $box.prop('checked') || syncInOperation(syncRouteId($row));
+      $row.toggleClass('hidden', !show);
+      syncSelectorFromList();
+      syncOpenSelectedIds = syncEnabledBoxes().filter(':checked').map(function() { return String(this.value); }).get();
+    });
+
+  $(document).off('shown.bs.modal.planningSync', '#planning-sync-modal')
+    .on('shown.bs.modal.planningSync', '#planning-sync-modal', function() {
+      syncListFromSelector(syncOpenSelectedIds);
+    });
 
   $root.off('click.planningSync').on('click.planningSync', '.planning-execution-sync', function(event) {
     event.preventDefault();
     event.stopPropagation();
     var $btn = $(this);
-    if (!$syncModal.length) return;
-    var routeIds = $btn.data('route-ids') || [];
-    if (typeof routeIds === 'string') {
-      try { routeIds = JSON.parse(routeIds); } catch (_e) { routeIds = []; }
-    }
-    syncChanges = $btn.data('route-changes') || {};
-    if (typeof syncChanges === 'string') {
-      try { syncChanges = JSON.parse(syncChanges); } catch (_e) { syncChanges = {}; }
-    }
-    var selected = {};
-    (routeIds || []).forEach(function(id) { selected[String(id)] = true; });
-    $('#sync-operation-id').val($btn.data('operation-id'));
-    $syncModal.find('.sync-route-checkbox').each(function() {
-      var $box = $(this);
-      $box.prop('checked', !!selected[String($box.val())]);
-    });
-    refreshSyncCount();
-    $syncModal.modal('show');
-  });
+    var $modal = syncModal();
+    if (!$modal.length) return;
 
-  if ($syncModal.length) {
-    $syncModal.off('click.planningSync').on('click.planningSync', '[data-sync-routes]', function(event) {
-      event.preventDefault();
-      var mode = $(this).data('sync-routes');
-      $syncModal.find('.sync-route-checkbox').each(function() {
-        var $box = $(this);
-        if (mode === 'all') $box.prop('checked', true);
-        else if (mode === 'none') $box.prop('checked', false);
-        else if (mode === 'visible') $box.prop('checked', String($box.data('hidden')) !== 'true');
+    syncChanges = parseSyncJsonAttr($btn, 'route-changes', {});
+    if (!syncChanges || typeof syncChanges !== 'object' || Array.isArray(syncChanges)) syncChanges = {};
+
+    var routeIds = parseSyncJsonAttr($btn, 'route-ids', []);
+    if (!Array.isArray(routeIds)) routeIds = [];
+    var selectedIds = routeIds.map(String).filter(Boolean);
+    // Fallback: every route already on the operation (from SyncPreview).
+    if (!selectedIds.length) selectedIds = operationRouteIdsFromChanges();
+
+    syncOpenSelectedIds = selectedIds.slice();
+    $modal.find('#sync-operation-id').val($btn.attr('data-operation-id'));
+
+    var checklist = ensureSyncChecklist();
+    if (checklist) {
+      syncRows().each(function() {
+        var routeId = syncRouteId($(this));
+        var stops = parseInt($(this).attr('data-stops'), 10) || 0;
+        checklist.setItemVisible(routeId, stops > 0 || syncInOperation(routeId) || selectedIds.indexOf(routeId) !== -1);
       });
-      refreshSyncCount();
-    });
-    $syncModal.off('change.planningSync').on('change.planningSync', '.sync-route-checkbox', refreshSyncCount);
-  }
+      syncingSync = true;
+      checklist.setValues(selectedIds);
+      syncingSync = false;
+      var listed = checklist.values();
+      if (listed.length) syncOpenSelectedIds = listed;
+    }
+
+    syncListFromSelector(syncOpenSelectedIds);
+    $modal.modal('show');
+  });
 
   var $modal = $('#planning-operation-modal');
   if (!$modal.length) return;

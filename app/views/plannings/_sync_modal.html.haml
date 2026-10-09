@@ -1,4 +1,14 @@
 - assignable_routes = @planning.routes.select { |route| route.vehicle_usage_id.present? }
+- route_skills_by_id = assignable_routes.to_h { |route| [route.id, route.route_skills] }
+- filter_tag_ids = route_skills_by_id.values.flatten.map(&:id).uniq
+- filter_tags = @planning.customer.tags.select { |tag| filter_tag_ids.include?(tag.id) }.map { |tag| { id: tag.id, label: tag.label, color: tag.default_color, icon: tag.default_icon } }
+- checklist_items = assignable_routes.map do |route|
+  - stops = route.route_data&.size_active.to_i
+  - skills = route_skills_by_id[route.id] || []
+  - label = [route.ref, route.vehicle_usage&.vehicle&.name].compact.join(' ').presence || "##{route.id}"
+  - filter_label = [label, route.ref, route.vehicle_usage&.vehicle&.name, route.vehicle_usage&.vehicle&.ref, *skills.map(&:label)].compact.map { |part| part.to_s.downcase }.uniq.join(' ')
+  - { id: route.id, label: label, checked: false, filter_label: filter_label, data: { stops: stops, hidden: route.hidden.to_s, locked: route.locked.to_s, tag_ids: skills.map(&:id).join(','), unavailable: (stops <= 0 ? '1' : '0') } }
+- checklist_actions = [{ mode: 'all', label: t('web.select2.route_all'), icon_class: 'fa fa-check-square fa-fw' }, { mode: 'clear', label: t('web.select2.route_clear'), icon_class: 'fa fa-regular fa-square fa-fw' }, { mode: 'reverse', label: t('web.select2.route_reverse'), icon_class: 'fa fa-random fa-fw' }, { mode: 'visible', label: t('execution.modal.select_visible'), icon_class: 'fa fa-eye fa-fw' }]
 #planning-sync-modal.modal.fade{ role: 'dialog', tabindex: '-1', data: { labels: { add: t('execution.sync_modal.change_add'), update: t('execution.sync_modal.change_update'), desync: t('execution.sync_modal.change_desync'), unchanged: t('execution.sync_modal.change_unchanged'), summary: t('execution.sync_modal.summary'), stops_delta: t('execution.sync_modal.stops_delta') }.to_json } }
   .modal-dialog
     .modal-content
@@ -15,22 +25,22 @@
           %p.help-block= t('execution.sync_modal.help')
           %p.help-block#sync-change-summary.mb-2
           .form-group
-            %label= t('execution.modal.routes')
-            .planning-execution-route-actions.btn-group.btn-group-xs.mb-1
-              %button.btn.btn-default{ type: 'button', data: { sync_routes: 'all' } }= t('execution.modal.select_all')
-              %button.btn.btn-default{ type: 'button', data: { sync_routes: 'none' } }= t('execution.modal.select_none')
-              %button.btn.btn-default{ type: 'button', data: { sync_routes: 'visible' } }= t('execution.modal.select_visible')
+            = label_tag nil, t('execution.modal.routes')
+            %p.help-block= t('execution.modal.routes_with_stops_only')
+            = render 'shared/searchable_checklist_dropdown', id: 'sync-route-selector', id_prefix: 'sync_route_selector', checkbox_name: nil, items: checklist_items, filter_tags: filter_tags, global_actions: checklist_actions, wrapper_class: 'planning-execution-route-selector'
             %ul.list-unstyled.planning-execution-routes
               - assignable_routes.each do |route|
                 - label = [route.ref, route.vehicle_usage&.vehicle&.name].compact.join(' ').presence || "##{route.id}"
-                %li.planning-execution-route{ data: { route_id: route.id, hidden: route.hidden.to_s } }
-                  .d-flex.align-items-center
+                - stops = route.route_data&.size_active.to_i
+                %li.planning-execution-route{ data: { route_id: route.id, hidden: route.hidden.to_s, locked: route.locked.to_s, stops: stops } }
+                  .planning-execution-route-row
                     .form-switch
-                      = check_box_tag 'route_ids[]', route.id, false, id: "sync_route_#{route.id}", class: 'sync-route-checkbox form-check-input', data: { hidden: route.hidden.to_s }
-                    %label.mb-0{ for: "sync_route_#{route.id}" }
-                      = label
-                      %span.text-muted= t('execution.modal.stops_count', count: route.route_data&.size_active.to_i)
+                      = check_box_tag 'route_ids[]', route.id, false, id: "sync_route_#{route.id}", class: 'sync-route-checkbox form-check-input', data: { hidden: route.hidden.to_s, locked: route.locked.to_s, stops: stops }
+                    %label{ for: "sync_route_#{route.id}" }
+                      %span.sync-route-name= label
+                      %span.text-muted.sync-route-stops= t('execution.modal.stops_count', count: stops)
                       %span.sync-route-change.text-muted
+                  .planning-execution-route-extras
             %p.help-block#sync-route-count{ data: { template: t('execution.modal.selected_count') } }
         .modal-footer
           %button.btn.btn-default{ type: 'button', 'data-dismiss': 'modal' }= t('all.verb.dismiss')
