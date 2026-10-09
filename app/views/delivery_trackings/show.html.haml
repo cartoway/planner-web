@@ -18,10 +18,10 @@
     %span.delivery-tracking-chip{class: "is-#{@current.chip_key}"}= @current.chip
 
     - if @current.eta_window.present?
-      - imminent = @current.eta_window == t('delivery_trackings.show.imminent')
+      - eta_alert = [t('delivery_trackings.show.imminent'), t('delivery_trackings.show.departure_delayed')].include?(@current.eta_window)
       - missed = @current.chip_key == 'missed'
-      .delivery-tracking-eta-card{class: ("is-alert" if imminent || missed)}
-        - unless imminent || missed
+      .delivery-tracking-eta-card{class: ("is-alert" if eta_alert || missed)}
+        - unless eta_alert || missed
           .delivery-tracking-eta-label= t('delivery_trackings.show.eta_label')
         .delivery-tracking-eta-value= @current.eta_window
         - if !missed && @view.last_updated_at

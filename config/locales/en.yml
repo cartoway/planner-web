@@ -4100,6 +4100,7 @@ en:
       order_ref: "Order #%{ref}"
       eta_label: Estimated arrival
       imminent: Arrival imminent
+      departure_delayed: The tour departure is delayed
       undelivered: We were unable to complete the delivery
       last_update: "Last update · %{time}"
       approx_position: Approximate position
