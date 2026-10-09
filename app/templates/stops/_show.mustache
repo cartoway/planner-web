@@ -108,6 +108,9 @@
   {{#phone_number}}
     <br/><i class="fa fa-phone fa-fw"></i><a class="phone_number" target="{{numberTarget}}" href={{numberHref}}>{{phone_number}}</a>
   {{/phone_number}}
+  {{#email}}
+    <br/><i class="fa fa-envelope fa-fw"></i><a href="mailto:{{email}}">{{email}}</a>
+  {{/email}}
   {{#comment}}
     <p class="wrapped-text">{{comment}}</p>
   {{/comment}}

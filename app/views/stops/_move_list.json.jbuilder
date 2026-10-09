@@ -8,7 +8,7 @@ json.stops stops do |stop|
   json.color_fake stop.route.color
   json.color stop.route.color || stop.route.vehicle_usage&.vehicle&.color
   json.stop_index stop.index
-  json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration, :out_of_max_reload, :out_of_relation, :no_path, :unmanageable_capacity
+  json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :email, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration, :out_of_max_reload, :out_of_relation, :no_path, :unmanageable_capacity
   json.ref stop.ref if stop.route.planning.customer.enable_references
   json.time_window_start_end_1 !!stop.time_window_start_1 || !!stop.time_window_end_1
   (json.time_window_start_1 stop.time_window_start_1_time) if stop.time_window_start_1

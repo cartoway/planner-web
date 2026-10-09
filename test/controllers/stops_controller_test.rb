@@ -28,6 +28,17 @@ class StopsControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'stop popup json includes destination email' do
+    email = 'client@example.com'
+    @stop.visit.destination.update!(email: email)
+
+    get :show, params: { id: @stop, format: :json }
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal email, body['email']
+  end
+
   test 'should render delivery note for a visit stop' do
     @stop.update_columns(
       status: 'delivered',
