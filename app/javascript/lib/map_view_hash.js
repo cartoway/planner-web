@@ -13,6 +13,12 @@ export function parseMapViewHash (hash = typeof window !== 'undefined' ? window.
   return { zoom, center: [lng, lat] }
 }
 
+// Destination/visit → operation deep-link: #stop-123 (orthogonal to #zoom/lat/lng).
+export function parseStopFocusHash (hash = typeof window !== 'undefined' ? window.location.hash : '') {
+  const match = String(hash || '').replace(/^#/, '').match(/^stop-(\d+)$/)
+  return match ? match[1] : null
+}
+
 export function formatMapViewHash (zoom, lat, lng) {
   // One decimal is enough for MapLibre fractional zoom; keeps the hash short.
   const z = Number(Number(zoom).toFixed(1))
