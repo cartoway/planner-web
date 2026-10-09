@@ -747,7 +747,7 @@ class Customer < ApplicationRecord
       if send("#{device_name}_changed?")
         device_definition.dig(:forms, :vehicle).keys.each{ |key|
           vehicles_with_devices.each{ |vehicle|
-            vehicle.devices[key] = nil
+            vehicle.devices = vehicle.devices.merge(key => nil)
           }
         }
       end

@@ -1807,6 +1807,15 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal @planning.routes.size, JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'].size
   end
 
+  # preload_route_details loads vehicles; string-keyed devices must not dirty them or
+  # customer.save! after enqueue cascades into routes and raises JobInProgressError.
+  test 'should optimize when vehicles have string-keyed devices' do
+    customers(:customer_one).vehicles.update_all(devices: { 'tomtom_id' => 'x' })
+
+    get :optimize, params: { planning_id: @planning, format: :js, global: true }, xhr: true
+    assert_response :success
+  end
+
   test 'should optimize planning with overload_multiplier options' do
     overload_multipliers = {}
     @planning.customer.deliverable_units.each_with_index{ |du, index| overload_multipliers[index] = {unit_id: du.id, ignore: true}}
