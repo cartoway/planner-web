@@ -14,6 +14,8 @@ class BackfillPastPlanningsTest < ActiveSupport::TestCase
 
   teardown do
     Operation.where(customer_id: @planning.customer_id).delete_all
+    @stop&.photos&.purge
+    @stop&.signature&.purge if @stop&.signature&.attached?
   end
 
   test 'a past planning with stop status becomes one historized operation' do
