@@ -4246,6 +4246,7 @@ fr:
       order_ref: "Commande #%{ref}"
       eta_label: Arrivée estimée
       imminent: Arrivée imminente
+      departure_delayed: Le départ de la tournée est retardé
       undelivered: Nous n’avons pas pu procéder à la livraison
       last_update: "Dernière mise à jour · %{time}"
       approx_position: Position approximative

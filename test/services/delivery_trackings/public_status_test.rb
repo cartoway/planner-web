@@ -152,18 +152,84 @@ class DeliveryTrackingsPublicStatusTest < ActiveSupport::TestCase
     end
   end
 
+  test 'eta window shifts from depot arrival status' do
+    customer = @operation.customer
+    customer.update!(delivery_tracking_eta_gap_before: 5, delivery_tracking_eta_gap_after: 15)
+
+    snap = (@route.route_snapshot || {}).merge('start' => 9.hours)
+    @route.update_columns(
+      route_snapshot: snap,
+      departure_status: 'atstore',
+      departure_status_updated_at: Time.zone.parse("#{Date.current} 10:20")
+    )
+    # delay +1h20 → centre 11:27 → 11:22 – 11:42 → rounded 11:15 – 11:45
+    stop_snap = (@stop.stop_snapshot || {}).merge('time' => 10.hours + 7.minutes)
+    @stop.update_columns(stop_snapshot: stop_snap, status: nil, status_updated_at: nil)
+
+    travel_to Time.zone.parse("#{Date.current} 11:00") do
+      visit = DeliveryTrackings::PublicStatus.new(@tracking.reload).visits.find { |item| item.stop.id == @stop.id }
+      assert_equal '11:15 – 11:45', visit.eta_window
+    end
+  end
+
+  test 'eta window shifts from first stop status when depot has none' do
+    customer = @operation.customer
+    customer.update!(delivery_tracking_eta_gap_before: 5, delivery_tracking_eta_gap_after: 15)
+
+    snap = (@route.route_snapshot || {}).merge('start' => 9.hours)
+    @route.update_columns(route_snapshot: snap, departure_status: nil, departure_status_updated_at: nil)
+    # First stop status at 10:00 → delay +1h → centre 11:07 → 11:00 – 11:15
+    stop_snap = (@stop.stop_snapshot || {}).merge('time' => 10.hours + 7.minutes)
+    @stop.update_columns(
+      stop_snapshot: stop_snap,
+      status: 'intransit',
+      status_updated_at: Time.zone.parse("#{Date.current} 10:00")
+    )
+
+    travel_to Time.zone.parse("#{Date.current} 10:30") do
+      visit = DeliveryTrackings::PublicStatus.new(@tracking.reload).visits.find { |item| item.stop.id == @stop.id }
+      assert_equal '11:00 – 11:15', visit.eta_window
+    end
+  end
+
   test 'past eta max shows imminent while route still open' do
     customer = @operation.customer
     customer.update!(delivery_tracking_eta_gap_before: 5, delivery_tracking_eta_gap_after: 15)
-    @route.update_columns(arrival_status: nil)
+    # Departed on time so ETA stays around the planned 10:00 window.
+    @route.update_columns(
+      arrival_status: nil,
+      route_snapshot: (@route.route_snapshot || {}).merge('start' => 9.hours),
+      departure_status: 'finished',
+      departure_status_updated_at: Time.zone.parse("#{Date.current} 09:00")
+    )
     stop_snap = (@stop.stop_snapshot || {}).merge('time' => 10.hours)
-    @stop.update_columns(stop_snapshot: stop_snap, status: 'intransit', status_updated_at: Time.current)
+    @stop.update_columns(
+      stop_snapshot: stop_snap,
+      status: 'intransit',
+      status_updated_at: Time.zone.parse("#{Date.current} 10:05")
+    )
 
     travel_to Time.zone.parse("#{Date.current} 12:00") do
       visit = DeliveryTrackings::PublicStatus.new(@tracking.reload).visits.find { |item| item.stop.id == @stop.id }
       assert_equal I18n.t('delivery_trackings.show.imminent'), visit.eta_window
       intransit = visit.timeline.find { |step| step[:key] == 'intransit' }
       assert_equal I18n.t('delivery_trackings.show.imminent'), intransit[:detail]
+    end
+  end
+
+  test 'past eta max before departure shows delayed departure' do
+    customer = @operation.customer
+    customer.update!(delivery_tracking_eta_gap_before: 5, delivery_tracking_eta_gap_after: 15)
+    @route.update_columns(arrival_status: nil, departure_status: nil, departure_status_updated_at: nil)
+    stop_snap = (@stop.stop_snapshot || {}).merge('time' => 10.hours)
+    @stop.update_columns(stop_snapshot: stop_snap, status: nil, status_updated_at: nil)
+
+    travel_to Time.zone.parse("#{Date.current} 12:00") do
+      visit = DeliveryTrackings::PublicStatus.new(@tracking.reload).visits.find { |item| item.stop.id == @stop.id }
+      assert_equal 'planned', visit.chip_key
+      assert_equal I18n.t('delivery_trackings.show.departure_delayed'), visit.eta_window
+      intransit = visit.timeline.find { |step| step[:key] == 'intransit' }
+      assert_equal I18n.t('delivery_trackings.show.departure_delayed'), intransit[:detail]
     end
   end
 
