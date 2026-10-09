@@ -21,7 +21,9 @@
         - else
           - active_route_ids = operation.operation_routes.active_sync.where.not(route_id: nil).pluck(:route_id)
           - route_changes = Operations::SyncPreview.call(planning: planning, operation: operation)
-          %button.btn.btn-default.btn-sm.planning-execution-sync{ type: 'button', title: t('execution.sync'), data: { operation_id: operation.id, route_ids: active_route_ids.to_json, route_changes: route_changes.to_json } }
+          -# route_ids: Array → Rails JSON-encodes once. route_changes: Hash must be .to_json
+          -# or Rails flattens it to data-route-changes-ID-in-operation attributes.
+          %button.btn.btn-default.btn-sm.planning-execution-sync{ type: 'button', title: t('execution.sync'), data: { operation_id: operation.id, route_ids: active_route_ids, route_changes: route_changes.to_json } }
             %i.fa.fa-arrows-rotate.fa-fw
             = t('execution.sync')
       = link_to operation_path(operation), class: tracking_class, title: t('execution.open_tracking') do
