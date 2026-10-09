@@ -150,10 +150,17 @@ class OperationsController < ApplicationController
 
   def update
     if @operation.update(operation_params)
-      notice = @operation.saved_change_to_name? ? t('operations.show.name_updated') : t('operations.show.date_updated')
+      notice =
+        if @operation.saved_change_to_name?
+          t('operations.show.name_updated')
+        elsif @operation.saved_change_to_ref?
+          t('operations.show.ref_updated')
+        else
+          t('operations.show.date_updated')
+        end
       respond_to do |format|
         format.html { redirect_to operation_path(@operation), notice: notice }
-        format.json { render json: { name: @operation.name, date: @operation.date } }
+        format.json { render json: { name: @operation.name, ref: @operation.ref, date: @operation.date } }
       end
     else
       message = @operation.errors.full_messages.to_sentence
@@ -191,7 +198,7 @@ class OperationsController < ApplicationController
   end
 
   def operation_params
-    params.require(:operation).permit(:date, :name)
+    params.require(:operation).permit(:date, :name, :ref)
   end
 
   def historize_operation
