@@ -278,4 +278,13 @@ class VehicleTest < ActiveSupport::TestCase
     assert vehicle_two.driver_token.present?
     refute_equal vehicle_one.driver_token, vehicle_two.driver_token
   end
+
+  test 'reading devices with string keys does not dirty the vehicle' do
+    vehicle = vehicles(:vehicle_one)
+    vehicle.update_column(:devices, { 'tomtom_id' => 'abc' })
+    vehicle.reload
+
+    assert_equal 'abc', vehicle.devices[:tomtom_id]
+    assert_not vehicle.changed?, 'devices read must not mark the record dirty'
+  end
 end
