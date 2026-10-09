@@ -4034,14 +4034,15 @@ fr:
     sync_modal:
       title: Synchroniser l’opération
       help: Les tournées non sélectionnées seront marquées comme désynchronisées.
-      change_add: ajout
-      change_update: mise à jour
-      change_desync: désynchro
-      change_unchanged: à jour
+      change_add: ajout de la tournée à l'opération
+      change_update: mise à jour de la tournée dans l'opération
+      change_desync: suppression de la tournée de l'opération
+      change_unchanged: conservation de la tournée dans l'opération
+      change_unchanged: tournée à jour
       stops_delta: '%{delta} arrêts'
       summary: '%{sync} à synchroniser · %{desync} à désynchroniser'
     show: Voir
-    open_tracking: Ouvrir le suivi
+    open_tracking: Ouvrir l'opération
     routes_count:
       one: '%{count} tournée'
       other: '%{count} tournées'
