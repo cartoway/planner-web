@@ -49,7 +49,7 @@ function applyFilter($root) {
       $option.prop('hidden', true);
       return;
     }
-    var label = String($option.data('filter-label') || '');
+    var label = String($option.attr('data-filter-label') || '').toLowerCase();
     var nameMatch = query.length === 0 || label.indexOf(query) !== -1;
     var tagMatch = tags.length === 0 || tags.some(function(tagId) {
       return optionTagIds($option).indexOf(tagId) !== -1;
@@ -61,6 +61,7 @@ function applyFilter($root) {
     var $label = $(this);
     $label.toggleClass('is-active', $label.find('[data-searchable-checklist-tag-filter]').prop('checked'));
   });
+  $root.trigger('searchable-checklist-dropdown:filter');
 }
 
 function setOpen($root, open) {
@@ -77,10 +78,11 @@ function setOpen($root, open) {
 }
 
 function dispatchChange($root) {
-  $root.trigger('searchable-checklist-dropdown:change', {
+  // Wrap in array: jQuery otherwise merges a plain object into the Event.
+  $root.trigger('searchable-checklist-dropdown:change', [{
     checkedValues: selectedValues($root),
     checkedCount: selectedValues($root).length
-  });
+  }]);
 }
 
 function applyAction($root, mode, options) {
@@ -207,6 +209,11 @@ export function initSearchableChecklistDropdown(root, options) {
       }
     },
     syncLabel: function() { syncLabel($root); },
+    resetFilters: function() {
+      $root.find('[data-searchable-checklist-filter]').val('');
+      $root.find('[data-searchable-checklist-tag-filter]').prop('checked', false);
+      applyFilter($root);
+    },
     close: function() { setOpen($root, false); },
     destroy: function() {
       $root.off(ns);
