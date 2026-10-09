@@ -48,12 +48,14 @@ export class LassoModule {
    * @returns {Object|null} Lasso control instance or null
    */
   initLasso(mapInstance, planningIdParam, routesLayerInstance, routeWaitingFunc, refreshRouteFunc) {
-    if (this.lassoHandler && this.planningId !== planningIdParam) {
+    // After Turbolinks (e.g. planning save redirect), map instance is new but planningId
+    // stays the same — reuse only when still bound to the live map/control.
+    if (this.lassoHandler) {
+      const controlPresent = document.querySelector('.leaflet-control-lasso');
+      if (this.map === mapInstance && this.planningId === planningIdParam && controlPresent) {
+        return this.lassoControl;
+      }
       this.destroy();
-    }
-
-    if (this.lassoHandler && this.planningId === planningIdParam) {
-      return this.lassoControl;
     }
 
     this.map = mapInstance;
