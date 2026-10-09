@@ -1526,7 +1526,7 @@ export const RoutesLayer = L.FeatureGroup.extend({
         this.map._controls.push(lassoControl);
       }
 
-      $(document).on('lasso:stopsMoved', function(event, data) {
+      $(document).off('lasso:stopsMoved.routesLayer').on('lasso:stopsMoved.routesLayer', function(event, data) {
         if (data && data.routeIds && this.refreshRoutes) {
           this.refreshRoutes(data.routeIds);
         }
