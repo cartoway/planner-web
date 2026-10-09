@@ -43,7 +43,9 @@ function applyFilter($root) {
   var tags = selectedTagIds($root);
   $root.find('.searchable-checklist-dropdown-option').each(function() {
     var $option = $(this);
-    if ($option.attr('data-unavailable') === 'true') {
+    // '1'/'true' (and empty boolean attrs) mark empty routes; avoid HAML collapsing "true".
+    var unavailable = $option.attr('data-unavailable');
+    if (unavailable === '1' || unavailable === 'true' || unavailable === '') {
       $option.prop('hidden', true);
       return;
     }
@@ -194,7 +196,8 @@ export function initSearchableChecklistDropdown(root, options) {
         return String($(this).data('item-id')) === String(id);
       });
       if (!$option.length) return;
-      $option.attr('data-unavailable', visible ? 'false' : 'true');
+      $option.attr('data-unavailable', visible ? '0' : '1');
+      $option.find('.searchable-checklist-dropdown-checkbox').attr('data-unavailable', visible ? '0' : '1');
       if (!visible) {
         $option.prop('hidden', true);
         $option.find('.searchable-checklist-dropdown-checkbox').prop('checked', false);
