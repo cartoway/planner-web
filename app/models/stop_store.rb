@@ -74,6 +74,10 @@ class StopStore < Stop
     nil
   end
 
+  def email
+    nil
+  end
+
   def duration
     store_reload.default_duration || 0
   end

@@ -33,6 +33,7 @@ class StopVisit < Stop
            :detail,
            :comment,
            :phone_number,
+           :email,
            :color,
            :icon,
            :icon_size,

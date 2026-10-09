@@ -48,7 +48,7 @@ for path in "${files[@]}"; do
       needs_v2=1
       js_paths+=("${path#vendor/javascript/}")
       ;;
-    app/assets/*|app/javascript/packs/*)
+    app/assets/*|app/javascript/packs/*|app/templates/*)
       needs_v1=1
       ;;
   esac
