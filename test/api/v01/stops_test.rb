@@ -9,10 +9,14 @@ class V01::StopsTest < ActiveSupport::TestCase
 
   setup do
     @stop = stops(:stop_one_one)
+    # use_transactional_tests is off — clear leftovers from other test classes.
+    @stop.photos.purge if @stop.photos.attached?
+    @stop.signature.purge if @stop.signature.attached?
   end
 
   teardown do
     @stop&.photos&.purge
+    @stop&.signature&.purge if @stop&.signature&.attached?
   end
 
   def around
