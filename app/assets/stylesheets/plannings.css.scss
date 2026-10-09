@@ -990,10 +990,25 @@ $sidebar-margins: 10px;
   }
 
   #planning-sync-modal {
+    .modal-dialog,
+    .modal-content,
+    .modal-body {
+      overflow: visible;
+    }
+
+    .planning-execution-route-selector {
+      margin-bottom: 10px;
+    }
+
+    .planning-execution-routes {
+      margin-top: 8px;
+      clear: both;
+    }
+
     .planning-execution-route {
       margin-bottom: 8px;
 
-      .d-flex {
+      .planning-execution-route-row {
         display: flex;
         align-items: center;
         gap: 8px;
@@ -1002,11 +1017,20 @@ $sidebar-margins: 10px;
       .form-switch {
         flex-shrink: 0;
         margin: 0;
+        padding-left: 0;
       }
 
-      label .text-muted {
-        margin-left: 6px;
+      label {
+        margin: 0;
         font-weight: normal;
+
+        .text-muted {
+          margin-left: 6px;
+        }
+      }
+
+      .planning-execution-route-extras {
+        margin-left: 2.5rem;
       }
 
       .sync-route-change {
@@ -1020,14 +1044,6 @@ $sidebar-margins: 10px;
 
       &.is-sync-desync .sync-route-change {
         color: #a94442;
-      }
-
-      &.is-taken {
-        opacity: 0.75;
-
-        label {
-          color: #777;
-        }
       }
     }
   }
