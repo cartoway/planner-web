@@ -9,7 +9,7 @@ import { pathToFileURL } from 'node:url'
 const src = new URL('../../app/javascript/lib/map_view_hash.js', import.meta.url)
 const tmp = path.join(os.tmpdir(), 'planner-map-view-hash.mjs')
 fs.writeFileSync(tmp, fs.readFileSync(src))
-const { parseMapViewHash, formatMapViewHash, replaceMapViewHash } = await import(pathToFileURL(tmp).href)
+const { parseMapViewHash, parseStopFocusHash, formatMapViewHash, replaceMapViewHash } = await import(pathToFileURL(tmp).href)
 
 describe('map view hash', () => {
   it('parses leaflet-style #zoom/lat/lng', () => {
@@ -21,8 +21,17 @@ describe('map view hash', () => {
     assert.equal(formatMapViewHash(12.37, 48.8566, 2.3522), '#12.4/48.8566/2.3522')
   })
 
+  it('parses operation stop deep-link #stop-id', () => {
+    assert.equal(parseStopFocusHash('#stop-42'), '42')
+    assert.equal(parseStopFocusHash('stop-7'), '7')
+    assert.equal(parseStopFocusHash('#12/48.85/2.35'), null)
+    assert.equal(parseStopFocusHash('#stop-'), null)
+    assert.equal(parseStopFocusHash(''), null)
+  })
+
   it('returns null for a form sidebar hash or junk', () => {
     assert.equal(parseMapViewHash('#visits'), null)
+    assert.equal(parseMapViewHash('#stop-42'), null)
     assert.equal(parseMapViewHash(''), null)
   })
 
