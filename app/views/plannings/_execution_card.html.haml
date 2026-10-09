@@ -1,5 +1,6 @@
 - fresh = operation.current_structure?(planning)
 - routes_count = operation.operation_routes.active_sync.where(unassigned: false).count
+- counts = operation.board_counts
 - tracking_class = sync ? 'btn btn-primary btn-sm' : 'btn btn-default btn-sm'
 .planning-execution-card{ class: ('is-historized' unless sync) }
   .planning-execution-card-head.clearfix
@@ -11,6 +12,9 @@
         %span.label.label-default= t('operations.statuses.historized')
     %span.text-muted.pull-right= l(operation.date)
   .planning-execution-routes-count= t('execution.routes_count', count: routes_count)
+  .planning-execution-progress
+    = render 'v2/shared/status_segments', counts: counts
+    %span.planning-execution-progress-label.text-muted= t('operations.index.stops_count', treated: counts[:delivered] + counts[:failed] + counts[:exception], total: counts[:total])
   .planning-execution-actions.clearfix
     .pull-right
       - if sync

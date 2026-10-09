@@ -905,7 +905,34 @@ $sidebar-margins: 10px;
 
         .planning-execution-routes-count {
           color: #555;
+          margin-bottom: 8px;
+        }
+
+        .planning-execution-progress {
           margin-bottom: 10px;
+
+          .status-segments {
+            display: flex;
+            height: 6px;
+            border-radius: 999px;
+            overflow: hidden;
+            background: #e5e7eb;
+            margin-bottom: 4px;
+
+            span {
+              display: block;
+              height: 100%;
+            }
+
+            .is-delivered { background: #1f9d55; }
+            .is-failed { background: #d64545; }
+            .is-exception { background: #7c3aed; }
+            .is-rest { background: #d1d5db; }
+          }
+        }
+
+        .planning-execution-progress-label {
+          font-size: 12px;
         }
 
         .planning-execution-actions {
