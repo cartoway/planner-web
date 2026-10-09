@@ -8,7 +8,7 @@ import { GeocoderIControl } from 'maplibre/geocoder_control'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
-import { bindMapViewHash, parseMapViewHash } from 'lib/map_view_hash'
+import { bindMapViewHash, parseMapViewHash, parseStopFocusHash } from 'lib/map_view_hash'
 
 document.addEventListener('turbo:before-stream-render', (event) => {
   const stream = event.detail.newStream
@@ -76,7 +76,42 @@ export default class extends Controller {
     const open = this.element.querySelector('details.operation-tour[open]')
     if (open) this._focusRoute(open)
     this._syncRouteSelectionUi()
+    this._focusStopFromHash()
     this._loadMap()
+  }
+
+  // Deep-link from destination/visit related lists: /operations/:id#stop-:id
+  _focusStopFromHash () {
+    const stopId = parseStopFocusHash()
+    if (!stopId) return
+    this._revealStopRoute(stopId)
+    this._showStopInPanels(stopId)
+  }
+
+  _revealStopRoute (stopId) {
+    const row = this.element.querySelector(`#stop-${stopId}`) ||
+      this.element.querySelector(`.operation-stop-row[data-stop-id="${stopId}"]`)
+    if (!row) return
+    const tour = row.closest('details.operation-tour')
+    const routeId = tour && String(tour.dataset.routeId || '')
+    if (!routeId) return
+    let changed = false
+    if (this._excludedRouteIds?.has(routeId)) {
+      this._excludedRouteIds.delete(routeId)
+      changed = true
+    }
+    if (this._hiddenRouteIds?.has(routeId)) {
+      this._hiddenRouteIds.delete(routeId)
+      changed = true
+    }
+    if (!changed) return
+    this._routeCheckboxes().forEach((box) => {
+      if (String(box.value) === routeId) box.checked = true
+    })
+    this._applyExcludedRoutes()
+    this._persistRouteSelection()
+    this._syncRouteSelectorLabel(this._routeCheckboxes().length - (this._excludedRouteIds?.size || 0))
+    this._applyRouteVisibility()
   }
 
   editName (event) {
@@ -1384,13 +1419,24 @@ export default class extends Controller {
   }
 
   _showStopInPanels (stopId) {
-    const row = this.element.querySelector(`.operation-stop-row[data-stop-id="${stopId}"]`)
+    const row = this.element.querySelector(`.operation-stop-row[data-stop-id="${stopId}"]`) ||
+      this.element.querySelector(`#stop-${stopId}`)
     if (!row) return
     row.classList.remove('is-hidden')
     const tour = row.closest('details.operation-tour')
-    if (tour && !tour.open) tour.open = true
-    requestAnimationFrame(() => row.scrollIntoView({ block: 'center', behavior: 'smooth' }))
-    row.click()
+    if (tour) {
+      const host = tour.closest('[data-controller~="exclusive-accordion"]')
+      const accordion = host && window.Stimulus?.getControllerForElementAndIdentifier(host, 'exclusive-accordion')
+      if (accordion) accordion.openItem(tour)
+      else {
+        tour.open = true
+        this._focusRoute(tour)
+      }
+    }
+    requestAnimationFrame(() => {
+      row.scrollIntoView({ block: 'center', behavior: 'smooth' })
+      row.click()
+    })
   }
 
   _fillStopMarker (element, feature) {
