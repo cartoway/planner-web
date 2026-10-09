@@ -54,10 +54,19 @@ for path in "${files[@]}"; do
   esac
 done
 
-# planner-dev-sync-v2 forces the narrow compile even if a v1 file is dirty.
+# planner-dev-sync-v2 skips full Sprockets when only Stimulus/v2 CSS changed.
+# Packs like planning.js import app/assets/javascripts — those still need webpack.
 if [[ "${1:-}" == "--v2" ]]; then
   needs_v1=0
   needs_v2=1
+  for path in "${files[@]}"; do
+    case "$path" in
+      app/assets/javascripts/*|app/templates/*|app/javascript/packs/*)
+        needs_v1=1
+        break
+        ;;
+    esac
+  done
 fi
 
 # Dirty-only copy misses committed asset sources still stale in the container
