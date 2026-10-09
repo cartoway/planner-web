@@ -94,9 +94,18 @@ module DeliveryTrackings
 
       from, to = bounds
       return format_window(from, to) if Time.current <= to
-      return I18n.t('delivery_trackings.show.imminent') unless route_finished?(operation_stop.operation_route)
+      return overdue_eta_message(operation_stop) unless route_finished?(operation_stop.operation_route)
 
       I18n.t('delivery_trackings.show.undelivered')
+    end
+
+    # Past ETA max: delayed departure when the tour has not left yet, else imminent arrival.
+    def overdue_eta_message(operation_stop)
+      if depot_leg(operation_stop, operation_stop.operation_route)[:departed]
+        I18n.t('delivery_trackings.show.imminent')
+      else
+        I18n.t('delivery_trackings.show.departure_delayed')
+      end
     end
 
     def eta_bounds(operation_stop)
@@ -155,21 +164,35 @@ module DeliveryTrackings
     end
 
     # Start depot lives on OperationRoute; mid-route reload is an OperationStop kind=store.
+    # Actual time: first depot status change (arrival counts), else first stop status on the segment.
     def depot_delay(route, store)
-      if store
-        return 0 if store.status.blank?
-
-        planned = store.planned_at
-        actual = store.status_updated_at
-      else
-        return 0 if route.departure_status.blank?
-
-        planned = depot_planned_at(route)
-        actual = route.departure_status_updated_at
-      end
+      planned = store ? store.planned_at : depot_planned_at(route)
+      actual = tour_start_actual_at(route, store)
       return 0 if planned.blank? || actual.blank?
 
       actual - planned
+    end
+
+    def tour_start_actual_at(route, store)
+      if store
+        return store.status_updated_at if store.status.present? && store.status_updated_at.present?
+      else
+        stash = stashed_departure_loading_at(route)
+        return stash if stash.present?
+        if route.departure_status.present? && route.departure_status_updated_at.present?
+          return route.departure_status_updated_at
+        end
+      end
+
+      first_stop_status_at(route, store)
+    end
+
+    def first_stop_status_at(route, store)
+      segment_start = store&.index || -1
+      route_stops(route)
+        .select { |s| s.index > segment_start && s.status.present? && s.status_updated_at.present? }
+        .filter_map(&:status_updated_at)
+        .min
     end
 
     def depot_planned_at(route)
@@ -223,7 +246,7 @@ module DeliveryTrackings
           current: intransit_current,
           at: status_event_at(stop, 'intransit', 'started'),
           eta: intransit_eta,
-          detail: (overdue ? I18n.t('delivery_trackings.show.imminent') : nil)
+          detail: (overdue ? overdue_eta_message(stop) : nil)
         )
       end
       items << terminal_timeline_step(stop, chip_key)
