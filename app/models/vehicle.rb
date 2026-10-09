@@ -100,11 +100,11 @@ class Vehicle < ApplicationRecord
   end
 
   def devices
-    if self[:devices].respond_to?('deep_symbolize_keys!')
-      self[:devices].deep_symbolize_keys!
-    else
-      self[:devices]
-    end
+    value = self[:devices]
+    # Non-bang: in-place symbolize dirties the AR attribute and can cascade
+    # customer.save! → vehicles → routes into reject_writes_during_optimization!
+    # right after Optimizer.optimize enqueues the blocking job.
+    value.respond_to?(:deep_symbolize_keys) ? value.deep_symbolize_keys : value
   end
 
   # Used in form helpers (store_accessor cannot be used since devices keys are symbolized)
