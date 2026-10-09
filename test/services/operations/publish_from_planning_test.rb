@@ -52,6 +52,31 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     assert_equal Date.current + 4, operation.date
   end
 
+  test 'publish accepts a custom ref and falls back to the planning ref' do
+    custom = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      date: Date.new(2026, 9, 25),
+      route_ids: [routes(:route_one_one).id],
+      ref: 'custom-op'
+    )
+    assert_equal 'custom-op', custom.ref
+
+    defaulted = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      date: Date.new(2026, 9, 26),
+      route_ids: [routes(:route_one_one).id]
+    )
+    assert_equal @planning.ref, defaulted.ref
+
+    cleared = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      date: Date.new(2026, 9, 27),
+      route_ids: [routes(:route_one_one).id],
+      ref: '  '
+    )
+    assert_nil cleared.ref
+  end
+
   test 'publish can keep only visible routes and the chosen date' do
     routes(:route_three_one).update_columns(hidden: true)
 
