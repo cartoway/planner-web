@@ -51,7 +51,7 @@ const PHASE_COLORS = {
 }
 
 export default class extends Controller {
-  static targets = ['map', 'list', 'more', 'stopQuery', 'nameLabel', 'nameInput', 'body', 'mobilePane', 'detailBackdrop']
+  static targets = ['map', 'list', 'more', 'stopQuery', 'nameLabel', 'nameInput', 'refLabel', 'refInput', 'body', 'mobilePane', 'detailBackdrop']
   static values = { mapUrl: String, searchUrl: String, positionsUrl: String }
 
   connect () {
@@ -135,6 +135,31 @@ export default class extends Controller {
       this.nameLabelTarget.classList.remove('d-none')
       this.nameInputTarget.classList.add('d-none')
       this.nameInputTarget.previousElementSibling.classList.remove('d-none')
+    })
+  }
+
+  editRef (event) {
+    event.preventDefault()
+    if (!this.hasRefLabelTarget || !this.hasRefInputTarget) return
+    this.refLabelTarget.classList.add('d-none')
+    event.currentTarget.classList.add('d-none')
+    this.refInputTarget.classList.remove('d-none')
+    this.refInputTarget.focus()
+  }
+
+  saveRefOnEnter (event) {
+    if (event.key !== 'Enter') return
+    event.preventDefault()
+    this.saveRef(event)
+  }
+
+  saveRef (event) {
+    this._saveField(event.currentTarget, 'ref', (data) => {
+      if (!data || !('ref' in data)) return
+      this.refLabelTarget.textContent = data.ref || ''
+      this.refLabelTarget.classList.remove('d-none')
+      this.refInputTarget.classList.add('d-none')
+      this.refInputTarget.previousElementSibling.classList.remove('d-none')
     })
   }
 

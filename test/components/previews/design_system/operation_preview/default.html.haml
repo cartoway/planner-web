@@ -6,9 +6,11 @@
         %span.operation-header-title Tournée matin
         %button.btn.btn-link.p-0{type: 'button', aria: { label: t('operations.show.edit_name') }}
           %i.fa.fa-pencil
-        %span.operation-header-title REF-204
         %span.badge.operation-status= t('operations.statuses.in_progress')
       .operation-header-sub
+        %span.operation-header-title REF-204
+        %button.btn.btn-link.p-0{type: 'button', aria: { label: t('operations.show.edit_ref') }}
+          %i.fa.fa-pencil
         %input.form-control.form-control.operation-date{type: 'date', value: '2026-09-28', aria: { label: t('operations.index.date') }}
     .operation-header-progress
       .operation-header-progress-label= "3/6 #{t('operations.show.stops')}"
