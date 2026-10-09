@@ -11,7 +11,7 @@ end
 
 (json.error true) if (stop.is_a?(StopVisit) && !stop.position?) || stop.out_of_window || stop.out_of_capacity || stop.out_of_drive_time || stop.out_of_force_position|| stop.out_of_work_time || stop.out_of_max_distance || stop.out_of_max_ride_distance || stop.out_of_max_ride_duration || stop.out_of_max_reload || stop.out_of_relation || stop.no_path || stop.out_of_skill
 
-json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration, :out_of_max_reload, :out_of_relation, :no_path, :out_of_skill, :active
+json.extract! stop, :name, :street, :detail, :postalcode, :city, :country, :comment, :phone_number, :email, :lat, :lng, :drive_time, :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_ride_distance, :out_of_max_ride_duration, :out_of_max_reload, :out_of_relation, :no_path, :out_of_skill, :active
 json.ref stop.ref if stop.route.planning.customer.enable_references
 json.ref_visit stop.ref_visit if stop.route.planning.customer.enable_references
 json.time_window_start_end_1 !!stop.time_window_start_1 || !!stop.time_window_end_1
