@@ -3889,14 +3889,14 @@ en:
     sync_modal:
       title: Synchronize the operation
       help: Unselected routes will be marked as desynchronized.
-      change_add: add
-      change_update: update
-      change_desync: desync
+      change_add: add the route to the operation
+      change_update: update the route in the operation
+      change_desync: remove the route from the operation
       change_unchanged: up to date
       stops_delta: '%{delta} stops'
       summary: '%{sync} to sync · %{desync} to desync'
     show: View
-    open_tracking: Open tracking
+    open_tracking: Open operation
     routes_count:
       one: '%{count} route'
       other: '%{count} routes'
