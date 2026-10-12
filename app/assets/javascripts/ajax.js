@@ -120,6 +120,12 @@ export const applyStopPopupManagePlanning = function(view, managePlanning) {
 
 let needCbAfterDeletingJob = true;
 let progressDialogFrozen = false;
+let frozenProgressDialog = null;
+
+const isSameProgressDialog = function(dialog, other) {
+  return !!(dialog && other && dialog.get(0) === other.get(0));
+};
+
 export const freezeProgressDialog = function(dialog) {
   if (!progressDialogFrozen) {
     dialog.find('[data-dismiss]').hide();
@@ -127,6 +133,7 @@ export const freezeProgressDialog = function(dialog) {
     dialog.off('keyup');
     beforeSendWaiting();
     progressDialogFrozen = true;
+    frozenProgressDialog = dialog;
   }
 };
 
@@ -169,6 +176,7 @@ export const unfreezeProgressDialog = function(dialog, delayedJob, url, callback
   });
   completeWaiting();
   progressDialogFrozen = false;
+  frozenProgressDialog = null;
 };
 
 let iteration = undefined;
@@ -255,14 +263,21 @@ export const progressDialog = function(delayedJob, dialog, url, callback, option
     // Called when job has ended or when delayedjob is not active
     needCbAfterDeletingJob = false;
     iteration = null;
-    progressDialogFrozen = false;
     if (dialog.is(':visible')) {
       dialog.modal('hide');
       $(".progress-bar", dialog).css({
         transition: 'linear 0s',
         width: '0%'
       });
-      completeWaiting(); // In case of success with delayedjob unfreezeProgressDialog is never called
+    }
+    // Only release the waiting cursor for the dialog that owns the freeze.
+    // displayPlanning calls progressDialog(undefined) for import then optimizer;
+    // clearing the flag for an idle import dialog re-armed freezeProgressDialog on
+    // every optimizer poll and stacked beforeSendWaiting without matching completeWaiting.
+    if (progressDialogFrozen && isSameProgressDialog(dialog, frozenProgressDialog)) {
+      completeWaiting(); // success path never calls unfreezeProgressDialog
+      progressDialogFrozen = false;
+      frozenProgressDialog = null;
     }
     options && options.success && options.success();
 
