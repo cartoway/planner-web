@@ -2,12 +2,12 @@
 - routes_count = operation.operation_routes.active_sync.where(unassigned: false).count
 - counts = operation.board_counts
 - tracking_class = sync ? 'btn btn-primary btn-sm' : 'btn btn-default btn-sm'
-.planning-execution-card{ class: ('is-historized' unless sync) }
+.planning-execution-card{ class: ('is-historized' unless sync), data: { operation_id: operation.id } }
   .planning-execution-card-head.clearfix
     %span.planning-execution-card-title
       %strong.planning-execution-ref= operation.ref.presence || operation.name
       - if sync
-        %span.label{ class: (fresh ? 'label-success' : 'label-warning') }= t(fresh ? 'execution.badge_fresh' : 'execution.badge_dirty')
+        %span.label.planning-execution-badge{ class: (fresh ? 'label-success' : 'label-warning'), data: { operation_id: operation.id } }= t(fresh ? 'execution.badge_fresh' : 'execution.badge_dirty')
       - else
         %span.label.label-default= t('operations.statuses.historized')
     %span.text-muted.pull-right= l(operation.date)
@@ -18,11 +18,7 @@
   .planning-execution-actions.clearfix
     .pull-right
       - if sync
-        - active_route_ids = operation.operation_routes.active_sync.where.not(route_id: nil).pluck(:route_id)
-        - route_changes = Operations::SyncPreview.call(planning: planning, operation: operation)
-        -# route_ids: Array → Rails JSON-encodes once. route_changes: Hash must be .to_json
-        -# or Rails flattens it to data-route-changes-ID-in-operation attributes.
-        %button.btn.btn-default.btn-sm.planning-execution-sync{ type: 'button', title: t('execution.sync'), data: { operation_id: operation.id, route_ids: active_route_ids, route_changes: route_changes.to_json } }
+        %button.btn.btn-default.btn-sm.planning-execution-sync{ type: 'button', title: t('execution.sync'), data: { operation_id: operation.id } }
           %i.fa.fa-arrows-rotate.fa-fw
           = t('execution.sync')
       = link_to operation_path(operation), class: tracking_class, title: t('execution.open_tracking') do

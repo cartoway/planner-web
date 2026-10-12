@@ -155,9 +155,30 @@ var initPlanningStatesModal = function(planningId, options) {
   $open.off('click.planningStates').on('click.planningStates', openDialog);
 };
 
-var initPlanningExecution = function() {
+var applyPlanningExecutionFreshness = function(operations) {
+  var $root = $('#planning-execution');
+  var freshLabel = $root.data('badge-fresh');
+  var dirtyLabel = $root.data('badge-dirty');
+  (operations || []).forEach(function(op) {
+    if (!op || op.id == null) return;
+    var $badge = $('.planning-execution-badge[data-operation-id="' + op.id + '"]');
+    if (!$badge.length) return;
+    var fresh = !!op.fresh;
+    $badge
+      .toggleClass('label-success', fresh)
+      .toggleClass('label-warning', !fresh)
+      .text(fresh ? freshLabel : dirtyLabel);
+  });
+};
+
+var initPlanningExecution = function(planningId) {
   var $root = $('#planning-execution');
   if (!$root.length) return;
+
+  $(document).off('planning:execution:status.planningExecution')
+    .on('planning:execution:status.planningExecution', function(_event, operations) {
+      applyPlanningExecutionFreshness(operations);
+    });
 
   var bindCaret = function($heading, $body) {
     if (!$heading.length || !$body.length) return;
@@ -224,21 +245,6 @@ var initPlanningExecution = function() {
   var syncIsDirty = function(routeId) {
     var change = syncChangeFor(routeId);
     return syncFlagTrue(change.dirty);
-  };
-  // Prefer jQuery .data() (Rails JSON attrs), then raw attr + double-parse.
-  var parseSyncJsonAttr = function($el, name, fallback) {
-    var camel = name.replace(/-([a-z])/g, function(_, c) { return c.toUpperCase(); });
-    var value = $el.data(camel);
-    if (value == null || value === '') {
-      var raw = $el.attr('data-' + name);
-      if (raw == null || raw === '') return fallback;
-      try { value = JSON.parse(raw); } catch (_e) { return fallback; }
-    }
-    if (typeof value === 'string') {
-      try { value = JSON.parse(value); } catch (_e2) { /* keep string */ }
-    }
-    if (value == null || (typeof value !== 'object' && !Array.isArray(value))) return fallback;
-    return value;
   };
   var operationRouteIdsFromChanges = function() {
     return Object.keys(syncChanges || {}).filter(function(id) { return syncInOperation(id); });
@@ -342,6 +348,35 @@ var initPlanningExecution = function() {
       });
     return syncRouteChecklist;
   };
+  var openSyncModal = function(operationId, data) {
+    var $syncModal = syncModal();
+    if (!$syncModal.length) return;
+
+    syncChanges = data && data.route_changes;
+    if (!syncChanges || typeof syncChanges !== 'object' || Array.isArray(syncChanges)) syncChanges = {};
+
+    var routeIds = (data && data.route_ids) || [];
+    if (!Array.isArray(routeIds)) routeIds = [];
+    var memberIds = routeIds.map(String).filter(Boolean);
+    if (!memberIds.length) memberIds = operationRouteIdsFromChanges();
+
+    var selectedIds = memberIds.slice();
+    syncOpenSelectedIds = selectedIds.slice();
+    $syncModal.find('#sync-operation-id').val(operationId);
+
+    applySyncListFromSelector(selectedIds);
+    var checklist = ensureSyncChecklist();
+    syncingSync = true;
+    if (checklist) {
+      checklist.resetFilters();
+      checklist.setValues(selectedIds);
+    }
+    syncingSync = false;
+    if (data && typeof data.fresh === 'boolean') {
+      applyPlanningExecutionFreshness([{ id: operationId, fresh: data.fresh }]);
+    }
+    $syncModal.modal('show');
+  };
 
   ensureSyncChecklist();
 
@@ -358,36 +393,30 @@ var initPlanningExecution = function() {
     });
 
   // Document-level: survives #planning-execution morph/replace.
+  // SyncPreview is fetched on click (not embedded in the card) so planning mutations stay cheap.
   $(document).off('click.planningSync', '.planning-execution-sync')
     .on('click.planningSync', '.planning-execution-sync', function(event) {
       event.preventDefault();
       event.stopPropagation();
       var $btn = $(this);
-      var $syncModal = syncModal();
-      if (!$syncModal.length) return;
+      var operationId = $btn.attr('data-operation-id');
+      if (!operationId || !planningId) return;
 
-      syncChanges = parseSyncJsonAttr($btn, 'route-changes', {});
-      if (!syncChanges || typeof syncChanges !== 'object' || Array.isArray(syncChanges)) syncChanges = {};
-
-      var routeIds = parseSyncJsonAttr($btn, 'route-ids', []);
-      if (!Array.isArray(routeIds)) routeIds = [];
-      var memberIds = routeIds.map(String).filter(Boolean);
-      if (!memberIds.length) memberIds = operationRouteIdsFromChanges();
-
-      // Same base as create: picker and list share one selection (= operation members).
-      var selectedIds = memberIds.slice();
-      syncOpenSelectedIds = selectedIds.slice();
-      $syncModal.find('#sync-operation-id').val($btn.attr('data-operation-id'));
-
-      applySyncListFromSelector(selectedIds);
-      var checklist = ensureSyncChecklist();
-      syncingSync = true;
-      if (checklist) {
-        checklist.resetFilters();
-        checklist.setValues(selectedIds);
-      }
-      syncingSync = false;
-      $syncModal.modal('show');
+      $btn.prop('disabled', true);
+      $.ajax({
+        type: 'GET',
+        url: '/plannings/' + planningId + '/operation_sync_preview.json',
+        data: { operation_id: operationId },
+        beforeSend: beforeSendWaiting,
+        success: function(data) {
+          openSyncModal(operationId, data);
+        },
+        complete: function() {
+          $btn.prop('disabled', false);
+          completeAjaxMap();
+        },
+        error: ajaxError
+      });
     });
 
   var $modal = $('#planning-operation-modal');
@@ -1092,7 +1121,7 @@ export const plannings_edit = function(params) {
   initRouteDepartureTimeEntry();
   initStoreDropdown(params.planning_id);
   initPlanningStatesModal(planning_id, { withStops: withStopsInSidePanel });
-  initPlanningExecution();
+  initPlanningExecution(planning_id);
 
   var apply_zoning_modal = bootstrap_dialog({
     title: I18n.t('plannings.edit.dialog.zoning.title'),
