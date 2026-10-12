@@ -1,22 +1,22 @@
 class StopSignaturesController < ApplicationController
   before_action :authenticate_driver!, only: [:create]
-  before_action :set_stop, only: [:create]
+  before_action :set_operation_stop, only: [:create]
   before_action :authorize_driver_stop!, only: [:create]
   rescue_from ActiveSupport::MessageVerifier::InvalidSignature, with: :not_found_error
 
   def create
     return render_proofs_disabled unless proofs_enabled?
 
-    if @stop.attach_signature(params[:signature])
-      render json: { signature: @stop.serialized_signature }, status: :created
+    if @operation_stop.attach_signature(params[:signature])
+      render json: { signature: @operation_stop.serialized_signature }, status: :created
     else
-      render json: { error: @stop.errors.full_messages.to_sentence }, status: :unprocessable_entity
+      render json: { error: @operation_stop.errors.full_messages.to_sentence }, status: :unprocessable_entity
     end
   end
 
   def show
-    blob = Stop.find_signature_blob!(params[:signed_id])
-    raise ActiveRecord::RecordNotFound unless blob.attachments.exists?(record_type: %w[Stop OperationStop], name: 'signature')
+    blob = OperationStop.find_signature_blob!(params[:signed_id])
+    raise ActiveRecord::RecordNotFound unless blob.attachments.exists?(record_type: 'OperationStop', name: 'signature')
 
     send_data blob.download,
               filename: blob.filename.to_s,
@@ -26,33 +26,16 @@ class StopSignaturesController < ApplicationController
 
   private
 
-  def set_stop
-    @stop = if params[:operation_stop_id]
-              OperationStop.find(params[:operation_stop_id])
-            else
-              Stop.find(params[:stop_id])
-            end
+  def set_operation_stop
+    @operation_stop = OperationStop.find(params[:operation_stop_id])
   end
 
   def authorize_driver_stop!
-    vehicle_id = if @stop.is_a?(OperationStop)
-                   @stop.operation_route.vehicle_id
-                 else
-                   @stop.route.vehicle_usage&.vehicle_id
-                 end
-    raise ActiveRecord::RecordNotFound unless vehicle_id == current_vehicle.id
+    raise ActiveRecord::RecordNotFound unless @operation_stop.operation_route.vehicle_id == current_vehicle.id
   end
 
   def proofs_enabled?
-    stop_customer.enable_proofs?
-  end
-
-  def stop_customer
-    if @stop.is_a?(OperationStop)
-      @stop.operation_route.operation.customer
-    else
-      @stop.route.planning.customer
-    end
+    @operation_stop.operation_route.operation.customer.enable_proofs?
   end
 
   def render_proofs_disabled

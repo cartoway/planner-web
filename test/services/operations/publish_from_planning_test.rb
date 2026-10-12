@@ -212,8 +212,6 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
   test 'a later operation does not inherit status or photos' do
     first = Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 25))
     planning_stop = stops(:stop_one_one)
-    planning_stop.photos.purge if planning_stop.photos.attached?
-    planning_stop.signature.purge if planning_stop.signature.attached?
     owned = first.operation_stops.find_by!(stop_id: planning_stop.id)
     OperationStops::RecordStatus.call(
       operation_stop: owned,
@@ -224,7 +222,7 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     file = Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/stop_photo.jpg'), 'image/jpeg')
     assert owned.attach_photos([file])
     file.rewind if file.respond_to?(:rewind)
-    planning_stop.attach_signature(file)
+    assert owned.attach_signature(file)
 
     first.update!(status: 'historized', closed_at: Time.current)
     second = Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 26))
@@ -232,17 +230,17 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
 
     assert_equal 'delivered', owned.reload.status
     assert owned.photos.attached?
+    assert owned.signature.attached?
     assert_nil other.status
     assert_not other.photos.attached?
     assert_not other.signature.attached?
     photo = owned.document_items.find { |item| item[:kind] == 'photo' }
     assert_includes photo[:url], '/stop_photos/'
-    # Later operation owns no proofs; planning-stop signature may still appear via document_items.
-    assert_equal [{ kind: 'signature' }], other.document_items.map { |item| item.slice(:kind) }
+    assert_empty other.document_items
     assert_nil planning_stop.reload.status
   ensure
     owned&.photos&.purge
-    planning_stop&.signature&.purge
+    owned&.signature&.purge if owned&.signature&.attached?
   end
 
   test 'two dates keep the same planning stop and route ids' do
