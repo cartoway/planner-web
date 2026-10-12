@@ -2541,6 +2541,28 @@ export const plannings_edit = function(params) {
     };
   })();
 
+  // active_only option: only when vehicle routes have inactive stops (never out-of-route).
+  // Keep in sync with test/javascript/optimization_active_only_test.mjs
+  var vehicleRouteStopCounters = function(routeId) {
+    var $routes = routeId
+      ? $('ol.routes:not(.out_routes) li.route[data-route-id="' + routeId + '"]')
+      : $('ol.routes:not(.out_routes) li.route[data-route-id]');
+    return $routes.find('[data-size-active]');
+  };
+
+  var hasInactiveStopsOnVehicleRoutes = function(routeId) {
+    var inactive = false;
+    vehicleRouteStopCounters(routeId).each(function() {
+      var size = parseInt($(this).attr('data-size'), 10);
+      var active = parseInt($(this).attr('data-size-active'), 10);
+      if (!isNaN(size) && !isNaN(active) && active !== size) {
+        inactive = true;
+        return false;
+      }
+    });
+    return inactive;
+  };
+
   $('#optimize_all').click(function() {
     $('#optimization-route_id').val('').trigger('change');
     toggleModalWarning();
@@ -2555,16 +2577,13 @@ export const plannings_edit = function(params) {
       $('div#optimization-global').show();
       var sizeRoutes = 0;
       var activeSizeRoutes = 0;
-      var allStopsActive = true;
-      $.each($('li[data-route-id]:not(:last) [data-size-active]'), function() {
-        var sizeRoute = $(this).attr('data-size');
-        var activeSizeRoute = $(this).attr('data-size-active');
+      vehicleRouteStopCounters().each(function() {
+        var sizeRoute = parseInt($(this).attr('data-size'), 10) || 0;
+        var activeSizeRoute = parseInt($(this).attr('data-size-active'), 10) || 0;
         if ($(this).closest('.route-tools').find('button.lock.btn-default').length > 0) {
-          sizeRoutes += parseInt(sizeRoute);
-          activeSizeRoutes += parseInt(activeSizeRoute);
+          sizeRoutes += sizeRoute;
+          activeSizeRoutes += activeSizeRoute;
         }
-        if ($(this).attr('data-size-active') != sizeRoute)
-          allStopsActive = false;
       });
       if (!sizeRoutes) {
         var g = $('#sticky_vehicle_false');
@@ -2579,15 +2598,12 @@ export const plannings_edit = function(params) {
       }
       $('div#optimization-visit-counter').text(activeSizeRoutes + '/'+ sizeRoutes);
 
-      $('div#optimization-active').css({display: allStopsActive ? 'none' : 'block'});
       var dimensions = $.map(vehicles_usages_map, function(vehicle) { return vehicle.router_dimension; })
         .filter(function(elt, idx, array) { return idx == array.indexOf(elt); });
       $('#router-dimension-value').html(dimensions.map(function(dim) { dim = 'plannings.edit.dialog.optimization.vehicles.' + dim; return I18n.t(dim); }).join(' / '));
     } else {
       $('div#optimization-global').hide();
       optimizationTimer.setOptimDuration();
-      var sizeActive = $('li[data-route-id=' + routeId + '] [data-size-active]');
-      $('div#optimization-active').css({display: (sizeActive.attr('data-size-active') == sizeActive.attr('data-size')) ? 'none' : 'block'});
       var route = routes.filter(function(route) {
         return route.route_id == routeId;
       })[0];
@@ -2600,6 +2616,7 @@ export const plannings_edit = function(params) {
       $('#router-dimension-value').html(I18n.t(dimension));
     }
 
+    $('div#optimization-active').toggle(hasInactiveStopsOnVehicleRoutes(routeId));
     optimizationTimer.displayOptimDuration();
     vehicleCostLate();
   });
