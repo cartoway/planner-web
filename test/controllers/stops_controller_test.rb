@@ -39,6 +39,18 @@ class StopsControllerTest < ActionController::TestCase
     assert_equal email, body['email']
   end
 
+  test 'stop popup json omits stop custom attributes owned by operations' do
+    @stop.update_columns(custom_attributes: { 'stop_custom_field' => 'only on planning stop' })
+
+    get :show, params: { id: @stop, format: :json }
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    html = Array(body['custom_attributes']).map { |item| item['html'] }.join
+    refute_includes html, 'only on planning stop'
+    refute_includes html, 'stop_custom_field'
+  end
+
   test 'should include rest timewindow duration and time in show json' do
     rest_stop = stops(:stop_one_four)
     route = rest_stop.route

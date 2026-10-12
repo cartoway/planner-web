@@ -42,7 +42,7 @@ class CustomAttribute < ApplicationRecord
   scope :for_stop_visit, -> { where(object_class: :stop_visit) }
   scope :for_stop_store, -> { where(object_class: :stop_store) }
   scope :for_export_stops_unique_by_name, -> {
-    export_stops = where(object_class: [:stop_visit, :stop_store, :route])
+    export_stops = where(object_class: :route)
     export_stops.where(id: export_stops.unscope(:order).group(:name).select("MIN(id) as id"))
   }
   scope :for_route, -> { where(object_class: :route) }
