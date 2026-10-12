@@ -70,8 +70,7 @@ when StopVisit
     end
   end
   json.custom_attributes (
-    current_user.customer.custom_attributes.for_visit.map{ |c_a| custom_attribute_template(c_a, visit) } +
-    current_user.customer.custom_attributes.for_stop_visit.map{ |c_a| custom_attribute_template(c_a, stop) }
+    current_user.customer.custom_attributes.for_visit.map{ |c_a| custom_attribute_template(c_a, visit) }
   )
 when StopRest
   json.rest true
@@ -112,9 +111,6 @@ when StopStore
     json.extract! stop.route_data, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end, :drive_time, :wait_time, :visits_duration, :pickups, :deliveries, :departure
     json.quantities route_data_quantities(stop.route_data, stop.route.vehicle_usage_id && stop.route.vehicle_usage.vehicle)
   end
-  json.custom_attributes (
-    current_user.customer.custom_attributes.for_stop_store.map{ |c_a| custom_attribute_template(c_a, stop) }
-  )
 end
 if !stop.is_a?(StopRest)
   if stop.route.planning.customer.enable_orders
