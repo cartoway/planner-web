@@ -57,8 +57,9 @@ module ProofAttachments
     "customers/#{customer_id}/#{day}/#{token}"
   end
 
+  # Overridden by OperationStop (proofs live on operations, not planning stops).
   def proof_customer_id
-    route&.planning&.customer_id
+    nil
   end
 
   def photo_deletable?(attachment)

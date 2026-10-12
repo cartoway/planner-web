@@ -235,10 +235,7 @@ Rails.application.routes.draw do
   resources :stops, only: [:show, :edit, :update, :destroy] do
     member do
       post :create_store_reload
-      get :delivery_note
     end
-    resources :photos, only: [:create, :destroy], controller: 'stop_photos'
-    resource :signature, only: [:create], controller: 'stop_signatures'
   end
 
   resources :operations, only: [:index, :show, :update, :destroy] do

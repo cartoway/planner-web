@@ -212,7 +212,7 @@ class RouteMobileTest < ActiveSupport::TestCase
     )
 
     vehicle = @route.vehicle_usage.vehicle
-    travel Stop::PHOTO_DELETABLE_FOR + 1.second do
+    travel ProofAttachments::PHOTO_DELETABLE_FOR + 1.second do
       get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
     end
 

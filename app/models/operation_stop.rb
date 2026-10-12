@@ -5,6 +5,7 @@ class OperationStop < ApplicationRecord
   SYNC_STATES = %w[active orphaned cancelled].freeze
   # Terminal field statuses already used by the planning stop catalog.
   TREATED_STATUSES = %w[delivered finished rejected undelivered exception].freeze
+  DELIVERY_NOTE_STATUSES = %w[delivered exception].freeze
 
   belongs_to :operation_route
   belongs_to :stop, optional: true
@@ -344,7 +345,7 @@ class OperationStop < ApplicationRecord
   end
 
   def delivery_note_available?
-    visit? && stop_id.present? && Stop::DELIVERY_NOTE_STATUSES.include?(status.to_s.downcase)
+    visit? && stop_id.present? && DELIVERY_NOTE_STATUSES.include?(status.to_s.downcase)
   end
 
   def active_delivery_tracking
@@ -361,11 +362,7 @@ class OperationStop < ApplicationRecord
 
   def document_items
     items = serialized_photos.map { |photo| { url: photo[:url], filename: photo[:filename], kind: 'photo' } }
-    if stop&.photos&.attached?
-      items.concat(stop.serialized_photos.map { |photo| { url: photo[:url], filename: photo[:filename], kind: 'photo' } })
-    end
     signature_doc = serialized_signature
-    signature_doc ||= stop.serialized_signature if stop&.signature&.attached?
     items << { url: signature_doc[:url], filename: signature_doc[:filename], kind: 'signature' } if signature_doc
     items
   end

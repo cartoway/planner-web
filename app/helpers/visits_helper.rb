@@ -38,8 +38,6 @@ module VisitsHelper
 
   def visit_planning_stops(visit)
     visit.stop_visits.includes(
-      { photos_attachments: :blob },
-      { signature_attachment: :blob },
       { route: [:planning, { vehicle_usage: :vehicle }] }
     ).sort_by { |stop|
       planning = stop.route.planning
