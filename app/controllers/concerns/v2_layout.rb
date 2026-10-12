@@ -75,9 +75,14 @@ module V2Layout
 
   # Turbo Frame fragment, or the v2 list with the form inlined (shareable URL).
   # Admins have no customer — keep the standalone form (caller renders nothing else).
+  # ?back=true (from planning, still on v1 layout): skip index+sidebar so LinkBack can return to planning.
   def render_form_or_list(sidebar_template, index_template, list_url)
     if form_sidebar_request?
       render sidebar_template, layout: false
+      return
+    end
+    if ActiveModel::Type::Boolean.new.cast(params[:back])
+      yield if block_given? # still load ivars for the standalone v1 edit template
       return
     end
     return unless layout_v2? && current_user&.customer

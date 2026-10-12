@@ -116,11 +116,11 @@ class StoresController < ApplicationController
 
         if @store.save && @store.customer.save
           format.html do
-          if sidebar_submit?
-            @sidebar_saved_id = @store.id
-            render_close_sidebar
-          else
-            redirect_to link_back || edit_store_path(@store), notice: t('activerecord.successful.messages.updated', model: @store.class.model_name.human)
+            if sidebar_submit?
+              @sidebar_saved_id = @store.id
+              render_close_sidebar
+            else
+              redirect_to link_back || edit_store_path(@store), notice: t('activerecord.successful.messages.updated', model: @store.class.model_name.human)
             end
           end
         else

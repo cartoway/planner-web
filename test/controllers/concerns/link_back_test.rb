@@ -80,4 +80,25 @@ class LinkBackTest < ActionController::TestCase
 
     assert_nil session[:link_back]
   end
+
+  test 'with layout v2 and back=true uses standalone v1 edit and returns to planning' do
+    enable_layout_v2!
+    request.headers['Turbolinks-Referrer'] = 'http://test.host/plannings/1/edit'
+
+    get :edit, params: { id: @destination, back: true }
+
+    assert_response :success
+    assert_template 'edit'
+    assert_equal '/plannings/1/edit', session[:link_back]
+
+    patch :update, params: {
+      id: @destination,
+      destination: {
+        name: 'Updated Destination',
+        city: 'Updated City'
+      }
+    }
+
+    assert_redirected_to '/plannings/1/edit'
+  end
 end
