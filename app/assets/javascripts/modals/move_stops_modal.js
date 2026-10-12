@@ -66,10 +66,10 @@ export class MoveStopsModal {
     this.stopMoveVisible = options.stopMoveVisible !== false;
     this.stopMoveUsable = options.stopMoveUsable !== false;
 
-    if (!this.isInitialized) {
-      this.setupEventHandlers();
-      this.isInitialized = true;
-    }
+    // Always rebind: Turbolinks replace (planning form AJAX save) rebuilds the DOM while
+    // this singleton survives, so a one-shot isInitialized gate leaves #move-stops-modal dead.
+    this.setupEventHandlers();
+    this.isInitialized = true;
     this.applyMoveStopsActionVisibility();
   }
 
@@ -107,13 +107,13 @@ export class MoveStopsModal {
       }
     });
 
-    // Modal hidden event
-    $(this.modalSelector).off('hidden.bs.modal').on('hidden.bs.modal', () => {
+    // Namespaced so rebind does not remove lasso's hidden.bs.modal.lasso cleanup.
+    $(this.modalSelector).off('hidden.bs.modal.moveStops').on('hidden.bs.modal.moveStops', () => {
       $(this.modalSelector).attr('data-route-id', null);
     });
 
     // Move stops button click
-    $("#move-stops-modal").off('click').on('click', () => {
+    $("#move-stops-modal").off('click.moveStops').on('click.moveStops', () => {
       if (!this.stopMoveUsable) {
         return;
       }
@@ -521,8 +521,9 @@ export class MoveStopsModal {
    * Destroy the modal and clean up event handlers
    */
   destroy() {
-    $(this.modalSelector).off();
-    $("#move-stops-modal").off();
+    $(this.modalSelector).off('.moveStops');
+    $("#move-stops-modal").off('.moveStops');
+    $(document).off('move-stops:content-updated');
     this.isInitialized = false;
   }
 }

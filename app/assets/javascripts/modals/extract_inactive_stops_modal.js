@@ -28,10 +28,9 @@ export class ExtractInactiveStopsModal {
     this.updatePlanningDataHeader = options.updatePlanningDataHeader || function() {};
     this.stopMoveUsable = options.stopMoveUsable !== false;
 
-    if (!this.isInitialized) {
-      this.setupEventHandlers();
-      this.isInitialized = true;
-    }
+    // Always rebind after Turbolinks DOM replace (same singleton as moveStopsModal).
+    this.setupEventHandlers();
+    this.isInitialized = true;
 
     this.applyConfirmButtonVisibility();
   }
