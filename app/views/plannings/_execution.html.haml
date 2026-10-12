@@ -2,7 +2,7 @@
 - open_operations = operations.select(&:open?)
 - historized_operations = operations.reject(&:open?)
 - open_count = open_operations.size
-.panel.panel-default#planning-execution
+.panel.panel-default#planning-execution{ data: { badge_fresh: t('execution.badge_fresh'), badge_dirty: t('execution.badge_dirty') } }
   .panel-heading.planning-execution-heading.clearfix.is-open{ role: 'button', data: { toggle: 'collapse', target: '#planning-execution-body' }, aria: { expanded: 'true', controls: 'planning-execution-body' } }
     %span.planning-execution-title
       %i.fa.fa-caret-right.fa-fw.planning-execution-caret
