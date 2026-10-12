@@ -181,8 +181,8 @@
                       %i.fa.fa-download.fa-fw
                       = t 'destinations.menu.export_spreadsheet_standard'
                   %li.divider
-                  %li
-                    = link_to destinations_path, method: :delete, data: { confirm: t('destinations.menu.clear_confirm') } do
+                  %li{ class: ("disabled" if !current_user_form_update?(:destination)) }
+                    = link_to destinations_path, disabled: !current_user_form_update?(:destination), data: { turbo_method: :delete, turbo_confirm: t('destinations.menu.clear_confirm') } do
                       %i.fa.fa-trash.fa-fw
                       = t 'destinations.menu.clear'
               %li.pannel.panel-default.menu-list-item
@@ -284,7 +284,7 @@
                       = t 'customers.menu.user_settings'
                   %li.divider
                   %li
-                    = link_to destroy_user_session_path, method: :delete do
+                    = link_to destroy_user_session_path, data: { turbo_method: :delete } do
                       %i.fa.fa-power-off.fa-fw
                       = t 'users.menu.sign_out'
           - else
