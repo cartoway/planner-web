@@ -191,6 +191,12 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select ".menu-left a[href='#{expected}'][target='_blank']", text: I18n.t('customers.menu.extra_analytics')
   end
 
+  test 'v2 layout menu-left clear destinations uses turbo delete' do
+    get :index
+    assert_response :success
+    assert_select %(a[href="#{destinations_path}"][data-turbo-method="delete"][data-turbo-confirm]), text: I18n.t('destinations.menu.clear')
+  end
+
   test 'v2 index includes vector_style_url in map layers config as-is' do
     layer = users(:user_one).layer
     style_url = 'https://maps.example.com/styles/custom/style.json'
