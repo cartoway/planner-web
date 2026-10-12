@@ -507,7 +507,11 @@ class Route < ApplicationRecord
           previous_route_data_attributes[:drive_time] = route_attributes[:drive_time]
           previous_route_data_attributes[:end] = stop_attributes[:time]
           previous_route_data_attributes[:cost_distance] = previous_route_data_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
-          previous_route_data_attributes[:cost_time] = (route_attributes[:end] - previous_route_data_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time if vehicle_usage.default_cost_time
+          if vehicle_usage.default_cost_time
+            # Rest time is not billable.
+            segment_seconds = route_attributes[:end] - previous_route_data_attributes[:start] - previous_route_data_attributes[:rests_duration].to_i
+            previous_route_data_attributes[:cost_time] = segment_seconds.to_f / 3600 * vehicle_usage.default_cost_time
+          end
           previous_route_data.assign_attributes(previous_route_data_attributes.compact)
 
           # reset route data attributes
@@ -538,12 +542,14 @@ class Route < ApplicationRecord
       previous_route_data.assign_attributes(previous_route_data_attributes.compact)
       route_attributes[:stop_no_path] = vehicle_usage.default_store_stop&.position? && stops_sort.any?{ |s| s.active && s.position? } && trace.nil?
 
-      # Add service time to end point (included in cost_time below)
+      # Add service time to end point (included in cost_time below; rests are not billable)
       route_attributes[:end] += service_time_end unless service_time_end.nil?
       if vehicle_usage.default_cost_time && route_attributes[:start] && route_attributes[:end]
-        route_attributes[:cost_time] = (route_attributes[:end] - route_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time
+        billable_seconds = route_attributes[:end] - route_attributes[:start] - route_attributes[:rests_duration].to_i
+        route_attributes[:cost_time] = billable_seconds.to_f / 3600 * vehicle_usage.default_cost_time
         previous_route_data_attributes[:end] = route_attributes[:end]
-        previous_route_data_attributes[:cost_time] = (route_attributes[:end] - previous_route_data_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time
+        segment_seconds = route_attributes[:end] - previous_route_data_attributes[:start] - previous_route_data_attributes[:rests_duration].to_i
+        previous_route_data_attributes[:cost_time] = segment_seconds.to_f / 3600 * vehicle_usage.default_cost_time
         previous_route_data.assign_attributes(previous_route_data_attributes.slice(:end, :cost_time).compact)
       end
 
