@@ -286,12 +286,7 @@ class RouteSidebarSerializer
       out_of_skill: stop.out_of_skill,
       locked: stop.respond_to?(:locked) ? stop.locked : false,
       link_phone_number: @view_helpers.current_user.url_click2call ? @view_helpers.current_user.link_phone_number : nil,
-      distance: (stop.distance || 0) / 1000.0,
-      photos: stop.serialized_photos,
-      photos_present: stop.photos.attached?,
-      signature: stop.serialized_signature,
-      signature_present: stop.signature.attached?,
-      delivery_note: stop.delivery_note_available?
+      distance: (stop.distance || 0) / 1000.0
     }
     data[:ref] = nil unless @planning.customer.enable_references
     data

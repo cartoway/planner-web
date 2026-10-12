@@ -188,19 +188,16 @@ class OperationStopDetailTest < ActionController::TestCase
     assert_includes response.body, '.delivery-note-title-block'
   end
 
-  test 'show renders photos from the operation stop and the planning stop' do
+  test 'show renders photos from the operation stop only' do
     @stop.photos.attach(io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')), filename: 'operation_stop_photo.jpg', content_type: 'image/jpeg')
-    @stop.stop.photos.attach(io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')), filename: 'planning_stop_photo.jpg', content_type: 'image/jpeg')
 
     get :show, params: { id: @stop.id }
 
     assert_response :success
     assert_includes response.body, 'operation-stop-documents'
     assert_includes response.body, 'operation_stop_photo.jpg'
-    assert_includes response.body, 'planning_stop_photo.jpg'
   ensure
     @stop.photos.purge
-    @stop.stop&.photos&.purge
   end
 
   test 'show renders recipient tracking link when token is still valid' do

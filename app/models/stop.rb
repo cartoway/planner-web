@@ -39,12 +39,6 @@ class Stop < ApplicationRecord
   include TypedAttribute
   typed_attr :custom_attributes
 
-  has_many_attached :photos
-  has_one_attached :signature
-  include ProofAttachments
-
-  DELIVERY_NOTE_STATUSES = %w[delivered exception].freeze
-
   validates :route, presence: true
 
   scope :only_stop_visits, -> { where(type: StopVisit.name) }
@@ -52,7 +46,7 @@ class Stop < ApplicationRecord
   scope :only_active, -> { where(active: true) }
   scope :only_active_stop_visits, -> { only_stop_visits.where(active: true) }
   scope :includes_destinations_and_stores, -> {
-    with_attached_photos.with_attached_signature.includes(
+    includes(
       :route_data,
       visit: [
         :tags,
@@ -103,10 +97,6 @@ class Stop < ApplicationRecord
 
   def default_color
     (self.visit && visit.color) || route.default_color
-  end
-
-  def delivery_note_available?
-    is_a?(StopVisit) && DELIVERY_NOTE_STATUSES.include?(status&.downcase)
   end
 
   def outdate_route

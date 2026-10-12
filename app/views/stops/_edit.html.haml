@@ -141,4 +141,5 @@
                       %button.send_to_route.dropdown-item{ type: 'button', data: { stop_id: stop.id, url: "/plannings/#{@route.planning_id}/#{route_data[:route_id]}/#{stop.id}/driver_move.json" } }
                         %div.color_small{ style: "background: #{route_data[:color]};" }
                         = route_data[:name]
-  = render partial: 'stops/documents', locals: { stop: operation_stop || stop }
+  - if operation_stop
+    = render partial: 'stops/documents', locals: { stop: operation_stop }

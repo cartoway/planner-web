@@ -104,4 +104,5 @@
                   .col-xs-12
                     %p.help-block
                       = custom_attribute.description
-        = render partial: 'stops/documents', locals: { stop: operation_stop || stop }
+        - if operation_stop
+          = render partial: 'stops/documents', locals: { stop: operation_stop }
