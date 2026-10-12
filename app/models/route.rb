@@ -534,14 +534,18 @@ class Route < ApplicationRecord
         route_attributes[:cost_distance] = route_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
         previous_route_data_attributes[:cost_distance] = previous_route_data_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
         route_attributes[:cost_fixed] = vehicle_usage.default_cost_fixed if vehicle_usage.default_cost_fixed
-        route_attributes[:cost_time] = (route_attributes[:end] - route_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time if vehicle_usage.default_cost_time
-        previous_route_data_attributes[:cost_time] = (route_attributes[:end] - previous_route_data_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time if vehicle_usage.default_cost_time
       end
       previous_route_data.assign_attributes(previous_route_data_attributes.compact)
       route_attributes[:stop_no_path] = vehicle_usage.default_store_stop&.position? && stops_sort.any?{ |s| s.active && s.position? } && trace.nil?
 
-      # Add service time to end point
+      # Add service time to end point (included in cost_time below)
       route_attributes[:end] += service_time_end unless service_time_end.nil?
+      if vehicle_usage.default_cost_time && route_attributes[:start] && route_attributes[:end]
+        route_attributes[:cost_time] = (route_attributes[:end] - route_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time
+        previous_route_data_attributes[:end] = route_attributes[:end]
+        previous_route_data_attributes[:cost_time] = (route_attributes[:end] - previous_route_data_attributes[:start]).to_f / 3600 * vehicle_usage.default_cost_time
+        previous_route_data.assign_attributes(previous_route_data_attributes.slice(:end, :cost_time).compact)
+      end
 
       store_traces(trace, options.merge(drive_time: drive_time, distance: distance, sub_tour_index: sub_tour_index, color: sub_tour_color))
       clear_pending_unpositioned_rest!

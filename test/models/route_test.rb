@@ -215,6 +215,21 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal 1000 * (route.stops.size + 1), route.distance
   end
 
+  test 'cost_time includes service_time_start and service_time_end' do
+    route = routes(:route_one_one)
+    vu = route.vehicle_usage
+    vu.update_columns(cost_time: 60.0, cost_distance: nil, cost_fixed: nil, service_time_start: 1800, service_time_end: 900)
+    vu.vehicle_usage_set.update_columns(cost_time: nil, cost_distance: nil, cost_fixed: nil, service_time_start: nil, service_time_end: nil)
+
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+
+    implied_seconds = (route.cost_time / 60.0) * 3600
+    assert_in_delta route.end - route.start, implied_seconds, 2
+    assert_operator implied_seconds, :>=, 1800 + 900
+  end
+
   test 'compute applies vehicle duration coefficients to visits_duration' do
     route = routes(:route_one_one)
     vehicle_usage = route.vehicle_usage
