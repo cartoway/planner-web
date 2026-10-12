@@ -102,6 +102,25 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_equal 'active', operation.operation_routes.find_by!(route_id: route.id).reload.sync_state
   end
 
+  test 'operation modal prefills date from planning when present' do
+    assert @planning.date.present?
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_select '#execution-operation-date[value=?]', @planning.date.strftime('%Y-%m-%d')
+  end
+
+  test 'operation modal falls back to offset date when planning has no date' do
+    @planning.update!(date: nil)
+    expected = Date.current + @planning.customer.operation_date_offset_default
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_select '#execution-operation-date[value=?]', expected.strftime('%Y-%m-%d')
+  end
+
   test 'edit shows the operations inventory and create modal' do
     open_op = Operations::PublishFromPlanning.call(
       planning: @planning,

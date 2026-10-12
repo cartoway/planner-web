@@ -598,8 +598,19 @@ var initPlanningExecution = function() {
     refreshCount();
   });
   $date.off('change.planningExecution').on('change.planningExecution', applyAvailabilityForDate);
+  var syncOperationDateFromPlanning = function() {
+    var $planningDate = $('#planning_date');
+    if (!$planningDate.length || !$planningDate.val()) return;
+    var d = null;
+    try { d = $planningDate.datepicker('getDate'); } catch (_e) { d = null; }
+    if (!d || isNaN(d.getTime())) return;
+    var mm = d.getMonth() + 1;
+    var dd = d.getDate();
+    $date.val(d.getFullYear() + '-' + (mm < 10 ? '0' : '') + mm + '-' + (dd < 10 ? '0' : '') + dd);
+  };
   $modal.off('shown.bs.modal.planningExecution').on('shown.bs.modal.planningExecution', function() {
     rows().find('.execution-route-checkbox').removeData('user-touched');
+    syncOperationDateFromPlanning();
     refreshRoutesOnOpen();
   });
   applyAvailabilityForDate();
