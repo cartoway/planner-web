@@ -34,7 +34,7 @@
                 %label{"data-toggle" => "tooltip", :title => "#{t('plannings.edit.dialog.optimization.visits.sticky_vehicle_false_help')}"}
                   = radio_button_tag :sticky_vehicle, :false, current_user.customer.enable_global_optimization, disabled: !current_user.customer.enable_global_optimization && !current_user.customer.test
                   = t 'all.value._no'
-            #optimization-active.row
+            #optimization-active.row{style: 'display: none'}
               .col-xs-7
                 %label
                   = t 'plannings.edit.dialog.optimization.visits.active_only'
