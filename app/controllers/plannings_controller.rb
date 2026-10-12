@@ -343,6 +343,7 @@ class PlanningsController < ApplicationController
           .group_by(&:route_id)
 
     planning_summary = planning_summary(@planning)
+    open_ops_by_route = @planning.customer.device.operations_enabled? ? @planning.open_operations_by_route_id : nil
     payloads = ordered_routes.map do |route|
       stops_for_sidebar = stops_by_route_id[route.id] || []
       route_data = RouteSidebarSerializer.new(
@@ -354,7 +355,7 @@ class PlanningsController < ApplicationController
         stops: stops_for_sidebar
       ).as_hash
       route_data[:route_id] = route.id
-      attach_open_operations!(route_data, @planning)
+      attach_open_operations!(route_data, @planning, open_ops_by_route: open_ops_by_route)
       html = render_to_string(
         partial: 'routes/in_route.html.haml',
         formats: [:html],
