@@ -335,6 +335,23 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_includes response.body, ActionView::RecordIdentifier.dom_id(duplicated)
   end
 
+  test 'v2 duplicate from a single set refreshes the original block' do
+    enable_layout_v2!
+    customer = @vehicle_usage_set.customer
+    customer.vehicle_usage_sets.where.not(id: @vehicle_usage_set.id).find_each(&:destroy)
+    assert_equal 1, customer.vehicle_usage_sets.reload.count
+
+    original = @vehicle_usage_set
+    assert_difference('VehicleUsageSet.count') do
+      patch :duplicate, params: { vehicle_usage_set_id: original }, as: :turbo_stream
+    end
+
+    assert_response :success
+    assert_select "turbo-stream[action='replace'][target='#{ActionView::RecordIdentifier.dom_id(original)}']", 1
+    assert_select "turbo-stream[action='append'][target='accordion-vehicle-usage-sets']", 1
+    assert_select "turbo-stream[action='replace'] button.usage-set-toggle[data-bs-target='#collapseUsageSet#{original.id}']", 1
+  end
+
   test 'should reorder vehicle usages' do
     first = vehicle_usages(:vehicle_usage_one_one)
     second = vehicle_usages(:vehicle_usage_one_three)
