@@ -288,4 +288,28 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_equal operation_path(operation), route_payload['today_operation']['path']
   end
 
+  test 'planning json loads today operations in one query for all routes' do
+    Time.use_zone(users(:user_one).time_zone) do
+      Operations::PublishFromPlanning.call(
+        planning: @planning,
+        date: Date.current,
+        route_ids: @planning.routes.select(&:vehicle_usage_id).map(&:id)
+      )
+    end
+
+    operation_route_queries = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql].to_s
+      operation_route_queries += 1 if sql.include?('operation_routes') && sql.include?('FROM "operation_routes"')
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      get :show, params: { id: @planning.id }, format: :json
+    end
+
+    assert_response :success
+    assert_operator operation_route_queries, :<=, 1,
+                    "expected at most one operation_routes lookup, got #{operation_route_queries}"
+  end
+
 end
