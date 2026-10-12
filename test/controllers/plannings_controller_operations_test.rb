@@ -164,16 +164,51 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_includes @response.body, I18n.t('execution.modal.stops_count', count: routes(:route_one_one).size_active)
     assert_operator @response.body.index('planning-execution-card'), :<, @response.body.index('planning-execution-historized')
     assert_includes @response.body, open_op.ref.presence || open_op.name
-    # route_ids is a JSON array; route_changes is a JSON object (Hash#to_json in the view).
-    route_id = routes(:route_one_one).id
-    assert_select ".planning-execution-sync[data-operation-id=#{open_op.id}][data-route-ids]"
-    button_html = @response.body[/<button[^>]*planning-execution-sync[^>]*>/]
-    route_ids = JSON.parse(button_html[/data-route-ids=['"]([^'"]*)['"]/, 1])
-    changes = JSON.parse(CGI.unescapeHTML(button_html[/data-route-changes=['"]([^'"]*)['"]/, 1]))
-    assert_kind_of Array, route_ids
-    assert_includes route_ids, route_id
-    assert changes[route_id.to_s]['in_operation']
-    assert changes[route_id.to_s].key?('dirty'), 'sync modal JS needs dirty flags from SyncPreview'
+    assert_select ".planning-execution-sync[data-operation-id=#{open_op.id}]"
+    assert_select ".planning-execution-badge[data-operation-id=#{open_op.id}].label-warning"
+    assert_no_match(/data-route-changes=/, @response.body)
+  end
+
+  test 'data_header js includes execution freshness for open operations' do
+    fresh = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      name: 'Fresh',
+      date: Date.current,
+      route_ids: [routes(:route_one_one).id]
+    )
+    dirty = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      name: 'Dirty',
+      date: Date.current,
+      route_ids: [routes(:route_three_one).id]
+    )
+    dirty.update_columns(structure_fingerprint: 'stale')
+
+    get :data_header, params: { planning_id: @planning.id, format: :js }, xhr: true
+
+    assert_response :success
+    assert_includes @response.body, 'planning:execution:status'
+    assert_match(/"id":#{fresh.id}.*"fresh":true/m, @response.body)
+    assert_match(/"id":#{dirty.id}.*"fresh":false/m, @response.body)
+  end
+
+  test 'operation_sync_preview returns route membership and dirty flags' do
+    route = routes(:route_one_one)
+    operation = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      name: 'Sync',
+      date: Date.current,
+      route_ids: [route.id]
+    )
+
+    get :operation_sync_preview, params: { planning_id: @planning.id, operation_id: operation.id, format: :json }
+
+    assert_response :success
+    body = JSON.parse(@response.body)
+    assert_includes body['route_ids'], route.id
+    assert body['route_changes'][route.id.to_s]['in_operation']
+    assert body['route_changes'][route.id.to_s].key?('dirty')
+    assert_equal true, body['fresh']
   end
 
   test 'operation modal defaults to visible routes that have stops' do
