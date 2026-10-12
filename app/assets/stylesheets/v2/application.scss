@@ -512,6 +512,13 @@ form[aria-busy="true"]::after {
   animation: turbo-busy-spinner 0.75s linear infinite;
 }
 
+// Form submit inside #main marks both busy — keep the form spinner, hide the frame's.
+turbo-frame[busy]:has(form[aria-busy="true"])::before,
+turbo-frame[busy]:has(form[aria-busy="true"])::after {
+  content: none;
+  display: none;
+}
+
 @keyframes turbo-busy-spinner {
   to { transform: rotate(360deg); }
 }

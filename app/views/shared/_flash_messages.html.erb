@@ -1,6 +1,8 @@
 <% if flash.any? %>
   <div class="flash-content">
     <% flash.each do |message_type, message| %>
+      <%# Skip non-string flash (e.g. leftover Integer ids) — only messages are renderable. %>
+      <% next unless message.is_a?(String) || (message.is_a?(Array) && message.all? { |m| m.is_a?(String) }) %>
       <div class="flash-message" data-level="<%= message_type %>">
         <% if message.is_a? Array%>
           <% message.each do |m| %>
