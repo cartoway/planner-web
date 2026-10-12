@@ -35,7 +35,7 @@ class PlanningsController < ApplicationController
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
   before_action :enforce_operation_usable_for_refresh!, only: [:refresh]
   before_action :enforce_operation_usable_for_duplicate!, only: [:duplicate]
-  before_action :set_planning_without_stops, only: [:data_header, :summary, :filter_routes, :modal, :sidebar, :refresh_route, :refresh_routes, :move_stops_modal, :extract_inactive_stops_modal, :move, :update_stop]
+  before_action :set_planning_without_stops, only: [:data_header, :operation_sync_preview, :summary, :filter_routes, :modal, :sidebar, :refresh_route, :refresh_routes, :move_stops_modal, :extract_inactive_stops_modal, :move, :update_stop]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :refresh_routes, :reverse_order, :sidebar, :update_stop]
   before_action :set_device_definitions, only: [:edit, :update]
@@ -371,10 +371,34 @@ class PlanningsController < ApplicationController
 
   def data_header
     json_data = JSON.parse(render_to_string(template: 'plannings/head_data.json.jbuilder'), symbolize_names: true)
+    if can?(:manage, Operation) && @planning.customer.device.operations_enabled?
+      json_data[:execution_operations] =
+        @planning.operations.open_status
+                 .select(:id, :structure_fingerprint, :custom_attributes)
+                 .map { |operation|
+                   {
+                      id: operation.id,
+                      fresh: operation.current_structure?(@planning)
+                   }
+                 }
+    end
 
     respond_to do |format|
       format.js { render partial: 'edit_head', locals: json_data }
     end
+  end
+
+  # SyncPreview on demand when opening the sync modal.
+  def operation_sync_preview
+    operation = @planning.operations.find(params[:operation_id])
+    authorize! :update, operation
+    Preloaders::RouteBatchPreload.preload!(@planning.routes.to_a, summary: false)
+    route_ids = operation.operation_routes.active_sync.where.not(route_id: nil).pluck(:route_id)
+    render json: {
+      route_ids: route_ids,
+      route_changes: Operations::SyncPreview.call(planning: @planning, operation: operation),
+      fresh: operation.current_structure?(@planning)
+    }
   end
 
   def sidebar
