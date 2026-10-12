@@ -211,11 +211,12 @@ class RouteTest < ActiveSupport::TestCase
     assert_nil route.revenue
     assert_equal 50.0, route.cost_fixed
     assert_equal route.cost_distance, route.vehicle_usage.cost_distance * (route.distance.to_f / 1000)
-    assert_equal route.cost_time, route.vehicle_usage.cost_time * ((route.end - route.start).to_f / 3600)
+    billable_seconds = route.end - route.start - route.rests_duration.to_i
+    assert_equal route.cost_time, route.vehicle_usage.cost_time * (billable_seconds.to_f / 3600)
     assert_equal 1000 * (route.stops.size + 1), route.distance
   end
 
-  test 'cost_time includes service_time_start and service_time_end' do
+  test 'cost_time includes service times but excludes rests' do
     route = routes(:route_one_one)
     vu = route.vehicle_usage
     vu.update_columns(cost_time: 60.0, cost_distance: nil, cost_fixed: nil, service_time_start: 1800, service_time_end: 900)
@@ -226,8 +227,10 @@ class RouteTest < ActiveSupport::TestCase
     route.reload
 
     implied_seconds = (route.cost_time / 60.0) * 3600
-    assert_in_delta route.end - route.start, implied_seconds, 2
+    billable_seconds = route.end - route.start - route.rests_duration.to_i
+    assert_in_delta billable_seconds, implied_seconds, 2
     assert_operator implied_seconds, :>=, 1800 + 900
+    assert_equal billable_seconds, route.drive_time.to_i + route.wait_time.to_i + route.visits_duration.to_i + 1800 + 900
   end
 
   test 'compute applies vehicle duration coefficients to visits_duration' do
