@@ -52,4 +52,5 @@
           %th= t 'vehicle_usage_sets.index.time'
           %th
       - @vehicle_usage_sets.each_with_index do |vehicle_usage_set, i|
-        = render 'v2/vehicle_usage_sets/set_block', vehicle_usage_set: vehicle_usage_set, index: i, expanded: i.zero?, show_set_checkbox: show_set_checkbox, invisible_class: invisible_class, can_destroy_vehicle_config: can_destroy_vehicle_config, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage, nested_colspan: nested_colspan, sets_count: sets_count
+        - expanded = @expanded_vehicle_usage_set_id ? vehicle_usage_set.id == @expanded_vehicle_usage_set_id : i.zero?
+        = render 'v2/vehicle_usage_sets/set_block', vehicle_usage_set: vehicle_usage_set, index: i, expanded: expanded, show_set_checkbox: show_set_checkbox, invisible_class: invisible_class, can_destroy_vehicle_config: can_destroy_vehicle_config, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage, nested_colspan: nested_colspan, sets_count: sets_count
