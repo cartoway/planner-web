@@ -110,6 +110,34 @@ class RouteSidebarSerializerTest < ActionController::TestCase
     refute hash.key?(:status_all)
   end
 
+  test 'as_hash with stops omits proofs and delivery note (owned by operation stops)' do
+    route = Route.where(id: routes(:route_one_one).id).includes_destinations_and_stores.first!
+    queries = []
+    callback = lambda { |_name, _start, _finish, _id, payload|
+      sql = payload[:sql].to_s
+      queries << sql if sql.include?('active_storage_attachments')
+    }
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      hash = RouteSidebarSerializer.new(
+        route: route,
+        planning: route.planning,
+        with_stops: true,
+        view_helpers: route_sidebar_view_helpers
+      ).as_hash
+
+      stop = hash[:stops]&.find { |s| s[:stop_id] == stops(:stop_one_one).id } || hash[:stops]&.first
+      assert stop, 'expected at least one serialized stop'
+      refute stop.key?(:photos)
+      refute stop.key?(:photos_present)
+      refute stop.key?(:signature)
+      refute stop.key?(:signature_present)
+      refute stop.key?(:delivery_note)
+    end
+
+    assert_empty queries, "unexpected active_storage_attachments queries: #{queries}"
+  end
+
   test 'as_hash includes regulatory_rest when vehicle usage has a regulatory rest' do
     route = routes(:route_one_one)
     planning = route.planning
