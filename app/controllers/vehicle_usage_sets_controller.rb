@@ -217,13 +217,18 @@ class VehicleUsageSetsController < ApplicationController
     @vehicle_usage_sets = @customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}])
   end
 
-  def vehicle_usage_set_list_locals(expanded:)
-    sets = current_user.customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}]).to_a
-    @vehicle_usage_set = sets.find { |s| s.id == @vehicle_usage_set.id } || @vehicle_usage_set.reload
-    index = sets.index(@vehicle_usage_set) || 0
+  def vehicle_usage_sets_for_list
+    current_user.customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}]).to_a
+  end
+
+  def vehicle_usage_set_list_locals(expanded:, vehicle_usage_set: nil, sets: nil)
+    sets ||= vehicle_usage_sets_for_list
+    vehicle_usage_set ||= @vehicle_usage_set
+    vehicle_usage_set = sets.find { |s| s.id == vehicle_usage_set.id } || vehicle_usage_set.reload
+    index = sets.index(vehicle_usage_set) || 0
     show_set_checkbox = current_user.customer.default_max_vehicle_usage_sets > 1
     {
-      vehicle_usage_set: @vehicle_usage_set,
+      vehicle_usage_set: vehicle_usage_set,
       index: index,
       expanded: expanded,
       show_set_checkbox: show_set_checkbox,
@@ -241,7 +246,26 @@ class VehicleUsageSetsController < ApplicationController
   end
 
   def vehicle_usage_set_append_stream
-    stream_append('accordion-vehicle-usage-sets', partial: 'v2/vehicle_usage_sets/set_block', locals: vehicle_usage_set_list_locals(expanded: true))
+    sets = vehicle_usage_sets_for_list
+    streams = []
+    # Leaving single-set mode: refresh the sibling so it gains accordion toggles
+    # (otherwise exclusive collapse closes it with no way to reopen).
+    if sets.size == 2
+      sibling = sets.find { |s| s.id != @vehicle_usage_set.id }
+      if sibling
+        streams << stream_replace(
+          sibling,
+          partial: 'v2/vehicle_usage_sets/set_block',
+          locals: vehicle_usage_set_list_locals(expanded: false, vehicle_usage_set: sibling, sets: sets)
+        )
+      end
+    end
+    streams << stream_append(
+      'accordion-vehicle-usage-sets',
+      partial: 'v2/vehicle_usage_sets/set_block',
+      locals: vehicle_usage_set_list_locals(expanded: true, sets: sets)
+    )
+    streams
   end
 
   def activate_multiple_vehicle_usage(vehicle_usage_set_id, activate)
