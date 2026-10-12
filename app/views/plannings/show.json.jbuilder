@@ -52,6 +52,7 @@ else
     distance_total += route.distance || 0
   end
 
+  open_ops_by_route = @planning.customer.device.operations_enabled? ? @planning.open_operations_by_route_id : nil
   routes_data = routes_array.map do |route|
     data = RouteSidebarSerializer.new(
       route: route,
@@ -59,7 +60,7 @@ else
       with_stops: @with_stops,
       view_helpers: self
     ).as_hash
-    attach_open_operations!(data, @planning, route.id)
+    attach_open_operations!(data, @planning, route.id, open_ops_by_route: open_ops_by_route)
   end
 
   json.prefered_unit current_user.prefered_unit
