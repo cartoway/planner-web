@@ -84,13 +84,13 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     [
       destinations_path,
       vehicle_usage_sets_path,
-      import_vehicle_usage_sets_path,
       deliverable_units_path,
       stores_path,
       store_import_path
     ].each do |href|
       assert_select 'a[href=?][data-turbo-frame=main][data-turbo-action=advance]', href
     end
+    assert_select 'a[href=?][data-turbo-frame=_top][data-turbo-action=advance]', import_vehicle_usage_sets_path
   end
 
   test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do
@@ -376,7 +376,7 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     get :import
     assert_response :success
     assert_select 'body.cartoway-v2', 1
-    assert_select 'form[action=?]', import_csv_vehicle_usage_sets_path, 1
+    assert_select 'form[action=?][data-turbo-frame=_top][data-turbo-action=advance]', import_csv_vehicle_usage_sets_path, 1
     assert_select 'form .offset-md-1.col-md-10', minimum: 1
     assert_select 'form label.btn.btn-primary[for=import_csv_file]', text: /#{Regexp.escape(I18n.t('web.choose_file'))}/, count: 1
     assert_select 'form .col-md-10.offset-md-1 .form-switch input#import_csv_replace_vehicles[name="import_csv[replace_vehicles]"]', 1
@@ -481,7 +481,8 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
       post :upload_csv, params: { import_csv: { replace_vehicles: true, file: file } }
     end
 
-    assert_redirected_to vehicle_usage_sets_path
+    imported = VehicleUsageSet.order(:id).last
+    assert_redirected_to vehicle_usage_sets_path(expanded: imported.id)
     assert_equal 303, response.status
   end
 
@@ -494,8 +495,14 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
       post :upload_csv, params: { import_csv: { replace_vehicles: true, file: file } }
     end
 
-    assert_redirected_to vehicle_usage_sets_path
+    imported = VehicleUsageSet.order(:id).last
+    assert_redirected_to vehicle_usage_sets_path(expanded: imported.id)
     assert_equal 303, response.status
+
+    get :index, params: { expanded: imported.id }
+    assert_response :success
+    assert_select "#collapseUsageSet#{imported.id}.show", 1
+    assert_select 'table#accordion-vehicle-usage-sets .collapse.show', 1
   end
 
   test 'should use limitation' do
