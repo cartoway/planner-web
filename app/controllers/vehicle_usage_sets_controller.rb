@@ -197,7 +197,9 @@ class VehicleUsageSetsController < ApplicationController
       @customer = current_user.customer
       @import_csv = ImportCsv.new(import_csv_params.merge(importer: ImporterVehicleUsageSets.new(current_user.customer)))
       if @import_csv.valid? && @import_csv.import
-        format.html { redirect_to action: 'index', status: :see_other }
+        # Expand the imported set (last created / updated) on the index accordion.
+        expanded_id = @customer.vehicle_usage_sets.maximum(:id)
+        format.html { redirect_to vehicle_usage_sets_path(expanded: expanded_id), status: :see_other }
       else
         format.html do
           if layout_v2?
@@ -215,6 +217,7 @@ class VehicleUsageSetsController < ApplicationController
   def load_vehicle_usage_sets_index_page
     @customer = current_user.customer
     @vehicle_usage_sets = @customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}])
+    @expanded_vehicle_usage_set_id = params[:expanded].presence&.to_i
   end
 
   def vehicle_usage_sets_for_list

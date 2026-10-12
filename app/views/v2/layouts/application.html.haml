@@ -198,7 +198,8 @@
                         %i.fa.fa-truck-field.fa-fw
                         = t 'all.verb.list'
                     %li{ class: ("disabled" if !current_user_form_update?(:vehicle_usages)) }
-                      = link_to import_vehicle_usage_sets_path, disabled: !current_user_form_update?(:vehicle_usages), data: { turbo_frame: "main", turbo_action: "advance" } do
+                      -# Full-page (_top): import form fills the viewport; no #main frame spinner.
+                      = link_to import_vehicle_usage_sets_path, disabled: !current_user_form_update?(:vehicle_usages), data: { turbo_frame: "_top", turbo_action: "advance" } do
                         %i.fa.fa-upload.fa-fw
                         = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
                     %li.divider
