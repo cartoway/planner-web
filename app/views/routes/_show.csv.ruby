@@ -200,7 +200,7 @@ route.stops.sort_by(&:index).each { |stop|
   ])
   row.merge!(
     Hash[@stop_custom_attributes.map{ |ca|
-      ["custom_attributes_stop[#{ca.name}]".to_sym, stop.custom_attributes_typed_hash[ca.name]]
+      ["custom_attributes_stop[#{ca.name}]".to_sym, nil]
     }
   ])
 
