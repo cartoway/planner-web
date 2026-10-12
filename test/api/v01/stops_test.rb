@@ -9,14 +9,6 @@ class V01::StopsTest < ActiveSupport::TestCase
 
   setup do
     @stop = stops(:stop_one_one)
-    # use_transactional_tests is off — clear leftovers from other test classes.
-    @stop.photos.purge if @stop.photos.attached?
-    @stop.signature.purge if @stop.signature.attached?
-  end
-
-  teardown do
-    @stop&.photos&.purge
-    @stop&.signature&.purge if @stop&.signature&.attached?
   end
 
   def around
@@ -36,23 +28,12 @@ class V01::StopsTest < ActiveSupport::TestCase
     assert_equal @stop.id, JSON.parse(last_response.body)['id']
   end
 
-  test 'should fetch stop with temporary photo url' do
-    @stop.photos.attach(
-      io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')),
-      filename: 'stop_photo.jpg',
-      content_type: 'image/jpeg'
-    )
-
+  test 'should fetch stop without photos or signature' do
     get api(@stop.route.planning.id, @stop.route.id, @stop.id)
     assert last_response.ok?, last_response.body
-    photos = JSON.parse(last_response.body)['photos']
-    assert_equal 1, photos.size
-    assert photos.first['url'].present?
-
-    uri = URI.parse(photos.first['url'])
-    get uri.request_uri
-    assert last_response.ok?, last_response.body
-    assert_includes last_response.content_type, 'image/jpeg'
+    body = JSON.parse(last_response.body)
+    refute body.key?('photos')
+    refute body.key?('signature')
   end
 
   test 'should update stop' do
