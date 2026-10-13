@@ -11,7 +11,16 @@ import { pathToFileURL } from 'node:url'
 const srcPath = new URL('../../app/javascript/maplibre/destination_markers.js', import.meta.url)
 const tmpPath = path.join(os.tmpdir(), 'planner-destination-markers.mjs')
 fs.writeFileSync(tmpPath, fs.readFileSync(srcPath))
-const { clusterMarkerSize, createDestinationMarkerElement, fillClusterMarker, fillDestinationMarker } = await import(pathToFileURL(tmpPath).href)
+const {
+  CLUSTER_RADIUS,
+  MARKER_SIZE,
+  clusterMarkerSize,
+  createDestinationMarkerElement,
+  fillClusterMarker,
+  fillDestinationMarker,
+  geojsonClusterSourceOptions,
+  teritorioClusterOptions
+} = await import(pathToFileURL(tmpPath).href)
 
 function element () {
   return {
@@ -62,5 +71,16 @@ describe('destination HTML markers', () => {
     assert.equal(el.textContent, '40')
     assert.equal(el.style.width, '44px')
     assert.equal(el.style.height, '44px')
+  })
+
+  it('exposes shared geojson and teritorio cluster sizing for all maps', () => {
+    assert.deepEqual(geojsonClusterSourceOptions(), {
+      cluster: true,
+      clusterMaxZoom: 22,
+      clusterRadius: CLUSTER_RADIUS
+    })
+    assert.equal(teritorioClusterOptions().markerSize, MARKER_SIZE)
+    assert.equal(teritorioClusterOptions().clusterMaxZoom, 23)
+    assert.equal(teritorioClusterOptions().unfoldedClusterMaxLeaves, 7)
   })
 })

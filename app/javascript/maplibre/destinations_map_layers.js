@@ -4,7 +4,12 @@
 // @teritorio/maplibre-gl-teritorio-cluster on top of a MapLibre GeoJSON source.
 
 import { TeritorioCluster } from '@teritorio/maplibre-gl-teritorio-cluster'
-import { fillClusterMarker, fillDestinationMarker } from 'maplibre/destination_markers'
+import {
+  fillClusterMarker,
+  fillDestinationMarker,
+  geojsonClusterSourceOptions,
+  teritorioClusterOptions
+} from 'maplibre/destination_markers'
 import { pointsToFeatures } from 'maplibre/map_points'
 
 export const SOURCE_ID = 'destinations-v2'
@@ -12,15 +17,6 @@ export const CLUSTER_LAYER_ID = 'destinations-v2-clusters'
 export const DECLUSTER_SOURCE_ID = 'destinations-v2-decluster-viewport'
 export const DECLUSTER_LAYER_ID = 'destinations-v2-decluster-viewport-points'
 
-// Source keeps clustering through the last zoom so overlapping points stay grouped
-// and Teritorio can unfold them as HTML (see the library README: clusterMaxZoom 22).
-const SOURCE_CLUSTER_MAX_ZOOM = 22
-const CLUSTER_RADIUS = 50
-// Above the map max zoom, so large clusters stay a count bubble until clicked.
-// Groups of at most UNFOLDED_CLUSTER_MAX_LEAVES still unfold in place.
-const PLUGIN_CLUSTER_MAX_ZOOM = 23
-const UNFOLDED_CLUSTER_MAX_LEAVES = 7
-const MARKER_SIZE = 22
 const FETCH_DEBOUNCE_MS = 300
 const BBOX_PADDING_RATIO = 0.35
 const PRUNE_MARGIN_RATIO = 2.5
@@ -294,9 +290,7 @@ export class DestinationsMapLayers {
       this.map.addSource(SOURCE_ID, {
         type: 'geojson',
         data: { type: 'FeatureCollection', features: [] },
-        cluster: true,
-        clusterMaxZoom: SOURCE_CLUSTER_MAX_ZOOM,
-        clusterRadius: CLUSTER_RADIUS
+        ...geojsonClusterSourceOptions()
       })
     }
 
@@ -323,10 +317,7 @@ export class DestinationsMapLayers {
 
   _createClusterLayer (id, sourceId) {
     const maplibregl = window.maplibregl
-    const layer = new TeritorioCluster(id, sourceId, {
-      clusterMaxZoom: PLUGIN_CLUSTER_MAX_ZOOM,
-      markerSize: MARKER_SIZE,
-      unfoldedClusterMaxLeaves: UNFOLDED_CLUSTER_MAX_LEAVES,
+    const layer = new TeritorioCluster(id, sourceId, teritorioClusterOptions({
       clusterRender (element, props) {
         fillClusterMarker(element, props)
       },
@@ -343,7 +334,7 @@ export class DestinationsMapLayers {
         if (offset) marker.setOffset(offset)
         return marker
       }
-    })
+    }))
     layer.addEventListener('feature-click', this._boundHandlers.featureClick)
     return layer
   }
