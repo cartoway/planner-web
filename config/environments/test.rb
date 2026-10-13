@@ -49,6 +49,8 @@ Rails.application.configure do
   # The :test delivery method accumulates sent emails in the
   # ActionMailer::Base.deliveries array.
   config.action_mailer.delivery_method = :test
+  # Default ESP for tag-header assertions; override per test if needed.
+  config.action_mailer.smtp_provider = :brevo
 
   # Randomize the order test cases are executed.
   config.active_support.test_order = :random

@@ -92,17 +92,9 @@ Rails.application.configure do
   # and the route to /letter_opener should be open (routes.rb)
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.default_url_options = { :host => 'localhost:8080' } # Needed by devise
-  config.action_mailer.smtp_settings = {
-    address: 'smtp.example.com',
-    port: 587,
-    user_name: 'robot@example.com',
-    password: '',
-    authentication: 'plain',
-    enable_starttls: true,
-    open_timeout: 5,
-    read_timeout: 5,
-  }
-  config.default_from_mail = 'root@localhost'
+  config.action_mailer.smtp_settings = SmtpEnvSettings.to_h
+  config.action_mailer.smtp_provider = SmtpEnvSettings.provider
+  config.default_from_mail = SmtpEnvSettings.default_from
 
   config.swagger_docs_base_path = 'http://localhost:8080/'
   config.api_contact_email = 'tech@cartoway.com'
