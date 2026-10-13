@@ -15,7 +15,6 @@ class OperationStopsController < ApplicationController
       query: params[:q],
       from: from,
       to: to,
-      include_orphans: true,
       destination_id: params[:destination_id],
       customer_id: current_user.customer_id
     ).includes(operation_route: :operation).order('operations.date DESC', :index).limit(50)
