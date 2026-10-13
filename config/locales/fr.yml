@@ -3773,8 +3773,10 @@ fr:
         Bonjour {NAME}. Votre chauffeur {CUSTOMER_NAME} est en route.
         Son arrivée est prévue entre {TIME-5} et {TIME+15}.
     email:
-      alert_plan: >-
-        Bonjour {NAME},\n\nVotre livraison est prévue le {DATE} entre {TIME-60} et {TIME+60} à {CITY}.\n\nSuivez votre livraison : {URL}
+      alert_plan: |
+        Bonjour {NAME},
+
+        Votre livraison est prévue le {DATE} entre {TIME-60} et {TIME+60} à {CITY}.
   all:
     providers:
       entra_id: Microsoft Entra ID
@@ -4293,5 +4295,6 @@ fr:
     delivery_tracking:
       subject: "Suivi de votre livraison — %{shipper}"
       cta: Suivre ma livraison
+      fallback_link: Cliquez ici si le bouton n’apparaît pas
       documents_count: Documents
 
