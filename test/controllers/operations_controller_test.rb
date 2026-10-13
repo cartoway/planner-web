@@ -265,6 +265,16 @@ class OperationsControllerTest < ActionController::TestCase
     assert_match(%r{/operations/#{@operation.id}/routes/\d+/mobile}, html)
   end
 
+  test 'send modals keep scrollable body and footer submit' do
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_select '#operation-send-email.modal .modal-dialog.modal-dialog-scrollable', 1
+    assert_select '#operation-send-email form.operation-send-form .modal-body', 1
+    assert_select '#operation-send-email form.operation-send-form .modal-footer input[type=submit]', 1
+    assert_select '#operation-send-destinations-email.modal .modal-dialog.modal-dialog-scrollable', 1
+    assert_select '#operation-send-destinations-email form.operation-send-form .modal-footer input[type=submit]', 1
+  end
+
   test 'sms can be sent after typing a number on a route that had none' do
     @operation.customer.update_columns(enable_sms: true)
     route = @operation.operation_routes.planned.where.not(vehicle_id: nil).first
