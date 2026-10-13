@@ -77,6 +77,8 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_select 'table#plannings a[href=?]', edit_planning_path(@planning)
     assert_select %(table#plannings a[href="#{planning_duplicate_path(@planning)}"][data-turbo-method="patch"][data-turbo-frame="_top"]), 1
     assert_select %(table#plannings tr##{ActionView::RecordIdentifier.dom_id(@planning)}), 1
+    assert_select %(#planningsCollpase li##{ActionView::RecordIdentifier.dom_id(@planning, :menu)}), 1
+    assert_select 'form#plannings-destroy[data-turbo-frame="_top"]', 1
     assert_select 'table#plannings button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
     assert_select '.plannings-toolbar button[data-controller~="confirm-click"][data-confirm-click-form-value="plannings-destroy"]', 1
 
@@ -1104,12 +1106,14 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'destroy removes planning row via turbo stream on v2' do
     enable_layout_v2!
     planning_dom_id = ActionView::RecordIdentifier.dom_id(@planning)
+    menu_dom_id = ActionView::RecordIdentifier.dom_id(@planning, :menu)
     assert_difference('Planning.count', -1) do
       delete :destroy, params: { id: @planning }, as: :turbo_stream
     end
     assert_response :success
     assert_equal 'text/vnd.turbo-stream.html', response.media_type
     assert_select "turbo-stream[action='remove'][target='#{planning_dom_id}']", 1
+    assert_select "turbo-stream[action='remove'][target='#{menu_dom_id}']", 1
   end
 
   test 'should destroy multiple planning' do
