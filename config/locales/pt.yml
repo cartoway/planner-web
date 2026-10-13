@@ -1476,8 +1476,6 @@ pt:
       comment_desc: informações complementares para a visita.
       phone_number: telefone
       phone_number_desc: número do telefone de contacto no destino.
-      email: email
-      email_desc: email de contacto no destino.
       tags: etiquetas
       tags_desc: categorização do destino (permitirá agrupa-los).
       tags_format: 'categoria 1, categoria 2'
