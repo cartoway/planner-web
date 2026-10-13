@@ -111,7 +111,6 @@ class V01::Operations < Grape::API
         query: params[:q],
         from: from,
         to: to,
-        include_orphans: true,
         destination_id: params[:destination_id],
         customer_id: current_customer.id
       ).includes(operation_route: :operation).order('operations.date DESC', :index).limit(50)

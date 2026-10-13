@@ -41,6 +41,7 @@ class OperationStop < ApplicationRecord
     ids = Array(destination_ids).compact.map(&:to_i).uniq
     return none if ids.empty?
 
+    # .executable already scopes stop sync_state + active; route sync is implied (orphaned routes orphan their stops).
     operation.operation_stops
              .executable
              .where(kind: 'visit')
@@ -49,7 +50,6 @@ class OperationStop < ApplicationRecord
                ids: ids
              )
              .joins(:operation_route)
-             .merge(OperationRoute.where(unassigned: false))
              .includes_delivery_tracking_context
              .order(Arel.sql('operation_routes.index, operation_stops.index'))
   end
@@ -72,8 +72,6 @@ class OperationStop < ApplicationRecord
 
   def self.linked_to_operation
     joins(operation_route: :operation)
-      .merge(OperationRoute.where(unassigned: false))
-      .where.not(active: false)
       .includes(:operation_stop_status_events, operation_route: :operation)
       .with_attached_photos
       .with_attached_signature
@@ -85,13 +83,10 @@ class OperationStop < ApplicationRecord
     SQL
   end
 
-  def self.search_by_destination_info(query: nil, from: nil, to: nil, include_orphans: true, destination_id: nil, customer_id: nil)
+  def self.search_by_destination_info(query: nil, from: nil, to: nil, destination_id: nil, customer_id: nil)
     rel = joins(operation_route: :operation)
-          .merge(OperationRoute.where(unassigned: false))
-          .where.not(active: false)
     rel = rel.where(operations: { customer_id: customer_id }) if customer_id
     rel = rel.where(operations: { date: from..to }) if from && to
-    rel = rel.where(sync_state: 'active') unless include_orphans
     rel = rel.where(destination_id: destination_id) if destination_id.present?
     if query.present?
       escaped = "%#{sanitize_sql_like(query.to_s.strip)}%"
