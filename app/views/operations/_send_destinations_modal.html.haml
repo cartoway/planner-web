@@ -1,7 +1,7 @@
 .modal.fade{id: "operation-send-destinations-#{channel}", tabindex: '-1', aria: { hidden: 'true', labelledby: "operation-send-destinations-#{channel}-title" }, data: { turbo_permanent: true }}
   .modal-dialog.modal-lg.modal-dialog-scrollable
     .modal-content
-      = form_with url: transmit_destinations_operation_path(operation), method: :post, local: true, data: { turbo: false } do
+      = form_with url: transmit_destinations_operation_path(operation), method: :post, local: true, html: { class: 'operation-send-form' }, data: { turbo: false } do
         = hidden_field_tag :channel, channel
         .modal-header
           %h2.h5.modal-title{id: "operation-send-destinations-#{channel}-title"}= t("operations.show.send_destinations_#{channel}_title")
