@@ -52,7 +52,7 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     Operations::SendDestinationEmail.call(operation: @operation, trackings: [@tracking])
     mail = ActionMailer::Base.deliveries.last
     assert mail.attachments.any? { |a| a.filename.start_with?('company_logo') }
-    assert_match(%r{cid:}, mail.body.encoded)
+    assert_match(/cid:/, mail.body.encoded)
   end
 
   test 'send destination email records timeline without moving status cursor' do
