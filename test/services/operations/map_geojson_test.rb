@@ -197,4 +197,21 @@ class OperationsMapGeojsonTest < ActiveSupport::TestCase
     assert_equal [[2.0, 48.0], [2.2, 48.2]], gps[:geometry][:coordinates]
     refute_equal gps[:geometry][:coordinates], route_line[:geometry][:coordinates]
   end
+
+  test 'latest vehicle point exposes gps accuracy for the map halo' do
+    VehiclePositions::Record.call(
+      operation_route: @operation_route,
+      lat: 48.1,
+      lng: 2.1,
+      accuracy: 18.5,
+      positioned_at: Time.current
+    )
+
+    geojson = Operations::MapGeojson.call(operation: @operation, routes: [@operation_route.reload])
+    vehicle = geojson[:features].find { |feature| feature[:properties][:geometry_kind] == 'vehicle' }
+
+    assert vehicle
+    assert_equal [2.1, 48.1], vehicle[:geometry][:coordinates]
+    assert_in_delta 18.5, vehicle[:properties][:accuracy]
+  end
 end

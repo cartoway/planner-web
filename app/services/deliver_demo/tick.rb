@@ -8,6 +8,8 @@ module DeliverDemo
     MAX_SERVICE_SECONDS = 5 * 60
     DEFAULT_SERVICE_SECONDS = 2 * 60
     JITTER_SECONDS = 5 * 60
+    # Urban smartphone GPS CEP (metres) — large enough to peek past the vehicle pin at street zoom.
+    DEMO_ACCURACY_METERS = 40.0
     FALLBACK_START_SECONDS = 8 * 3600
     FALLBACK_END_SECONDS = 18 * 3600
 
@@ -184,6 +186,7 @@ module DeliverDemo
         operation_route: route,
         lat: lat,
         lng: lng,
+        accuracy: DEMO_ACCURACY_METERS,
         positioned_at: position_time(route, stops, stop_index, ratio, cursor),
         source: 'demo',
         payload: { 'demo' => true }
