@@ -28,7 +28,9 @@ class OperationsController < ApplicationController
     @next_page = next_page
     @selector_routes = selector_routes
     @deliver_demo_enabled = DeliverDemo.enabled?(current_user.customer)
-    if @operation.open? && !turbo_refresh_request?
+    # Always load send payloads on show — Turbo list→show sends Turbo-Frame: main /
+    # X-Turbo-Request-Id, which must not skip these (buttons would stay empty).
+    if @operation.open?
       @send_routes = transmittable_routes.to_a
       @send_trackings = destination_trackings_for_send.to_a
     end
@@ -193,8 +195,11 @@ class OperationsController < ApplicationController
     Rails.logger.warn("operation device status pull failed: #{e.class}: #{e.message}")
   end
 
+  # Partial Turbo Frame updates only (e.g. demo_actions). "#main" is the layout frame
+  # used for list→show navigations and must run full show setup (device pull, etc.).
   def turbo_refresh_request?
-    request.headers['Turbo-Frame'].present? || request.headers['X-Turbo-Request-Id'].present?
+    frame = request.headers['Turbo-Frame'].to_s
+    frame.present? && frame != 'main'
   end
 
   def operation_params

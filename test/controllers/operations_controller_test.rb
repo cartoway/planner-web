@@ -237,21 +237,23 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes response.body, mobile_url_operation_operation_route_path(@operation, route)
   end
 
-  test 'turbo refresh skips device status pull' do
+  test 'partial turbo frame skips device status pull' do
     Device.any_instance.stubs(:available_stop_status?).returns(true)
     DeviceService.any_instance.expects(:fetch_stops_status).never
-    @request.headers['X-Turbo-Request-Id'] = 'refresh-1'
+    @request.headers['Turbo-Frame'] = 'operation_demo_actions'
 
     get :show, params: { id: @operation.id }
     assert_response :success
   end
 
-  test 'turbo refresh skips destination send payload' do
-    OperationDeliveryTracking.expects(:ensure_for!).never
-    @request.headers['X-Turbo-Request-Id'] = 'refresh-1'
+  test 'list turbo frame main still renders send email buttons' do
+    @request.headers['Turbo-Frame'] = 'main'
+    @request.headers['X-Turbo-Request-Id'] = 'visit-1'
 
     get :show, params: { id: @operation.id }
     assert_response :success
+    assert_includes response.body, I18n.t('operations.show.send_email')
+    assert_includes response.body, 'operation-send-email'
   end
 
   test 'transmit emails the assigned drivers' do
