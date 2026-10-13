@@ -41,6 +41,24 @@ class RecordStatusTest < ActiveSupport::TestCase
     assert_equal t2, @stop.status_updated_at
   end
 
+  test 'update_cursor false keeps timeline only' do
+    t1 = Time.zone.parse('2026-09-25 10:00')
+    t2 = Time.zone.parse('2026-09-25 11:00')
+    OperationStops::RecordStatus.call(operation_stop: @stop, status: 'intransit', recorded_at: t1, source: 'mobile')
+    OperationStops::RecordStatus.call(
+      operation_stop: @stop,
+      status: 'email_sent',
+      recorded_at: t2,
+      source: 'backoffice',
+      update_cursor: false
+    )
+
+    @stop.reload
+    assert_includes @stop.operation_stop_status_events.pluck(:status), 'email_sent'
+    assert_equal 'intransit', @stop.status
+    assert_equal t1, @stop.status_updated_at
+  end
+
   test 'does not allow resetting a transferred status' do
     target = @operation.operation_routes.planned.where.not(id: @stop.operation_route_id).detect { |route| route.route_id.present? }
     skip 'Need a second vehicle route' unless target
