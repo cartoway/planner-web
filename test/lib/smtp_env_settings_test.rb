@@ -43,7 +43,7 @@ class SmtpEnvSettingsTest < ActiveSupport::TestCase
   private
 
   def with_env(vars)
-    previous = vars.keys.index_with { |key| ENV[key] }
+    previous = vars.keys.index_with { |key| ENV.fetch(key, nil) }
     vars.each { |key, value| ENV[key] = value }
     yield
   ensure
