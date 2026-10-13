@@ -98,7 +98,7 @@
                             = current_user.customer.default_max_plannings
                           \- #{t 'plannings.menu.plannings'}
                       - current_user.customer.plannings.select(&:id).each do |planning|
-                        %li{style: "display: inline;" }
+                        %li{id: dom_id(planning, :menu), style: "display: inline;" }
                           = link_to edit_planning_path(planning) do
                             .text-overflow
                               %i.fa.fa-route.fa-fw

@@ -223,7 +223,12 @@ class PlanningsController < ApplicationController
   def destroy
     @planning.destroy
     respond_to do |format|
-      format.turbo_stream { render turbo_stream: turbo_stream.remove(@planning) }
+      format.turbo_stream do
+        render turbo_stream: [
+          turbo_stream.remove(@planning),
+          turbo_stream.remove(helpers.dom_id(@planning, :menu))
+        ]
+      end
       format.html { redirect_to plannings_url }
     end
   end
