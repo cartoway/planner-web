@@ -1,5 +1,39 @@
 // Copyright © Cartoway
-// HTML pin used by the v2 destinations/stores map (selected pin and Teritorio markers).
+// HTML pins + shared MapLibre/Teritorio cluster sizing for destinations, stores, operations.
+
+// GeoJSON source: keep clustering through the last zoom so Teritorio can unfold HTML
+// (library README: clusterMaxZoom 22).
+export const SOURCE_CLUSTER_MAX_ZOOM = 22
+/** Pixel distance between point centres before MapLibre merges them into a cluster. */
+export const CLUSTER_RADIUS = 44
+// Above map max zoom so large clusters stay a count bubble until clicked.
+export const PLUGIN_CLUSTER_MAX_ZOOM = 23
+export const UNFOLDED_CLUSTER_MAX_LEAVES = 7
+/** Teritorio layout size for individual markers (unfold spacing). */
+export const MARKER_SIZE = 22
+
+export const CLUSTER_BUBBLE_SIZE_SMALL = 36
+export const CLUSTER_BUBBLE_SIZE_MEDIUM = 44
+export const CLUSTER_BUBBLE_SIZE_LARGE = 52
+
+/** Options to spread into a clustered GeoJSON source. */
+export function geojsonClusterSourceOptions () {
+  return {
+    cluster: true,
+    clusterMaxZoom: SOURCE_CLUSTER_MAX_ZOOM,
+    clusterRadius: CLUSTER_RADIUS
+  }
+}
+
+/** Base TeritorioCluster options; pass render callbacks via `extra`. */
+export function teritorioClusterOptions (extra = {}) {
+  return {
+    clusterMaxZoom: PLUGIN_CLUSTER_MAX_ZOOM,
+    markerSize: MARKER_SIZE,
+    unfoldedClusterMaxLeaves: UNFOLDED_CLUSTER_MAX_LEAVES,
+    ...extra
+  }
+}
 
 export function fillDestinationMarker (element, { name, anchored = false } = {}) {
   element.className = anchored ? 'destinations-marker destinations-marker--anchored' : 'destinations-marker'
@@ -44,7 +78,7 @@ export function fillClusterMarker (element, props) {
 
 export function clusterMarkerSize (pointCount) {
   const n = Number(pointCount) || 0
-  if (n >= 100) return 52
-  if (n >= 25) return 44
-  return 36
+  if (n >= 100) return CLUSTER_BUBBLE_SIZE_LARGE
+  if (n >= 25) return CLUSTER_BUBBLE_SIZE_MEDIUM
+  return CLUSTER_BUBBLE_SIZE_SMALL
 }
