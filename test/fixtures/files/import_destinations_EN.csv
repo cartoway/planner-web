@@ -1,2 +1,2 @@
-route,reference,name,street,detail,postalcode,city,country,lat,lng,geocoding accuracy,geocoding level,comment,phone,tags,without visit,reference visit,take over,quantity,open,close,priority,tags visit
-,,LEPAGE JEONG,7ter Rue du Colonel Oudot,,75012,PARIS 12,,49.173419,-0.326613,0.78,house,,610549758,"","",,00:15:00,39.482,,,,""
+route,reference,name,street,detail,postalcode,city,country,lat,lng,geocoding accuracy,geocoding level,comment,phone,email,tags,without visit,reference visit,take over,quantity,open,close,priority,tags visit
+,,LEPAGE JEONG,7ter Rue du Colonel Oudot,,75012,PARIS 12,,49.173419,-0.326613,0.78,house,,610549758,lepage@example.com,"","",,00:15:00,39.482,,,,""

@@ -71,6 +71,22 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'should create and return destination email' do
+    attrs = @destination.attributes.merge(
+      'name' => 'email dest',
+      'ref' => 'email-api-1',
+      'email' => 'api-client@example.com',
+      'tag_ids' => @tags.map(&:id)
+    )
+    assert_difference('Destination.count', 1) do
+      post api(), attrs
+      assert last_response.created?, last_response.body
+      body = JSON.parse(last_response.body)
+      assert_equal 'api-client@example.com', body['email']
+      assert_equal 'api-client@example.com', Destination.find(body['id']).email
+    end
+  end
+
   test 'should not create due to ref' do
     assert_difference('Destination.count', 0) do
       assert_difference('Stop.count', 0) do

@@ -73,6 +73,7 @@ class ImporterDestinations < ImporterBase
       lat: {title: I18n.t('destinations.import_file.lat'), desc: I18n.t('destinations.import_file.lat_desc'), format: I18n.t('destinations.import_file.format.float'), type: :float},
       lng: {title: I18n.t('destinations.import_file.lng'), desc: I18n.t('destinations.import_file.lng_desc'), format: I18n.t('destinations.import_file.format.float'), type: :float},
       phone_number: {title: I18n.t('destinations.import_file.phone_number'), desc: I18n.t('destinations.import_file.phone_number_desc'), format: I18n.t('destinations.import_file.format.integer'), type: :string},
+      email: {title: I18n.t('destinations.import_file.email'), desc: I18n.t('destinations.import_file.email_desc'), format: I18n.t('destinations.import_file.format.string'), type: :string},
       comment: {title: I18n.t('destinations.import_file.comment'), desc: I18n.t('destinations.import_file.comment_desc'), format: I18n.t('destinations.import_file.format.string'), type: :string},
       tags: {title: I18n.t('destinations.import_file.tags'), desc: I18n.t('destinations.import_file.tags_desc'), format: I18n.t('destinations.import_file.tags_format'), type: :tags},
       destination_duration: {title: I18n.t('destinations.import_file.destination_duration'), desc: I18n.t('destinations.import_file.destination_duration_desc'), format: I18n.t('destinations.import_file.format.hour'), type: :hour}
@@ -105,7 +106,7 @@ class ImporterDestinations < ImporterBase
   end
 
   def columns_store
-    columns_destination.except(:detail, :phone_number, :comment, :tags, :destination_duration)
+    columns_destination.except(:detail, :phone_number, :email, :comment, :tags, :destination_duration)
   end
 
   def columns_store_reload

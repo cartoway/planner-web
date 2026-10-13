@@ -910,6 +910,8 @@ fa:
       comment_desc: ''
       phone_number: ''
       phone_number_desc: ''
+      email: ''
+      email_desc: ''
       tags: ''
       tags_desc: ''
       tags_format: ''

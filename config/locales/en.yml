@@ -1769,6 +1769,8 @@ en:
       comment_desc: complementary informations.
       phone_number: phone
       phone_number_desc: phone number of destination.
+      email: email
+      email_desc: email of the contact at the destination.
       tags: categories
       tags_desc: destination categories (allowing to group them).
       tags_format: 'category 1,category 2'
