@@ -417,8 +417,10 @@ tr.is-past { color: #6b7280; }
     z-index: 5 !important;
   }
 
+  .maplibregl-marker:has(.operation-vehicle-pin-wrap),
   .maplibregl-marker:has(.operation-vehicle-pin) {
     z-index: 20 !important;
+    overflow: visible !important;
   }
 
   .destinations-marker-pin-placeholder,
@@ -427,7 +429,32 @@ tr.is-past { color: #6b7280; }
   .destinations-marker-pin-placeholder { display: none; }
 }
 
+// Accuracy halo is a sibling of the pin inside the MapLibre marker so it always tracks movement.
+.operation-vehicle-pin-wrap {
+  position: relative;
+  width: 0;
+  height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+}
+
+.operation-vehicle-accuracy {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(37, 65, 124, 0.22);
+  border: 2px solid rgba(37, 65, 124, 0.55);
+  pointer-events: none;
+  box-sizing: border-box;
+}
+
 .operation-vehicle-pin {
+  position: relative;
+  z-index: 1;
   width: 2rem;
   height: 2rem;
   border-radius: 999px;
@@ -438,6 +465,7 @@ tr.is-past { color: #6b7280; }
   justify-content: center;
   border: 2px solid #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, .3);
+  flex-shrink: 0;
 }
 
 .operation-fiche h2 {
