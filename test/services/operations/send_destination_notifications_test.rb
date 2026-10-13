@@ -31,6 +31,30 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     assert_match %r{/s/#{Regexp.escape(@tracking.token)}|http}, mail.body.encoded
   end
 
+  test 'destination email subject body and cta share french locale without literal newlines' do
+    @customer.update!(recipient_template: nil, company_name: 'Acme')
+    @customer.users.update_all(locale: 'fr')
+    I18n.with_locale(:en) do
+      Operations::SendDestinationEmail.call(operation: @operation, trackings: [@tracking])
+    end
+    mail = ActionMailer::Base.deliveries.last
+    assert_equal I18n.t('destination_mailer.delivery_tracking.subject', shipper: 'Acme', locale: :fr), mail.subject
+    assert_includes mail.body.encoded, I18n.t('destination_mailer.delivery_tracking.cta', locale: :fr)
+    assert_includes mail.body.encoded, I18n.t('destination_mailer.delivery_tracking.fallback_link', locale: :fr)
+    assert_includes mail.body.encoded, 'Bonjour'
+    assert_not_includes mail.body.decoded, '\\n'
+    assert_not_includes mail.body.decoded, 'Suivez votre livraison'
+  end
+
+  test 'destination email embeds company logo as inline cid attachment' do
+    logo = Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/logo/logo.png'), 'image/png')
+    @customer.update!(recipient_template: 'Hi {NAME}', company_logo: logo)
+    Operations::SendDestinationEmail.call(operation: @operation, trackings: [@tracking])
+    mail = ActionMailer::Base.deliveries.last
+    assert mail.attachments.any? { |a| a.filename.start_with?('company_logo') }
+    assert_match(%r{cid:}, mail.body.encoded)
+  end
+
   test 'send destination email records timeline without moving status cursor' do
     stop = @tracking.visit_stops.first
     stop.update_columns(status: 'intransit', status_updated_at: 1.hour.ago)
