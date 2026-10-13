@@ -46,7 +46,7 @@
             %i.fa.fa-map.fa-fw
             = t('operations.show.planning')
         = render 'operations/demo_actions'
-        #operation-send-buttons{data: { turbo_permanent: true }}
+        #operation-send-buttons
           - if @operation.open? && @send_routes.present?
             %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
               %i.fa.fa-envelope.fa-fw
