@@ -2,6 +2,7 @@
 
 module OperationStops
   class RecordStatus
+    # rubocop:disable Metrics/ParameterLists
     def self.call(operation_stop:, status:, recorded_at:, eta: nil, source: 'mobile', source_ref: nil, actor_ref: nil, payload: {}, update_cursor: true)
       new(operation_stop, status, recorded_at, eta, source, source_ref, actor_ref, payload, update_cursor).call
     end
@@ -17,6 +18,7 @@ module OperationStops
       @payload = payload || {}
       @update_cursor = update_cursor
     end
+    # rubocop:enable Metrics/ParameterLists
 
     def call
       raise ArgumentError, 'transferred status cannot be reset' if clearing_transferred?
