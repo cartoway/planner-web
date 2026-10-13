@@ -80,21 +80,23 @@ export default class extends Controller {
     if (sessionStorage.getItem('tracking_value') === 'false') return
     if (!navigator.geolocation || !this.positionUrlValue) return
     navigator.geolocation.getCurrentPosition((position) => {
+      const { latitude, longitude, accuracy, altitude, heading, speed } = position.coords
       const body = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-        accuracy: position.coords.accuracy,
-        altitude: position.coords.altitude,
-        heading: position.coords.heading,
-        speed: position.coords.speed,
+        latitude,
+        longitude,
         positioned_at: new Date().toISOString()
       }
+      // Geolocation accuracy is metres (CEP); only forward finite sensor values.
+      if (Number.isFinite(accuracy)) body.accuracy = accuracy
+      if (Number.isFinite(altitude)) body.altitude = altitude
+      if (Number.isFinite(heading)) body.heading = heading
+      if (Number.isFinite(speed)) body.speed = speed
       if (!navigator.onLine) {
         this.queuePosition(body)
         return
       }
       this.patchJson(this.positionUrlValue, body).catch(() => this.queuePosition(body))
-    })
+    }, () => {}, { enableHighAccuracy: true, maximumAge: 30_000, timeout: 20_000 })
   }
 
   queuePosition (body) {

@@ -15,7 +15,9 @@ module Operations
     end
 
     def call
-      features = @routes.flat_map { |route| route_features(route) + [positions_feature(route)] }.compact
+      features = @routes.flat_map { |route|
+        route_features(route) + [positions_feature(route), vehicle_point_feature(route)]
+      }.compact
       paint_depot_returns(features)
       { type: 'FeatureCollection', features: features }
     end
@@ -198,6 +200,21 @@ module Operations
         type: 'Feature',
         geometry: { type: 'LineString', coordinates: coords },
         properties: { operation_route_id: route.id, geometry_kind: 'positions', color: '#111111' }
+      }
+    end
+
+    def vehicle_point_feature(route)
+      position = route.latest_position
+      return nil unless position&.lat && position.lng
+
+      {
+        type: 'Feature',
+        geometry: { type: 'Point', coordinates: [position.lng.to_f, position.lat.to_f] },
+        properties: {
+          operation_route_id: route.id,
+          geometry_kind: 'vehicle',
+          accuracy: position.accuracy
+        }
       }
     end
   end

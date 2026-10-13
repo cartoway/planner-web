@@ -330,6 +330,28 @@ class DeliveryTrackingsPublicStatusTest < ActiveSupport::TestCase
     assert prior.persisted?
   end
 
+  test 'live map vehicle payload includes an accuracy halo covering privacy jitter' do
+    @stop.update_columns(
+      status: 'intransit',
+      status_updated_at: Time.current,
+      destination_snapshot: (@stop.destination_snapshot || {}).merge('lat' => 48.85, 'lng' => 2.35)
+    )
+    VehiclePositions::Record.call(
+      operation_route: @route,
+      lat: 48.86,
+      lng: 2.36,
+      accuracy: 20.0,
+      positioned_at: Time.current,
+      source: 'mobile'
+    )
+
+    visit = DeliveryTrackings::PublicStatus.new(@tracking.reload).visits.find { |item| item.stop.id == @stop.id }
+    vehicle = visit.map_data[:vehicle]
+    assert vehicle
+    assert vehicle[:accuracy] >= 20.0
+    assert vehicle[:accuracy] >= DeliveryTrackings::PublicStatus::JITTER_METERS * 0.4
+  end
+
   private
 
   def timeline_step(key)
