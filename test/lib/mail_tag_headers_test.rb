@@ -7,11 +7,12 @@ class MailTagHeadersTest < ActiveSupport::TestCase
     @tags = %w[mail_type:password_message reseller_id:1 customer_id:2]
   end
 
-  test 'brevo adds X-Mailin-Tag for each tag' do
+  test 'brevo sets tags via X-SIB-API json array' do
     message = Mail::Message.new
     MailTagHeaders.apply!(message, @tags, provider: :brevo)
-    values = message.header.fields.select { |f| f.name == 'X-Mailin-Tag' }.map(&:value)
-    assert_equal @tags, values
+    payload = JSON.parse(message['X-SIB-API'].to_s)
+    assert_equal @tags, payload['tags']
+    assert_empty message.header.fields.select { |f| f.name == 'X-Mailin-Tag' }
   end
 
   test 'mailgun adds X-Mailgun-Tag for each tag' do

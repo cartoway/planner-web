@@ -10,7 +10,9 @@ module MailTagHeaders
 
     case provider.to_sym
     when :brevo
-      tags.each { |tag| message['X-Mailin-Tag'] = tag }
+      # X-Mailin-Tag is single-valued over SMTP (multiple headers get concatenated).
+      # X-SIB-API accepts a tags array, same as the transactional API.
+      message['X-SIB-API'] = { tags: tags }.to_json
     when :mailgun
       tags.each { |tag| message['X-Mailgun-Tag'] = tag }
     when :postmark
