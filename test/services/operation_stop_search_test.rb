@@ -28,6 +28,16 @@ class OperationStopSearchTest < ActiveSupport::TestCase
     assert stops.all? { |stop| stop.destination_id.nil? }
   end
 
+  test 'search returns stops from in_progress operations' do
+    assert_equal 'in_progress', @operation.status
+    stops = OperationStop.search_by_destination_info(
+      from: @operation.date,
+      to: @operation.date,
+      customer_id: @customer.id
+    )
+    assert stops.joins(:operation_route).where(operation_routes: { operation_id: @operation.id }).exists?
+  end
+
   test 'hides past operations by default and shows them with include_past' do
     destination = destinations(:destination_one)
     OperationStop.where(destination_id: destination.id, operation_route_id: @operation.operation_route_ids)
