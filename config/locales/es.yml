@@ -1009,6 +1009,8 @@ es:
       time_window_end_2: horario fin 2
       comment: comentario
       phone_number: teléfono
+      email: email
+      email_desc: correo electrónico del contacto en el destino.
       tags: categorías
       ref_visit: referencia visita
       tags_visit: categorías visita

@@ -1208,6 +1208,21 @@ class DestinationsControllerTest < ActionController::TestCase
     }
   end
 
+  test 'import template csv includes the destination email column' do
+    get :import_template, format: :csv
+    assert_response :success
+    header = response.body.lines.first
+    assert_includes header, I18n.t('destinations.import_file.email')
+  end
+
+  test 'csv export includes destination email' do
+    @destination.update!(email: 'client@example.com')
+    get :index, format: :csv
+    assert_response :success
+    assert_includes response.body.lines.first, I18n.t('destinations.import_file.email')
+    assert_includes response.body, 'client@example.com'
+  end
+
   test 'should import with custom columns headers' do
     options = { import: { destinations: { spreadsheetColumnsDef: { route: 'my_route' } } } }
     users(:user_one).customer.update advanced_options: options
