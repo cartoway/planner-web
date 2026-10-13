@@ -31,6 +31,16 @@ x-web: &web
     RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-}
     RUSTFS_BUCKET: ${RUSTFS_BUCKET:-planner-photos}
     RUSTFS_REGION: ${RUSTFS_REGION:-eu-west-3}
+    # ActionMailer (from repo-root .env)
+    SMTP_PROVIDER: ${SMTP_PROVIDER:-}
+    SMTP_ADDRESS: ${SMTP_ADDRESS:-}
+    SMTP_PORT: ${SMTP_PORT:-}
+    SMTP_USER_NAME: ${SMTP_USER_NAME:-}
+    SMTP_PASSWORD: ${SMTP_PASSWORD:-}
+    SMTP_AUTHENTICATION: ${SMTP_AUTHENTICATION:-}
+    SMTP_ENABLE_STARTTLS: ${SMTP_ENABLE_STARTTLS:-}
+    SMTP_DEFAULT_FROM: ${SMTP_DEFAULT_FROM:-}
+    SMTP_DELIVERY_METHOD: ${SMTP_DELIVERY_METHOD:-smtp}
   volumes:
     - ./config/database.yml.docker:/srv/app/config/database.yml
     - ./docker/production.rb:/srv/app/config/environments/production.rb
