@@ -3629,8 +3629,10 @@ en:
         Hello {NAME}. Your {CUSTOMER_NAME} driver is on the way.
         He will arrive between {TIME-5} and {TIME+15}.
     email:
-      alert_plan: >-
-        Hello {NAME},\n\nYour delivery is planned on {DATE} between {TIME-60} and {TIME+60} in {CITY}.\n\nTrack your delivery: {URL}
+      alert_plan: |
+        Hello {NAME},
+
+        Your delivery is planned on {DATE} between {TIME-60} and {TIME+60} in {CITY}.
   all:
     providers:
       entra_id: Microsoft Entra ID
@@ -4147,5 +4149,6 @@ en:
     delivery_tracking:
       subject: "Track your delivery — %{shipper}"
       cta: Track my delivery
+      fallback_link: Click here if the button does not appear
       documents_count: Documents
 
