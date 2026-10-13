@@ -18,7 +18,7 @@ class UserMailerTest < ActionMailer::TestCase
   test 'password email includes mail_type reseller_id and customer_id tags' do
     user_one = users(:user_one)
     email = UserMailer.password_message(user_one, I18n.locale)
-    tags = email.header.fields.select { |field| field.name == 'X-Mailin-Tag' }.map(&:value)
+    tags = JSON.parse(email['X-SIB-API'].to_s).fetch('tags')
 
     assert_includes tags, 'mail_type:password_message'
     assert_includes tags, "reseller_id:#{user_one.customer.reseller_id}"
