@@ -951,8 +951,6 @@ he:
       comment_desc: מידע משלים.
       phone_number: טלפון
       phone_number_desc: מספר טלפון של היעד.
-      email: email
-      email_desc: כתובת אימייל של איש הקשר ביעד.
       tags: תגים
       tags_desc: תגי יעדים (אפשר קיבוץ).
       tags_format: 'תג 1, תג 2'
