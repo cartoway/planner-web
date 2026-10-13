@@ -323,7 +323,7 @@ module DestinationsHelper
   def columns_destination(customer)
     dest_columns = %i[ref name street detail postalcode city]
     dest_columns << :state if customer.with_state?
-    dest_columns += %i[country lat lng geocoding_accuracy geocoding_level geocoding_result comment phone_number tags destination_duration]
+    dest_columns += %i[country lat lng geocoding_accuracy geocoding_level geocoding_result comment phone_number email tags destination_duration]
 
     dest_columns
   end
@@ -365,6 +365,7 @@ module DestinationsHelper
       destination.geocoding_result.dig('free'),
       destination.comment,
       destination.phone_number,
+      destination.email,
       destination.tags.collect(&:label).join(','),
       destination.duration_absolute_time_with_seconds
     ]

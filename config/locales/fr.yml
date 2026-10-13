@@ -1829,6 +1829,8 @@ fr:
       comment_desc: informations nécessaires pour la visite.
       phone_number: téléphone
       phone_number_desc: numéro de téléphone du client à contacter.
+      email: email
+      email_desc: adresse e-mail du client à contacter.
       tags: catégories
       tags_desc: catégories du client (permettant par exemple de les grouper).
       tags_format: 'catégorie 1,catégorie 2'
