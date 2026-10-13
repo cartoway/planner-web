@@ -28,6 +28,18 @@ class SmtpEnvSettingsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'delivery_method maps letter_opener to letter_opener_web' do
+    with_env('SMTP_DELIVERY_METHOD' => 'letter_opener') do
+      assert_equal :letter_opener_web, SmtpEnvSettings.delivery_method
+    end
+  end
+
+  test 'to_h strips whitespace from address' do
+    with_env('SMTP_ADDRESS' => "\tsmtp-relay.brevo.com") do
+      assert_equal 'smtp-relay.brevo.com', SmtpEnvSettings.to_h[:address]
+    end
+  end
+
   private
 
   def with_env(vars)

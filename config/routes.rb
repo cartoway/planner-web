@@ -5,7 +5,8 @@ Rails.application.routes.draw do
   get '/api/0.1/swagger_doc.json/:all(*format)' => redirect('/api/0.1/swagger_doc/%{all}%{format}') # Workaround for silly swagger-codegen
   get '/api/100/swagger_doc.json/:all(*format)' => redirect('/api/100/swagger_doc/%{all}%{format}') # Workaround for silly swagger-codegen
   mount ApiRoot => '/api'
-  mount LetterOpenerWeb::Engine, at: '/letter_opener' if Rails.env.development?
+  # Available in development, or when SMTP_DELIVERY_METHOD=letter_opener(_web) under production-like Docker.
+  mount LetterOpenerWeb::Engine, at: '/letter_opener' if defined?(LetterOpenerWeb::Engine)
 
   # Design system / UI previews (Lookbook). Guard avoids boot errors if the gem is omitted from a custom bundle.
   if defined?(Lookbook::Engine)

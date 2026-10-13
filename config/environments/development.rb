@@ -73,8 +73,8 @@ Rails.application.configure do
   config.raise_on_standard_error = false
 
   # Application config
-  # letter_opener by default (http://localhost:8080/letter_opener); set SMTP_DELIVERY_METHOD=smtp for a real relay
-  config.action_mailer.delivery_method = (ENV['SMTP_DELIVERY_METHOD'].presence || 'letter_opener').to_sym
+  # letter_opener_web by default; set SMTP_DELIVERY_METHOD=smtp for a real relay
+  config.action_mailer.delivery_method = ENV['SMTP_DELIVERY_METHOD'].present? ? SmtpEnvSettings.delivery_method : :letter_opener_web
   config.action_mailer.default_url_options = { :host => 'localhost:8080' } # Needed by devise
   config.action_mailer.smtp_settings = SmtpEnvSettings.to_h
   config.action_mailer.smtp_provider = SmtpEnvSettings.provider
