@@ -16,6 +16,7 @@ class V100::Entities::Destination < Grape::Entity
   expose(:detail, documentation: { type: String })
   expose(:comment, documentation: { type: String })
   expose(:phone_number, documentation: { type: String })
+  expose(:email, documentation: { type: String })
   expose(:geocoding_accuracy, documentation: { type: Float })
   expose(:geocoding_level, documentation: { type: String, values: ['point', 'house', 'street', 'intersection', 'city'] })
   expose(:geocoding_result, documentation: { type: JSON })
