@@ -41,13 +41,15 @@ module VehiclePositions
     # rubocop:enable Metrics/ParameterLists
 
     def self.broadcast_vehicle_pin(operation, position)
+      accuracy_attr = position.accuracy.present? ? %( data-accuracy="#{position.accuracy}") : ''
       Turbo::StreamsChannel.broadcast_stream_to(
         operation,
         content: format(
-          '<turbo-stream action="refresh_vehicle" target="map" data-operation-route-id="%<id>d" data-lng="%<lng>f" data-lat="%<lat>f"></turbo-stream>',
+          '<turbo-stream action="refresh_vehicle" target="map" data-operation-route-id="%<id>d" data-lng="%<lng>f" data-lat="%<lat>f"%<accuracy>s></turbo-stream>',
           id: position.operation_route_id,
           lng: position.lng,
-          lat: position.lat
+          lat: position.lat,
+          accuracy: accuracy_attr
         )
       )
     rescue StandardError => e

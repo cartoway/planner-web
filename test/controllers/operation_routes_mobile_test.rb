@@ -118,6 +118,29 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
     refute_match(/form-switch[^>]*(text-right|text-end)/, last_response.body)
   end
 
+  test 'mobile position update stores geolocation accuracy' do
+    patch "/operations/#{@operation.id}/routes/#{@operation_route.id}/update_position?driver_token=#{@vehicle.driver_token}",
+          {
+            latitude: 48.8566,
+            longitude: 2.3522,
+            accuracy: 12.5,
+            altitude: 40.0,
+            heading: 90.0,
+            speed: 4.2,
+            positioned_at: Time.current.iso8601
+          }.to_json,
+          'CONTENT_TYPE' => 'application/json',
+          'HTTP_ACCEPT' => 'application/json'
+
+    assert_equal 200, last_response.status, last_response.body
+    position = @operation_route.vehicle_positions.order(:id).last
+    assert_in_delta 12.5, position.accuracy
+    assert_in_delta 40.0, position.altitude
+    assert_in_delta 90.0, position.heading
+    assert_in_delta 4.2, position.speed
+    assert_equal 'mobile', position.source
+  end
+
   test 'driver status update keeps an older event without regressing the cursor' do
     stop = @operation_route.operation_stops.find_by!(visit_id: visits(:visit_one).id)
     OperationStops::RecordStatus.call(operation_stop: stop, status: 'delivered', recorded_at: Time.zone.parse('2026-09-25 12:00'), source: 'mobile')

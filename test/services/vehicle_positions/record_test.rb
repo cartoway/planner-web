@@ -54,12 +54,14 @@ class VehiclePositionsRecordTest < ActiveSupport::TestCase
         html.include?('refresh_vehicle') &&
         html.include?(%(data-operation-route-id="#{@route.id}")) &&
         html.include?('48.850000') &&
-        html.include?('2.350000')
+        html.include?('2.350000') &&
+        html.include?(%(data-accuracy="12.5"))
     }
     VehiclePositions::Record.call(
       operation_route: @route,
       lat: 48.85,
       lng: 2.35,
+      accuracy: 12.5,
       positioned_at: Time.current,
       source: 'demo'
     )

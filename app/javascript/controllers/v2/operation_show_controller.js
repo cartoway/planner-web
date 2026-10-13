@@ -9,7 +9,6 @@ import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
 import { bindMapViewHash, parseMapViewHash, parseStopFocusHash } from 'lib/map_view_hash'
-
 document.addEventListener('turbo:before-stream-render', (event) => {
   const stream = event.detail.newStream
   const action = stream.getAttribute('action')
@@ -22,7 +21,8 @@ document.addEventListener('turbo:before-stream-render', (event) => {
     controller._applyVehiclePosition(
       stream.getAttribute('data-operation-route-id'),
       stream.getAttribute('data-lng'),
-      stream.getAttribute('data-lat')
+      stream.getAttribute('data-lat'),
+      stream.getAttribute('data-accuracy')
     )
     return
   }
@@ -59,6 +59,7 @@ export default class extends Controller {
     this._hiddenRouteIds = new Set()
     this._excludedRouteIds = new Set()
     this._vehicleLngLats = new Map()
+    this._vehicleAccuracy = new Map()
     this.positionsGeojson = { type: 'FeatureCollection', features: [] }
     this.phase = 'all'
     this.query = ''
@@ -232,6 +233,7 @@ export default class extends Controller {
     this.selectedRouteId = routeId
     this._paint()
     this._addVehicleMarker()
+    this._scheduleVehicleAccuracySync()
   }
 
   async selectDepot (event) {
@@ -368,10 +370,19 @@ export default class extends Controller {
 
   _teardownMap () {
     this._clearStopMarkers()
+    if (this.map && this._onVehicleAccuracyZoom) {
+      try {
+        this.map.off('zoom', this._onVehicleAccuracyZoom)
+        this.map.off('move', this._onVehicleAccuracyZoom)
+      } catch (_) { /* ignore */ }
+      this._onVehicleAccuracyZoom = null
+    }
     if (this._vehicleMarker) {
       this._vehicleMarker.remove()
       this._vehicleMarker = null
     }
+    this._vehicleAccuracyEl = null
+    this._vehicleAccuracyRadius = null
     if (this._unbindMapViewHash) {
       this._unbindMapViewHash()
       this._unbindMapViewHash = null
@@ -455,6 +466,7 @@ export default class extends Controller {
     this.geojson = await response.json()
     this._geojsonStale = false
     this._splitPositionsFromGeojson()
+    this._hydrateVehiclePointsFromGeojson()
     this.map.getSource('operation').setData(this.geojson)
     this._syncPositionsSource()
     this._syncStopClusters()
@@ -860,10 +872,28 @@ export default class extends Controller {
         'line-opacity': 1
       }
     })
+    this._bindVehicleAccuracyZoom()
+    this._hydrateVehiclePointsFromGeojson()
     this._syncStopClusters()
     this._addVehicleMarker()
     this._applyRouteVisibility()
     this._paint()
+  }
+
+  _bindVehicleAccuracyZoom () {
+    if (!this.map || this._onVehicleAccuracyZoom) return
+    this._onVehicleAccuracyZoom = () => this._syncVehicleAccuracySize()
+    // flyTo fires zoom + move; keep the halo sized through the animation.
+    this.map.on('zoom', this._onVehicleAccuracyZoom)
+    this.map.on('move', this._onVehicleAccuracyZoom)
+  }
+
+  _scheduleVehicleAccuracySync () {
+    this._syncVehicleAccuracySize()
+    requestAnimationFrame(() => this._syncVehicleAccuracySize())
+    if (!this.map) return
+    this.map.once('moveend', () => this._syncVehicleAccuracySize())
+    this.map.once('idle', () => this._syncVehicleAccuracySize())
   }
 
   _applyOverlays ({ includeRaster } = {}) {
@@ -890,6 +920,8 @@ export default class extends Controller {
       this._vehicleMarker.remove()
       this._vehicleMarker = null
     }
+    this._vehicleAccuracyEl = null
+    this._vehicleAccuracyRadius = null
     const switchId = (this._baseSwitchId = (this._baseSwitchId || 0) + 1)
     const reattach = () => {
       if (switchId !== this._baseSwitchId || !this.map) return
@@ -922,6 +954,9 @@ export default class extends Controller {
     if (!routeId || !this._vehiclePosition(routeId)) return
     this._revealRoute(routeId)
     this._openRoute(routeId)
+    // openItem is sync but keep selection/marker explicit so the halo is ready before flyTo.
+    this.selectedRouteId = routeId
+    this._addVehicleMarker()
     this._pendingLocateRouteId = routeId
     if (this.map && this.geojson) this._locateRoute(routeId)
   }
@@ -1050,6 +1085,7 @@ export default class extends Controller {
     const zoom = Math.max(this.map.getZoom(), 14)
     this._clearMapPadding()
     this.map.flyTo({ center: position, zoom, padding: this._mapPadding(), duration: 500 })
+    this._scheduleVehicleAccuracySync()
   }
 
   _syncVehicleButtons () {
@@ -1126,16 +1162,43 @@ export default class extends Controller {
     return coords[coords.length - 1]
   }
 
-  _applyVehiclePosition (routeId, lng, lat) {
+  _vehicleAccuracyMeters (routeId) {
+    const id = String(routeId || this.selectedRouteId || '')
+    if (!id || !this._vehicleAccuracy) return null
+    const value = Number(this._vehicleAccuracy.get(id))
+    return Number.isFinite(value) && value > 0 ? value : null
+  }
+
+  _hydrateVehiclePointsFromGeojson () {
+    if (!this._vehicleLngLats) this._vehicleLngLats = new Map()
+    if (!this._vehicleAccuracy) this._vehicleAccuracy = new Map()
+    ;(this.geojson?.features || []).forEach((feature) => {
+      const props = feature.properties || {}
+      if (props.geometry_kind !== 'vehicle' || !feature.geometry || feature.geometry.type !== 'Point') return
+      const id = String(props.operation_route_id)
+      const coords = feature.geometry.coordinates
+      if (!id || !coords || coords.length < 2) return
+      this._vehicleLngLats.set(id, coords)
+      const accuracy = Number(props.accuracy)
+      if (Number.isFinite(accuracy) && accuracy > 0) this._vehicleAccuracy.set(id, accuracy)
+    })
+  }
+
+  _applyVehiclePosition (routeId, lng, lat, accuracy) {
     const lngLat = [Number(lng), Number(lat)]
     if (!routeId || !Number.isFinite(lngLat[0]) || !Number.isFinite(lngLat[1])) return
     this._extendVehicleTrace(routeId, lngLat)
     if (!this._vehicleLngLats) this._vehicleLngLats = new Map()
-    this._vehicleLngLats.set(String(routeId), lngLat)
+    if (!this._vehicleAccuracy) this._vehicleAccuracy = new Map()
+    const id = String(routeId)
+    this._vehicleLngLats.set(id, lngLat)
+    const meters = Number(accuracy)
+    // Keep last known accuracy when a tick omits it (halo must keep tracking the pin).
+    if (Number.isFinite(meters) && meters > 0) this._vehicleAccuracy.set(id, meters)
     this._syncVehicleButtons()
-    if (String(this.selectedRouteId) !== String(routeId)) return
-    if (this._concealedRouteIds().has(String(routeId))) return
-    this._setVehicleMarker(lngLat)
+    if (String(this.selectedRouteId) !== id) return
+    if (this._concealedRouteIds().has(id)) return
+    this._setVehicleMarker(lngLat, this._vehicleAccuracyMeters(id))
   }
 
   _applyStopStatus (payload) {
@@ -1434,6 +1497,7 @@ export default class extends Controller {
     ;(this.geojson?.features || []).forEach((feature) => {
       if (!feature.geometry || feature.geometry.type !== 'Point') return
       const props = feature.properties || {}
+      if (props.geometry_kind === 'vehicle' || props.geometry_kind === 'positions') return
       if (props.kind === 'depot' || hidden.has(String(props.operation_route_id))) return
       const id = props.operation_stop_id != null
         ? `stop-${props.operation_stop_id}`
@@ -1535,22 +1599,62 @@ export default class extends Controller {
         this._vehicleMarker.remove()
         this._vehicleMarker = null
       }
+      this._vehicleAccuracyEl = null
+      this._vehicleAccuracyRadius = null
       return
     }
-    this._setVehicleMarker(last)
+    this._setVehicleMarker(last, this._vehicleAccuracyMeters())
   }
 
-  _setVehicleMarker (lngLat) {
+  _setVehicleMarker (lngLat, accuracyMeters = null) {
     const maplibregl = window.maplibregl
     if (!maplibregl || !this.map) return
+    this._bindVehicleAccuracyZoom()
+    // Recreate when the pin was built without a halo (stale marker / older JS).
+    if (this._vehicleMarker && !this._vehicleMarker.getElement()?.querySelector('.operation-vehicle-accuracy')) {
+      this._vehicleMarker.remove()
+      this._vehicleMarker = null
+      this._vehicleAccuracyEl = null
+    }
     if (this._vehicleMarker) {
       this._vehicleMarker.setLngLat(lngLat)
+    } else {
+      const wrap = document.createElement('div')
+      wrap.className = 'operation-vehicle-pin-wrap'
+      const halo = document.createElement('div')
+      halo.className = 'operation-vehicle-accuracy'
+      halo.setAttribute('aria-hidden', 'true')
+      const pin = document.createElement('div')
+      pin.className = 'operation-vehicle-pin'
+      pin.innerHTML = '<i class="fa fa-truck"></i>'
+      wrap.append(halo, pin)
+      this._vehicleAccuracyEl = halo
+      this._vehicleMarker = new maplibregl.Marker({ element: wrap, anchor: 'center' }).setLngLat(lngLat).addTo(this.map)
+    }
+    this._vehicleAccuracyEl = this._vehicleMarker.getElement()?.querySelector('.operation-vehicle-accuracy') || this._vehicleAccuracyEl
+    const meters = Number(accuracyMeters)
+    this._vehicleAccuracyRadius = Number.isFinite(meters) && meters > 0 ? meters : this._vehicleAccuracyMeters()
+    this._syncVehicleAccuracySize()
+  }
+
+  _syncVehicleAccuracySize () {
+    const el = this._vehicleAccuracyEl || this._vehicleMarker?.getElement()?.querySelector('.operation-vehicle-accuracy')
+    if (!el || !this.map || !this._vehicleMarker) return
+    this._vehicleAccuracyEl = el
+    const meters = this._vehicleAccuracyRadius || this._vehicleAccuracyMeters()
+    if (!Number.isFinite(meters) || meters <= 0) {
+      el.hidden = true
       return
     }
-    const el = document.createElement('div')
-    el.className = 'operation-vehicle-pin'
-    el.innerHTML = '<i class="fa fa-truck"></i>'
-    this._vehicleMarker = new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(lngLat).addTo(this.map)
+    this._vehicleAccuracyRadius = meters
+    const lat = this._vehicleMarker.getLngLat().lat
+    const zoom = this.map.getZoom()
+    if (!Number.isFinite(zoom)) return
+    const metersPerPixel = (156543.03392 * Math.cos((lat * Math.PI) / 180)) / (2 ** zoom)
+    const diameter = Math.max(2, (2 * meters) / metersPerPixel)
+    el.hidden = false
+    el.style.width = `${diameter}px`
+    el.style.height = `${diameter}px`
   }
 
   _syncDepotMarkers () {
