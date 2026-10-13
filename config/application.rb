@@ -12,6 +12,11 @@ require_relative '../lib/exceptions'
 require_relative '../lib/json_logs_formatter'
 require_relative '../lib/after_commit_wrapper'
 require_relative '../lib/rack_x_robots_tag'
+require_relative '../lib/mail_tag_headers'
+require_relative '../lib/smtp_env_settings'
+
+# Allows config.action_mailer.smtp_provider = :brevo (ESP tag headers).
+ActionMailer::Base.class_attribute :smtp_provider, default: nil
 
 require_relative '../lib/devices/device_base'
 [
