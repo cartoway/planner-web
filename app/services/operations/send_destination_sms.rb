@@ -18,13 +18,15 @@ module Operations
 
         content = replacements(stop, date, url)
         message_id = "#{messaging.class.name.demodulize}c#{customer.id}odt#{tracking.id}t#{date}C"
-        messaging.send_message(
+        sent = messaging.send_message(
           phone,
           messaging.content(template, replacements: content, truncate: !customer.sms_concat),
           country: customer.default_country,
           message_id: message_id,
           from: customer.sms_from_customer_name ? customer.name : customer.reseller.name
         )
+        record_notification!(stop, channel: 'sms', to: phone) if sent
+        sent
       }
     end
 
@@ -34,6 +36,20 @@ module Operations
 
     def self.phone_for(tracking, stop)
       stop&.destination_snapshot&.[]('phone_number').presence || tracking.destination&.phone_number
+    end
+
+    # Timeline-only: do not move the operational status cursor.
+    def self.record_notification!(stop, channel:, to:)
+      return unless stop
+
+      OperationStops::RecordStatus.call(
+        operation_stop: stop,
+        status: channel == 'sms' ? 'sms_sent' : 'email_sent',
+        recorded_at: Time.current,
+        source: 'backoffice',
+        update_cursor: false,
+        payload: { 'channel' => channel, 'to' => to }
+      )
     end
 
     def self.replacements(stop, date, url)
