@@ -35,7 +35,7 @@
         %span
           %span{data: { v2__table_filter_target: 'count' }}= @plannings.size
           = t('activerecord.models.plannings', count: @plannings.size)
-  = form_tag plannings_path, method: :delete, id: 'plannings-destroy' do
+  = form_tag plannings_path, method: :delete, id: 'plannings-destroy', data: { turbo_frame: '_top' } do
     %table#plannings.table.table-striped.table-hover.table-sm.mb-0
       %thead
         %tr
