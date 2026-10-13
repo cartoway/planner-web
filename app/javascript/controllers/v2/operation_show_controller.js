@@ -1,7 +1,12 @@
 import { Controller } from '@hotwired/stimulus'
 import { connectStreamSource, disconnectStreamSource } from '@hotwired/turbo'
 import { TeritorioCluster } from '@teritorio/maplibre-gl-teritorio-cluster'
-import { fillClusterMarker, fillDestinationMarker } from 'maplibre/destination_markers'
+import {
+  fillClusterMarker,
+  fillDestinationMarker,
+  geojsonClusterSourceOptions,
+  teritorioClusterOptions
+} from 'maplibre/destination_markers'
 import { pickLayers, resolveMapStyle, styleForBaseLayer, basesNeedStyleSwitch, applyOverlays } from 'maplibre/raster_layers'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
 import { GeocoderIControl } from 'maplibre/geocoder_control'
@@ -1460,11 +1465,7 @@ export default class extends Controller {
     const data = { type: 'FeatureCollection', features }
     if (!this.map.getSource(id)) {
       const spec = { type: 'geojson', data }
-      if (cluster) {
-        spec.cluster = true
-        spec.clusterMaxZoom = 22
-        spec.clusterRadius = 50
-      }
+      if (cluster) Object.assign(spec, geojsonClusterSourceOptions())
       this.map.addSource(id, spec)
     } else {
       this.map.getSource(id).setData(data)
@@ -1473,10 +1474,7 @@ export default class extends Controller {
 
   _createStopCluster (id, sourceId) {
     const maplibregl = window.maplibregl
-    return new TeritorioCluster(id, sourceId, {
-      clusterMaxZoom: 23,
-      markerSize: 22,
-      unfoldedClusterMaxLeaves: 7,
+    return new TeritorioCluster(id, sourceId, teritorioClusterOptions({
       clusterRender (element, props) {
         fillClusterMarker(element, props)
       },
@@ -1488,7 +1486,7 @@ export default class extends Controller {
         if (offset) marker.setOffset(offset)
         return marker
       }
-    })
+    }))
   }
 
   _stopFeatures () {
