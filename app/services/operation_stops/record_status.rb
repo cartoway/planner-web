@@ -2,11 +2,11 @@
 
 module OperationStops
   class RecordStatus
-    def self.call(operation_stop:, status:, recorded_at:, eta: nil, source: 'mobile', source_ref: nil, actor_ref: nil, payload: {})
-      new(operation_stop, status, recorded_at, eta, source, source_ref, actor_ref, payload).call
+    def self.call(operation_stop:, status:, recorded_at:, eta: nil, source: 'mobile', source_ref: nil, actor_ref: nil, payload: {}, update_cursor: true)
+      new(operation_stop, status, recorded_at, eta, source, source_ref, actor_ref, payload, update_cursor).call
     end
 
-    def initialize(operation_stop, status, recorded_at, eta, source, source_ref, actor_ref, payload)
+    def initialize(operation_stop, status, recorded_at, eta, source, source_ref, actor_ref, payload, update_cursor)
       @operation_stop = operation_stop
       @status = status.presence
       @recorded_at = recorded_at.is_a?(String) ? Time.zone.parse(recorded_at) : recorded_at.in_time_zone
@@ -15,6 +15,7 @@ module OperationStops
       @source_ref = source_ref
       @actor_ref = actor_ref
       @payload = payload || {}
+      @update_cursor = update_cursor
     end
 
     def call
@@ -29,7 +30,7 @@ module OperationStops
         actor_ref: @actor_ref,
         payload: @payload
       )
-      cursor_updated = project_cursor
+      cursor_updated = @update_cursor && project_cursor
       @operation_stop.reload
       broadcast_stop_patch if cursor_updated
       { event: event, cursor_updated: cursor_updated, operation_stop: @operation_stop }

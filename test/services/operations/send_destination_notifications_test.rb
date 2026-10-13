@@ -31,6 +31,23 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     assert_match %r{/s/#{Regexp.escape(@tracking.token)}|http}, mail.body.encoded
   end
 
+  test 'send destination email records timeline without moving status cursor' do
+    stop = @tracking.visit_stops.first
+    stop.update_columns(status: 'intransit', status_updated_at: 1.hour.ago)
+    @customer.update!(recipient_template: 'Bonjour {NAME} {URL}')
+
+    assert_difference -> { stop.operation_stop_status_events.count }, 1 do
+      Operations::SendDestinationEmail.call(operation: @operation, trackings: [@tracking])
+    end
+
+    event = stop.operation_stop_status_events.order(:id).last
+    assert_equal 'email_sent', event.status
+    assert_equal 'backoffice', event.source
+    assert_equal 'dest@example.com', event.payload['to']
+    stop.reload
+    assert_equal 'intransit', stop.status
+  end
+
   test 'send destination sms builds content with shortened url' do
     messaging = Object.new
     def messaging.content(template, replacements:, truncate: true)
@@ -55,5 +72,40 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     @customer.update!(sms_template: 'Hi {NAME} {URL}')
     count = Operations::SendDestinationSms.call(operation: @operation, trackings: [@tracking])
     assert_equal 1, count
+  end
+
+  test 'send destination sms records timeline without moving status cursor' do
+    stop = @tracking.visit_stops.first
+    stop.update_columns(status: 'intransit', status_updated_at: 1.hour.ago)
+    messaging = Object.new
+    def messaging.content(template, replacements:, truncate: true)
+      'ok'
+    end
+
+    # rubocop:disable Naming/PredicateMethod
+    def messaging.send_message(*)
+      true
+    end
+    # rubocop:enable Naming/PredicateMethod
+
+    def messaging.class
+      Class.new {
+        def self.name
+          'FakeSms'
+        end
+      }.new.class
+    end
+
+    Operations::SendDriverSms.stubs(:messaging_service).returns(messaging)
+    @customer.update!(sms_template: 'Hi {NAME} {URL}')
+
+    assert_difference -> { stop.operation_stop_status_events.count }, 1 do
+      Operations::SendDestinationSms.call(operation: @operation, trackings: [@tracking])
+    end
+
+    event = stop.operation_stop_status_events.order(:id).last
+    assert_equal 'sms_sent', event.status
+    assert_equal '0601020304', event.payload['to']
+    assert_equal 'intransit', stop.reload.status
   end
 end

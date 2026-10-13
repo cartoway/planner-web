@@ -2267,6 +2267,8 @@ fr:
         delivered: Livré
         undelivered: Non livré
         transferred: Transféré
+        email_sent: E-mail envoyé
+        sms_sent: SMS envoyé
         any: Tous statuts
         none: Sans statut
       stop_store_status:
