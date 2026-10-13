@@ -112,7 +112,9 @@ module Planner
       unwanted_keys = %w[format action controller]
       customer_id = event.payload[:customer_id]
       sub_api = event.payload[:sub_api_time]
-      params = event.payload[:params].reject { |key,_| unwanted_keys.include? key }
+      # ActionCable unsubscribe/disconnect payloads have no :params
+      params = (event.payload[:params] || {}).reject { |key, _| unwanted_keys.include? key }
+      params = nil if params.empty?
 
       {customer_id: customer_id, time: event.time, sub_api: sub_api, params: params}.delete_if{ |k, v| !v || v == 0 }
     end
