@@ -474,7 +474,9 @@ module DeliveryTrackings
       dist = JITTER_METERS * (0.4 + rng.rand * 0.6)
       dlat = (dist * Math.cos(angle)) / 111_320.0
       dlng = (dist * Math.sin(angle)) / (111_320.0 * Math.cos(position.lat * Math::PI / 180.0))
-      { lat: position.lat + dlat, lng: position.lng + dlng }
+      # Circle must cover privacy jitter + GPS accuracy so the pin stays inside the halo.
+      radius = dist + (position.accuracy.presence || 0).to_f
+      { lat: position.lat + dlat, lng: position.lng + dlng, accuracy: radius }
     end
 
     def remaining_track(route)

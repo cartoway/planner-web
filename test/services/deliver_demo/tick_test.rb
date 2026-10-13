@@ -53,6 +53,7 @@ class DeliverDemoTickTest < ActiveSupport::TestCase
     position = @route.vehicle_positions.order(:id).last
     assert position
     assert_equal 'demo', position.source
+    assert_in_delta DeliverDemo::Tick::DEMO_ACCURACY_METERS, position.accuracy, 0.01
     first_leg = @route.route_snapshot['tracks'].first['coordinates'].flatten(1)
     lngs = first_leg.map(&:first)
     lats = first_leg.map(&:last)
