@@ -23,6 +23,7 @@ module Operations
           body: body,
           tracking_url: url
         ).deliver_now
+        SendDestinationSms.record_notification!(stop, channel: 'email', to: email)
         true
       }
     end

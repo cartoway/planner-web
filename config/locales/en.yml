@@ -2180,6 +2180,8 @@ en:
         delivered: Delivered
         undelivered: Undelivered
         transferred: Transferred
+        email_sent: Email sent
+        sms_sent: SMS sent
         any: Any status
         none: Without status
       stop_store_status:
