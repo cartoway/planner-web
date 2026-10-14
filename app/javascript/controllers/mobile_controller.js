@@ -87,11 +87,11 @@ export default class extends Controller {
         longitude,
         positioned_at: new Date().toISOString()
       }
-      // Geolocation accuracy is metres (CEP); only forward finite sensor values.
-      if (Number.isFinite(accuracy)) body.accuracy = accuracy
-      if (Number.isFinite(altitude)) body.altitude = altitude
-      if (Number.isFinite(heading)) body.heading = heading
-      if (Number.isFinite(speed)) body.speed = speed
+      // Some WebViews report "unknown" as ±Number.MAX_VALUE (finite but out of range).
+      if (this.saneSensor(accuracy, 0, 100000)) body.accuracy = accuracy
+      if (this.saneSensor(altitude, -1000, 20000)) body.altitude = altitude
+      if (this.saneSensor(heading, 0, 360)) body.heading = heading
+      if (this.saneSensor(speed, 0, 1000)) body.speed = speed
       if (!navigator.onLine) {
         this.queuePosition(body)
         return
@@ -788,5 +788,10 @@ export default class extends Controller {
 
   csrfToken () {
     return document.querySelector('meta[name="csrf-token"]')?.content || ''
+  }
+
+  // Reject NaN/±Infinity and WebView sentinels like ±Number.MAX_VALUE.
+  saneSensor (value, min, max) {
+    return Number.isFinite(value) && value >= min && value <= max
   }
 }
