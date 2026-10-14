@@ -182,4 +182,3 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     assert_equal 'MonSender', captured[:from]
   end
 end
-
