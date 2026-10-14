@@ -4,6 +4,8 @@ module Operations
   class SendDestinationEmail
     def self.call(operation:, trackings: nil)
       customer = operation.customer
+      return 0 unless customer.enable_email_destination
+
       locale = mail_locale(customer)
       date = operation.date || Time.zone.today
       list = Array(trackings || operation.operation_delivery_trackings.with_destination)

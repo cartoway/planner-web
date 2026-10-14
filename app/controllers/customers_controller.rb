@@ -201,6 +201,10 @@ class CustomersController < ApplicationController
     end
     # From customer form all keys are not present: need merge
     devices_params = unsafe_params.dig('customer', 'devices')
+    # Non-admins cannot toggle the Cartoway Deliver demonstrator.
+    if !current_user.admin? && devices_params.is_a?(Hash) && devices_params['deliver'].is_a?(Hash)
+      devices_params['deliver'].delete('demo')
+    end
     devices_params = @customer[:devices].deep_stringify_keys.deep_merge(devices_params || {}) if @customer&.devices&.any?
     devices_params ||= {}
 
@@ -245,7 +249,10 @@ class CustomersController < ApplicationController
         :proof_retention_days,
         :enable_proofs,
         :enable_store_stops,
-        :enable_sms,
+        :enable_email_driver,
+        :enable_sms_driver,
+        :enable_email_destination,
+        :enable_sms_destination,
         :enable_sms_intransit,
         :enable_optimization_soft_upper_bound,
         :enable_strict_within_timewindows,
@@ -257,6 +264,7 @@ class CustomersController < ApplicationController
         :sms_intransit_template,
         :recipient_template,
         :sms_concat,
+        :sms_sender_name,
         :enable_external_callback,
         :external_callback_url,
         :external_callback_name,
@@ -322,6 +330,10 @@ class CustomersController < ApplicationController
       allowed_params = [
         :enable_optimization_soft_upper_bound,
         :enable_strict_within_timewindows,
+        :enable_email_driver,
+        :enable_sms_driver,
+        :enable_email_destination,
+        :enable_sms_destination,
         :enable_sms_intransit,
         :stop_max_upper_bound,
         :vehicle_max_upper_bound,
@@ -355,6 +367,7 @@ class CustomersController < ApplicationController
         :sms_intransit_template,
         :recipient_template,
         :sms_concat,
+        :sms_sender_name,
         :external_callback_url,
         :external_callback_name,
         :operation_date_offset,

@@ -41,7 +41,8 @@ module PlanningsHelperApi
         s.visit.destination.phone_number,
         content,
         country: s.visit.destination.country || route.planning.customer.default_country,
-        message_id: message_id
+        message_id: message_id,
+        from: route.planning.customer.effective_sms_sender_name
       ) ? 1 : 0
     }.sum
   end
@@ -75,7 +76,7 @@ module PlanningsHelperApi
         formatted_content,
         country: customer.default_country,
         message_id: message_id,
-        from: customer.reseller.name
+        from: customer.effective_sms_sender_name
       ) ? 1 : 0
     }.compact.sum
   end

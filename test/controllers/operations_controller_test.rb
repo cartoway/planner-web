@@ -278,7 +278,7 @@ class OperationsControllerTest < ActionController::TestCase
   end
 
   test 'sms can be sent after typing a number on a route that had none' do
-    @operation.customer.update_columns(enable_sms: true)
+    @operation.customer.update_columns(enable_sms_driver: true)
     route = @operation.operation_routes.planned.where.not(vehicle_id: nil).first
     snapshot = route.vehicle_snapshot.except('phone_number')
     route.update_columns(vehicle_snapshot: snapshot)

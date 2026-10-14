@@ -74,7 +74,7 @@ class Customer < ApplicationRecord
   include LocalizedAttr # To use to_delocalized_decimal method
 
   nilify_blanks
-  auto_strip_attributes :name, :print_header, :default_country, :print_barcode, :sms_template, :recipient_template,
+  auto_strip_attributes :name, :print_header, :default_country, :print_barcode, :sms_template, :sms_sender_name, :recipient_template,
                         :company_name, :company_street, :company_postalcode, :company_city, :company_detail, :company_phone
 
   mount_uploader :company_logo, CompanyLogoUploader
@@ -142,6 +142,7 @@ class Customer < ApplicationRecord
               less_than_or_equal_to: OperationProofs::Purge::MAX_RETENTION_DAYS
             }
   validates :stops_preload_limit, numericality: { greater_than: 0, less_than_or_equal_to: Planner::Application.config.max_destinations }
+  validates :sms_sender_name, length: { in: 3..11 }, allow_blank: true
 
   after_initialize :assign_defaults, :update_max_vehicles, if: :new_record?
   after_initialize :assign_device
@@ -719,6 +720,16 @@ class Customer < ApplicationRecord
     dest_with_pos.zip(distances, times).select{ |dest, dist, t|
       (!dist || dist[0] <= distance) && (!t || t[0] <= time)
     }.collect{ |dest, d, t| dest }
+  end
+
+  # Truncated company / account name used as SMS From placeholder and default.
+  def default_sms_sender_name
+    (company_name.presence || name).to_s.strip[0, 11]
+  end
+
+  # Custom sms_sender_name if set, otherwise default_sms_sender_name.
+  def effective_sms_sender_name
+    sms_sender_name.presence || default_sms_sender_name
   end
 
   private

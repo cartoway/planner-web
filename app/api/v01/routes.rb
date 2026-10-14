@@ -230,7 +230,7 @@ class V01::Routes < Grape::API
           optional :phone_number, type: String, documentation: { desc: 'Overrides the existing phone number during this request' }
         end
         get ':id/send_driver_sms' do
-          if current_customer.enable_sms && current_customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
+          if current_customer.enable_sms_driver && current_customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
             send_sms_driver(get_route, params[:phone_number])
           else
             error! V01::Status.code_response(:code_403), 403

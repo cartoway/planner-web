@@ -4,6 +4,8 @@ module Operations
   class SendDriverSms
     def self.call(operation:, routes:)
       customer = operation.customer
+      return 0 unless customer.enable_sms_driver
+
       messaging = messaging_service(customer)
       template = customer.sms_driver_template || I18n.t('notifications.sms.alert_driver')
       date = operation.date || Time.zone.today
@@ -25,7 +27,7 @@ module Operations
           messaging.content(template, replacements: content, truncate: !customer.sms_concat),
           country: customer.default_country,
           message_id: message_id,
-          from: customer.reseller.name
+          from: customer.effective_sms_sender_name
         )
         operation_route.mark_sent!('sms') if sent
         sent
