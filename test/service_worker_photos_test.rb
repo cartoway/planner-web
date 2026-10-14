@@ -12,7 +12,10 @@ class ServiceWorkerPhotosTest < ActiveSupport::TestCase
     assert_includes stops, 'queuePhotoUpload'
     assert_includes stops, 'planner-mobile-photos'
     assert_includes stops, 'xhr.status === 404'
+    assert_includes stops, 'compressImages'
     assert_includes mobile, "this.registerSync('sync-photos')"
+    assert_includes mobile, "from 'lib/compress_image'"
+    assert_includes mobile, 'compressImages'
     assert_includes sw, "item.method === 'DELETE' && response.status === 404"
   end
 end
