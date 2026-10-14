@@ -704,10 +704,30 @@ class OptimizerWrapperTest < ActionController::TestCase
       assert_equal 6.hours.to_i, regulatory[:lapse]
       refute regulatory.key?(:timewindows)
       refute regulatory.key?(:interval)
+      refute regulatory.key?(:initial_offset)
       assert_equal VehicleUsage.regulatory_rest_id(45.minutes.to_i, 6.hours.to_i), regulatory[:id]
 
       vehicle = vrp[:vehicles].find{ |v| v[:id] == "v#{vehicle_usage.routes.first.id}" }
       assert_equal [regulatory[:id]], vehicle[:rest_ids]
+    end
+  ensure
+    remove_request_stub(@stub_VrpJob)
+    remove_request_stub(@stub_VrpSubmit)
+  end
+
+  test 'should set regulatory rest initial_offset from service_time_start' do
+    begin
+      vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+      enable_regulatory_rest!(vehicle_usage)
+      route = @planning.routes.find{ |r| r.vehicle_usage_id == vehicle_usage.id }
+      route.vehicle_usage.update!(service_time_start: 10.minutes.to_i)
+
+      vrp = @optim.build_vrp(@planning, @planning.routes)
+      expected_id = VehicleUsage.regulatory_rest_id(45.minutes.to_i, 6.hours.to_i, 10.minutes.to_i)
+      regulatory = vrp[:rests].find{ |rest| rest[:id] == expected_id }
+      assert regulatory
+      assert_equal 10.minutes.to_i, regulatory[:initial_offset]
+      assert_equal [regulatory[:id]], vrp_vehicle_for(route, vrp)[:rest_ids]
     end
   ensure
     remove_request_stub(@stub_VrpJob)
