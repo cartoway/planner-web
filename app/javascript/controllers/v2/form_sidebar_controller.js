@@ -3,7 +3,11 @@
 // Keeps the address bar on the form URL so the same sidebar can be reopened from a shared link.
 import { Controller } from "@hotwired/stimulus"
 import { visit } from "turbo/frame_promoted_visit"
-import { formSidebarHistoryUpdate, formSidebarPageKey } from "lib/form_sidebar_history"
+import {
+  formSidebarAdoptMainNavigation,
+  formSidebarHistoryUpdate,
+  formSidebarPageKey
+} from "lib/form_sidebar_history"
 
 export default class extends Controller {
   static targets = ["frame", "chrome"]
@@ -59,9 +63,24 @@ export default class extends Controller {
 
   onMainFrameLoad (event) {
     if (event.target !== this.mainFrame) return
+    // Prefer main[src]: location may still be the previous form URL when frame-load fires.
+    const adopted = formSidebarAdoptMainNavigation({
+      mainSrc: this.mainFrame.getAttribute("src"),
+      currentHref: window.location.href,
+      historyState: window.history.state
+    })
+    this._listUrlWhileFormOpen = null
+    this.listUrlValue = adopted.listUrl
+
     const frame = this.frameEl()
     if (!frame || !frame.querySelector("form")) return
-    this.close()
+
+    this.replaceFrameWithPlaceholder()
+    this.refreshState()
+    // Turbo advances history for #main — never push the old list URL via close()/syncHistory.
+    window.history.replaceState(adopted.state, "", `${adopted.listUrl}${window.location.hash || ""}`)
+    this._skipNextFrameHistory = true
+    frame.dispatchEvent(new CustomEvent("turbo:frame-load", { bubbles: true }))
   }
 
   onFrameLoad(event) {
