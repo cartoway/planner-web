@@ -38,12 +38,13 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
       Operations::SendDestinationEmail.call(operation: @operation, trackings: [@tracking])
     end
     mail = ActionMailer::Base.deliveries.last
+    body = [mail.text_part, mail.html_part].compact.map { |part| part.body.decoded }.join("\n")
     assert_equal I18n.t('destination_mailer.delivery_tracking.subject', shipper: 'Acme', locale: :fr), mail.subject
-    assert_includes mail.body.encoded, I18n.t('destination_mailer.delivery_tracking.cta', locale: :fr)
-    assert_includes mail.body.encoded, I18n.t('destination_mailer.delivery_tracking.fallback_link', locale: :fr)
-    assert_includes mail.body.encoded, 'Bonjour'
-    assert_not_includes mail.body.decoded, '\\n'
-    assert_not_includes mail.body.decoded, 'Suivez votre livraison'
+    assert_includes body, I18n.t('destination_mailer.delivery_tracking.cta', locale: :fr)
+    assert_includes body, I18n.t('destination_mailer.delivery_tracking.fallback_link', locale: :fr)
+    assert_includes body, 'Bonjour'
+    assert_not_includes body, '\\n'
+    assert_not_includes body, 'Suivez votre livraison'
   end
 
   test 'destination email embeds company logo as inline cid attachment' do
