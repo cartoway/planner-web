@@ -8,7 +8,7 @@ module Operations
     end
 
     def self.send_sms(operation, routes)
-      return 0 unless operation.customer.enable_sms
+      return 0 unless operation.customer.enable_sms_driver
 
       SendDriverSms.call(operation: operation, routes: routes)
     rescue ArgumentError
@@ -18,10 +18,12 @@ module Operations
     # Returns whether the mail was queued/delivered (used as a count predicate).
     # rubocop:disable Naming/PredicateMethod
     def self.send_email(operation_route)
+      customer = operation_route.operation.customer
+      return false unless customer.enable_email_driver
+
       email = operation_route.driver_email
       return false if email.blank?
 
-      customer = operation_route.operation.customer
       if Planner::Application.config.delayed_job_use
         RouteMailer.delay.send_operation_route(customer, I18n.locale, email, operation_route)
       else

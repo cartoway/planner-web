@@ -190,9 +190,9 @@ pt:
         max_zonings: Max Setorizaçãoes
         max_destinations: Max pontos
         max_vehicle_usage_sets: Max parâmetros base dos veículos
-        enable_sms: Ativar envio de SMS
         sms_template: SMS modelo
         sms_concat: SMS longos
+        sms_sender_name: Remetente SMS
         print_barcode: Código de barras
         router_options_traffic: Ter em conta o tráfego
       deliverable_unit:

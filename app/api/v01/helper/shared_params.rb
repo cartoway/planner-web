@@ -101,7 +101,13 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :sms_template, type: String
     optional :sms_driver_template, type: String
     optional :sms_intransit_template, type: String
+    optional :recipient_template, type: String
     optional :sms_concat, type: Boolean
+    optional :sms_sender_name, type: String, desc: 'SMS sender name (3-11 characters)'
+    optional :enable_email_driver, type: Boolean
+    optional :enable_sms_driver, type: Boolean
+    optional :enable_email_destination, type: Boolean
+    optional :enable_sms_destination, type: Boolean
     optional :enable_sms_intransit, type: Boolean
 
     optional :enable_external_callback, type: Boolean, documentation: { desc: 'Enable external callback' }
