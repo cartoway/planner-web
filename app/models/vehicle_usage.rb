@@ -226,12 +226,14 @@ class VehicleUsage < ApplicationRecord
     rest_lapse.to_i.positive? ? rest_lapse_time : vehicle_usage_set.rest_lapse_time
   end
 
-  def self.regulatory_rest_id(duration, lapse)
-    "ri#{duration}_#{lapse}"
+  def self.regulatory_rest_id(duration, lapse, initial_offset = 0)
+    id = "ri#{duration}_#{lapse}"
+    id += "_#{initial_offset}" if initial_offset.to_i.positive?
+    id
   end
 
   def regulatory_rest_id
-    self.class.regulatory_rest_id(default_rest_duration, default_rest_lapse)
+    self.class.regulatory_rest_id(default_rest_duration, default_rest_lapse, default_service_time_start.to_i)
   end
 
   def regulatory_rest?
