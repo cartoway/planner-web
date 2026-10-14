@@ -6,6 +6,11 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
     @customer = @planning.customer
+    shortener = Object.new
+    def shortener.shorten(url)
+      "http://short.test/#{url.hash.abs}"
+    end
+    Rails.application.config.stubs(:url_shortener).returns(shortener)
     @operation = Operations::PublishFromPlanning.call(planning: @planning, date: Date.current)
     @tracking = @operation.operation_delivery_trackings.first
     stop = @tracking.visit_stops.first
@@ -94,7 +99,7 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     end
 
     Operations::SendDriverSms.stubs(:messaging_service).returns(messaging)
-    @customer.update!(sms_template: 'Hi {NAME} {URL}')
+    @customer.update!(enable_sms_destination: true, sms_template: 'Hi {NAME} {URL}')
     count = Operations::SendDestinationSms.call(operation: @operation, trackings: [@tracking])
     assert_equal 1, count
   end
@@ -122,7 +127,7 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     end
 
     Operations::SendDriverSms.stubs(:messaging_service).returns(messaging)
-    @customer.update!(sms_template: 'Hi {NAME} {URL}')
+    @customer.update!(enable_sms_destination: true, sms_template: 'Hi {NAME} {URL}')
 
     assert_difference -> { stop.operation_stop_status_events.count }, 1 do
       Operations::SendDestinationSms.call(operation: @operation, trackings: [@tracking])
@@ -133,4 +138,48 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     assert_equal '0601020304', event.payload['to']
     assert_equal 'intransit', stop.reload.status
   end
+
+  test 'destination sms is skipped when enable_sms_destination is false' do
+    @customer.update!(enable_sms_destination: false, enable_sms_driver: true)
+    assert_equal 0, Operations::SendDestinationSms.call(operation: @operation, trackings: [@tracking])
+  end
+
+  test 'destination email is skipped when enable_email_destination is false' do
+    @customer.update!(enable_email_destination: false)
+    assert_no_difference 'ActionMailer::Base.deliveries.size' do
+      assert_equal 0, Operations::SendDestinationEmail.call(operation: @operation, trackings: [@tracking])
+    end
+  end
+
+  test 'destination sms from uses sms_sender_name or company default' do
+    captured = {}
+    messaging = Object.new
+    messaging.define_singleton_method(:content) { |*_args, **_kwargs| 'ok' }
+    messaging.define_singleton_method(:send_message) { |*_args, **kwargs|
+      captured[:from] = kwargs[:from]
+      true
+    }
+    messaging.define_singleton_method(:class) {
+      Class.new {
+        def self.name
+          'FakeSms'
+        end
+      }.new.class
+    }
+    Operations::SendDriverSms.stubs(:messaging_service).returns(messaging)
+    @customer.update!(
+      enable_sms_destination: true,
+      company_name: 'Société Test',
+      name: 'Compte Test',
+      sms_template: 'Hi {URL}',
+      sms_sender_name: nil
+    )
+    Operations::SendDestinationSms.call(operation: @operation, trackings: [@tracking])
+    assert_equal 'Société Tes', captured[:from]
+
+    @customer.update!(sms_sender_name: 'MonSender')
+    Operations::SendDestinationSms.call(operation: @operation, trackings: [@tracking])
+    assert_equal 'MonSender', captured[:from]
+  end
 end
+

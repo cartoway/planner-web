@@ -66,7 +66,7 @@ class PlanningSidebarPresenter
 
     sidebar_locals[:outdated] = true if @planning.outdated
     if customer.reseller.messagings.any? { |_k, value| value['enable'] == true }
-      sidebar_locals[:customer_enable_sms] = customer.enable_sms
+      sidebar_locals[:customer_enable_sms] = customer.enable_sms_driver
     end
 
     sidebar_locals[:customer_enable_external_callback] = @external_callback_enabled

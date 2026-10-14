@@ -28,7 +28,7 @@
         = stop.name
       .col-xs-4.p-0
         - if show_status
-          - if customer.enable_sms && in_route_data[:phone_number].present?
+          - if customer.enable_sms_intransit && in_route_data[:phone_number].present?
             = link_to "sms:#{in_route_data[:phone_number]}?body=#{sms_uri_body(in_route_data[:content])}",
               id: "quick-status",
               class: "col-xs-12 col-sm-6 btn btn-default no-toggle mr-2 pull-right#{' d-none' unless next_status}",

@@ -219,15 +219,19 @@ en:
         enable_proofs: Enable proof storage
         proof_retention_days: Proof retention (days)
         enable_store_stops: Enable intermediate stores
-        enable_sms: Enable SMS
-        enable_sms_intransit: Enable SMS in transit
+        enable_email_driver: Driver email
+        enable_sms_driver: Driver SMS
+        enable_email_destination: Recipient email
+        enable_sms_destination: Recipient SMS
+        enable_sms_intransit: Approach SMS
         enable_optimization_soft_upper_bound: Enable overtimes
         enable_strict_within_timewindows: Strict time windows (visit duration inside the slot)
-        sms_template: Customer SMS template
+        sms_template: Recipient SMS template
         sms_driver_template: Driver SMS template
-        sms_intransit_template: Inroute SMS template
+        sms_intransit_template: Approach SMS template
         recipient_template: Recipient email template
         sms_concat: Long SMS
+        sms_sender_name: SMS sender
         enable_external_callback: Enable Callback URL
         history_cron_hour: Hour of historisation
         print_planning_annotating: Include plan annotating
@@ -1334,7 +1338,18 @@ en:
       enable_strict_within_timewindows_help: >-
         When enabled, the visit duration is taken as part of the time window: the whole visit (arrival and service) must fit between the window start and end, and the displayed end is the latest time the visit can end. Plan display and schedule calculations use this rule.
       enable_global_optimization_test: Enabled if Test
-      enable_sms_intransit_help: Enable SMS in transit when the driver is on the way
+      enable_sms_intransit_help: Enable approach SMS when the driver is on the way
+      notifications:
+        title: Notifications
+        email: Email
+        sms: SMS
+        driver: Driver
+        destination: Recipient
+        approach: Approach
+        sms_options: SMS options
+      sms_sender_name_help: >-
+        Name shown as the SMS sender (3 to 11 characters).
+        Default: company name, otherwise account name (truncated).
       stop_max_upper_bound: Visit overtime
       stop_max_upper_bound_help: Allow to visit a stop within an overtime
       vehicle_max_upper_bound: Driver shift overtime
@@ -1346,9 +1361,9 @@ en:
           code128: Code 128
         barcode_help: Include the Reference as Barcode
       company:
-        title: Company (delivery note)
-        help: Details of the company performing the deliveries
-        logo_help: Logo shown on the delivery note and recipient tracking page (PNG or SVG)
+        title: Company
+        help: Details of the company
+        logo_help: Logo of the company (PNG or SVG)
         tracking_eta_title: Estimated arrival window (recipient tracking)
         tracking_eta_help: Gaps shown around the estimated time on the public tracking page, rounded to the nearest quarter hour.
         tracking_eta_gap_before_help: Minutes subtracted from the estimate (e.g. 5 → lower bound)
