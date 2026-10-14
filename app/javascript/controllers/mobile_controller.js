@@ -1,5 +1,6 @@
 import { Controller } from '@hotwired/stimulus'
 import { ExclusiveAccordion } from 'lib/exclusive_accordion'
+import { compressImages } from 'lib/compress_image'
 
 const CONFIRM_DELAY = 200
 const CONFIRM_DISARM_AFTER = 4000
@@ -389,26 +390,28 @@ export default class extends Controller {
   uploadPhotos (input) {
     if (!input.files.length) return
     const panel = input.closest('.stop-photos')
-    const files = Array.from(input.files)
-    const formData = new FormData()
-    files.forEach((file) => formData.append('photos[]', file))
+    const rawFiles = Array.from(input.files)
     const csrf = this.csrfToken()
-    if (csrf) formData.append('authenticity_token', csrf)
     const url = panel && panel.dataset.url
     input.value = ''
     if (!url) return
-    this.showLocalPhotos(panel, files)
-    if (!navigator.onLine) {
-      this.queuePhoto({ id: this.queueId(), url, files })
-      return
-    }
-    fetch(url, { method: 'POST', body: formData, headers: { 'X-CSRF-Token': csrf, Accept: 'application/json' } })
-      .then((response) => {
-        if (!response.ok) throw new Error(String(response.status))
-        return response.json()
-      })
-      .then((data) => this.renderPhotos(panel, data.photos || []))
-      .catch(() => this.queuePhoto({ id: this.queueId(), url, files }))
+    compressImages(rawFiles).then((files) => {
+      const formData = new FormData()
+      files.forEach((file) => formData.append('photos[]', file))
+      if (csrf) formData.append('authenticity_token', csrf)
+      this.showLocalPhotos(panel, files)
+      if (!navigator.onLine) {
+        this.queuePhoto({ id: this.queueId(), url, files })
+        return
+      }
+      fetch(url, { method: 'POST', body: formData, headers: { 'X-CSRF-Token': csrf, Accept: 'application/json' } })
+        .then((response) => {
+          if (!response.ok) throw new Error(String(response.status))
+          return response.json()
+        })
+        .then((data) => this.renderPhotos(panel, data.photos || []))
+        .catch(() => this.queuePhoto({ id: this.queueId(), url, files }))
+    })
   }
 
   showLocalPhotos (panel, files) {
