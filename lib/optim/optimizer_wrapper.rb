@@ -341,18 +341,21 @@ class OptimizerWrapper
 
   def build_regulatory_rests(routes)
     usages = routes.map(&:vehicle_usage).compact.select(&:regulatory_rest?)
-    pairs = usages.map{ |vu| [vu.default_rest_duration, vu.default_rest_lapse] }.uniq
-    ratios = pairs.map{ |duration, lapse| duration.to_f / lapse }.uniq
+    triples = usages.map{ |vu|
+      [vu.default_rest_duration, vu.default_rest_lapse, vu.default_service_time_start.to_i]
+    }.uniq
+    ratios = triples.map{ |duration, lapse, _offset| duration.to_f / lapse }.uniq
     if ratios.size > 1
       raise VRPUnprocessableError, I18n.t('errors.optimizer.regulatory_rests_same_ratio')
     end
 
-    pairs.map{ |duration, lapse|
+    triples.map{ |duration, lapse, initial_offset|
       {
-        id: VehicleUsage.regulatory_rest_id(duration, lapse),
+        id: VehicleUsage.regulatory_rest_id(duration, lapse, initial_offset),
         duration: duration,
-        lapse: lapse
-      }
+        lapse: lapse,
+        initial_offset: (initial_offset if initial_offset.positive?)
+      }.compact
     }
   end
 
