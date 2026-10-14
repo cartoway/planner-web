@@ -212,6 +212,9 @@ jobs:
         uses: cartoway/docker-compose-build-push-action@main
         with:
           registry_password: ${{ secrets.GITHUB_TOKEN }}
+          compose_file: |
+            docker-compose.yml
+            docker-compose-superset.yml
           service: superset
 
   docker-superset_nginx:
@@ -232,4 +235,7 @@ jobs:
         uses: cartoway/docker-compose-build-push-action@main
         with:
           registry_password: ${{ secrets.GITHUB_TOKEN }}
+          compose_file: |
+            docker-compose.yml
+            docker-compose-superset.yml
           service: superset_nginx
