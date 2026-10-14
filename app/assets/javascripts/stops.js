@@ -1,3 +1,5 @@
+import { compressImages } from '../../javascript/lib/compress_image';
+
 'use strict';
 
 export const stops_edit = function(params) {
@@ -451,31 +453,32 @@ function initStopPhotos() {
     if (!input.files.length) return;
 
     var panel = $(input).closest('.stop-photos');
-    var files = Array.prototype.slice.call(input.files);
-    var formData = new FormData();
-    files.forEach(function(file) { formData.append('photos[]', file); });
+    var rawFiles = Array.prototype.slice.call(input.files);
     var csrf = stopPhotosCsrf();
-    if (csrf) formData.append('authenticity_token', csrf);
+    input.value = '';
 
-    if (!navigator.onLine) {
-      queuePhotoUpload(panel, files);
-      input.value = '';
-      return;
-    }
+    compressImages(rawFiles).then(function(files) {
+      var formData = new FormData();
+      files.forEach(function(file) { formData.append('photos[]', file); });
+      if (csrf) formData.append('authenticity_token', csrf);
 
-    $.ajax({
-      type: 'POST',
-      url: panel.data('url'),
-      data: formData,
-      processData: false,
-      contentType: false,
-      headers: { 'X-CSRF-Token': csrf }
-    }).done(function(data) {
-      renderStopPhotos(panel, data.photos);
-      input.value = '';
-    }).fail(function() {
-      queuePhotoUpload(panel, files);
-      input.value = '';
+      if (!navigator.onLine) {
+        queuePhotoUpload(panel, files);
+        return;
+      }
+
+      $.ajax({
+        type: 'POST',
+        url: panel.data('url'),
+        data: formData,
+        processData: false,
+        contentType: false,
+        headers: { 'X-CSRF-Token': csrf }
+      }).done(function(data) {
+        renderStopPhotos(panel, data.photos);
+      }).fail(function() {
+        queuePhotoUpload(panel, files);
+      });
     });
   });
 }
