@@ -298,6 +298,15 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     assert_equal ordered_indices, duplicate.vehicle_usages.sort_by(&:index).map(&:index)
   end
 
+  test 'custom_duplicate raises when vehicle_usage_sets limit is reached' do
+    set = vehicle_usage_sets(:vehicle_usage_set_one)
+    set.customer.update!(max_vehicle_usage_sets: set.customer.vehicle_usage_sets.size)
+
+    assert_raises(Exceptions::OverMaxLimitError) do
+      set.custom_duplicate
+    end
+  end
+
   test 'switching rest type to regulatory marks associated routes outdated' do
     vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
     route = vehicle_usage_set.vehicle_usages.first.routes.first

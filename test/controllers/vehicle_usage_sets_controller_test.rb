@@ -323,6 +323,17 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_redirected_to edit_vehicle_usage_set_path(assigns(:vehicle_usage_set))
   end
 
+  test 'should not duplicate vehicle_usage_set when limit is reached' do
+    customer = @vehicle_usage_set.customer
+    customer.update!(max_vehicle_usage_sets: customer.vehicle_usage_sets.size)
+
+    assert_difference('VehicleUsageSet.count', 0) do
+      assert_difference('VehicleUsage.count', 0) do
+        patch :duplicate, params: { vehicle_usage_set_id: @vehicle_usage_set }
+      end
+    end
+  end
+
   test 'v2 duplicate appends the set block via turbo stream' do
     enable_layout_v2!
     assert_difference('VehicleUsageSet.count') do
