@@ -225,15 +225,19 @@ fr:
         enable_proofs: Activer le stockage des preuves
         proof_retention_days: Durée de conservation des preuves (jours)
         enable_store_stops: Activer les sites intermédiaires
-        enable_sms: Activer l'envoi de SMS
-        enable_sms_intransit: Activer l'envoi de SMS d'approche
+        enable_email_driver: E-mail livreur
+        enable_sms_driver: SMS livreur
+        enable_email_destination: E-mail destinataire
+        enable_sms_destination: SMS destinataire
+        enable_sms_intransit: SMS d'approche
         enable_optimization_soft_upper_bound: Autoriser les dépassements horaires
         enable_strict_within_timewindows: Créneau strict (durée de visite comprise)
-        sms_template: Modèle SMS clients
+        sms_template: Modèle SMS destinataires
         sms_driver_template: Modèle SMS livreurs
-        sms_intransit_template: Modèle SMS en approche
+        sms_intransit_template: Modèle SMS d'approche
         recipient_template: Modèle e-mail destinataires
         sms_concat: SMS longs
+        sms_sender_name: Expéditeur SMS
         enable_external_callback: Activer URL de rappel
         history_cron_hour: Heure de l'historisation
         print_planning_annotating: Inclure un émargement client
@@ -1369,6 +1373,17 @@ fr:
         Si cette option est activée, la durée de visite est comprise dans le créneau horaire : la visite (arrivée et service) doit s’inscrire entièrement entre l’heure d’ouverture et l’heure de fermeture, et la fin affichée est la dernière heure possible de fin de visite. L’affichage et les calculs du plan s’appuient sur cette règle.
       enable_global_optimization_test: Actif si Test
       enable_sms_intransit_help: Activer l'envoi de SMS d'approche lorsque le chauffeur est en route
+      notifications:
+        title: Notifications
+        email: E-mail
+        sms: SMS
+        driver: Livreur
+        destination: Destinataire
+        approach: Approche
+        sms_options: Options SMS
+      sms_sender_name_help: >-
+        Nom affiché comme expéditeur des SMS (3 à 11 caractères).
+        Par défaut : nom de société, sinon nom du compte (tronqué).
       stop_max_upper_bound: Dépassement max créneaux horaires visites
       stop_max_upper_bound_help: Autoriser les dépassements horaires sur les arrêts
       vehicle_max_upper_bound: Dépassement max amplitude chauffeur
@@ -1380,9 +1395,9 @@ fr:
           code128: Code 128
         barcode_help: Inclure la référence sous forme de code barre
       company:
-        title: Société (bon de livraison)
-        help: Coordonnées de la société qui effectue les livraisons
-        logo_help: Logo affiché sur le bon de livraison et la page de suivi destinataire (PNG ou SVG)
+        title: Société
+        help: Coordonnées de la société
+        logo_help: Logo de la société (PNG ou SVG)
         tracking_eta_title: Fenêtre d’arrivée estimée (suivi destinataire)
         tracking_eta_help: Écarts affichés autour de l’horaire estimé sur la page de suivi publique, arrondis au quart d’heure.
         tracking_eta_gap_before_help: Minutes soustraites à l’estimation (ex. 5 → borne basse)

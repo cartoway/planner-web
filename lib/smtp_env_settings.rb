@@ -6,14 +6,15 @@ module SmtpEnvSettings
 
   def to_h
     {
-      address: ENV.fetch('SMTP_ADDRESS', 'smtp.example.com').to_s.strip,
-      port: Integer(ENV.fetch('SMTP_PORT', '587')),
-      user_name: ENV.fetch('SMTP_USER_NAME', 'robot@example.com').to_s.strip,
-      password: ENV.fetch('SMTP_PASSWORD', ''),
-      authentication: ENV.fetch('SMTP_AUTHENTICATION', 'plain'),
-      enable_starttls: ENV.fetch('SMTP_ENABLE_STARTTLS', 'true') != 'false',
-      open_timeout: Integer(ENV.fetch('SMTP_OPEN_TIMEOUT', '5')),
-      read_timeout: Integer(ENV.fetch('SMTP_READ_TIMEOUT', '5'))
+      # Compose often injects SMTP_*=${SMTP_*:-} as "" when unset; treat blank as missing.
+      address: (ENV['SMTP_ADDRESS'].presence || 'smtp.example.com').to_s.strip,
+      port: Integer(ENV['SMTP_PORT'].presence || '587'),
+      user_name: (ENV['SMTP_USER_NAME'].presence || 'robot@example.com').to_s.strip,
+      password: ENV['SMTP_PASSWORD'].to_s,
+      authentication: ENV['SMTP_AUTHENTICATION'].presence || 'plain',
+      enable_starttls: (ENV['SMTP_ENABLE_STARTTLS'].presence || 'true') != 'false',
+      open_timeout: Integer(ENV['SMTP_OPEN_TIMEOUT'].presence || '5'),
+      read_timeout: Integer(ENV['SMTP_READ_TIMEOUT'].presence || '5')
     }
   end
 
@@ -22,7 +23,7 @@ module SmtpEnvSettings
   end
 
   def default_from
-    ENV.fetch('SMTP_DEFAULT_FROM', 'root@localhost')
+    ENV['SMTP_DEFAULT_FROM'].presence || 'root@localhost'
   end
 
   # :smtp (default) | :letter_opener_web | :letter_opener | :test

@@ -33,10 +33,18 @@ class CustomersControllerTest < ActionController::TestCase
     get :edit, params: { id: @customer }
     assert_response :success
     assert_select '#customer_suivi_section:not(.d-none)'
+    assert_select '#collapseSuivi'
     assert_select '#customer_enable_proofs'
     assert_select '#customer_enable_vehicle_position'
-    assert_select '#customer_enable_sms'
     assert_select '#customer_history_cron_hour'
+    assert_select '#customer_notifications_panel'
+    assert_select '#customer_notifications_email_panel'
+    assert_select '#customer_notifications_sms_panel'
+    assert_select '#customer_enable_email_driver'
+    assert_select '#customer_enable_sms_driver'
+    assert_select '#customer_enable_email_destination'
+    assert_select '#customer_enable_sms_destination'
+    assert_select '#customer_enable_sms_intransit'
     assert_select "label[for='customer_enable_proofs']", text: I18n.t('activerecord.attributes.customer.enable_proofs')
   end
 
@@ -46,6 +54,20 @@ class CustomersControllerTest < ActionController::TestCase
     get :edit, params: { id: @customer }
     assert_response :success
     assert_select '#customer_suivi_section.d-none'
+  end
+
+  test 'non admin cannot see or enable deliver demo' do
+    @customer.update!(devices: { deliver: { enable: true, demo: false, driver_move: false } })
+    sign_in users(:user_one)
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select 'input[name="customer[devices][deliver][demo]"]', count: 0
+
+    patch :update, params: {
+      id: @customer.id,
+      customer: { devices: { deliver: { enable: true, demo: true, driver_move: false } } }
+    }
+    assert_not ValueToBoolean.value_to_boolean(@customer.reload.devices.dig('deliver', 'demo') || @customer.devices.dig(:deliver, :demo))
   end
 
   test 'non-admin edit hides last_async_jobs' do

@@ -261,11 +261,10 @@ CREATE TABLE public.customers (
     max_zonings integer,
     max_destinations integer,
     max_vehicle_usage_sets integer,
-    enable_sms boolean DEFAULT false NOT NULL,
     sms_template character varying,
     print_barcode character varying,
     sms_concat boolean DEFAULT false NOT NULL,
-    sms_from_customer_name boolean DEFAULT false NOT NULL,
+    sms_sender_name character varying,
     optimization_minimal_time double precision,
     history_cron_hour integer,
     sms_driver_template character varying,
@@ -281,6 +280,10 @@ CREATE TABLE public.customers (
     vehicles_count integer DEFAULT 0 NOT NULL,
     sms_intransit_template character varying,
     enable_sms_intransit boolean DEFAULT false,
+    enable_email_driver boolean DEFAULT true NOT NULL,
+    enable_sms_driver boolean DEFAULT false NOT NULL,
+    enable_email_destination boolean DEFAULT true NOT NULL,
+    enable_sms_destination boolean DEFAULT false NOT NULL,
     enable_store_stops boolean DEFAULT false,
     enable_vehicle_costs boolean DEFAULT false NOT NULL,
     store_reload_duration integer,
@@ -3344,13 +3347,6 @@ CREATE INDEX index_operations_on_customer_id ON public.operations USING btree (c
 
 
 --
--- Name: index_operations_on_demo_job_id; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE INDEX index_operations_on_demo_job_id ON public.operations USING btree (demo_job_id);
-
-
---
 -- Name: index_operations_on_customer_id_and_date; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3362,6 +3358,13 @@ CREATE INDEX index_operations_on_customer_id_and_date ON public.operations USING
 --
 
 CREATE UNIQUE INDEX index_operations_on_customer_id_lower_ref_date ON public.operations USING btree (customer_id, lower((ref)::text), date) WHERE (ref IS NOT NULL);
+
+
+--
+-- Name: index_operations_on_demo_job_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_operations_on_demo_job_id ON public.operations USING btree (demo_job_id);
 
 
 --
@@ -4576,6 +4579,7 @@ ALTER TABLE ONLY public.zonings
 -- PostgreSQL database dump complete
 --
 
+
 SET search_path TO "$user", public;
 
 INSERT INTO "schema_migrations" (version) VALUES
@@ -4926,6 +4930,9 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20260930162000'),
 ('20260930181500'),
 ('20261005120000'),
-('20261005153000');
+('20261005153000'),
+('20261014112000'),
+('20261014120000'),
+('20261014140000');
 
 

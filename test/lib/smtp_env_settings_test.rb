@@ -40,6 +40,15 @@ class SmtpEnvSettingsTest < ActiveSupport::TestCase
     end
   end
 
+  # docker-compose SMTP_ADDRESS: ${SMTP_ADDRESS:-} → "" when unset on the host
+  test 'to_h treats blank SMTP_ADDRESS as missing (compose empty string)' do
+    with_env('SMTP_ADDRESS' => '', 'SMTP_PORT' => '') do
+      settings = SmtpEnvSettings.to_h
+      assert_equal 'smtp.example.com', settings[:address]
+      assert_equal 587, settings[:port]
+    end
+  end
+
   private
 
   def with_env(vars)

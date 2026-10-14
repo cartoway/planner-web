@@ -292,7 +292,7 @@ class V01::RoutesTest < V01::RoutesBaseTest
 
   test 'route destination SMS endpoint is gone' do
     @route.planning.customer.reseller.update(messagings: {sms_partner: { enable: true, api_key: :sms_api_key, api_secret: :sms_api_secret }})
-    @route.planning.customer.update enable_sms: true
+    @route.planning.customer.update!(enable_sms_driver: true)
 
     get api(@route.planning_id, "#{@route.id}/send_sms")
     assert_equal 410, last_response.status

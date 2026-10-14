@@ -160,7 +160,12 @@ de:
         enable_global_optimization: Globale Optimierung ermöglichen
         enable_vehicle_position: Aktivieren der Fahrzeugposition
         enable_proofs: Speicherung von Nachweisen aktivieren
-        enable_sms: SMS aktivieren
+        enable_email_driver: E-Mail Fahrer
+        enable_sms_driver: SMS Fahrer
+        enable_email_destination: E-Mail Empfänger
+        enable_sms_destination: SMS Empfänger
+        enable_sms_intransit: Annäherungs-SMS
+        sms_sender_name: SMS-Absender
         sms_template: SMS-Vorlage
         sms_concat: Lange SMS
         enable_external_callback: Rückruf-URL aktivieren

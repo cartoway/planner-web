@@ -4,6 +4,8 @@ module Operations
   class SendDestinationSms
     def self.call(operation:, trackings: nil)
       customer = operation.customer
+      return 0 unless customer.enable_sms_destination
+
       messaging = SendDriverSms.messaging_service(customer)
       template = customer.sms_template || I18n.t('notifications.sms.alert_plan')
       date = operation.date || Time.zone.today
@@ -23,7 +25,7 @@ module Operations
           messaging.content(template, replacements: content, truncate: !customer.sms_concat),
           country: customer.default_country,
           message_id: message_id,
-          from: customer.sms_from_customer_name ? customer.name : customer.reseller.name
+          from: customer.effective_sms_sender_name
         )
         record_notification!(stop, channel: 'sms', to: phone) if sent
         sent

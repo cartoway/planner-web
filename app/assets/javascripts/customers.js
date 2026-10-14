@@ -334,6 +334,16 @@ const customers_edit = function (params) {
   $('#customer_enable_proofs').on('change', syncProofRetentionFields);
   syncProofRetentionFields();
 
+  var syncNotificationTemplateWraps = function() {
+    $('#customer_sms_driver_template_wrap').toggleClass('d-none', !$('#customer_enable_sms_driver').is(':checked'));
+    $('#customer_destination_email_template_wrap').toggleClass('d-none', !$('#customer_enable_email_destination').is(':checked'));
+    $('#customer_sms_template_wrap').toggleClass('d-none', !$('#customer_enable_sms_destination').is(':checked'));
+    $('#customer_sms_intransit_template_wrap').toggleClass('d-none', !$('#customer_enable_sms_intransit').is(':checked'));
+  };
+  $('#customer_enable_sms_driver, #customer_enable_email_destination, #customer_enable_sms_destination, #customer_enable_sms_intransit')
+    .on('change', syncNotificationTemplateWraps);
+  syncNotificationTemplateWraps();
+
   var syncSuiviSection = function() {
     var $section = $('#customer_suivi_section');
     if (!$section.length) return;
