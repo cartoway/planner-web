@@ -9,7 +9,7 @@ import { pathToFileURL } from 'node:url'
 const src = new URL('../../app/javascript/lib/form_sidebar_history.js', import.meta.url)
 const tmp = path.join(os.tmpdir(), 'planner-form-sidebar-history.mjs')
 fs.writeFileSync(tmp, fs.readFileSync(src))
-const { formSidebarHistoryUpdate, formSidebarPageKey } = await import(pathToFileURL(tmp).href)
+const { formSidebarAdoptMainNavigation, formSidebarHistoryUpdate, formSidebarPageKey } = await import(pathToFileURL(tmp).href)
 
 describe('form sidebar history', () => {
   it('pushes the form url when the sidebar opens from the list', () => {
@@ -55,5 +55,18 @@ describe('form sidebar history', () => {
 
   it('builds a path+query key', () => {
     assert.equal(formSidebarPageKey('http://example.test/destinations/42/edit?include_past=1'), '/destinations/42/edit?include_past=1')
+  })
+
+  it('adopts main frame src as list url and clears form-sidebar history markers', () => {
+    const adopted = formSidebarAdoptMainNavigation({
+      mainSrc: 'http://example.test/stores',
+      currentHref: 'http://example.test/destinations/42/edit',
+      historyState: { formSidebar: true, turboFrameId: 'form_sidebar', listUrl: '/destinations', turbo: { x: 1 } }
+    })
+    assert.equal(adopted.listUrl, '/stores')
+    assert.equal(adopted.state.listUrl, '/stores')
+    assert.equal(adopted.state.formSidebar, undefined)
+    assert.equal(adopted.state.turboFrameId, undefined)
+    assert.deepEqual(adopted.state.turbo, { x: 1 })
   })
 })

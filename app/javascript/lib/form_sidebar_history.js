@@ -21,3 +21,13 @@ export function formSidebarHistoryUpdate ({ currentHref, frameSrc, listUrl, hasF
   }
   return null
 }
+
+// After turbo-frame#main navigates: adopt that page as the list URL and drop form-sidebar history markers.
+// Do not push the previous list URL — that races Turbo's advance and breaks later sidebar opens.
+export function formSidebarAdoptMainNavigation ({ mainSrc, currentHref, historyState, base }) {
+  const listUrl = formSidebarPageKey(mainSrc || currentHref, base)
+  const state = { ...(historyState || {}), listUrl }
+  delete state.formSidebar
+  delete state.turboFrameId
+  return { listUrl, state }
+}
