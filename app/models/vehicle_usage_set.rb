@@ -112,6 +112,8 @@ class VehicleUsageSet < ApplicationRecord
   end
 
   def custom_duplicate
+    # activerecord-import skips callbacks, so enforce the limit explicitly
+    check_max_vehicle_usage_set
     VehicleUsageSet.transaction do
       attributes = self.import_attributes.except('id')
       attributes['name'] += " (#{I18n.l(Time.zone.now, format: :long)})"
