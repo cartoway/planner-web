@@ -5,6 +5,13 @@ module VehiclePositions
     class MissingPositionedAt < StandardError; end
     class OperationNotOpen < StandardError; end
 
+    # Some WebViews report "unknown" sensors as ±Number.MAX_VALUE, which overflows
+    # PostgreSQL double precision and surfaces as ActionController 422 (StatementInvalid).
+    ALTITUDE_RANGE = (-1000.0..20_000.0) # metres
+    ACCURACY_RANGE = (0.0..100_000.0) # metres CEP
+    SPEED_RANGE = (0.0..1_000.0) # m/s
+    HEADING_RANGE = (0.0..360.0) # degrees
+
     # rubocop:disable Metrics/ParameterLists
     def self.call(operation_route:, lat:, lng:, positioned_at:, source: 'mobile', heading: nil, speed: nil, accuracy: nil, altitude: nil, payload: {})
       raise MissingPositionedAt if positioned_at.blank?
@@ -19,10 +26,10 @@ module VehiclePositions
         operation_route: operation_route,
         lat: lat,
         lng: lng,
-        heading: heading,
-        speed: speed,
-        accuracy: accuracy,
-        altitude: altitude,
+        heading: sane_sensor(heading, HEADING_RANGE),
+        speed: sane_sensor(speed, SPEED_RANGE),
+        accuracy: sane_sensor(accuracy, ACCURACY_RANGE),
+        altitude: sane_sensor(altitude, ALTITUDE_RANGE),
         positioned_at: positioned_at,
         received_at: Time.current,
         source: source.presence || 'mobile',
@@ -56,5 +63,18 @@ module VehiclePositions
       Rails.logger.warn("vehicle position turbo refresh failed: #{e.class}: #{e.message}")
     end
     private_class_method :broadcast_vehicle_pin
+
+    def self.sane_sensor(value, range)
+      return nil if value.nil?
+
+      float = Float(value)
+      return nil unless float.finite?
+      return nil unless range.cover?(float)
+
+      float
+    rescue ArgumentError, TypeError
+      nil
+    end
+    private_class_method :sane_sensor
   end
 end
