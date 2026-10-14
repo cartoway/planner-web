@@ -77,4 +77,23 @@ class VehiclePositionsRecordTest < ActiveSupport::TestCase
     assert_equal 1, @route.vehicle_positions.count
     assert_in_delta 48.1, @route.latest_position.lat, 0.0001
   end
+
+  test 'drops WebView altitude/speed sentinels without rejecting the position' do
+    position = VehiclePositions::Record.call(
+      operation_route: @route,
+      lat: 48.8575,
+      lng: 2.35138,
+      accuracy: 25_000,
+      altitude: -1.7976931348623157e+308,
+      speed: 0,
+      heading: nil,
+      positioned_at: Time.current,
+      source: 'mobile'
+    )
+
+    assert_nil position.altitude
+    assert_in_delta 25_000, position.accuracy
+    assert_in_delta 0.0, position.speed
+    assert_in_delta 48.8575, position.lat, 0.0001
+  end
 end
