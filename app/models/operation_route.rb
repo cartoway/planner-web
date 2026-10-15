@@ -119,17 +119,7 @@ class OperationRoute < ApplicationRecord
   end
 
   def clock_on_operation_day(time)
-    return if time.blank?
-
-    date = operation.date
-    clock = I18n.l(time, format: :hour_minute)
-    return clock if date.blank?
-
-    offset = (time.to_date - date).to_i
-    return clock if offset.zero?
-
-    delta = offset.positive? ? "+#{offset}" : offset.to_s
-    "#{clock} #{I18n.t('operations.show.day_shift', delta: delta)}"
+    Operations::Snapshots.clock_on_operation_day(time, operation.date)
   end
 
   def started?
