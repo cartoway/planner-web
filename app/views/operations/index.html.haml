@@ -44,7 +44,7 @@
           .operations-index-card-secondary
             - if operation.planning
               = link_to edit_planning_path(operation.planning), class: 'btn btn-secondary', target: '_blank', rel: 'noopener', data: { turbo: false }, title: (operation.planning.ref.presence || operation.planning.name) do
-                %i.fa.fa-map.fa-fw
+                %i.fa.fa-map-location.fa-fw
                 %span.operations-index-card-secondary-label= operation.planning.ref.presence || operation.planning.name
             - if can_destroy
               %button.btn.btn-danger{type: 'button', data: { bs_toggle: 'modal', bs_target: "##{modal_id}" }}

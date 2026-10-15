@@ -41,6 +41,46 @@ class OperationsControllerTest < ActionController::TestCase
     assert_select %(a[href="#{operation_path(@operation)}"][data-turbo-frame="main"][data-turbo-action="advance"]), 1
   end
 
+  test 'menu exposes operations as its own accordion section above plans' do
+    get :index
+    assert_response :success
+    assert_select '#menu-operation > a.menu-section[href="#operationsCollpase"]', 1
+    assert_select '#operationsCollpase a[href=?]', operations_path, 1
+    assert_select '#planningsCollpase a[href=?]', operations_path, 0
+    assert_match(/id=['"]menu-operation['"].*id=['"]menu-plan['"]/m, response.body)
+    assert_select %(#operationsCollpase li##{ActionView::RecordIdentifier.dom_id(@operation, :menu)} a[href=?]), operation_path(@operation), 1
+    assert_includes response.body, @operation.name
+    counter = css_select('#operationsCollpase li').find { |li| li.at_css('i.fa-calendar-check') }
+    assert counter, 'expected operations menu counter'
+    assert_match(/\b#{@operation.customer.operations.count}\b/, counter.text)
+    assert_includes counter.text, I18n.t('operations.menu')
+    assert_select %(#operationsCollpase li##{ActionView::RecordIdentifier.dom_id(@operation, :menu)} i.fa-tower-broadcast), 1
+  end
+
+  test 'menu lists at most 10 recent operations under total count' do
+    customer = @operation.customer
+    Operation.where(customer_id: customer.id).where.not(id: @operation.id).delete_all
+    11.times do |i|
+      Operation.create!(
+        customer: customer,
+        name: "Menu Op #{i}",
+        date: Date.current - i.days,
+        status: 'in_progress'
+      )
+    end
+
+    get :index
+    assert_response :success
+    assert_select '#operationsCollpase li[id^="menu_operation_"]', 10
+    assert_select '#operationsCollpase li[id^="menu_operation_"] i.fa-tower-broadcast', 10
+    counter = css_select('#operationsCollpase li').find { |li| li.at_css('i.fa-calendar-check') }
+    assert counter, 'expected operations menu counter'
+    assert_match(/\b12\b/, counter.text)
+    assert_includes counter.text, I18n.t('operations.menu')
+  ensure
+    Operation.where(customer_id: customer.id).where.not(id: @operation.id).delete_all
+  end
+
   test 'show exposes mobile panes and detail sheet chrome' do
     get :show, params: { id: @operation.id }
     assert_response :success
@@ -50,6 +90,16 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes response.body, I18n.t('operations.show.pane_list')
     assert_includes response.body, I18n.t('operations.show.pane_map')
     assert_includes response.body, 'setMobilePane'
+  end
+
+  test 'show links to source planning with Plan label in french' do
+    assert_equal 'Plan', I18n.t('operations.show.planning', locale: :fr)
+    I18n.with_locale(:fr) do
+      get :show, params: { id: @operation.id }
+    end
+    assert_response :success
+    assert_select %(a.btn[href="#{edit_planning_path(@operation.planning)}"]), text: /Plan/, minimum: 1
+    assert_select %(a.btn[href="#{edit_planning_path(@operation.planning)}"] i.fa-map-location), minimum: 1
   end
 
   test 'show paints tour left border with vehicle color' do

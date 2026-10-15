@@ -4149,7 +4149,7 @@ fr:
       destroy_confirm: Supprimer définitivement
       destroy_input_label: Nom de l’opération
     show:
-      planning: Planning
+      planning: Plan
       search_routes: Nom du véhicule ou référence
       search_stops: Nom, référence, rue ou ville
       all_routes: Toutes les tournées
