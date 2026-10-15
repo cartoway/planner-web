@@ -1,0 +1,10 @@
+-# locals: sets_count:, vehicles_count:
+#vehicle-usage-sets-counts.d-flex.gap-2.align-items-center
+  #count.primary.data-info{title: t('vehicle_usage_sets.index.vehicle_usage_sets_count_help')}
+    %i.fa.fa-bars-staggered.fa-fw{"aria-hidden": "true"}
+    = sets_count
+    = t 'activerecord.models.vehicle_usage_sets', count: sets_count
+  .primary.data-info{title: t('vehicle_usage_sets.index.vehicles_count_help')}
+    %i.fa.fa-truck-field.fa-fw{"aria-hidden": "true"}
+    = vehicles_count
+    = t 'activerecord.models.vehicles', count: vehicles_count
