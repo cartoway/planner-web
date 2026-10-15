@@ -62,6 +62,30 @@
                       .hidden-menu
                         = t 'admin.profiles.menu.profiles'
             - if user_signed_in? && current_user.customer
+              - if !@unsubscribed && can?(:manage, Operation)
+                %li#menu-operation.menu-list-item
+                  %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#operationsCollpase'}
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-clipboard-check.fa-fw
+                      .hidden-menu.menu_label
+                        = t 'operations.menu'
+                  %ul#operationsCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                    %li
+                      = link_to operations_path do
+                        %i.fa.fa-clipboard-check.fa-fw
+                        = t 'all.verb.list'
+                    %li.divider
+                    %li
+                      %i.fa.fa-calendar-check{"aria-hidden": "true"}
+                      %span
+                        = current_user.customer.operations.count
+                      \- #{t 'operations.menu'}
+                    - current_user.customer.operations.order(date: :desc, id: :desc).limit(10).each do |operation|
+                      %li{id: dom_id(operation, :menu), style: "display: inline;" }
+                        = link_to operation_path(operation) do
+                          .text-overflow
+                            %i.fa.fa-tower-broadcast.fa-fw
+                            = operation.name
               - if !@unsubscribed
                 %li#menu-plan.menu-list-item
                   %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#planningsCollpase'}
@@ -80,11 +104,6 @@
                       = link_to plannings_path do
                         %i.fa.fa-map-location.fa-fw
                         = t 'all.verb.list'
-                    - if can?(:manage, Operation)
-                      %li
-                        = link_to operations_path do
-                          %i.fa.fa-clipboard-check.fa-fw
-                          = t 'operations.menu'
                     %li.divider
                     - if current_user.customer.default_max_plannings
                       %li
@@ -104,7 +123,7 @@
                           %span
                             = current_user.customer.default_max_plannings
                           \- #{t 'plannings.menu.plannings'}
-                      - current_user.customer.plannings.select(&:id).each do |planning|
+                      - current_user.customer.plannings.reorder(updated_at: :desc, id: :desc).limit(10).each do |planning|
                         %li{style: "display: inline;" }
                           = link_to edit_planning_path(planning) do
                             .text-overflow
