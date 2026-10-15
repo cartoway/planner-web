@@ -118,7 +118,7 @@ class VehicleUsageSetsController < ApplicationController
   def destroy
     respond_to do |format|
       if @vehicle_usage_set.destroy
-        format.turbo_stream { render_streams(stream_remove(@vehicle_usage_set), close_sidebar: false) }
+        format.turbo_stream { render_streams(stream_remove(@vehicle_usage_set), vehicle_usage_sets_counts_stream, close_sidebar: false) }
         # 303 so Turbo GETs the index (302 would re-DELETE and leave the list stale).
         format.html { redirect_to vehicle_usage_sets_url, status: :see_other }
       else
@@ -214,6 +214,35 @@ class VehicleUsageSetsController < ApplicationController
 
   private
 
+  # Prefer an in-page toast over a full redirect when the limit is hit from Turbo.
+  def over_max_limit
+    yield
+  rescue Exceptions::OverMaxLimitError
+    message = I18n.t(
+      'vehicle_usage_sets.index.over_max_limit',
+      limit: current_user.customer.default_max_vehicle_usage_sets
+    )
+    respond_to do |format|
+      format.html do
+        flash.now[:alert] = message
+        if action_name == 'create'
+          render action: 'new'
+        else
+          load_vehicle_usage_sets_index_page
+          layout_v2? ? render_page('v2/vehicle_usage_sets/index') : render(action: 'index')
+        end
+      end
+      format.turbo_stream do
+        if layout_v2?
+          render turbo_stream: stream_toast(message), status: :unprocessable_entity
+        else
+          flash[:alert] = message
+          redirect_to vehicle_usage_sets_path, status: :see_other
+        end
+      end
+    end
+  end
+
   def load_vehicle_usage_sets_index_page
     @customer = current_user.customer
     @vehicle_usage_sets = @customer.vehicle_usage_sets.includes([:vehicle_usages, {vehicle_usages: [vehicle: [:router, :customer]]}])
@@ -268,7 +297,20 @@ class VehicleUsageSetsController < ApplicationController
       partial: 'v2/vehicle_usage_sets/set_block',
       locals: vehicle_usage_set_list_locals(expanded: true, sets: sets)
     )
+    streams << vehicle_usage_sets_counts_stream(sets)
     streams
+  end
+
+  def vehicle_usage_sets_counts_stream(sets = nil)
+    sets ||= vehicle_usage_sets_for_list
+    stream_replace(
+      'vehicle-usage-sets-counts',
+      partial: 'v2/vehicle_usage_sets/counts',
+      locals: {
+        sets_count: sets.size,
+        vehicles_count: sets.first&.vehicle_usages&.size || 0
+      }
+    )
   end
 
   def activate_multiple_vehicle_usage(vehicle_usage_set_id, activate)

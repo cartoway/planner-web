@@ -58,6 +58,14 @@ module V2Layout
     turbo_stream.remove(stream_target(record_or_id))
   end
 
+  def stream_toast(message, class_name: 'alert-warning')
+    turbo_stream.append(
+      'v2-toast-stack',
+      partial: 'v2/shared/toast',
+      locals: { message: message, class_name: class_name }
+    )
+  end
+
   # Success path: clear frame contents (update, not replace — keep the same turbo-frame node) + list streams.
   # close_sidebar: nil => close when this was a sidebar form submit.
   def render_streams(*streams, close_sidebar: nil)
