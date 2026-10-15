@@ -44,10 +44,7 @@
             %i.fa.fa-trash.fa-fw
             = t('all.verb.destroy_selection')
 
-        #count.primary.data-info{title: t('stores.index.stores_count_help')}
-          %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
-          %span{data: { v2__table_filter_target: 'count' }}= @stores.count
-          = t 'activerecord.models.stores', count: @stores.count
+        = render 'v2/shared/index_count', count: @stores.count, help: t('stores.index.stores_count_help'), model_key: 'activerecord.models.stores'
       = text_field_tag :stores_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control form-control-sm mb-2', data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
     = form_tag stores_path, method: :delete, id: 'stores-destroy' do
       #store_box.destinations-list-scroll

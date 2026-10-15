@@ -106,11 +106,41 @@ export default class extends Controller {
       getContainer: () => this.element.querySelector('#map')
     })
     document.addEventListener('turbo:frame-load', this._onTurboFrameLoad, { signal })
+    document.addEventListener('turbo:before-stream-render', this._onBeforeStreamRender, { signal })
     this.element.addEventListener('input', (e) => {
       if (e.target && e.target.closest && e.target.closest('[data-v2--table-filter-target="input"]')) {
         requestAnimationFrame(() => this._syncHiddenGeojsonPins())
       }
     }, { signal })
+  }
+
+  _onBeforeStreamRender = (event) => {
+    const stream = event.detail?.newStream
+    if (!stream || stream.getAttribute('action') !== 'remove') return
+    const target = stream.getAttribute('target') || ''
+    const match = target.match(/^store_(\d+)$/)
+    if (!match) return
+    const storeId = match[1]
+    const render = event.detail.render
+    event.detail.render = async (streamElement) => {
+      await render(streamElement)
+      this._removeStoreAfterDestroy(storeId)
+    }
+  }
+
+  _removeStoreAfterDestroy (storeId) {
+    if (this._mapLayers) this._mapLayers.removeDestination(String(storeId))
+    if (this._domMarkerId === String(storeId)) this._removeDomMarker()
+    const form = document.querySelector('#form_sidebar #store-form-sidebar')
+    if (form && String(form.getAttribute('data-store_id')) === String(storeId)) {
+      const frame = document.getElementById('form_sidebar')
+      const tpl = document.getElementById('form-sidebar-placeholder-template')
+      if (frame && tpl?.content) {
+        frame.removeAttribute('src')
+        frame.innerHTML = ''
+        frame.appendChild(tpl.content.cloneNode(true))
+      }
+    }
   }
 
   disconnect () {

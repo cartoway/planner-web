@@ -1,0 +1,11 @@
+-# locals: count:, help:, model_key:, icon: ('fa-check-square'), nowrap: (false), filterable: (true)
+- icon_class = local_assigns.fetch(:icon, 'fa-check-square')
+- nowrap = local_assigns.fetch(:nowrap, false)
+- filterable = local_assigns.fetch(:filterable, true)
+#count.primary.data-info{class: ('text-nowrap' if nowrap), title: help}
+  %i.fa.fa-fw{class: icon_class, 'aria-hidden': 'true'}
+  - if filterable
+    %span{data: { v2__table_filter_target: 'count' }}= count
+  - else
+    = count
+  = t(model_key, count: count)
