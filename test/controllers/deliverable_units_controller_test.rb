@@ -62,6 +62,16 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#form_sidebar form#deliverable-unit-form-sidebar.form-sidebar-form.form-sidebar-form--full-bleed', 1
   end
 
+  test 'v2 new html renders the list with the form inlined without a nil edit path' do
+    enable_layout_v2!
+    get :new
+    assert_response :success
+    assert_select '.deliverable-units-index', 1
+    assert_select 'turbo-frame#form_sidebar form#deliverable-unit-form-sidebar', 1
+    assert assigns(:deliverable_units).all?(&:persisted?)
+    assert_select 'table#deliverable-units tbody tr', assigns(:deliverable_units).size
+  end
+
   test 'v2 create from sidebar closes the form frame' do
     enable_layout_v2!
     @request.headers['Turbo-Frame'] = 'form_sidebar'

@@ -35,7 +35,8 @@ class DeliverableUnitsController < ApplicationController
   end
 
   def new
-    @deliverable_unit = current_user.customer.deliverable_units.build
+    # Do not association.build: the unsaved record would appear in the index list and break edit_path(id: nil).
+    @deliverable_unit = DeliverableUnit.new(customer: current_user.customer)
     render_form_or_list('new_sidebar', 'v2/deliverable_units/index', deliverable_units_path) { @deliverable_units = current_user.customer.deliverable_units }
   end
 

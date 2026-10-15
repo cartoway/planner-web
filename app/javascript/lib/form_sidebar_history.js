@@ -17,9 +17,16 @@ export function formSidebarHistoryUpdate ({ currentHref, frameSrc, listUrl, hasF
   if (!hasForm && listUrl) {
     const next = formSidebarPageKey(listUrl, base)
     if (current === next) return null
-    return { type: 'push', url: next, formSidebar: false }
+    // Replace (do not push): pushing the list after close stacked a duplicate entry and
+    // made browser back reopen the form instead of leaving the page.
+    return { type: 'replace', url: next, formSidebar: false }
   }
   return null
+}
+
+// Prefer history.back() when the current entry was a form-sidebar push.
+export function formSidebarShouldGoBackOnClose (historyState) {
+  return !!historyState?.formSidebar
 }
 
 // After turbo-frame#main navigates: adopt that page as the list URL and drop form-sidebar history markers.
