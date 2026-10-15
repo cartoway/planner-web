@@ -92,6 +92,35 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_select 'button[data-action="click->v2--plannings-index#compare"][data-min="2"]', 1
   end
 
+  test 'menu lists at most 10 recent plannings by updated_at' do
+    enable_layout_v2!
+    customer = @planning.customer
+    customer.update_columns(max_plannings: 20)
+    vehicle_usage_set = customer.vehicle_usage_sets.first
+    created = []
+    while customer.plannings.count < 11
+      created << Planning.create!(
+        customer: customer,
+        name: "Menu Plan #{customer.plannings.count}",
+        vehicle_usage_set: vehicle_usage_set
+      )
+    end
+    oldest = created.first
+    oldest.update_columns(updated_at: 1.year.ago)
+    newest = created.last
+    newest.update_columns(name: 'Newest Menu Plan', updated_at: Time.current)
+
+    get :index
+    assert_response :success
+    assert_select '#planningsCollpase li[id^="menu_planning_"]', 10
+    menu_ids = css_select('#planningsCollpase li[id^="menu_planning_"]').map { |li| li['id'] }
+    assert_equal ActionView::RecordIdentifier.dom_id(newest, :menu), menu_ids.first
+    refute_includes menu_ids, ActionView::RecordIdentifier.dom_id(oldest, :menu)
+  ensure
+    created&.each(&:destroy!)
+    customer&.update_columns(max_plannings: 10)
+  end
+
   test 'compare uses v2 layout and marks first planning as reference' do
     enable_layout_v2!
     other = plannings(:planning_two)
