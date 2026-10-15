@@ -690,13 +690,13 @@ en:
           attributes:
             name:
               cannot_contain_colon: cannot contain the character ":"
-        stop:
+        operation_stop:
           attributes:
             photos:
               blank: must be attached
               invalid_type: must be an image
               too_large: is too large (10 MB max)
-              too_many: exceeds the maximum of 10 photos
+              too_many: cannot exceed %{count} files
             signature:
               blank: must be attached
               invalid_type: must be an image
@@ -2769,6 +2769,7 @@ en:
       photos_empty: No photos
       documents_empty: No documents
       photos_delete_expired: Deletion time has expired
+      photos_too_many: Maximum %{count} photos per stop
       proofs_disabled: Proof storage is not enabled for this account
       photo_close: Close
       photo_delete: Delete

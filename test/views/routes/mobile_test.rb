@@ -132,6 +132,8 @@ class RouteMobileTest < ActiveSupport::TestCase
     refute_includes last_response.body, 'stop-photo-remove'
     assert_includes last_response.body, I18n.t('stops.mobile.take_photo')
     assert_includes last_response.body, I18n.t('stops.mobile.documents_loaded')
+    assert_includes last_response.body, "data-max-count=\"#{ProofAttachments::PHOTO_MAX_COUNT}\""
+    assert_includes last_response.body, I18n.t('stops.mobile.photos_too_many', count: ProofAttachments::PHOTO_MAX_COUNT)
     assert_includes last_response.body, 'stop-photo-modal'
     assert_includes last_response.body, 'stop-photo-modal-prev'
     assert_includes last_response.body, 'stop-photo-modal-next'

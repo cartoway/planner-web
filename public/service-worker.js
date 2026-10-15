@@ -426,7 +426,16 @@ function syncPhotos() {
               if (errorType.includes('deadlock')) {
                 item.retryAfter = Date.now() + 500;
                 notifyClients('STORE_PHOTOS', Array.from([item]));
+                break;
               }
+              // Invalid content: drop from queue and surface server messages.
+              notifyClients('PHOTO_REJECTED', {
+                id: item.id,
+                url: item.url,
+                panelUrl: item.panelUrl || item.url,
+                error: (data && data.error) || '',
+                errors: (data && data.errors) || []
+              });
               break;
             default:
               throw new Error('Failed to sync photo: ' + response.status);
