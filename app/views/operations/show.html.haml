@@ -43,7 +43,7 @@
       .operation-header-actions-desktop.d-flex.align-items-center.gap-2
         - if @operation.planning
           = link_to edit_planning_path(@operation.planning), class: 'btn btn-light', target: '_blank', rel: 'noopener', data: { turbo: false } do
-            %i.fa.fa-map.fa-fw
+            %i.fa.fa-map-location.fa-fw
             = t('operations.show.planning')
         = render 'operations/demo_actions'
         #operation-send-buttons
@@ -72,7 +72,7 @@
           - if @operation.planning
             %li
               = link_to edit_planning_path(@operation.planning), class: 'dropdown-item', target: '_blank', rel: 'noopener', data: { turbo: false } do
-                %i.fa.fa-map.fa-fw
+                %i.fa.fa-map-location.fa-fw
                 = t('operations.show.planning')
           - if @operation.open? && @send_routes.present?
             - if @operation.customer.enable_email_driver
