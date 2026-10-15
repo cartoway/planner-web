@@ -21,7 +21,7 @@
     %td.text-end.text-nowrap
       .btn-group{role: 'group'}
         - if show_set_checkbox
-          = link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), class: 'btn btn-light', method: :patch, data: { turbo_method: :patch }, title: t('all.verb.duplicate'), disabled: current_user.customer.too_many_vehicle_usage_sets? || !can_update_vehicle_usage do
+          = link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), class: 'btn btn-light', method: :patch, data: { turbo_method: :patch }, title: t('all.verb.duplicate'), disabled: !can_update_vehicle_usage do
             %i.fa.fa-copy.fa-fw
         = link_to vehicle_usage_set_path(vehicle_usage_set, format: :excel), class: 'btn btn-light', data: { turbo: false } do
           %i.fa.fa-download.fa-fw

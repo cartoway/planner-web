@@ -19,9 +19,23 @@
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
       .d-flex.gap-2.align-items-center
         - if show_set_checkbox
-          = link_to new_vehicle_usage_set_path, class: 'btn btn-primary', disabled: current_user.customer.too_many_vehicle_usage_sets? || !can_create_vehicle_usage, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
-            %i.fa.fa-plus.fa-fw
-            = t 'vehicle_usage_sets.index.new'
+          - if current_user.customer.too_many_vehicle_usage_sets?
+            %button.btn.btn-primary{
+              type: 'button',
+              disabled: !can_create_vehicle_usage,
+              data: {
+                controller: 'v2--toast',
+                action: 'click->v2--toast#notify',
+                v2__toast_message_param: t('vehicle_usage_sets.index.over_max_limit', limit: current_user.customer.default_max_vehicle_usage_sets),
+                v2__toast_class_name_param: 'alert-warning'
+              }
+            }
+              %i.fa.fa-plus.fa-fw
+              = t 'vehicle_usage_sets.index.new'
+          - else
+            = link_to new_vehicle_usage_set_path, class: 'btn btn-primary', disabled: !can_create_vehicle_usage, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+              %i.fa.fa-plus.fa-fw
+              = t 'vehicle_usage_sets.index.new'
           %button{
             type: 'button',
             class: "btn btn-danger #{invisible_class}",
@@ -35,15 +49,7 @@
           }
             %i.fa.fa-trash.fa-fw
             = t('all.verb.destroy_selection')
-      .d-flex.gap-2.align-items-center
-        #count.primary.data-info{title: t('vehicle_usage_sets.index.vehicle_usage_sets_count_help')}
-          %i.fa.fa-bars-staggered.fa-fw{"aria-hidden": "true"}
-          = sets_count
-          = t 'activerecord.models.vehicle_usage_sets', count: sets_count
-        .primary.data-info{title: t('vehicle_usage_sets.index.vehicles_count_help')}
-          %i.fa.fa-truck-field.fa-fw{"aria-hidden": "true"}
-          = vehicles_count
-          = t 'activerecord.models.vehicles', count: vehicles_count
+      = render 'v2/vehicle_usage_sets/counts', sets_count: sets_count, vehicles_count: vehicles_count
   = form_tag vehicle_usage_sets_path, method: :delete, id: 'vehicle-usage-sets-destroy' do
     %table#accordion-vehicle-usage-sets.table.table-hover.table-sm.vehicle-usage-sets-table.mb-0
       %thead

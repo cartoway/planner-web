@@ -332,6 +332,38 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
         patch :duplicate, params: { vehicle_usage_set_id: @vehicle_usage_set }
       end
     end
+    assert_equal I18n.t('vehicle_usage_sets.index.over_max_limit', limit: customer.default_max_vehicle_usage_sets), flash.now[:alert]
+  end
+
+  test 'v2 duplicate at limit shows a toast warning via turbo stream' do
+    enable_layout_v2!
+    customer = @vehicle_usage_set.customer
+    customer.update!(max_vehicle_usage_sets: customer.vehicle_usage_sets.size)
+    message = I18n.t('vehicle_usage_sets.index.over_max_limit', limit: customer.default_max_vehicle_usage_sets)
+
+    assert_no_difference('VehicleUsageSet.count') do
+      patch :duplicate, params: { vehicle_usage_set_id: @vehicle_usage_set }, as: :turbo_stream
+    end
+
+    assert_response :unprocessable_entity
+    assert_equal 'text/vnd.turbo-stream.html', response.media_type
+    assert_select "turbo-stream[action='append'][target='v2-toast-stack']", 1
+    assert_includes response.body, message
+  end
+
+  test 'v2 index new button at limit triggers a toast instead of opening the sidebar' do
+    enable_layout_v2!
+    customer = @vehicle_usage_set.customer
+    customer.update!(max_vehicle_usage_sets: customer.vehicle_usage_sets.size)
+    message = I18n.t('vehicle_usage_sets.index.over_max_limit', limit: customer.default_max_vehicle_usage_sets)
+
+    get :index
+
+    assert_response :success
+    assert_select 'a[href=?][data-turbo-frame=form_sidebar]', new_vehicle_usage_set_path, 0
+    assert_select 'button.btn-primary[data-controller~="v2--toast"][data-action~="click->v2--toast#notify"]', 1
+    assert_select 'button.btn-primary[data-v2--toast-class-name-param=alert-warning]', 1
+    assert_includes response.body, message
   end
 
   test 'v2 duplicate appends the set block via turbo stream' do
@@ -343,6 +375,7 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_response :success
     assert_equal 'text/vnd.turbo-stream.html', response.media_type
     assert_select "turbo-stream[action='append'][target='accordion-vehicle-usage-sets']", 1
+    assert_select "turbo-stream[action='replace'][target='vehicle-usage-sets-counts']", 1
     assert_includes response.body, ActionView::RecordIdentifier.dom_id(duplicated)
   end
 
@@ -360,7 +393,18 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select "turbo-stream[action='replace'][target='#{ActionView::RecordIdentifier.dom_id(original)}']", 1
     assert_select "turbo-stream[action='append'][target='accordion-vehicle-usage-sets']", 1
+    assert_select "turbo-stream[action='replace'][target='vehicle-usage-sets-counts']", 1
     assert_select "turbo-stream[action='replace'] button.usage-set-toggle[data-bs-target='#collapseUsageSet#{original.id}']", 1
+  end
+
+  test 'v2 destroy removes the set and refreshes counts via turbo stream' do
+    enable_layout_v2!
+    assert_difference('VehicleUsageSet.count', -1) do
+      delete :destroy, params: { id: @vehicle_usage_set }, as: :turbo_stream
+    end
+    assert_response :success
+    assert_select "turbo-stream[action='remove'][target='#{ActionView::RecordIdentifier.dom_id(@vehicle_usage_set)}']", 1
+    assert_select "turbo-stream[action='replace'][target='vehicle-usage-sets-counts']", 1
   end
 
   test 'should reorder vehicle usages' do

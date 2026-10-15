@@ -207,14 +207,22 @@ class ApplicationController < ActionController::Base
   def over_max_limit
     yield
   rescue Exceptions::OverMaxLimitError
+    message = I18n.t("activerecord.errors.models.customer.attributes.#{controller_name}.over_max_limit")
     respond_to do |format|
-      flash.now[:alert] = I18n.t("activerecord.errors.models.customer.attributes.#{controller_name}.over_max_limit")
-      if action_name == 'create'
-        format.html { render action: 'new' }
-      elsif action_name.start_with? 'upload'
-        format.html { render action: 'import' }
-      else
-        format.html { render action: 'index' }
+      format.html do
+        flash.now[:alert] = message
+        if action_name == 'create'
+          render action: 'new'
+        elsif action_name.start_with? 'upload'
+          render action: 'import'
+        else
+          render action: 'index'
+        end
+      end
+      # Turbo Drive/stream requests must not fall through without a body ("Content missing").
+      format.turbo_stream do
+        flash[:alert] = message
+        redirect_to url_for(action: :index), status: :see_other
       end
     end
   end
