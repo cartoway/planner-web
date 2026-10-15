@@ -48,7 +48,7 @@ class DeliverableUnitsController < ApplicationController
       DeliverableUnit.transaction do
         @deliverable_unit = current_user.customer.deliverable_units.build(deliverable_unit_params)
         if current_user.customer.save
-          format.turbo_stream { render_streams(deliverable_unit_append_stream) }
+          format.turbo_stream { render_streams(deliverable_unit_append_stream, deliverable_units_counts_stream) }
           format.html do
             if sidebar_submit?
               render_close_sidebar
@@ -98,7 +98,7 @@ class DeliverableUnitsController < ApplicationController
     destroyed = @deliverable_unit && current_user.customer.deliverable_units.delete(@deliverable_unit) && current_user.customer.save
     respond_to do |format|
       if destroyed
-        format.turbo_stream { render_streams(stream_remove(@deliverable_unit), close_sidebar: false) }
+        format.turbo_stream { render_streams(stream_remove(@deliverable_unit), deliverable_units_counts_stream, close_sidebar: false) }
       end
       format.html { redirect_to deliverable_units_url, status: :see_other }
     end
@@ -132,6 +132,15 @@ class DeliverableUnitsController < ApplicationController
 
   def deliverable_unit_append_stream
     stream_append('deliverable-units-list', partial: 'v2/deliverable_units/list_row', locals: deliverable_unit_row_locals)
+  end
+
+  def deliverable_units_counts_stream
+    stream_index_count(
+      count: current_user.customer.deliverable_units.count,
+      help: I18n.t('deliverable_units.index.deliverable_units_count_help'),
+      model_key: 'activerecord.models.deliverable_units',
+      nowrap: true
+    )
   end
 
   # Use callbacks to share common setup or constraints between actions.

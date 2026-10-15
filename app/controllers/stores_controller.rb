@@ -140,7 +140,22 @@ class StoresController < ApplicationController
   def destroy
     respond_to do |format|
       if @store.destroy
-        # Full index reload (303) so the map pins stay in sync with the list.
+        format.turbo_stream do
+          if layout_v2?
+            render_streams(
+              stream_remove(@store),
+              stream_index_count(
+                count: current_user.customer.stores.count,
+                help: I18n.t('stores.index.stores_count_help'),
+                model_key: 'activerecord.models.stores'
+              ),
+              close_sidebar: false
+            )
+          else
+            head :ok
+          end
+        end
+        # 303 so Turbo GETs the index (302 would re-DELETE).
         format.html { redirect_to stores_url, status: :see_other }
       else
         format.html { redirect_to stores_path, status: :see_other }

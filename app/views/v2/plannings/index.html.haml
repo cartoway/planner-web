@@ -8,7 +8,7 @@
 - callback_usable = toolbar_operation_usable?(:planning, 'external_callback')
 - dashboard_visible = toolbar_operation_visible?(:planning, 'planning_dashboard')
 - dashboard_usable = toolbar_operation_usable?(:planning, 'planning_dashboard')
-.plannings-index{data: { controller: 'v2--table-filter v2--table-selection v2--plannings-index', action: 'turbo:after-stream-render@document->v2--table-filter#filter turbo:after-stream-render@document->v2--table-selection#syncBulk', v2__plannings_index_none_selected_value: t('plannings.index.export.none_planning'), v2__plannings_index_compare_need_selection_value: t('plannings.compare.need_selection'), v2__plannings_index_email_success_value: t('plannings.edit.export.icalendar.success'), v2__plannings_index_email_fail_value: t('plannings.edit.export.icalendar.fail'), v2__plannings_index_callback_url_value: external_callback_customer_path(@customer), v2__plannings_index_api_key_value: current_user.api_key, v2__plannings_index_callback_success_value: t('plannings.edit.export.customer_external_callback_url.success'), v2__plannings_index_callback_fail_value: t('plannings.edit.export.customer_external_callback_url.fail') }}
+.plannings-index{data: { controller: 'v2--table-filter v2--table-selection v2--plannings-index', v2__plannings_index_none_selected_value: t('plannings.index.export.none_planning'), v2__plannings_index_compare_need_selection_value: t('plannings.compare.need_selection'), v2__plannings_index_email_success_value: t('plannings.edit.export.icalendar.success'), v2__plannings_index_email_fail_value: t('plannings.edit.export.icalendar.fail'), v2__plannings_index_callback_url_value: external_callback_customer_path(@customer), v2__plannings_index_api_key_value: current_user.api_key, v2__plannings_index_callback_success_value: t('plannings.edit.export.customer_external_callback_url.success'), v2__plannings_index_callback_fail_value: t('plannings.edit.export.customer_external_callback_url.fail') }}
   .plannings-toolbar.px-3.pt-3
     - if current_user.customer.too_many_plannings?
       .alert.alert-warning{data: { error: 'true' }}
@@ -32,10 +32,7 @@
           = t('all.verb.destroy_selection')
       .d-flex.gap-2.align-items-center
         = text_field_tag :plannings_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control form-control-sm', data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
-        #count.primary.data-info{title: t('plannings.index.plannings_count_help')}
-          %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
-          %span{data: { v2__table_filter_target: 'count' }}= @plannings.size
-          = t('activerecord.models.plannings', count: @plannings.size)
+        = render 'v2/shared/index_count', count: @plannings.size, help: t('plannings.index.plannings_count_help'), model_key: 'activerecord.models.plannings'
   = form_tag plannings_path, method: :delete, id: 'plannings-destroy', data: { turbo_frame: '_top' } do
     %table#plannings.table.table-striped.table-hover.table-sm.mb-0
       %thead
