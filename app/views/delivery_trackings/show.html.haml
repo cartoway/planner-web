@@ -11,9 +11,6 @@
         %span.delivery-tracking-shipper= @view.shipper_name
         %span.delivery-tracking-tagline= t('delivery_trackings.show.title')
 
-  - if @current&.ref.present?
-    .delivery-tracking-ref= t('delivery_trackings.show.order_ref', ref: @current.ref)
-
   - if @current
     %span.delivery-tracking-chip{class: "is-#{@current.chip_key}"}= @current.chip
 
