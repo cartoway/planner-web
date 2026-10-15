@@ -24,8 +24,8 @@ module V2Layout
     ActiveModel::Type::Boolean.new.cast(params[:v2_sidebar]) || form_sidebar_request?
   end
 
-  def render_page(template)
-    render template, layout: 'v2/layouts/application'
+  def render_page(template, **options)
+    render template, { layout: 'v2/layouts/application' }.merge(options)
   end
 
   def render_close_sidebar
