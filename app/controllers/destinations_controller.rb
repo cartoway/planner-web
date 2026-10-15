@@ -116,10 +116,12 @@ class DestinationsController < ApplicationController
   end
 
   def new
-    @destination = current_user.customer.destinations.build
+    # Do not association.build: an unsaved destination on the association can leak into list queries/UI.
+    store = current_user.customer.stores.first
+    @destination = Destination.new(customer: current_user.customer)
     @destination.name = t('destinations.index.default_name')
-    @destination.postalcode = current_user.customer.stores[0].postalcode
-    @destination.city = current_user.customer.stores[0].city
+    @destination.postalcode = store&.postalcode
+    @destination.city = store&.city
     render_form_or_list('new_sidebar', 'v2/destinations/index', destinations_path) do
       @customer = current_user.customer
       load_destinations_index_page

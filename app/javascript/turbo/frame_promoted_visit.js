@@ -67,8 +67,8 @@ function restoreTrackedFrames (event) {
   if (event.type === 'popstate') {
     const restoredIds = loadTrackedFrameIdsForPage()
     if (restoredIds.length === 0 && !event.state?.turboFrameId && isV2Document()) {
-      // History left frame-promoted URLs but the v2 document is still painted (e.g. back to v1).
-      window.location.reload()
+      // Stay on the v2 shell: form_sidebar / #main own in-app history. A hard reload here
+      // raced sidebar back/forward and turned shareable /new URLs into error pages.
       return
     }
   }
