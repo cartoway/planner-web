@@ -23,9 +23,10 @@
         }
           %i.fa.fa-trash.fa-fw
           = t('all.verb.destroy_selection')
-      .d-flex.gap-2.align-items-center
-        = text_field_tag :deliverable_units_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control form-control-sm', data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
-        %span
+      .d-flex.gap-2.align-items-center.flex-shrink-0
+        = text_field_tag :deliverable_units_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control form-control-sm deliverable-units-filter', data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
+        #count.primary.data-info.text-nowrap{title: t('deliverable_units.index.deliverable_units_count_help')}
+          %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
           %span{data: { v2__table_filter_target: 'count' }}= @deliverable_units.count
           = t 'activerecord.models.deliverable_units', count: @deliverable_units.count
   = form_tag deliverable_units_path, method: :delete, id: 'deliverable-units-destroy' do
