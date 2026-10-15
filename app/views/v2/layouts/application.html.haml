@@ -4,7 +4,9 @@
   %head
     %meta{content: "text/html; charset=UTF-8", "http-equiv": "Content-Type"}/
     = render partial: 'v2/layouts/head'
-  %body.cartoway-v2{"data-controller": "#{controller.controller_path.gsub('/', '_')} #{controller.controller_path.gsub('/', '-')}-v2", "data-action": "#{controller.action_name}"}
+  - v2_body_controller = "#{controller.controller_path.tr('/', '_')} #{controller.controller_path.tr('/', '-')}-v2"
+  - v2_body_action = controller.action_name
+  %body.cartoway-v2{"data-controller": v2_body_controller, "data-action": v2_body_action}
     #wrapper{data: { controller: 'menu-left' }}
       .menu-left-backdrop.d-print-none{data: { action: 'click->menu-left#closeMobile' }, 'aria-hidden': 'true'}
       .menu-mobile-topbar.d-print-none
@@ -307,6 +309,8 @@
           %iframe{name: "click2call_iframe", style: "display: none"}
         .main-primary
           = turbo_frame_tag "main" do
+            -# Marker for lib/v2_body_page.js: Turbo only swaps #main, so body attrs must be re-synced.
+            %div{hidden: true, "aria-hidden": true, data: { v2_body_page: true, v2_body_controller: v2_body_controller, v2_body_action: v2_body_action }}
             = yield
         %aside.form-sidebar.slide-panel.slide-panel--from-right.form-sidebar--collapsed.slide-panel--collapsed.d-print-none{ role: 'complementary', 'aria-label': t('v2.layout.form_sidebar_aria'), data: { controller: 'v2--form-sidebar', 'v2--form-sidebar-list-url-value': (@form_sidebar_list_url.presence || request.fullpath) } }
           .form-sidebar-chrome.d-none{ data: { 'v2--form-sidebar-target': 'chrome' } }
