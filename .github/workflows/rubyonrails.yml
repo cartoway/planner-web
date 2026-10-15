@@ -192,6 +192,7 @@ jobs:
         uses: cartoway/docker-compose-build-push-action@main
         with:
           registry_password: ${{ secrets.GITHUB_TOKEN }}
+          project: cartoway/planner-web
           service: web
 
   docker-superset:
@@ -212,6 +213,7 @@ jobs:
         uses: cartoway/docker-compose-build-push-action@main
         with:
           registry_password: ${{ secrets.GITHUB_TOKEN }}
+          project: cartoway/planner-web-superset
           compose_file: |
             docker-compose.yml
             docker-compose-superset.yml
@@ -235,6 +237,7 @@ jobs:
         uses: cartoway/docker-compose-build-push-action@main
         with:
           registry_password: ${{ secrets.GITHUB_TOKEN }}
+          project: cartoway/planner-web-superset_nginx
           compose_file: |
             docker-compose.yml
             docker-compose-superset.yml
