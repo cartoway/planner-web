@@ -285,8 +285,19 @@ class StoresControllerTest < ActionController::TestCase
       post :upload_csv, params: { import_csv: { replace: false, file: file } }
     end
 
+    assert_response :unprocessable_entity
     assert_template :import
-    assert_valid response
+  end
+
+  test 'v2 upload_csv returns 422 with errors so Turbo can display them' do
+    enable_layout_v2!
+
+    assert_no_difference('Store.count') do
+      post :upload_csv, params: { import_csv: { replace: false } }
+    end
+
+    assert_response :unprocessable_entity
+    assert_select '.alert.alert-danger[data-error=true]', 1
   end
 
   test 'should display application layout on devise scope' do
