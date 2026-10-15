@@ -1511,4 +1511,24 @@ class PlanningTestError < ActiveSupport::TestCase
       assert_equal db_count, r.stops.count, "route #{r.id} association vs DB mismatch"
     end
   end
+
+  test 'quantities ignore out-of-route and stay empty without vehicle_usage routes' do
+    planning = plannings(:planning_one)
+    out_of_route = planning.routes.find { |route| !route.vehicle_usage? }
+    vehicle_route = planning.routes.find { |route| route.id == routes(:route_one_one).id }
+
+    out_of_route.route_data.update!(pickups: { 1 => 9 }, deliveries: { 1 => 9 })
+    vehicle_route.route_data.update!(pickups: {}, deliveries: {})
+    [out_of_route, vehicle_route].each { |route| route.association(:route_data).reload }
+
+    assert_empty planning.quantities
+
+    vehicle_route.route_data.update!(pickups: { 1 => 5 }, deliveries: { 1 => 10 })
+    vehicle_route.association(:route_data).reload
+
+    quantities = planning.quantities
+    assert_equal 1, quantities.size
+    assert_equal '5', quantities.first[:pickup]
+    assert_equal '10', quantities.first[:delivery]
+  end
 end
