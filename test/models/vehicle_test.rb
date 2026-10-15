@@ -213,6 +213,12 @@ class VehicleTest < ActiveSupport::TestCase
     assert vehicle.update! contact_email: ''
     assert vehicle.contact_email.nil?
     assert vehicle.valid?
+    assert vehicle.update!(contact_email: 'a@b.com, c@d.fr')
+    assert vehicle.update!(contact_email: 'a+d@b.com; c@d.fr')
+    assert_not vehicle.update(contact_email: 'not-an-email')
+    assert vehicle.errors[:contact_email].present?
+    assert_not vehicle.update(contact_email: "a@b.com\nBcc:evil@x.co")
+    assert vehicle.errors[:contact_email].present?
   end
 
   test 'should have tags' do

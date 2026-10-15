@@ -165,7 +165,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :detail, type: String, documentation: { desc: 'Address complement (floor, intercom).' }
     optional :comment, type: String, documentation: { desc: 'Free comment shown to the driver.' }
     optional :phone_number, type: String, documentation: { desc: 'Contact phone.' }
-    optional :email, type: String, documentation: { desc: 'Contact email.', example: 'client@example.com' }
+    optional :email, type: String, documentation: { desc: 'Contact email(s). Several addresses may be separated by spaces, commas or semicolons.', example: 'client@example.com' }
     optional :geocoding_accuracy, type: Float, documentation: { desc: 'Geocoding confidence in 0..1. Must be inside 0..1 range.' }
     optional :geocoding_level, type: String, values: ['point', 'house', 'street', 'intersection', 'city'], documentation: { desc: 'Precision of the geocoded position.' }
     optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', example: '1,2,ref:vip' }
