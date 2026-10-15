@@ -114,9 +114,9 @@ class User < ApplicationRecord
 
   def send_connection_email_on_save?
     return false if saved_change_to_id?
-    return true if saved_change_to_confirmed_at? && confirmed_at_before_last_save.nil?
 
-    confirmation_sent_at.nil? && confirmed_at.nil?
+    # Only on first confirmation — not on every save of an unconfirmed user
+    saved_change_to_confirmed_at? && confirmed_at_before_last_save.nil? && confirmed_at.present?
   end
 
   def set_default_time_zone
