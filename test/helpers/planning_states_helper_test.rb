@@ -135,4 +135,41 @@ class PlanningStatesHelperTest < ActionController::TestCase
     assert_not_includes order, 'speed'
     assert_not_includes order, 'quantities'
   end
+
+  test 'planning_compare_quantity_rows builds pickup and delivery rows across plannings' do
+    quantities_by_planning_id = {
+      1 => [{ id: 1, label: 'L', unit_icon: 'fa-cube', pickup: '5', delivery: '10', capacity: '12', has_pickup: true, has_delivery: true }],
+      2 => [{ id: 1, label: 'L', unit_icon: 'fa-cube', pickup: '0', delivery: '7', capacity: '12', has_pickup: false, has_delivery: true }]
+    }
+
+    rows = @helper_view.planning_compare_quantity_rows(quantities_by_planning_id)
+
+    assert_equal [{ unit_id: 1, kind: :pickup, label: 'L', unit_icon: 'fa-cube' },
+                  { unit_id: 1, kind: :delivery, label: 'L', unit_icon: 'fa-cube' }], rows
+    assert_equal "5/\u00A012", @helper_view.planning_compare_quantity_value(quantities_by_planning_id[1], 1, :pickup)
+    assert_equal "7/\u00A012", @helper_view.planning_compare_quantity_value(quantities_by_planning_id[2], 1, :delivery)
+    assert_equal '0', @helper_view.planning_compare_quantity_value(quantities_by_planning_id[2], 1, :pickup)
+  end
+
+  test 'planning compare metrics order starts with vehicles then stops and formats ratios' do
+    assert_equal %w[vehicles stops distance emission total_duration work_duration drive_time visits_duration rests_duration total_cost total_revenue balance],
+                 PlanningStatesHelper::PLANNING_COMPARE_METRICS.keys
+
+    stats = { 'vehicles_used' => 2, 'vehicles' => 5, 'stops_size_active' => 8, 'stops_size' => 10 }
+    assert_equal "2\u00A0/\u00A05", @helper_view.format_planning_state_stat_absolute(stats, PlanningStatesHelper::PLANNING_COMPARE_METRICS['vehicles'], prefered_unit: 'km')
+    assert_equal "8\u00A0/\u00A010", @helper_view.format_planning_state_stat_absolute(stats, PlanningStatesHelper::PLANNING_COMPARE_METRICS['stops'], prefered_unit: 'km')
+  end
+
+  test 'planning_compare_quantity_diff marks lower quantity as success' do
+    reference = [{ id: 1, label: 'L', unit_icon: 'fa-cube', pickup: '5', delivery: '10', pickup_raw: 5.0, delivery_raw: 10.0, has_pickup: true, has_delivery: true }]
+    compared = [{ id: 1, label: 'L', unit_icon: 'fa-cube', pickup: '2', delivery: '7', pickup_raw: 2.0, delivery_raw: 7.0, has_pickup: true, has_delivery: true }]
+
+    pickup_diff = @helper_view.planning_compare_quantity_diff(compared, reference, 1, :pickup)
+    delivery_diff = @helper_view.planning_compare_quantity_diff(compared, reference, 1, :delivery)
+
+    assert_equal 'text-success', pickup_diff[:css_class]
+    assert pickup_diff[:formatted].start_with?('−')
+    assert_equal 'text-success', delivery_diff[:css_class]
+    assert_nil @helper_view.planning_compare_quantity_diff(reference, reference, 1, :delivery)
+  end
 end

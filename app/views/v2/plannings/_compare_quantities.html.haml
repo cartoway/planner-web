@@ -1,0 +1,40 @@
+-# Copyright © Cartoway
+-# locals: plannings, quantities_by_planning_id, reference:
+-# Same stats as planning data_header quantities block: qty / capacity per unit
+- reference = local_assigns.fetch(:reference, plannings.first)
+- quantity_rows = planning_compare_quantity_rows(quantities_by_planning_id)
+- if quantity_rows.any?
+  .plannings-compare-quantities.mt-4
+    %button.plannings-compare-quantities__toggle.collapsed{type: 'button', data: { 'bs-toggle': 'collapse', 'bs-target': '#planningsCompareQuantities' }, 'aria-expanded': 'false', 'aria-controls': 'planningsCompareQuantities', title: t('plannings.edit.quantity_help')}
+      %i.fa.fa-chevron-right.fa-fw.plannings-compare-quantities__chevron{'aria-hidden': 'true'}
+      %span= t('plannings.compare.quantities')
+    .collapse#planningsCompareQuantities
+      .pt-3
+        .plannings-compare-board{style: "--compare-metric-rows: #{quantity_rows.size}"}
+          .plannings-compare-col.plannings-compare-col--metrics
+            .plannings-compare-col__head
+              %span.plannings-compare-col__title= t('plannings.edit.quantity_help')
+            - quantity_rows.each do |row|
+              .plannings-compare-metric-label
+                %i.fa.fa-fw{class: row[:unit_icon], 'aria-hidden': 'true'}
+                %span
+                  = row[:label]
+                  - if row[:kind] == :pickup
+                    %i.fa.fa-fw.fa-up-long{title: planning_compare_quantity_kind_label(:pickup)}
+                  - else
+                    %i.fa.fa-fw.fa-down-long{title: planning_compare_quantity_kind_label(:delivery)}
+          - plannings.each do |planning|
+            - is_reference = planning.id == reference.id
+            .plannings-compare-col{class: ('plannings-compare-col--reference' if is_reference)}
+              .plannings-compare-col__head
+                .plannings-compare-col__title= planning.name
+              - quantity_rows.each do |row|
+                - entry = planning_compare_quantity_entry(quantities_by_planning_id[planning.id], row[:unit_id], row[:kind])
+                - value = planning_compare_quantity_value(quantities_by_planning_id[planning.id], row[:unit_id], row[:kind])
+                - diff = is_reference ? nil : planning_compare_quantity_diff(quantities_by_planning_id[planning.id], quantities_by_planning_id[reference.id], row[:unit_id], row[:kind])
+                .plannings-compare-cell
+                  .plannings-compare-value{class: ('text-danger' if entry&.dig(:out_of_capacity))}= value
+                  - if diff.present?
+                    %span.stat-diff{class: diff[:css_class]}= diff[:formatted]
+                  - elsif !is_reference
+                    %span.stat-diff.stat-diff--equal= t('plannings.compare.equal')

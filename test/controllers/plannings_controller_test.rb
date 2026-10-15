@@ -102,6 +102,11 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_select '.plannings-compare-col--reference', 1
     assert_select 'input[name=compare_reference][checked]', 1
     assert_select 'input[name=compare_reference]', 2
+    # First metric rows: active routes / vehicles, then active stops / total stops
+    metric_labels = css_select('.plannings-compare-col--metrics .plannings-compare-metric-label span').map(&:text)
+    assert_equal I18n.t('plannings.compare.metrics.vehicles'), metric_labels.first
+    assert_equal I18n.t('display_ui.header_blocks.stops'), metric_labels.second
+    assert_match(%r{\d+\u00A0/\u00A0\d+}, css_select('.plannings-compare-col--reference .plannings-compare-value').first.text)
   end
 
   test 'compare honors the selected reference planning' do
@@ -112,6 +117,34 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal other.id, assigns(:reference).id
     assert_select %(input[name=compare_reference][value="#{other.id}"][checked]), 1
     assert_select '.plannings-compare-col--reference .plannings-compare-col__title', text: other.name
+  end
+
+  test 'compare shows collapsed quantities accordion with qty over capacity like data_header' do
+    enable_layout_v2!
+    other = plannings(:planning_two)
+    routes(:route_one_one).route_data.update!(pickups: { 1 => 5 }, deliveries: { 1 => 10 })
+    routes(:route_one_two).route_data.update!(pickups: { 1 => 2 }, deliveries: { 1 => 7 })
+
+    get :compare, params: { ids: "#{@planning.id},#{other.id}" }
+    assert_response :success
+    assert_select '.plannings-compare-quantities', 1
+    assert_select 'button.plannings-compare-quantities__toggle.collapsed[aria-expanded=false]', 1
+    assert_select '#planningsCompareQuantities.collapse:not(.show)', 1
+    # vehicle_one capacity 1 × (1 + max_reload) → "10/ 2" and "7/ 2" (same format as data_header)
+    assert_includes response.body, "10/\u00A02"
+    assert_includes response.body, "7/\u00A02"
+    assert_select '.plannings-compare-quantities .stat-diff.text-success', minimum: 1
+  end
+
+  test 'compare quantities ignore out-of-route when no vehicle_usage routes have quantities' do
+    enable_layout_v2!
+    other = plannings(:planning_two)
+    routes(:route_zero_one).route_data.update!(pickups: { 1 => 9 }, deliveries: { 1 => 9 })
+    routes(:route_zero_two).route_data.update!(pickups: { 1 => 8 }, deliveries: { 1 => 8 })
+
+    get :compare, params: { ids: "#{@planning.id},#{other.id}" }
+    assert_response :success
+    assert_select '.plannings-compare-quantities', 0
   end
 
   test 'compare redirects when fewer than two plannings are selected' do

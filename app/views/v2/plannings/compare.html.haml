@@ -13,3 +13,4 @@
           %i.fa.fa-plus.fa-fw
           = t('plannings.compare.add')
   = render 'v2/plannings/compare_table', plannings: @plannings, reference: @reference, statistics_by_planning_id: @statistics_by_planning_id, prefered_unit: @prefered_unit, can_remove: @plannings.size > 2
+  = render 'v2/plannings/compare_quantities', plannings: @plannings, reference: @reference, quantities_by_planning_id: @quantities_by_planning_id

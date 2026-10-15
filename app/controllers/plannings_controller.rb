@@ -73,7 +73,7 @@ class PlanningsController < ApplicationController
 
   def compare
     ids = params[:ids].to_s.split(',').map(&:presence).compact.map { |id| Integer(id, exception: false) }.compact
-    scoped = current_user.customer.plannings.where(id: ids).includes(routes: [:route_data, :vehicle_usage]).index_by(&:id)
+    scoped = current_user.customer.plannings.where(id: ids).includes(routes: [:route_data, { vehicle_usage: :vehicle }]).index_by(&:id)
     @plannings = ids.map { |id| scoped[id] }.compact
     if @plannings.size < 2
       redirect_to plannings_path, alert: t('plannings.compare.need_selection')
@@ -87,6 +87,9 @@ class PlanningsController < ApplicationController
     @prefered_unit = current_user.prefered_unit
     @statistics_by_planning_id = @plannings.each_with_object({}) { |planning, hash|
       hash[planning.id] = planning.route_data_statistics
+    }
+    @quantities_by_planning_id = @plannings.each_with_object({}) { |planning, hash|
+      hash[planning.id] = planning.quantities
     }
     compared_ids = @plannings.map(&:id)
     @available_plannings = current_user.customer.plannings.where.not(id: compared_ids).order(:name)
