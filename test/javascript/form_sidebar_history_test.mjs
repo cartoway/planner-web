@@ -9,7 +9,12 @@ import { pathToFileURL } from 'node:url'
 const src = new URL('../../app/javascript/lib/form_sidebar_history.js', import.meta.url)
 const tmp = path.join(os.tmpdir(), 'planner-form-sidebar-history.mjs')
 fs.writeFileSync(tmp, fs.readFileSync(src))
-const { formSidebarAdoptMainNavigation, formSidebarHistoryUpdate, formSidebarPageKey } = await import(pathToFileURL(tmp).href)
+const {
+  formSidebarAdoptMainNavigation,
+  formSidebarHistoryUpdate,
+  formSidebarPageKey,
+  formSidebarShouldGoBackOnClose
+} = await import(pathToFileURL(tmp).href)
 
 describe('form sidebar history', () => {
   it('pushes the form url when the sidebar opens from the list', () => {
@@ -32,14 +37,20 @@ describe('form sidebar history', () => {
     assert.equal(update, null)
   })
 
-  it('restores the list url when the form closes', () => {
+  it('replaces the address bar with the list url when the form closes without history.back', () => {
     const update = formSidebarHistoryUpdate({
       currentHref: 'http://example.test/destinations/42/edit',
       frameSrc: null,
       listUrl: '/destinations?page=2',
       hasForm: false
     })
-    assert.deepEqual(update, { type: 'push', url: '/destinations?page=2', formSidebar: false })
+    assert.deepEqual(update, { type: 'replace', url: '/destinations?page=2', formSidebar: false })
+  })
+
+  it('goes back on close when the current history entry is a form-sidebar push', () => {
+    assert.equal(formSidebarShouldGoBackOnClose({ formSidebar: true }), true)
+    assert.equal(formSidebarShouldGoBackOnClose({ formSidebar: false }), false)
+    assert.equal(formSidebarShouldGoBackOnClose(null), false)
   })
 
   it('ignores history updates triggered by popstate', () => {

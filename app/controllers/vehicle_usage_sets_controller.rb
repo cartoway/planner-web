@@ -48,9 +48,11 @@ class VehicleUsageSetsController < ApplicationController
   end
 
   def new
-    @vehicle_usage_set = current_user.customer.vehicle_usage_sets.build
-    @vehicle_usage_set.store_start = current_user.customer.stores[0]
-    @vehicle_usage_set.store_stop = current_user.customer.stores[0]
+    # Do not association.build: the unsaved record would appear in the index list and break edit_path(id: nil).
+    store = current_user.customer.stores.first
+    @vehicle_usage_set = VehicleUsageSet.new(customer: current_user.customer)
+    @vehicle_usage_set.store_start = store
+    @vehicle_usage_set.store_stop = store
     render_form_or_list('new_sidebar', 'v2/vehicle_usage_sets/index', vehicle_usage_sets_path) { load_vehicle_usage_sets_index_page }
   end
 

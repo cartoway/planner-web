@@ -66,9 +66,11 @@ class StoresController < ApplicationController
   end
 
   def new
-    @store = current_user.customer.stores.build
-    @store.postalcode = current_user.customer.stores[0].postalcode
-    @store.city = current_user.customer.stores[0].city
+    # Do not association.build: the unsaved record would appear in the index list and break edit_path(id: nil).
+    template = current_user.customer.stores.first
+    @store = Store.new(customer: current_user.customer)
+    @store.postalcode = template&.postalcode
+    @store.city = template&.city
     render_form_or_list('new_sidebar', 'v2/stores/index', stores_path) { load_stores_index_page }
   end
 
