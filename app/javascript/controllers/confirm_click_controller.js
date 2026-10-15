@@ -3,7 +3,8 @@
 // - Default: dispatches `confirm-click:confirmed` (bubbles) on the second valid click.
 // - Optional url / form values: show a spinner and DELETE (or submit the form) instead.
 import { Controller } from '@hotwired/stimulus'
-import { renderStreamMessage, visit } from '@hotwired/turbo'
+import { renderStreamMessage } from '@hotwired/turbo'
+import { visit } from 'turbo/frame_promoted_visit'
 
 const ARMED_CLASS = 'confirm-click-armed'
 const PENDING_CLASS = 'confirm-click-pending'
@@ -154,7 +155,9 @@ export default class extends Controller {
     if (res.status === 303 || res.status === 302) {
       const location = res.headers.get('Location')
       if (location) {
-        visit(location)
+        // Same-URL Drive visits are no-ops; reload #main on v2 indexes instead.
+        const options = document.body?.classList?.contains('cartoway-v2') ? { frame: 'main' } : {}
+        visit(location, options)
         return
       }
     }

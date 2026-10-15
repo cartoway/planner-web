@@ -25,10 +25,7 @@
           = t('all.verb.destroy_selection')
       .d-flex.gap-2.align-items-center.flex-shrink-0
         = text_field_tag :deliverable_units_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control form-control-sm deliverable-units-filter', data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
-        #count.primary.data-info.text-nowrap{title: t('deliverable_units.index.deliverable_units_count_help')}
-          %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
-          %span{data: { v2__table_filter_target: 'count' }}= @deliverable_units.count
-          = t 'activerecord.models.deliverable_units', count: @deliverable_units.count
+        = render 'v2/shared/index_count', count: @deliverable_units.count, help: t('deliverable_units.index.deliverable_units_count_help'), model_key: 'activerecord.models.deliverable_units', nowrap: true
   = form_tag deliverable_units_path, method: :delete, id: 'deliverable-units-destroy' do
     %table#deliverable-units.table.table-striped.table-hover.table-sm.deliverable-units-table.mb-0
       %thead

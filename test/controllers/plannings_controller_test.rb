@@ -1114,6 +1114,7 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal 'text/vnd.turbo-stream.html', response.media_type
     assert_select "turbo-stream[action='remove'][target='#{planning_dom_id}']", 1
     assert_select "turbo-stream[action='remove'][target='#{menu_dom_id}']", 1
+    assert_select "turbo-stream[action='replace'][target='count']", 1
   end
 
   test 'should destroy multiple planning' do

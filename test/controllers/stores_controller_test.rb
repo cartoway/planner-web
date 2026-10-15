@@ -209,6 +209,17 @@ class StoresControllerTest < ActionController::TestCase
     assert_redirected_to stores_path
   end
 
+  test 'v2 destroy removes the store row and refreshes the count via turbo stream' do
+    enable_layout_v2!
+    assert_difference('Store.count', -1) do
+      delete :destroy, params: { id: @store }, as: :turbo_stream
+    end
+    assert_response :success
+    assert_equal 'text/vnd.turbo-stream.html', response.media_type
+    assert_select "turbo-stream[action='remove'][target='#{ActionView::RecordIdentifier.dom_id(@store)}']", 1
+    assert_select "turbo-stream[action='replace'][target='count']", 1
+  end
+
   test 'should destroy multiple stores' do
     assert_difference('Store.count', -2) do
       delete :destroy_multiple, params: { stores: { stores(:store_one).id => 1, stores(:store_one_bis).id => 1 } }

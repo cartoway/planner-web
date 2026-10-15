@@ -5,10 +5,7 @@
   .px-3
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
       %h1.h3.mb-0= t('operations.index.title')
-      #count.primary.data-info{title: t('operations.index.operations_count_help')}
-        %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
-        = @operations.size
-        = t('activerecord.models.operations', count: @operations.size)
+      = render 'v2/shared/index_count', count: @operations.size, help: t('operations.index.operations_count_help'), model_key: 'activerecord.models.operations', filterable: false
     = render 'v2/shared/list_filters', url: operations_path, q: params[:q], date: params[:date], status: params[:status], search_placeholder: t('operations.index.search_placeholder'), chips: filter_chips
   .operations-index-cards.px-3.pb-3
     - if @operations.empty?
