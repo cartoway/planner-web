@@ -147,6 +147,19 @@
 }
 
 .deliverable-units-index {
+  .deliverable-units-toolbar {
+    .deliverable-units-filter {
+      width: 10rem;
+      max-width: 10rem;
+      flex-shrink: 0;
+    }
+
+    #count.data-info {
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+  }
+
   .deliverable-units-table {
     width: 100%;
 

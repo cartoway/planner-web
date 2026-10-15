@@ -773,7 +773,7 @@ tr.is-past { color: #6b7280; }
   .operations-index-cards {
     display: grid;
     grid-template-columns: minmax(16rem, 1.5fr) minmax(14rem, 1fr) max-content;
-    gap: .75rem;
+    gap: .5rem;
   }
 
   .operations-index-card-empty {
