@@ -190,4 +190,15 @@ class DestinationTest < ActiveSupport::TestCase
     destination.save!
     assert outdated_called, 'La méthode outdated doit être appelée lors du changement de duration'
   end
+
+  test 'should validate email list format' do
+    destination = destinations(:destination_one)
+    assert destination.update!(email: '')
+    assert_nil destination.email
+    assert destination.update!(email: 'a@b.com, c@d.fr')
+    assert_not destination.update(email: 'not-an-email')
+    assert destination.errors[:email].present?
+    assert_not destination.update(email: '"><img@x.co')
+    assert destination.errors[:email].present?
+  end
 end

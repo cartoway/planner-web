@@ -1850,7 +1850,7 @@ fr:
       phone_number: téléphone
       phone_number_desc: numéro de téléphone du client à contacter.
       email: email
-      email_desc: adresse e-mail du client à contacter.
+      email_desc: adresse e-mail du client à contacter. Plusieurs adresses peuvent être séparées par des espaces, des virgules ou des points-virgules.
       tags: catégories
       tags_desc: catégories du client (permettant par exemple de les grouper).
       tags_format: 'catégorie 1,catégorie 2'
@@ -3166,7 +3166,7 @@ fr:
       name_vehicle: nom véhicule
       name_desc: nom du véhicule
       contact_email: email
-      contact_email_desc: email du terminal du chauffeur
+      contact_email_desc: email du terminal du chauffeur. Plusieurs adresses peuvent être séparées par des espaces, des virgules ou des points-virgules.
       phone_number: numéro de téléphone
       phone_number_desc: numéro de téléphone du chauffeur
       cost_distance: coût au kilomètre

@@ -12,7 +12,7 @@ class DestinationMailer < ApplicationMailer
     @shipper_name = customer.company_name.presence || customer.name
     @logo_url = inline_company_logo_url(customer)
     I18n.with_locale(locale.presence || I18n.locale) do
-      mail to: email.split(/\s*,\s*|\s*;\s*|\s+/),
+      mail to: EmailListFormat.split(email),
            subject: t('destination_mailer.delivery_tracking.subject', shipper: @shipper_name)
     end
   end
