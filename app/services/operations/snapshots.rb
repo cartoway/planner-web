@@ -337,6 +337,17 @@ module Operations
       clock = I18n.l(at, format: :hour_minute)
       at.to_date == date.to_date ? clock : "#{I18n.l(at.to_date)} #{clock}"
     end
+
+    # Hour:minute on the operation day; otherwise date (datepicker) then clock.
+    def clock_on_operation_day(time, operation_date)
+      return if time.blank?
+
+      clock = I18n.l(time, format: :hour_minute)
+      return clock if operation_date.blank?
+      return clock if time.to_date == operation_date.to_date
+
+      "#{I18n.l(time.to_date, format: :datepicker)} #{clock}"
+    end
   end
   # rubocop:enable Metrics/ModuleLength
 end
