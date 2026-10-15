@@ -3723,7 +3723,9 @@ export const plannings_edit = function(params) {
     backgroundTask();
 
     // Optim poll may return only route_ids subset — keep the full in-memory routes for popups/move.
-    var polledRouteSubset = !!(data.dispatch_params_delayed_job && data.dispatch_params_delayed_job.route_ids && routes && routes.length);
+    // Require .route nodes already in the DOM: opening edit mid-optim (e.g. API-started) never
+    // called initPlanningDisplay, so a partial refresh would no-op with an empty sidebar.
+    var polledRouteSubset = !!(data.dispatch_params_delayed_job && data.dispatch_params_delayed_job.route_ids && routes && routes.length && displayed_routes.length);
 
     // 1st case: the whole planning needs to be initialized and displayed
     if ((typeof options !== 'object' || !options.partial) && !polledRouteSubset) {
