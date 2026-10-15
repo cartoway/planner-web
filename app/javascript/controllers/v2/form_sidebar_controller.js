@@ -6,7 +6,8 @@ import { visit } from "turbo/frame_promoted_visit"
 import {
   formSidebarAdoptMainNavigation,
   formSidebarHistoryUpdate,
-  formSidebarPageKey
+  formSidebarPageKey,
+  formSidebarShouldGoBackOnClose
 } from "lib/form_sidebar_history"
 
 export default class extends Controller {
@@ -115,12 +116,18 @@ export default class extends Controller {
     if (event) event.preventDefault()
     this.replaceFrameWithPlaceholder()
     this.refreshState()
-    this.syncHistory()
     this._skipNextFrameHistory = true
+    this._listUrlWhileFormOpen = null
     // Not a Turbo navigation — notify listeners (e.g. destinations index position-drag teardown).
     const frame = this.frameEl()
     if (frame) {
       frame.dispatchEvent(new CustomEvent("turbo:frame-load", { bubbles: true }))
+    }
+    // Pop the form URL when we pushed it; otherwise replace the address bar with the list.
+    if (formSidebarShouldGoBackOnClose(window.history.state)) {
+      window.history.back()
+    } else {
+      this.syncHistory()
     }
   }
 
