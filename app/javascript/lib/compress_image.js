@@ -2,8 +2,8 @@
 // Shrink mobile stop photos before upload (server caps size / content-type).
 // iPhone gallery often yields HEIC/HEIF; Safari can decode → we re-encode as JPEG.
 
-export const PHOTO_MAX_EDGE = 1920
-export const PHOTO_JPEG_QUALITY = 0.8
+export const PHOTO_MAX_EDGE = 1280
+export const PHOTO_JPEG_QUALITY = 0.72
 // Keep original when already small enough that recompress rarely helps.
 export const PHOTO_SKIP_BELOW_BYTES = 350 * 1024
 const IMAGE_NAME_RE = /\.(jpe?g|png|webp|gif|heic|heif)$/i
@@ -65,20 +65,48 @@ function loadViaImageElement (file) {
   })
 }
 
-async function loadBitmap (file) {
-  if (typeof createImageBitmap === 'function') {
+// Downscale during decode when the engine supports it (avoids a full-res bitmap).
+// Portrait-first: resizeHeight, then clamp width if still too wide (landscape).
+async function loadScaledBitmap (file, maxEdge) {
+  if (typeof createImageBitmap !== 'function') {
+    return loadViaImageElement(file)
+  }
+
+  const base = { imageOrientation: 'from-image', resizeQuality: 'low' }
+  let bitmap
+  try {
+    bitmap = await createImageBitmap(file, { ...base, resizeHeight: maxEdge })
+  } catch (_orientedResize) {
     try {
-      // Honour EXIF orientation from iPhone JPEGs when the engine supports it.
-      return await createImageBitmap(file, { imageOrientation: 'from-image' })
-    } catch (_oriented) {
+      bitmap = await createImageBitmap(file, { resizeHeight: maxEdge, resizeQuality: 'low' })
+    } catch (_resize) {
       try {
-        return await createImageBitmap(file)
-      } catch (_plain) {
-        // Fall through: some HEIC builds decode via <img> only.
+        bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' })
+      } catch (_oriented) {
+        try {
+          bitmap = await createImageBitmap(file)
+        } catch (_plain) {
+          return loadViaImageElement(file)
+        }
       }
     }
   }
-  return loadViaImageElement(file)
+
+  if (bitmap.width > maxEdge) {
+    const sized = scaleToMaxEdge(bitmap.width, bitmap.height, maxEdge)
+    try {
+      const clamped = await createImageBitmap(bitmap, {
+        resizeWidth: sized.width,
+        resizeHeight: sized.height,
+        resizeQuality: 'low'
+      })
+      if (bitmap.close) bitmap.close()
+      return clamped
+    } catch (_clamp) {
+      // Keep the first bitmap; drawImage will scale it.
+    }
+  }
+  return bitmap
 }
 
 export async function compressImage (file, {
@@ -91,7 +119,7 @@ export async function compressImage (file, {
   if (file.type === 'image/jpeg' && file.size > 0 && file.size <= skipBelowBytes) return file
 
   try {
-    const bitmap = await loadBitmap(file)
+    const bitmap = await loadScaledBitmap(file, maxEdge)
     const sized = scaleToMaxEdge(bitmap.width, bitmap.height, maxEdge)
     if (!sized.width || !sized.height) {
       if (bitmap.close) bitmap.close()
@@ -101,7 +129,7 @@ export async function compressImage (file, {
     const canvas = document.createElement('canvas')
     canvas.width = sized.width
     canvas.height = sized.height
-    const ctx = canvas.getContext('2d')
+    const ctx = canvas.getContext('2d', { alpha: false })
     if (!ctx) {
       if (bitmap.close) bitmap.close()
       return file
@@ -110,6 +138,9 @@ export async function compressImage (file, {
     if (bitmap.close) bitmap.close()
 
     const blob = await canvasToBlob(canvas, mime, quality)
+    // Drop canvas backing store ASAP on engines that keep it until GC.
+    canvas.width = 0
+    canvas.height = 0
     if (!blob || blob.size === 0) return file
     // Prefer original when compression did not shrink and type already matches.
     // Always keep JPEG conversion for HEIC/HEIF (or empty MIME) even if larger.
@@ -123,5 +154,12 @@ export async function compressImage (file, {
 }
 
 export function compressImages (files, options) {
-  return Promise.all(Array.from(files || []).map((file) => compressImage(file, options)))
+  // Serial on purpose: parallel full-size decodes thrash memory on phones.
+  return Array.from(files || []).reduce(
+    (chain, file) => chain.then(async (out) => {
+      out.push(await compressImage(file, options))
+      return out
+    }),
+    Promise.resolve([])
+  )
 }
