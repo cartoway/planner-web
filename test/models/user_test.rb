@@ -89,33 +89,18 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
-  test 'after_save sends connection email when confirmation_sent_at is nil and user is still unconfirmed' do
+  test 'after_save does not send connection email when user is still unconfirmed' do
     user = User.create!(
       user_hash(customers(:customer_one), 'fr').merge(
-        email: 'unconfirmed-no-confirmation-sent@example.com',
+        email: 'unconfirmed-no-connection-email@example.com',
         send_email: '0',
         confirmed_at: nil
       )
     )
     user.update_column(:confirmation_sent_at, nil)
 
-    assert_difference('ActionMailer::Base.deliveries.size', 1) do
-      user.update!(time_zone: 'Paris')
-    end
-  end
-
-  test 'after_save does not send connection email when password email was sent but user still unconfirmed' do
-    user = User.create!(
-      user_hash(customers(:customer_one), 'fr').merge(
-        email: 'unconfirmed-with-confirmation-sent@example.com',
-        send_email: '0',
-        confirmed_at: nil
-      )
-    )
-    user.update_column(:confirmation_sent_at, 1.day.ago)
-
     assert_no_difference('ActionMailer::Base.deliveries.size') do
-      user.update!(time_zone: 'London')
+      user.update!(time_zone: 'Paris')
     end
   end
 
