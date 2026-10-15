@@ -2148,6 +2148,9 @@ en:
       add_placeholder: Add a plan…
       remove: Remove from comparison
       help: Choose the reference, then compare the colored differences under each metric.
+      quantities: Quantities / Capacities
+      metrics:
+        vehicles: Routes
       need_selection: Please select at least two plans to compare
       v2_only: Plan comparison is available in the new interface
     edit:

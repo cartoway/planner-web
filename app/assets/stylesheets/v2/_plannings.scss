@@ -392,7 +392,7 @@ body[data-controller*='-v2'] {
 }
 
 .plannings-compare-board {
-  --compare-metric-rows: 13;
+  --compare-metric-rows: 12;
   align-items: stretch;
   column-gap: 0.75rem;
   display: grid;
@@ -513,4 +513,37 @@ body[data-controller*='-v2'] {
 .stat-diff--equal {
   color: var(--bs-secondary-color);
   font-weight: 500;
+}
+
+.plannings-compare-quantities {
+  border-top: 1px solid var(--bs-border-color);
+  padding-top: 1rem;
+}
+
+.plannings-compare-quantities__toggle {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--bs-body-color);
+  cursor: pointer;
+  display: inline-flex;
+  font-size: 0.95rem;
+  font-weight: 600;
+  gap: 0.35rem;
+  padding: 0;
+
+  &:hover,
+  &:focus {
+    color: $primary-color;
+  }
+
+  &:not(.collapsed) .plannings-compare-quantities__chevron {
+    transform: rotate(90deg);
+  }
+}
+
+.plannings-compare-quantities__chevron {
+  color: var(--bs-secondary-color);
+  line-height: 1;
+  transition: transform 0.15s ease;
 }

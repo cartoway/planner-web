@@ -92,12 +92,16 @@ module PlanningStateCapture
     work_duration_total = 0
     stops_size = 0
     stops_size_active = 0
+    vehicles = 0
+    vehicles_used = 0
 
     planning.routes.each do |route|
       distance_total += route.distance.to_f
       stops_size += route.stops_size.to_i
       next unless route.vehicle_usage
 
+      vehicles += 1
+      vehicles_used += 1 if route.size_active_destinations.positive?
       duration_total += route.total_duration.to_i
       work_duration_total += route.work_duration.to_i
       stops_size_active += route.size_active.to_i
@@ -110,8 +114,9 @@ module PlanningStateCapture
       'routes_wait_time' => averages_data[:routes_wait_time],
       'routes_visits_duration' => averages_data[:routes_visits_duration],
       'routes_rests_duration' => averages_data[:routes_rests_duration],
-      'vehicles_used' => averages_data[:vehicles_used],
-      'vehicles' => averages_data[:vehicles],
+      # Always keep vehicle counts (averages may be nil when no active tour)
+      'vehicles_used' => averages_data.fetch(:vehicles_used, vehicles_used),
+      'vehicles' => averages_data.fetch(:vehicles, vehicles),
       'distance_total' => distance_total,
       'routes_emission' => averages_data[:routes_emission],
       'duration_total' => duration_total,

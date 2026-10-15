@@ -3,11 +3,11 @@
 - reference = local_assigns.fetch(:reference, plannings.first)
 - can_remove = local_assigns.fetch(:can_remove, plannings.size > 2)
 - reference_stats = statistics_by_planning_id[reference.id]
-- metrics = PlanningStatesHelper::PLANNING_STATE_STAT_DIFF_METRICS
+- metrics = PlanningStatesHelper::PLANNING_COMPARE_METRICS
 - diffs_by_planning_id = {}
 - plannings.each do |planning|
   - next if planning.id == reference.id
-  - diffs_by_planning_id[planning.id] = planning_state_stat_diffs(statistics_by_planning_id[planning.id], reference_stats, prefered_unit: prefered_unit)
+  - diffs_by_planning_id[planning.id] = planning_state_stat_diffs(statistics_by_planning_id[planning.id], reference_stats, prefered_unit: prefered_unit, metrics: metrics)
 .plannings-compare-board{style: "--compare-metric-rows: #{metrics.size}"}
   .plannings-compare-col.plannings-compare-col--metrics
     .plannings-compare-col__head
