@@ -66,6 +66,21 @@ module V2Layout
     )
   end
 
+  def stream_index_count(count:, help:, model_key:, icon: 'fa-check-square', nowrap: false, filterable: true)
+    stream_replace(
+      'count',
+      partial: 'v2/shared/index_count',
+      locals: {
+        count: count,
+        help: help,
+        model_key: model_key,
+        icon: icon,
+        nowrap: nowrap,
+        filterable: filterable
+      }
+    )
+  end
+
   # Success path: clear frame contents (update, not replace — keep the same turbo-frame node) + list streams.
   # close_sidebar: nil => close when this was a sidebar form submit.
   def render_streams(*streams, close_sidebar: nil)

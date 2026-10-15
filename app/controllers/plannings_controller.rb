@@ -224,10 +224,18 @@ class PlanningsController < ApplicationController
     @planning.destroy
     respond_to do |format|
       format.turbo_stream do
-        render turbo_stream: [
+        streams = [
           turbo_stream.remove(@planning),
           turbo_stream.remove(helpers.dom_id(@planning, :menu))
         ]
+        if layout_v2?
+          streams << stream_index_count(
+            count: current_user.customer.plannings.count,
+            help: I18n.t('plannings.index.plannings_count_help'),
+            model_key: 'activerecord.models.plannings'
+          )
+        end
+        render turbo_stream: streams
       end
       format.html { redirect_to plannings_url }
     end

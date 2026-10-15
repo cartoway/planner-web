@@ -93,8 +93,19 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     assert_equal 'text/vnd.turbo-stream.html', response.media_type
     assert_select "turbo-stream[action='update'][target='form_sidebar']", 1
     assert_select "turbo-stream[action='append'][target='deliverable-units-list']", 1
+    assert_select "turbo-stream[action='replace'][target='count']", 1
     assert_includes response.body, ActionView::RecordIdentifier.dom_id(created)
     assert_includes response.body, 'v2-stream-label'
+  end
+
+  test 'v2 destroy removes the row and refreshes the count via turbo stream' do
+    enable_layout_v2!
+    assert_difference('DeliverableUnit.count', -1) do
+      delete :destroy, params: { id: @deliverable_unit }, as: :turbo_stream
+    end
+    assert_response :success
+    assert_select "turbo-stream[action='remove'][target='#{ActionView::RecordIdentifier.dom_id(@deliverable_unit)}']", 1
+    assert_select "turbo-stream[action='replace'][target='count']", 1
   end
 
   test 'v2 update from sidebar replaces the list row via turbo stream' do

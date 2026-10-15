@@ -5,6 +5,23 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["all", "row", "bulk"]
 
+  connect () {
+    this.boundOnBeforeStreamRender = this.onBeforeStreamRender.bind(this)
+    document.addEventListener("turbo:before-stream-render", this.boundOnBeforeStreamRender)
+  }
+
+  disconnect () {
+    document.removeEventListener("turbo:before-stream-render", this.boundOnBeforeStreamRender)
+  }
+
+  onBeforeStreamRender (event) {
+    const render = event.detail.render
+    event.detail.render = async (streamElement) => {
+      await render(streamElement)
+      this.syncBulk()
+    }
+  }
+
   toggleAll () {
     if (!this.hasAllTarget) return
     const checked = this.allTarget.checked
