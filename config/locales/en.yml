@@ -92,6 +92,10 @@ en:
       order_arrays:
         one: orders plan
         other: orders plans
+      operation: Operation
+      operations:
+        one: operation
+        other: operations
       planning: Plan
       plannings:
         one: plan
@@ -1435,6 +1439,7 @@ en:
     index:
       title: Listing deliverable units
       new: New deliverable unit
+      deliverable_units_count_help: Number of deliverable units
     new:
       title: New deliverable unit
     form:
@@ -2116,6 +2121,7 @@ en:
       new: New Plan
       none: No plan
       show: See the full list (%{count})
+      plannings_count_help: Number of plans
       export_selection: Export selection
       export:
         icalendar: Calendar iCal
@@ -2840,6 +2846,7 @@ en:
       new: New store
       none: No store
       show: See the full list (%{count})
+      stores_count_help: Number of facilities
     menu:
       stores: Facilities
     new:
@@ -3286,6 +3293,8 @@ en:
       new: New vehicles configuration
       none: No vehicle configuration
       show: See the full list (%{count})
+      vehicle_usage_sets_count_help: Number of configurations
+      vehicles_count_help: Number of vehicles
       stores: Start - End
       time: Open - Close
       service_time: Service Time
@@ -3970,6 +3979,7 @@ en:
       any_status: Any status
       chip_all: All
       search_placeholder: Search an operation…
+      operations_count_help: Number of operations
       ref: Reference
       date: Date
       name: Name

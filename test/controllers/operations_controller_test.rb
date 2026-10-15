@@ -31,6 +31,7 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes response.body, 'operations-index-cards'
     assert_includes response.body, 'operations-index-card'
     assert_includes response.body, 'operations-index-card-actions'
+    assert_select '#count.primary.data-info'
     assert_includes response.body, I18n.t('execution.open_tracking')
     assert_includes response.body, 'v2-list-filters'
     assert_includes response.body, 'typed-confirm'

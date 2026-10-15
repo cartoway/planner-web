@@ -10,6 +10,7 @@
 - show_set_checkbox = current_user.customer.default_max_vehicle_usage_sets > 1
 - nested_colspan = show_set_checkbox ? 5 : 4
 - sets_count = @vehicle_usage_sets.count
+- vehicles_count = @vehicle_usage_sets[0]&.vehicle_usages&.count || 0
 .vehicle-usage-sets-index{data: { controller: 'v2--vehicle-usage-sets-index v2--table-selection' }}
   .vehicle-usage-sets-toolbar.px-3.pt-3
     - if current_user.customer.too_many_vehicle_usage_sets? && current_user.customer.vehicle_usage_sets.size > 1
@@ -34,12 +35,15 @@
           }
             %i.fa.fa-trash.fa-fw
             = t('all.verb.destroy_selection')
-      %span
-        = sets_count
-        = t 'activerecord.models.vehicle_usage_sets', count: sets_count
-        \-
-        = @vehicle_usage_sets[0]&.vehicle_usages&.count || 0
-        = t 'activerecord.models.vehicles', count: @vehicle_usage_sets[0]&.vehicle_usages&.count || 0
+      .d-flex.gap-2.align-items-center
+        #count.primary.data-info{title: t('vehicle_usage_sets.index.vehicle_usage_sets_count_help')}
+          %i.fa.fa-bars-staggered.fa-fw{"aria-hidden": "true"}
+          = sets_count
+          = t 'activerecord.models.vehicle_usage_sets', count: sets_count
+        .primary.data-info{title: t('vehicle_usage_sets.index.vehicles_count_help')}
+          %i.fa.fa-truck-field.fa-fw{"aria-hidden": "true"}
+          = vehicles_count
+          = t 'activerecord.models.vehicles', count: vehicles_count
   = form_tag vehicle_usage_sets_path, method: :delete, id: 'vehicle-usage-sets-destroy' do
     %table#accordion-vehicle-usage-sets.table.table-hover.table-sm.vehicle-usage-sets-table.mb-0
       %thead

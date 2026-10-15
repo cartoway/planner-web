@@ -98,6 +98,10 @@ fr:
       order_arrays:
         one: tableau de commandes
         other: tableaux de commandes
+      operation: Opération
+      operations:
+        one: opération
+        other: opérations
       planning: Plan
       plannings:
         one: plan
@@ -1472,6 +1476,7 @@ fr:
     index:
       title: Liste capacités
       new: Nouvelle capacité
+      deliverable_units_count_help: Nombre de capacités
     new:
       title: Nouvelle capacité
     form:
@@ -2198,6 +2203,7 @@ fr:
       new: Nouveau plan
       none: Aucun plan
       show: Voir la liste complète (%{count})
+      plannings_count_help: Nombre de plans
       export_selection: Exporter sélection
       export:
         icalendar: Agenda iCal
@@ -2953,6 +2959,7 @@ fr:
       new: Nouveau site
       none: Aucun site
       show: Voir la liste complète (%{count})
+      stores_count_help: Nombre de sites
     menu:
       stores: Sites
     new:
@@ -3406,6 +3413,8 @@ fr:
       new: Nouvelle configuration de la flotte
       none: Aucune configuration
       show: Voir la liste complète (%{count})
+      vehicle_usage_sets_count_help: Nombre de configurations
+      vehicles_count_help: Nombre de véhicules
       stores: Départ - Arrivée
       time: Début - Fin
       service_time: Durées de service
@@ -4116,6 +4125,7 @@ fr:
       any_status: Tous les statuts
       chip_all: Tous
       search_placeholder: Rechercher une opération…
+      operations_count_help: Nombre d’opérations
       ref: Référence
       date: Date
       name: Nom
