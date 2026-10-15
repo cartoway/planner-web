@@ -203,11 +203,12 @@ class StoresController < ApplicationController
       if @import_csv.valid? && @import_csv.import
         format.html { redirect_to action: 'index', status: :see_other }
       else
+        # Turbo Drive ignores 200 on POST; 422 is required to show import errors.
         format.html do
           if layout_v2?
-            render_page 'v2/stores/import'
+            render_page 'v2/stores/import', status: :unprocessable_entity
           else
-            render action: 'import'
+            render action: 'import', status: :unprocessable_entity
           end
         end
       end
