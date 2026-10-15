@@ -2,7 +2,8 @@
 // Operation desk layout. Status chips, stats, glyphs, markers and the map legend
 // live in `_visual_language.scss` so other v2 pages can reuse them.
 
-body[data-controller~='operations'][data-action='show'] aside.form-sidebar {
+// Hide the global form sidebar only while the operation board is on screen.
+.main.main--form-sidebar:has(.operation-board) > aside.form-sidebar {
   display: none !important;
 }
 
@@ -880,8 +881,10 @@ tr.is-past { color: #6b7280; }
 }
 
 // Operations mobile desk (< Bootstrap lg).
+// Key off page content — body data-controller/action can lag behind turbo-frame#main.
 @media (max-width: 991.98px) {
-  body[data-controller~='operations'] {
+  body:has(.operations-index),
+  body:has(.operation-board) {
     --menu-mobile-topbar-height: 3rem;
 
     .menu-mobile-topbar {
@@ -938,7 +941,7 @@ tr.is-past { color: #6b7280; }
     }
   }
 
-  body[data-controller~='operations'][data-action='show'] {
+  body:has(.operation-board) {
     .main {
       overflow: hidden;
       height: 100dvh;

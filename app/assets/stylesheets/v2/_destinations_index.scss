@@ -344,9 +344,10 @@
 
 // Map as full background, collapsible list overlay on the left.
 // Page is not scrollable; only the destinations list scrolls.
-[data-controller~='destinations'][data-action='index'],
-[data-controller~='stores'][data-action='index'],
-[data-controller~='operations'][data-action='show'] {
+// Use :has(map root) — body data-controller/action can lag behind turbo-frame#main.
+body:has(#destinations-map-layout),
+body:has(#stores-map-layout),
+body:has(#operation-map-layout) {
   .main {
     overflow: hidden;
   }
