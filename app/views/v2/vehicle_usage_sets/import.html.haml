@@ -6,8 +6,7 @@
 .p-3
   %h1.h3.mb-3= t 'vehicle_usage_sets.import.title'
   %p.help-block.offset-md-1.col-md-10.px-0.mb-3= t 'vehicle_usage_sets.import.csv.help'
-  -# turbo-frame _top: full-page visit (form fills the viewport); avoid #main busy spinner on submit.
-  = bootstrap_form_for(@import_csv, url: import_csv_vehicle_usage_sets_path, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_label_col, control_col: v2_control_col, html: { multipart: true, data: { turbo_frame: '_top', turbo_action: 'advance' } }) do |f|
+  = bootstrap_form_for(@import_csv, url: import_csv_vehicle_usage_sets_path, layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: v2_label_col, control_col: v2_control_col, html: { multipart: true, data: { turbo_frame: 'main', turbo_action: 'advance' } }) do |f|
     = render 'shared/error_messages', model: @import_csv
     %fieldset{disabled: !can_import_vehicle_config}
       = render 'v2/shared/file_input', form: f, disabled: !can_import_vehicle_config, label_col: v2_label_col, control_col: v2_control_col

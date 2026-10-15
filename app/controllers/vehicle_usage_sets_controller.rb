@@ -203,11 +203,12 @@ class VehicleUsageSetsController < ApplicationController
         expanded_id = @customer.vehicle_usage_sets.maximum(:id)
         format.html { redirect_to vehicle_usage_sets_path(expanded: expanded_id), status: :see_other }
       else
+        # Turbo Drive ignores 200 on POST; 422 is required to show import errors.
         format.html do
           if layout_v2?
-            render_page 'v2/vehicle_usage_sets/import'
+            render_page 'v2/vehicle_usage_sets/import', status: :unprocessable_entity
           else
-            render action: 'import'
+            render action: 'import', status: :unprocessable_entity
           end
         end
       end
