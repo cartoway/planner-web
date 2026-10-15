@@ -6,7 +6,7 @@
 - docs_count = photos.size + (signature ? 1 : 0)
 .stop-documents
   - if proofs_enabled
-    .stop-photos{ data: { url: operation_stop_photos_path(stop) } }
+    .stop-photos{ data: { url: operation_stop_photos_path(stop), max_count: ProofAttachments::PHOTO_MAX_COUNT, too_many: t('stops.mobile.photos_too_many', count: ProofAttachments::PHOTO_MAX_COUNT) } }
       %label= t('stops.mobile.photos')
       .stop-photos-actions
         %label.btn.btn-default.stop-photos-pick.mb-0

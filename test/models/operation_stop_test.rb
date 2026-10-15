@@ -23,6 +23,18 @@ class OperationStopTest < ActiveSupport::TestCase
     assert @stop.errors[:photos].present?
   end
 
+  test 'attach_photos rejects more than max with translated error' do
+    file = -> {
+      Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/stop_photo.jpg'), 'image/jpeg')
+    }
+    ProofAttachments::PHOTO_MAX_COUNT.times { assert @stop.attach_photos([file.call]) }
+
+    assert_nil @stop.attach_photos([file.call])
+    message = @stop.errors.full_messages.to_sentence
+    assert_match(/#{ProofAttachments::PHOTO_MAX_COUNT}/, message)
+    assert_no_match(/Translation missing/i, message)
+  end
+
   test 'attach_photos stores blobs under customer/date prefix' do
     customer_id = @planning.customer_id
     file = Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/stop_photo.jpg'), 'image/jpeg')

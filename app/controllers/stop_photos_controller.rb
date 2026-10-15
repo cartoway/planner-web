@@ -11,7 +11,8 @@ class StopPhotosController < ApplicationController
     if @operation_stop.attach_photos(files)
       render json: { photos: @operation_stop.serialized_photos }, status: :created
     else
-      render json: { error: @operation_stop.errors.full_messages.to_sentence }, status: :unprocessable_entity
+      messages = @operation_stop.errors.full_messages
+      render json: { error: messages.to_sentence, errors: messages }, status: :unprocessable_entity
     end
   end
 

@@ -1,6 +1,7 @@
 import { Controller } from '@hotwired/stimulus'
 import { ExclusiveAccordion } from 'lib/exclusive_accordion'
 import { compressImages } from 'lib/compress_image'
+import { nextPhotoModalIndex, photoUploadErrorMessage, resolveStopPhotosPanel } from 'lib/stop_photos_panel'
 
 const CONFIRM_DELAY = 200
 const CONFIRM_DISARM_AFTER = 4000
@@ -194,7 +195,7 @@ export default class extends Controller {
       event.preventDefault()
       event.stopPropagation()
       const button = target.closest('.stop-photo-remove')
-      this.deletePhoto(button.closest('.stop-photos') || button.closest('.stop-documents'), button.dataset.url)
+      this.deletePhoto(resolveStopPhotosPanel(button), button.dataset.url)
       return
     }
 
@@ -395,36 +396,104 @@ export default class extends Controller {
     const url = panel && panel.dataset.url
     input.value = ''
     if (!url) return
-    compressImages(rawFiles).then((files) => {
-      const formData = new FormData()
-      files.forEach((file) => formData.append('photos[]', file))
-      if (csrf) formData.append('authenticity_token', csrf)
-      this.showLocalPhotos(panel, files)
-      if (!navigator.onLine) {
-        this.queuePhoto({ id: this.queueId(), url, files })
-        return
-      }
-      fetch(url, { method: 'POST', body: formData, headers: { 'X-CSRF-Token': csrf, Accept: 'application/json' } })
-        .then((response) => {
-          if (!response.ok) throw new Error(String(response.status))
-          return response.json()
-        })
-        .then((data) => this.renderPhotos(panel, data.photos || []))
-        .catch(() => this.queuePhoto({ id: this.queueId(), url, files }))
+    if (!this.photosWithinLimit(panel, rawFiles.length)) {
+      this.showFailed(panel.dataset.tooMany || 'Photos')
+      return
+    }
+    const pendingId = this.queueId()
+    // Paint previews first (yield so the UI can render before compression blocks the thread).
+    this.showLocalPhotos(panel, rawFiles, pendingId)
+    this.afterPaint(() => {
+      compressImages(rawFiles).then((files) => {
+        this.updatePendingPhotos(panel, pendingId, files)
+        const formData = new FormData()
+        files.forEach((file) => formData.append('photos[]', file))
+        if (csrf) formData.append('authenticity_token', csrf)
+        if (!navigator.onLine) {
+          this.queuePhoto({ id: pendingId, url, files })
+          return
+        }
+        fetch(url, { method: 'POST', body: formData, headers: { 'X-CSRF-Token': csrf, Accept: 'application/json' } })
+          .then(async (response) => {
+            if (response.ok) return response.json()
+            let data = null
+            try { data = await response.json() } catch (_err) { /* ignore */ }
+            // Invalid content / client errors: show server messages, never queue for retry.
+            if (response.status >= 400 && response.status < 500) {
+              this.clearPendingPhotos(panel, pendingId)
+              this.showFailed(photoUploadErrorMessage(data, panel.dataset.tooMany || `HTTP ${response.status}`))
+              return null
+            }
+            throw new Error(String(response.status))
+          })
+          .then((data) => { if (data) this.renderPhotos(panel, data.photos || []) })
+          .catch(() => {
+            this.queuePhoto({ id: pendingId, url, files })
+          })
+      })
     })
   }
 
-  showLocalPhotos (panel, files) {
+  afterPaint (fn) {
+    window.requestAnimationFrame(() => {
+      window.setTimeout(fn, 0)
+    })
+  }
+
+  photosWithinLimit (panel, incomingCount) {
+    const max = Number(panel.dataset.maxCount) || 10
+    const list = this.documentsList(panel)
+    const current = list
+      ? list.querySelectorAll('.stop-photo:not(.stop-photo-pending):not(.stop-signature-doc)').length
+      : 0
+    return current + incomingCount <= max
+  }
+
+  clearPendingPhotos (panel, pendingId) {
+    if (!pendingId) return
+    const root = panel ? (panel.closest('.stop-documents') || panel) : this.element
+    root.querySelectorAll(`.stop-photo-pending[data-pending="${pendingId}"]`).forEach((node) => node.remove())
+    if (panel) this.refreshDocuments(panel)
+  }
+
+  showLocalPhotos (panel, files, pendingId) {
     const list = this.documentsList(panel)
     if (!list) return
     files.forEach((file) => {
       const url = URL.createObjectURL(file)
       const node = document.createElement('div')
       node.className = 'stop-photo stop-photo-pending'
-      node.innerHTML = `<button type="button" class="stop-photo-open" data-url="${url}"><img src="${url}" alt=""></button>`
-      list.appendChild(node)
+      if (pendingId) node.dataset.pending = pendingId
+      node.innerHTML =
+        `<button type="button" class="stop-photo-open" data-url="${url}">` +
+          `<img src="${url}" alt="">` +
+        `</button>` +
+        `<span class="stop-photo-pending-spinner" aria-hidden="true"><i class="fa fa-spinner fa-spin"></i></span>`
+      const signature = list.querySelector('.stop-signature-doc')
+      if (signature) list.insertBefore(node, signature)
+      else list.appendChild(node)
     })
     this.refreshDocuments(panel)
+  }
+
+  // Refresh pending thumbs with compressed JPEGs (HEIC often blank until then), before upload.
+  updatePendingPhotos (panel, pendingId, files) {
+    const list = this.documentsList(panel)
+    if (!list || !pendingId) return
+    const nodes = Array.from(list.querySelectorAll(`.stop-photo-pending[data-pending="${pendingId}"]`))
+    files.forEach((file, index) => {
+      const node = nodes[index]
+      if (!node) return
+      const url = URL.createObjectURL(file)
+      const img = node.querySelector('img')
+      const open = node.querySelector('.stop-photo-open')
+      if (img) {
+        const previous = img.getAttribute('src')
+        img.src = url
+        if (previous && previous.startsWith('blob:')) URL.revokeObjectURL(previous)
+      }
+      if (open) open.setAttribute('data-url', url)
+    })
   }
 
   documentsList (panel) {
@@ -433,20 +502,44 @@ export default class extends Controller {
   }
 
   deletePhoto (panel, url) {
-    if (!url) return
+    panel = resolveStopPhotosPanel(panel)
+    if (!url || !panel) return Promise.resolve(false)
     if (!navigator.onLine) {
-      this.queuePhoto({ id: this.queueId(), url, method: 'DELETE', panelUrl: panel && panel.dataset.url })
-      return
+      this.queuePhoto({ id: this.queueId(), url, method: 'DELETE', panelUrl: panel.dataset.url })
+      this.removePhotoNode(panel, url)
+      return Promise.resolve(true)
     }
-    fetch(url, { method: 'DELETE', headers: { 'X-CSRF-Token': this.csrfToken(), Accept: 'application/json' } })
-      .then((response) => response.json())
-      .then((data) => { if (panel && data.photos) this.renderPhotos(panel, data.photos) })
-      .catch(() => this.queuePhoto({ id: this.queueId(), url, method: 'DELETE' }))
+    return fetch(url, { method: 'DELETE', headers: { 'X-CSRF-Token': this.csrfToken(), Accept: 'application/json' } })
+      .then((response) => {
+        if (response.status === 404) {
+          this.removePhotoNode(panel, url)
+          return true
+        }
+        if (!response.ok) throw new Error(String(response.status))
+        return response.json().then((data) => {
+          if (data.photos) this.renderPhotos(panel, data.photos)
+          return true
+        })
+      })
+      .catch(() => {
+        this.queuePhoto({ id: this.queueId(), url, method: 'DELETE', panelUrl: panel.dataset.url })
+        this.removePhotoNode(panel, url)
+        return true
+      })
+  }
+
+  removePhotoNode (panel, url) {
+    const list = this.documentsList(panel)
+    const btn = list && Array.from(list.querySelectorAll('.stop-photo-remove'))
+      .find((el) => el.getAttribute('data-url') === url)
+    if (btn) btn.closest('.stop-photo')?.remove()
+    this.refreshDocuments(panel)
   }
 
   renderPhotos (panel, photos) {
+    panel = resolveStopPhotosPanel(panel)
     const list = this.documentsList(panel)
-    if (!list) return
+    if (!list || !panel) return
     list.querySelectorAll('.stop-photo:not(.stop-signature-doc)').forEach((node) => node.remove())
     const base = panel.dataset.url
     ;(photos || []).forEach((photo) => {
@@ -483,17 +576,32 @@ export default class extends Controller {
     this.registerSync('sync-photos')
   }
 
+  deleteQueuedPhoto (id) {
+    if (!id) return Promise.resolve()
+    return this.photoDb().then((db) => new Promise((resolve, reject) => {
+      const tx = db.transaction(PHOTO_STORE, 'readwrite')
+      tx.objectStore(PHOTO_STORE).delete(id)
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => reject(tx.error)
+    })).catch(() => {})
+  }
+
   openPhoto (button) {
     const modal = document.getElementById('stop-photo-modal')
     const list = button.closest('.stop-documents-list')
-    this.photoModalPanel = button.closest('.stop-photos')
-    this.photoModalItems = list ? Array.from(list.querySelectorAll('.stop-photo')).map((el) => ({
-      url: el.querySelector('.stop-photo-open')?.getAttribute('data-url'),
-      deleteUrl: el.querySelector('.stop-photo-remove')?.getAttribute('data-url')
-    })).filter((item) => item.url) : [{ url: button.dataset.url, deleteUrl: null }]
+    this.photoModalPanel = resolveStopPhotosPanel(button)
+    this.photoModalItems = this.photoItemsFromList(list, button.dataset.url)
     this.photoModalIndex = Math.max(0, this.photoModalItems.findIndex((item) => item.url === button.dataset.url))
     if (modal) modal.classList.remove('d-none')
     this.showPhoto()
+  }
+
+  photoItemsFromList (list, fallbackUrl) {
+    if (!list) return fallbackUrl ? [{ url: fallbackUrl, deleteUrl: null }] : []
+    return Array.from(list.querySelectorAll('.stop-photo')).map((el) => ({
+      url: el.querySelector('.stop-photo-open')?.getAttribute('data-url'),
+      deleteUrl: el.querySelector('.stop-photo-remove')?.getAttribute('data-url')
+    })).filter((item) => item.url)
   }
 
   showPhoto () {
@@ -521,8 +629,24 @@ export default class extends Controller {
 
   deleteModalPhoto () {
     const item = this.photoModalItems[this.photoModalIndex]
-    if (item && item.deleteUrl) this.deletePhoto(this.photoModalPanel, item.deleteUrl)
-    this.closePhoto()
+    if (!item?.deleteUrl) return
+    const index = this.photoModalIndex
+    this.deletePhoto(this.photoModalPanel, item.deleteUrl).then(() => {
+      this.syncModalAfterPhotoChange(index)
+    })
+  }
+
+  syncModalAfterPhotoChange (index) {
+    const modal = document.getElementById('stop-photo-modal')
+    if (!modal || modal.classList.contains('d-none')) return
+    const list = this.documentsList(this.photoModalPanel)
+    this.photoModalItems = this.photoItemsFromList(list)
+    if (!this.photoModalItems.length) {
+      this.closePhoto()
+      return
+    }
+    this.photoModalIndex = nextPhotoModalIndex(index, this.photoModalItems.length)
+    this.showPhoto()
   }
 
   openSignature (panel) {
@@ -659,13 +783,32 @@ export default class extends Controller {
 
   onServiceMessage (event) {
     const type = event.data && event.data.type
-    if (type === 'POSITION_SYNCED' || type === 'STOP_SYNCED' || type === 'PHOTO_SYNCED' || type === 'ROUTE_SYNCED') {
+    const payload = event.data && event.data.data
+    if (type === 'POSITION_SYNCED' || type === 'STOP_SYNCED' || type === 'ROUTE_SYNCED') {
       this.hidePending()
+    }
+    if (type === 'PHOTO_SYNCED') {
+      this.deleteQueuedPhoto(payload && payload.id)
+      if (payload && payload.photos) {
+        const panel = this.findPhotoPanel(payload.panelUrl || payload.url)
+        if (panel) this.renderPhotos(panel, payload.photos)
+      }
+      this.hidePending()
+    }
+    if (type === 'PHOTO_REJECTED') {
+      this.deleteQueuedPhoto(payload && payload.id)
+      if (payload && payload.id) this.clearPendingPhotos(this.findPhotoPanel(payload.panelUrl || payload.url), payload.id)
+      this.showFailed(photoUploadErrorMessage(payload, 'Photos'))
     }
     if (type === 'SYNC_ERROR') this.showFailed()
     if (type === 'GET_PENDING_DATA') {
       event.source.postMessage({ type: 'PENDING_DATA', data: this.pendingPayload() })
     }
+  }
+
+  findPhotoPanel (url) {
+    if (!url) return null
+    return Array.from(this.element.querySelectorAll('.stop-photos')).find((panel) => panel.dataset.url === url) || null
   }
 
   onOnline () {
@@ -771,11 +914,25 @@ export default class extends Controller {
     document.getElementById('mobile-sync-pending')?.classList.add('d-none')
   }
 
-  showFailed () {
+  showFailed (message) {
     const node = document.getElementById('mobile-sync-failed')
     if (!node) return
+    const span = node.querySelector('span')
+    if (span) {
+      if (!span.dataset.defaultText) span.dataset.defaultText = span.textContent
+      span.textContent = message || span.dataset.defaultText
+      span.style.whiteSpace = message && String(message).includes('\n') ? 'pre-line' : ''
+    }
+    this.hidePending()
     node.classList.remove('d-none')
-    window.setTimeout(() => node.classList.add('d-none'), 3000)
+    window.clearTimeout(this._failedTimer)
+    this._failedTimer = window.setTimeout(() => {
+      node.classList.add('d-none')
+      if (span && span.dataset.defaultText) {
+        span.textContent = span.dataset.defaultText
+        span.style.whiteSpace = ''
+      }
+    }, message ? 5000 : 3000)
   }
 
   localSet (key, value) {

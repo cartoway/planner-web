@@ -1,4 +1,5 @@
 import { compressImages } from '../../javascript/lib/compress_image';
+import { photoUploadErrorMessage } from '../../javascript/lib/stop_photos_panel';
 
 'use strict';
 
@@ -353,18 +354,24 @@ function queuePhotoDelete(panel, url) {
 }
 
 function showPendingPhotos(panel, files, pendingId) {
-  var list = documentsRoot(panel).find('.stop-documents-list');
+  var root = documentsRoot(panel);
+  var list = root.find('.stop-documents-list');
   files.forEach(function(file) {
     var url = URL.createObjectURL(file);
-    list.append(
+    var html =
       '<div class="stop-photo stop-photo-pending" data-pending="' + pendingId + '">' +
         '<button type="button" class="stop-photo-open" data-url="' + url + '">' +
           '<img src="' + url + '" alt="">' +
         '</button>' +
-      '</div>'
-    );
+        '<span class="stop-photo-pending-spinner" aria-hidden="true"><i class="fa fa-spinner fa-spin"></i></span>' +
+      '</div>';
+    var signatureDoc = list.find('.stop-signature-doc');
+    if (signatureDoc.length) signatureDoc.before(html);
+    else list.append(html);
   });
-  updateDocumentsBadge(documentsRoot(panel));
+  updateDocumentsBadge(root);
+  root.find('.stop-documents-body').removeClass('d-none');
+  root.find('.stop-documents-toggle').removeClass('d-none');
 }
 
 function documentsRoot(el) {
@@ -417,8 +424,16 @@ export function syncPendingPhotos() {
           var panel = findPhotoPanel(item.url);
           if (panel) renderStopPhotos(panel, data.photos);
         });
-      }, function() {
-        // Keep pending for retry
+      }, function(xhr) {
+        // Invalid content: drop from queue and show server messages.
+        if (xhr && xhr.status >= 400 && xhr.status < 500 && xhr.status !== 408) {
+          return deletePendingPhoto(item.id).then(function() {
+            var panel = findPhotoPanel(item.url);
+            if (panel) panel.find('[data-pending="' + item.id + '"]').remove();
+            showMobileFailed(photoUploadErrorMessage(xhr.responseJSON, 'Photos'));
+          });
+        }
+        // Keep pending for retriable / unknown errors
       });
     }));
   });
@@ -457,29 +472,69 @@ function initStopPhotos() {
     var csrf = stopPhotosCsrf();
     input.value = '';
 
-    compressImages(rawFiles).then(function(files) {
-      var formData = new FormData();
-      files.forEach(function(file) { formData.append('photos[]', file); });
-      if (csrf) formData.append('authenticity_token', csrf);
+    var maxCount = Number(panel.data('max-count')) || 10;
+    var current = documentsRoot(panel).find('.stop-documents-list .stop-photo:not(.stop-photo-pending):not(.stop-signature-doc)').length;
+    if (current + rawFiles.length > maxCount) {
+      showMobileFailed(panel.data('too-many') || 'Photos');
+      return;
+    }
 
-      if (!navigator.onLine) {
-        queuePhotoUpload(panel, files);
-        return;
-      }
+    // Paint previews first; yield so the UI can render before compression blocks the thread.
+    showPendingPhotos(panel, rawFiles, 'compressing');
+    window.requestAnimationFrame(function() {
+      window.setTimeout(function() {
+        compressImages(rawFiles).then(function(files) {
+          updatePendingPhotos(panel, 'compressing', files);
+          var formData = new FormData();
+          files.forEach(function(file) { formData.append('photos[]', file); });
+          if (csrf) formData.append('authenticity_token', csrf);
+          var clearCompressing = function() { panel.find('[data-pending="compressing"]').remove(); };
 
-      $.ajax({
-        type: 'POST',
-        url: panel.data('url'),
-        data: formData,
-        processData: false,
-        contentType: false,
-        headers: { 'X-CSRF-Token': csrf }
-      }).done(function(data) {
-        renderStopPhotos(panel, data.photos);
-      }).fail(function() {
-        queuePhotoUpload(panel, files);
-      });
+          if (!navigator.onLine) {
+            clearCompressing();
+            queuePhotoUpload(panel, files);
+            return;
+          }
+
+          $.ajax({
+            type: 'POST',
+            url: panel.data('url'),
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { 'X-CSRF-Token': csrf }
+          }).done(function(data) {
+            clearCompressing();
+            renderStopPhotos(panel, data.photos);
+          }).fail(function(xhr) {
+            clearCompressing();
+            // Invalid content / client errors: show messages, never queue for retry.
+            if (xhr && xhr.status >= 400 && xhr.status < 500) {
+              showMobileFailed(photoUploadErrorMessage(xhr.responseJSON, panel.data('too-many') || ('HTTP ' + xhr.status)));
+              return;
+            }
+            queuePhotoUpload(panel, files);
+          });
+        });
+      }, 0);
     });
+  });
+}
+
+function updatePendingPhotos(panel, pendingId, files) {
+  var nodes = documentsRoot(panel).find('.stop-photo-pending[data-pending="' + pendingId + '"]').toArray();
+  files.forEach(function(file, index) {
+    var node = nodes[index];
+    if (!node) return;
+    var url = URL.createObjectURL(file);
+    var img = node.querySelector('img');
+    var open = node.querySelector('.stop-photo-open');
+    if (img) {
+      var previous = img.getAttribute('src');
+      img.src = url;
+      if (previous && previous.indexOf('blob:') === 0) URL.revokeObjectURL(previous);
+    }
+    if (open) open.setAttribute('data-url', url);
   });
 }
 
@@ -585,6 +640,27 @@ function stopPhotosCsrf() {
   return meta ? meta.content : '';
 }
 
+function showMobileFailed(message) {
+  var node = document.getElementById('mobile-sync-failed');
+  if (!node) return;
+  var span = node.querySelector('span');
+  if (span) {
+    if (!span.dataset.defaultText) span.dataset.defaultText = span.textContent;
+    span.textContent = message || span.dataset.defaultText;
+    span.style.whiteSpace = message && String(message).indexOf('\n') >= 0 ? 'pre-line' : '';
+  }
+  $('#mobile-sync-pending').addClass('d-none');
+  node.classList.remove('d-none');
+  window.clearTimeout(showMobileFailed._timer);
+  showMobileFailed._timer = window.setTimeout(function() {
+    node.classList.add('d-none');
+    if (span && span.dataset.defaultText) {
+      span.textContent = span.dataset.defaultText;
+      span.style.whiteSpace = '';
+    }
+  }, message ? 5000 : 3000);
+}
+
 var photoModalItems = [];
 var photoModalIndex = 0;
 var photoModalPanel = null;
@@ -661,20 +737,20 @@ function closeStopPhotoModal() {
 function syncModalAfterPhotoChange() {
   var modal = document.getElementById('stop-photo-modal');
   if (!modal || modal.classList.contains('d-none') || !photoModalPanel) return;
-  var current = photoModalItems[photoModalIndex];
-  var currentUrl = current && current.url;
-  var open = photoModalPanel.querySelector('.stop-photo-open');
+  var keepIndex = photoModalIndex;
+  var listRoot = documentsRoot($(photoModalPanel))[0];
+  var open = listRoot && listRoot.querySelector('.stop-documents-list .stop-photo-open');
   if (!open) {
     closeStopPhotoModal();
     return;
   }
   photoModalItems = photoItemsFromOpen(open);
-  var idx = -1;
-  for (var i = 0; i < photoModalItems.length; i++) {
-    if (photoModalItems[i].url === currentUrl) { idx = i; break; }
+  if (!photoModalItems.length) {
+    closeStopPhotoModal();
+    return;
   }
-  if (idx < 0) idx = Math.min(photoModalIndex, photoModalItems.length - 1);
-  showStopPhotoAt(idx);
+  // After delete, stay on the same slot (next photo slides in) or the new last item.
+  showStopPhotoAt(Math.min(keepIndex, photoModalItems.length - 1));
 }
 
 function onPhotoModalTouchStart(e) {

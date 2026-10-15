@@ -696,13 +696,13 @@ fr:
           attributes:
             name:
               cannot_contain_colon: ne peut pas contenir le caractère « : »
-        stop:
+        operation_stop:
           attributes:
             photos:
               blank: doit être jointe
               invalid_type: doit être une image
               too_large: est trop volumineuse (10 Mo max)
-              too_many: dépasse la limite de 10 photos
+              too_many: ne doit pas dépasser %{count} fichiers
             signature:
               blank: doit être jointe
               invalid_type: doit être une image
@@ -2882,6 +2882,7 @@ fr:
       photos_empty: Aucune photo
       documents_empty: Aucun document
       photos_delete_expired: Délai de suppression dépassé
+      photos_too_many: Maximum %{count} photos par arrêt
       proofs_disabled: Le stockage des preuves n’est pas activé pour ce compte
       photo_close: Fermer
       photo_delete: Supprimer
