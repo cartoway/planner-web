@@ -3,7 +3,12 @@
 - filter_chips = [{ value: '', label: t('operations.index.chip_all') }, { value: 'in_progress', label: t('operations.statuses.in_progress') }, { value: 'historized', label: t('operations.statuses.historized') }]
 .operations-index.pt-3
   .px-3
-    %h1.h3.mb-3= t('operations.index.title')
+    .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
+      %h1.h3.mb-0= t('operations.index.title')
+      #count.primary.data-info{title: t('operations.index.operations_count_help')}
+        %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+        = @operations.size
+        = t('activerecord.models.operations', count: @operations.size)
     = render 'v2/shared/list_filters', url: operations_path, q: params[:q], date: params[:date], status: params[:status], search_placeholder: t('operations.index.search_placeholder'), chips: filter_chips
   .operations-index-cards.px-3.pb-3
     - if @operations.empty?
@@ -11,7 +16,7 @@
     - @operations.each do |operation|
       - counts = operation.board_counts
       - modal_id = "operation-destroy-#{operation.id}"
-      .operations-index-card
+      .operations-index-card.pb-2
         .operations-index-card-main
           .operations-index-card-header
             %h2.operations-index-card-title= operation.name
