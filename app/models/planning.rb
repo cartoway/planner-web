@@ -1304,7 +1304,10 @@ class Planning < ApplicationRecord
       units = self.customer.deliverable_units
       route_collection = routes || self.routes
       route_collection.each{ |route|
-        vehicle = route.vehicle_usage.try(:vehicle)
+        # Out-of-route (no vehicle_usage): quantities stay at 0 — only assigned tours count
+        next unless route.vehicle_usage?
+
+        vehicle = route.vehicle_usage.vehicle
 
         units.each{ |unit|
           pickup = route.pickups[unit.id].to_f
@@ -1338,10 +1341,13 @@ class Planning < ApplicationRecord
       }
 
       quantity_hash.values.map { |quantity|
-        quantity[:pickup] = LocalizedValues.localize_numeric_value(quantity[:pickup].round(2))
-        quantity[:delivery] = LocalizedValues.localize_numeric_value(quantity[:delivery].round(2))
+        quantity[:pickup_raw] = quantity[:pickup].round(2)
+        quantity[:delivery_raw] = quantity[:delivery].round(2)
+        quantity[:capacity_raw] = quantity[:capacity] > 0 ? quantity[:capacity].round(2) : nil
+        quantity[:pickup] = LocalizedValues.localize_numeric_value(quantity[:pickup_raw])
+        quantity[:delivery] = LocalizedValues.localize_numeric_value(quantity[:delivery_raw])
         # Nil if no capacity
-        quantity[:capacity] = quantity[:capacity] > 0 ? LocalizedValues.localize_numeric_value(quantity[:capacity].round(2)) : nil
+        quantity[:capacity] = quantity[:capacity_raw] ? LocalizedValues.localize_numeric_value(quantity[:capacity_raw]) : nil
         quantity
       }
     end

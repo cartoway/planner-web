@@ -2231,6 +2231,9 @@ fr:
       add_placeholder: Ajouter un plan…
       remove: Retirer de la comparaison
       help: "Choisissez la référence, puis comparez les écarts colorés sous chaque indicateur."
+      quantities: Quantités / Capacités
+      metrics:
+        vehicles: Tournées
       need_selection: Veuillez sélectionner au moins deux plans à comparer
       v2_only: La comparaison des plans est disponible dans la nouvelle interface
     edit:

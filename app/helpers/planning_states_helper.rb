@@ -37,6 +37,33 @@ module PlanningStatesHelper
     'balance' => { stat_key: :balance, format: :currency, higher_is_better: true, icon: 'fa-scale-balanced' }
   }.freeze
 
+  # Compare page: same ratios as planning data_header (active / total), without wait_time
+  PLANNING_COMPARE_METRICS = {
+    'vehicles' => {
+      stat_key: 'vehicles_used',
+      denominator_key: 'vehicles',
+      format: :ratio,
+      icon: 'fa-truck-field'
+    },
+    'stops' => {
+      stat_key: 'stops_size_active',
+      denominator_key: 'stops_size',
+      format: :ratio,
+      higher_is_better: true,
+      icon: 'fa-check-square'
+    },
+    'distance' => { stat_key: 'distance_total', format: :distance, icon: 'fa-road' },
+    'emission' => { stat_key: 'routes_emission', format: :emission, icon: 'fa-flask' },
+    'total_duration' => { stat_key: 'duration_total', format: :duration, icon: 'fa-stopwatch' },
+    'work_duration' => { stat_key: 'work_duration_total', format: :duration, icon: 'fa-user-clock' },
+    'drive_time' => { stat_key: 'routes_drive_time', format: :duration, icon: 'fa-road' },
+    'visits_duration' => { stat_key: 'routes_visits_duration', format: :duration, icon: 'fa-business-time' },
+    'rests_duration' => { stat_key: 'routes_rests_duration', format: :duration, icon: 'fa-circle-pause' },
+    'total_cost' => { stat_key: 'routes_cost', format: :currency, icon: 'fa-coins' },
+    'total_revenue' => { stat_key: 'routes_revenue', format: :currency, higher_is_better: true, icon: 'fa-hand-holding-dollar' },
+    'balance' => { stat_key: :balance, format: :currency, higher_is_better: true, icon: 'fa-scale-balanced' }
+  }.freeze
+
   def planning_state_pin_disabled?(planning_state, pinned_count:, max_pinned:)
     !planning_state.pinned? && pinned_count >= max_pinned
   end
@@ -90,11 +117,11 @@ module PlanningStatesHelper
     planning_header_block_order.reject { |key| PLANNING_STATE_EXCLUDED_BLOCKS.include?(key) }
   end
 
-  def planning_state_stat_diffs(state_statistics, reference_statistics, prefered_unit:)
+  def planning_state_stat_diffs(state_statistics, reference_statistics, prefered_unit:, metrics: PLANNING_STATE_STAT_DIFF_METRICS)
     state_stats = (state_statistics || {}).stringify_keys
     reference_stats = (reference_statistics || {}).stringify_keys
 
-    PLANNING_STATE_STAT_DIFF_METRICS.each_with_object({}) do |(block_key, config), diffs|
+    metrics.each_with_object({}) do |(block_key, config), diffs|
       diff = planning_state_stat_diff(
         state_stats,
         reference_stats,
@@ -106,7 +133,17 @@ module PlanningStatesHelper
   end
 
   def format_planning_state_stat_absolute(stats, config, prefered_unit:)
-    value = planning_state_stat_value((stats || {}).stringify_keys, config[:stat_key])
+    stats = (stats || {}).stringify_keys
+
+    if config[:format] == :ratio
+      numerator = planning_state_stat_value(stats, config[:stat_key])
+      denominator = planning_state_stat_value(stats, config[:denominator_key])
+      return '—' if numerator.nil? && denominator.nil?
+
+      return "#{numerator.to_i} / #{denominator.to_i}"
+    end
+
+    value = planning_state_stat_value(stats, config[:stat_key])
     return '—' if value.nil?
 
     case config[:format]
@@ -126,7 +163,70 @@ module PlanningStatesHelper
   end
 
   def planning_compare_metric_label(metric_key)
-    t("display_ui.header_blocks.#{metric_key}", default: metric_key.to_s.humanize)
+    t("plannings.compare.metrics.#{metric_key}",
+      default: t("display_ui.header_blocks.#{metric_key}", default: metric_key.to_s.humanize))
+  end
+
+  def planning_compare_quantity_rows(quantities_by_planning_id)
+    units = {}
+    quantities_by_planning_id.each_value do |quantities|
+      Array(quantities).each do |quantity|
+        unit = (units[quantity[:id]] ||= {
+          id: quantity[:id],
+          label: quantity[:label],
+          unit_icon: quantity[:unit_icon],
+          has_pickup: false,
+          has_delivery: false
+        })
+        unit[:has_pickup] ||= quantity[:has_pickup]
+        unit[:has_delivery] ||= quantity[:has_delivery]
+      end
+    end
+
+    units.values.flat_map do |unit|
+      [
+        (unit[:has_pickup] ? { unit_id: unit[:id], kind: :pickup, label: unit[:label], unit_icon: unit[:unit_icon] } : nil),
+        (unit[:has_delivery] ? { unit_id: unit[:id], kind: :delivery, label: unit[:label], unit_icon: unit[:unit_icon] } : nil)
+      ].compact
+    end
+  end
+
+  def planning_compare_quantity_entry(quantities, unit_id, kind)
+    quantity = Array(quantities).find { |entry| entry[:id] == unit_id }
+    return unless quantity && quantity[:"has_#{kind}"]
+
+    quantity
+  end
+
+  # Same format as plannings/data_blocks/_quantities: "qty / capacity"
+  def planning_compare_quantity_value(quantities, unit_id, kind)
+    quantity = planning_compare_quantity_entry(quantities, unit_id, kind)
+    return '0' unless quantity
+
+    value = quantity[kind].to_s
+    quantity[:capacity].present? ? "#{value}/ #{quantity[:capacity]}" : value
+  end
+
+  def planning_compare_quantity_raw(quantities, unit_id, kind)
+    quantity = planning_compare_quantity_entry(quantities, unit_id, kind)
+    return 0.0 unless quantity
+
+    quantity.fetch(:"#{kind}_raw", 0).to_f
+  end
+
+  def planning_compare_quantity_diff(quantities, reference_quantities, unit_id, kind)
+    diff = planning_compare_quantity_raw(quantities, unit_id, kind) -
+           planning_compare_quantity_raw(reference_quantities, unit_id, kind)
+    return if diff.zero?
+
+    {
+      formatted: format_planning_state_stat_diff(diff, :quantity, prefered_unit: nil),
+      css_class: planning_state_stat_diff_css_class(diff, higher_is_better: false)
+    }
+  end
+
+  def planning_compare_quantity_kind_label(kind)
+    t("plannings.edit.#{kind}_help")
   end
 
   private
@@ -199,8 +299,10 @@ module PlanningStatesHelper
         time_over_day(abs.to_i)
       when :currency
         abs.round(2).to_s
-      when :integer
+      when :integer, :ratio
         abs.to_i.to_s
+      when :quantity
+        LocalizedValues.localize_numeric_value(abs.round(2))
       when :emission
         number_to_human(abs, precision: 4)
       else
