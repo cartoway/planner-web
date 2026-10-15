@@ -119,7 +119,7 @@ module ProofAttachmentSupport
       return false
     end
     if photos.count + files.size > ProofAttachments::PHOTO_MAX_COUNT
-      errors.add(:photos, :too_many)
+      errors.add(:photos, :too_many, count: ProofAttachments::PHOTO_MAX_COUNT)
       return false
     end
     files.each do |file|
@@ -137,7 +137,7 @@ module ProofAttachmentSupport
 
   def photos_must_be_valid_images
     if photos.count > ProofAttachments::PHOTO_MAX_COUNT
-      errors.add(:photos, :too_many)
+      errors.add(:photos, :too_many, count: ProofAttachments::PHOTO_MAX_COUNT)
     end
     photos.each do |photo|
       unless ProofAttachments::PHOTO_CONTENT_TYPES.include?(photo.content_type)

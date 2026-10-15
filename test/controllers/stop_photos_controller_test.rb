@@ -106,4 +106,30 @@ class StopPhotosControllerTest < ActionController::TestCase
     assert_response :not_found
     assert_not @operation_stop.reload.photos.attached?
   end
+
+  test 'too many photos returns translated 422 instead of missing translation' do
+    I18n.with_locale(:fr) do
+      ProofAttachments::PHOTO_MAX_COUNT.times do
+        post :create, params: {
+          operation_stop_id: @operation_stop.id,
+          driver_token: @vehicle.driver_token,
+          photos: [fixture_file_upload('files/stop_photo.jpg', 'image/jpeg')]
+        }, format: :json
+        assert_response :created
+      end
+
+      post :create, params: {
+        operation_stop_id: @operation_stop.id,
+        driver_token: @vehicle.driver_token,
+        photos: [fixture_file_upload('files/stop_photo.jpg', 'image/jpeg')]
+      }, format: :json
+    end
+
+    assert_response :unprocessable_entity
+    body = JSON.parse(response.body)
+    assert_match(/#{ProofAttachments::PHOTO_MAX_COUNT}/, body['error'])
+    assert_no_match(/Translation missing/i, body['error'])
+    assert_kind_of Array, body['errors']
+    assert_predicate body['errors'], :present?
+  end
 end
