@@ -4,5 +4,8 @@
 import "@hotwired/turbo"
 import "controllers"
 import { installTurboNetworkErrorHandling } from "turbo/network_error"
+import { installV2BodyPageSync } from "lib/v2_body_page"
 
 installTurboNetworkErrorHandling()
+installV2BodyPageSync()
+
