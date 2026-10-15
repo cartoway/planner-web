@@ -7,7 +7,7 @@ class RouteMailer < ApplicationMailer
       @name = user.customer.reseller.name # To deprecate
       @title = I18n.t('route_mailer.send_kmz_route.title')
       attachments[filename] = { transfer_encoding: :binary, content: attachment.force_encoding('BINARY') }
-      mail to: vehicle.contact_email.split(/\s*,\s*|\s*;\s*|\s+/), subject: "[#{user.customer.reseller.name}] #{filename}" do |format|
+      mail to: EmailListFormat.split(vehicle.contact_email), subject: "[#{user.customer.reseller.name}] #{filename}" do |format|
         format.html { render 'route_mailer/send_kmz_route', locals: { vehicle: vehicle, route: route } }
       end
     end
@@ -19,7 +19,7 @@ class RouteMailer < ApplicationMailer
       @reseller = user.customer.reseller
       @name = user.customer.reseller.name # To deprecate
       @title = I18n.t('route_mailer.send_computed_ics_route.title')
-      mail to: email.split(/\s*,\s*|\s*;\s*|\s+/), subject: "[#{user.customer.reseller.name}] Export Planning iCalendar" do |format|
+      mail to: EmailListFormat.split(email), subject: "[#{user.customer.reseller.name}] Export Planning iCalendar" do |format|
         format.html { render 'route_mailer/send_computed_ics_route', locals: { user: user, infos: vehicles } }
       end
     end
@@ -30,7 +30,7 @@ class RouteMailer < ApplicationMailer
     @reseller = customer.reseller
     I18n.with_locale(locale) do
       @title = "#{I18n.t('route_mailer.send_driver_route.title')} #{route.planning.date ? '- ' : '' }#{route.planning.date}"
-      mail to: email.split(/\s*,\s*|\s*;\s*|\s+/), subject: "[#{route.vehicle_usage.vehicle.name}] #{t('route_mailer.send_driver_route.subject')} #{route.planning.date ? '- ' : '' }#{route.planning.date}" do |format|
+      mail to: EmailListFormat.split(email), subject: "[#{route.vehicle_usage.vehicle.name}] #{t('route_mailer.send_driver_route.subject')} #{route.planning.date ? '- ' : '' }#{route.planning.date}" do |format|
         format.html { render 'route_mailer/send_driver_route', locals: { customer: customer, route: route, mobile_url: Operations::MobileUrl.for_planning_route(route) } }
       end
     end
@@ -44,7 +44,7 @@ class RouteMailer < ApplicationMailer
       date = operation.date
       name = operation_route.vehicle_name
       @title = "#{I18n.t('route_mailer.send_driver_route.title')} #{date ? '- ' : ''}#{date}"
-      mail to: email.split(/\s*,\s*|\s*;\s*|\s+/), subject: "[#{name}] #{t('route_mailer.send_driver_route.subject')} #{date ? '- ' : ''}#{date}" do |format|
+      mail to: EmailListFormat.split(email), subject: "[#{name}] #{t('route_mailer.send_driver_route.subject')} #{date ? '- ' : ''}#{date}" do |format|
         format.html {
           render 'route_mailer/send_driver_route', locals: {
             customer: customer,

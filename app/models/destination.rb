@@ -35,6 +35,8 @@ class Destination < Location
 
   include Consistency
   validate_consistency [:tags], skip_contexts: [:import]
+  include EmailListFormat
+  validates_email_list :email
   validates :ref, uniqueness: { scope: :customer_id, case_sensitive: true }, allow_nil: true, allow_blank: true
 
   before_create :check_max_destination

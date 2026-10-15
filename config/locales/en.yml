@@ -1790,7 +1790,7 @@ en:
       phone_number: phone
       phone_number_desc: phone number of destination.
       email: email
-      email_desc: email of the contact at the destination.
+      email_desc: email of the contact at the destination. Several addresses may be separated by spaces, commas or semicolons.
       tags: categories
       tags_desc: destination categories (allowing to group them).
       tags_format: 'category 1,category 2'
@@ -3056,7 +3056,7 @@ en:
       name_vehicle: name vehicle
       name_desc: vehicle name
       contact_email: e-mail
-      contact_email_desc: driver's device e-mail
+      contact_email_desc: driver's device e-mail. Several addresses may be separated by spaces, commas or semicolons.
       phone_number: phone number
       phone_number_desc: driver's phone number
       cost_distance: distance cost
