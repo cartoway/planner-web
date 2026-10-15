@@ -10,12 +10,22 @@ import {
   scaleToMaxEdge
 } from '../../app/javascript/lib/compress_image.js'
 
-function mockCanvasCompress (byteSize = 40 * 1024) {
-  globalThis.createImageBitmap = async () => ({
-    width: 4032,
-    height: 3024,
-    close () {}
-  })
+function mockCanvasCompress (byteSize = 40 * 1024, bitmapSize = { width: 1280, height: 960 }) {
+  globalThis.createImageBitmap = async (_src, options = {}) => {
+    let width = bitmapSize.width
+    let height = bitmapSize.height
+    if (options.resizeHeight && height > options.resizeHeight) {
+      const ratio = options.resizeHeight / height
+      width = Math.round(width * ratio)
+      height = options.resizeHeight
+    }
+    if (options.resizeWidth && width > options.resizeWidth) {
+      const ratio = options.resizeWidth / width
+      height = Math.round(height * ratio)
+      width = options.resizeWidth
+    }
+    return { width, height, close () {} }
+  }
   globalThis.document = {
     createElement () {
       return {
@@ -34,9 +44,9 @@ function mockCanvasCompress (byteSize = 40 * 1024) {
 
 describe('compress_image', () => {
   it('scales the longest edge down and leaves smaller images alone', () => {
-    assert.deepEqual(scaleToMaxEdge(4000, 3000, 1920), { width: 1920, height: 1440 })
-    assert.deepEqual(scaleToMaxEdge(800, 600, 1920), { width: 800, height: 600 })
-    assert.equal(PHOTO_MAX_EDGE, 1920)
+    assert.deepEqual(scaleToMaxEdge(4000, 3000, 1280), { width: 1280, height: 960 })
+    assert.deepEqual(scaleToMaxEdge(800, 600, 1280), { width: 800, height: 600 })
+    assert.equal(PHOTO_MAX_EDGE, 1280)
   })
 
   it('normalizes filenames to .jpg', () => {
@@ -53,12 +63,20 @@ describe('compress_image', () => {
 
   it('compresses a large bitmap to a smaller jpeg file', async () => {
     const source = new File([new Uint8Array(600 * 1024).fill(7)], 'big.png', { type: 'image/png' })
+    const calls = []
     mockCanvasCompress()
+    const original = globalThis.createImageBitmap
+    globalThis.createImageBitmap = async (src, options) => {
+      calls.push(options || {})
+      return original(src, options)
+    }
 
     const out = await compressImage(source)
     assert.equal(out.type, 'image/jpeg')
     assert.equal(out.name, 'big.jpg')
     assert.ok(out.size < source.size)
+    assert.equal(calls[0].resizeHeight, PHOTO_MAX_EDGE)
+    assert.equal(calls[0].resizeQuality, 'low')
 
     const many = await compressImages([source])
     assert.equal(many.length, 1)
