@@ -33,7 +33,7 @@ class OperationStopDetailTest < ActionController::TestCase
     assert_includes response.body, 'fa-envelope'
   end
 
-  test 'actual time and status history show the day offset from the operation date' do
+  test 'actual time and status history show the full date when off the operation day' do
     Time.use_zone('Hawaii') do
       # Update via the association the clock reads (setup may have cached another Operation instance).
       @stop.operation_route.operation.update!(date: Date.new(2026, 9, 30))
@@ -42,14 +42,14 @@ class OperationStopDetailTest < ActionController::TestCase
 
       @stop.update!(status_updated_at: Time.zone.local(2026, 9, 29, 22, 5))
       @stop.operation_stop_status_events.update_all(recorded_at: Time.zone.local(2026, 10, 1, 11, 0))
-      assert_equal '22:05 (J-1)', @stop.reload.actual_clock
+      assert_equal '29-09-2026 22:05', @stop.reload.actual_clock
     end
 
     get :show, params: { id: @stop.id }
 
     assert_response :success
-    assert_includes response.body, '22:05 (J-1)'
-    assert_includes response.body, '11:00 (J+1)'
+    assert_includes response.body, '29-09-2026 22:05'
+    assert_includes response.body, '01-10-2026 11:00'
     assert_includes response.body, I18n.t('operations.show.arrival')
     assert_includes response.body, I18n.t('operations.show.departure')
   end
