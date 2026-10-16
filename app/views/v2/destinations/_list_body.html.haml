@@ -1,36 +1,19 @@
--# Table + pagination only — updated by column selector without replacing the toolbar/dropdown.
+-# Cards + pagination — updated by search/pagination/columns without replacing the toolbar.
 - can_destroy_destinations = current_user_form_destroy_enabled?(:destination)
-- list_columns = @destinations_list_columns || destinations_list_active_column_ids(@customer)
-- empty_colspan = 2 + list_columns.size
+- list_columns = @destinations_list_columns || []
 = turbo_frame_tag 'destinations_list_body' do
   #destination_box.destinations-list-scroll
-    .table-responsive
-      %table.table.table-striped.table-condensed.destinations-list-table
-        %thead
-          %tr
-            %th.destinations-selection-col
-              %button.btn.btn-light.destinations-toggle-selection{type: "button", title: t('all.verb.toggle_selection')}
-                %i.fa.fa-check.fa-fw
-            - list_columns.each do |column_id|
-              %th{class: "#{destinations_list_column_class(column_id)} destinations-list-sortable-col"}
-                = destinations_list_sort_header(column_id, destinations_list_column_label(column_id), @destinations_list_sort)
-            %th.destinations-list-actions-col
-        %tbody
-          - if @destinations.any?
-            - visit_subrows_enabled = destinations_list_visit_subrows_enabled?(list_columns)
-            - @destinations.each do |destination|
-              - visits = destination.visits.to_a
-              - visits_count = visits.size
-              - if visit_subrows_enabled
-                - visit_rows = visits_count.positive? ? visits : [nil]
-                - visit_rows.each_with_index do |visit, visit_index|
-                  = render 'v2/destinations/list_row', destination: destination, list_columns: list_columns, can_destroy_destinations: can_destroy_destinations, visit: visit, visit_subrow: visit_index.positive?, visit_index: visit_index, visits_count: visits_count
-              - else
-                = render 'v2/destinations/list_row', destination: destination, list_columns: list_columns, can_destroy_destinations: can_destroy_destinations, visit: nil, visit_subrow: false, visit_index: 0, visits_count: visits_count
-          - else
-            %tr
-              %td.text-center.text-muted{colspan: empty_colspan}
-                = t 'api_web.v01.destinations.index.none_destinations', default: 'Aucune destination trouvée'
+    .v2-index-cards.px-2{data: { v2__index_selection_target: 'root' }}
+      .v2-index-cards-select-bar
+        %label.mb-0.d-flex.align-items-center.gap-2
+          %input{type: 'checkbox', disabled: !can_destroy_destinations, data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }, title: t('all.verb.toggle_selection')}
+          %span= t('all.verb.select_all')
+      - if @destinations.any?
+        - @destinations.each do |destination|
+          = render 'v2/destinations/list_row', destination: destination, can_destroy_destinations: can_destroy_destinations, list_columns: list_columns
+      - else
+        %p.v2-index-card-empty.text-muted.text-center.mb-0= t 'api_web.v01.destinations.index.none_destinations', default: 'Aucune destination trouvée'
+
 
     - if @pagination[:per_page].positive? && @pagination[:total] > @pagination[:per_page]
       - total_pages = (@pagination[:total].to_f / @pagination[:per_page]).ceil

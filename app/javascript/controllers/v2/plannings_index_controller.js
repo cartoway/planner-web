@@ -167,7 +167,7 @@ export default class extends Controller {
   }
 
   selectedIds () {
-    return [...this.element.querySelectorAll("#plannings tbody input[type=checkbox]:checked")]
+    return [...this.element.querySelectorAll('[data-v2--table-selection-target="row"]:checked')]
       .filter((box) => !box.disabled)
       .map((box) => box.value)
       .filter(Boolean)

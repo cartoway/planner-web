@@ -1,0 +1,40 @@
+.lookbook-index-cards-host.container-fluid.py-3
+  %h1.h4.mb-2 Index with cards and map — mobile
+  %p.text-muted.small.mb-3
+    Map-backed indexes (destinations, stores) on
+    %strong phone
+    \: Liste / Carte panes (same pattern as operations show).
+    Dense destination cards in the list pane. Desktop overlay is under
+    %strong Index with cards and map
+    \.
+  %p.text-muted.small.mb-3
+    %span.badge.text-bg-secondary Demo data
+    Phone-width frames (max 24rem each), Liste and Carte side by side.
+
+  .lookbook-index-map-mobile-row
+    .lookbook-index-map-mobile
+      %p.small.text-muted.mb-1.text-center Liste
+      .lookbook-index-map-frame.is-mobile-pane-list
+        .v2-map-index-mobile-panes{role: 'tablist', 'aria-label': t('operations.show.mobile_panes')}
+          %button.btn.btn-primary{type: 'button', role: 'tab', 'aria-selected': 'true'}= t('operations.show.pane_list')
+          %button.btn.btn-outline-secondary{type: 'button', role: 'tab', 'aria-selected': 'false'}= t('operations.show.pane_map')
+        .lookbook-index-map-list.lookbook-destinations-cards
+          .p-2
+            = render 'design_system/index_cards_preview/sample_destination_cards'
+
+    .lookbook-index-map-mobile
+      %p.small.text-muted.mb-1.text-center Carte
+      .lookbook-index-map-frame.is-mobile-pane-map
+        .v2-map-index-mobile-panes{role: 'tablist', 'aria-label': t('operations.show.mobile_panes')}
+          %button.btn.btn-outline-secondary{type: 'button', role: 'tab', 'aria-selected': 'false'}= t('operations.show.pane_list')
+          %button.btn.btn-primary{type: 'button', role: 'tab', 'aria-selected': 'true'}= t('operations.show.pane_map')
+        .lookbook-index-map-placeholder.d-flex.align-items-center.justify-content-center.text-muted.small
+          Map (placeholder)
+        .lookbook-index-map-list
+          .p-2
+            .v2-index-cards
+              .v2-index-card
+                .v2-index-card-main
+                  .v2-index-card-body
+                    .v2-index-card-header
+                      %h2.v2-index-card-title Hidden while map is open

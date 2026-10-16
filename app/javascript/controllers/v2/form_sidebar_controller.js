@@ -1,6 +1,7 @@
 // Copyright © Cartoway
 // V2 right column: open when a form is loaded in turbo-frame#form_sidebar, close with X.
 // Keeps the address bar on the form URL so the same sidebar can be reopened from a shared link.
+// Host: .form-sidebar-host > backdrop + aside.form-sidebar (panel target).
 import { Controller } from "@hotwired/stimulus"
 import { visit } from "turbo/frame_promoted_visit"
 import {
@@ -11,7 +12,7 @@ import {
 } from "lib/form_sidebar_history"
 
 export default class extends Controller {
-  static targets = ["frame", "chrome"]
+  static targets = ["frame", "chrome", "panel", "backdrop"]
   static values = { listUrl: String }
 
   connect() {
@@ -19,7 +20,7 @@ export default class extends Controller {
     this.boundOnMainFrameLoad = this.onMainFrameLoad.bind(this)
     this.boundOnPopState = this.onPopState.bind(this)
     this.boundOnBeforeStreamRender = this.onBeforeStreamRender.bind(this)
-    // Listen on the aside (not the frame node): stream replace of #form_sidebar would drop a per-frame listener.
+    // Listen on the host (not the frame node): stream replace of #form_sidebar would drop a per-frame listener.
     this.element.addEventListener("turbo:frame-load", this.boundOnFrameLoad)
     this.mainFrame = document.getElementById("main")
     if (this.mainFrame) {
@@ -134,15 +135,24 @@ export default class extends Controller {
   refreshState() {
     const frame = this.frameEl()
     if (!frame) return
+    const panel = this.panelEl()
     const hasForm = !!frame.querySelector("form")
     if (hasForm) {
-      this.element.classList.remove("form-sidebar--collapsed", "slide-panel--collapsed")
-      this.element.classList.add("form-sidebar--open")
+      panel.classList.remove("form-sidebar--collapsed", "slide-panel--collapsed")
+      panel.classList.add("form-sidebar--open", "is-open")
       if (this.hasChromeTarget) this.chromeTarget.classList.remove("d-none")
+      if (this.hasBackdropTarget) {
+        this.backdropTarget.classList.add("is-visible")
+        this.backdropTarget.setAttribute("aria-hidden", "false")
+      }
     } else {
-      this.element.classList.add("form-sidebar--collapsed", "slide-panel--collapsed")
-      this.element.classList.remove("form-sidebar--open")
+      panel.classList.add("form-sidebar--collapsed", "slide-panel--collapsed")
+      panel.classList.remove("form-sidebar--open", "is-open")
       if (this.hasChromeTarget) this.chromeTarget.classList.add("d-none")
+      if (this.hasBackdropTarget) {
+        this.backdropTarget.classList.remove("is-visible")
+        this.backdropTarget.setAttribute("aria-hidden", "true")
+      }
     }
   }
 
@@ -186,6 +196,12 @@ export default class extends Controller {
     const url = `${update.url}${window.location.hash || ''}`
     if (update.type === "push") window.history.pushState(state, "", url)
     else window.history.replaceState(state, "", url)
+  }
+
+  panelEl () {
+    if (this.hasPanelTarget) return this.panelTarget
+    // Legacy: controller mounted directly on aside.form-sidebar
+    return this.element
   }
 
   frameEl () {

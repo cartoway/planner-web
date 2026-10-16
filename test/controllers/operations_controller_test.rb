@@ -26,11 +26,12 @@ class OperationsControllerTest < ActionController::TestCase
     assert_response :success
     assert_includes response.body, 'Named Op'
     assert_includes response.body, 'REF-OP'
-    assert_select '.operations-index-card-title', text: 'Named Op'
+    assert_select '.v2-index-card-title', text: 'Named Op'
     assert_includes response.body, 'operations-index'
-    assert_includes response.body, 'operations-index-cards'
-    assert_includes response.body, 'operations-index-card'
-    assert_includes response.body, 'operations-index-card-actions'
+    assert_includes response.body, 'v2-index-cards'
+    assert_includes response.body, 'v2-index-card'
+    assert_includes response.body, 'v2-index-card-actions'
+
     assert_select '#count.primary.data-info'
     assert_includes response.body, I18n.t('execution.open_tracking')
     assert_includes response.body, 'v2-list-filters'

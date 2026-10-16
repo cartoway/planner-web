@@ -1474,7 +1474,7 @@ fr:
     edit:
       title: Modifier capacité
     index:
-      title: Liste capacités
+      title: Capacités
       new: Nouvelle capacité
       deliverable_units_count_help: Nombre de capacités
     new:
@@ -1626,7 +1626,7 @@ fr:
         title: TomTom
         help: Importe les adresses de TomTom WEBFLEET comme clients
     index:
-      title: Liste adresses
+      title: Adresses
       collapse_list: Réduire la liste
       expand_list: Afficher la liste
       cancel_position_drag: Annuler le placement
@@ -1643,7 +1643,8 @@ fr:
       columns: Colonnes
       columns_help: Cochez les colonnes à afficher dans la liste (au plus %{max} colonnes actives).
       columns_reset_defaults: Valeurs par défaut
-      columns_count: "%{count} / %{max}"
+      columns_count: "%{count} / %{max}"
+      sort: Trier
       sort_by: Trier par %{column}
       sort_asc: Tri croissant sur %{column}
       sort_desc: Tri décroissant sur %{column}
@@ -2199,7 +2200,7 @@ fr:
           Vous possédez trop de plans. Retrouvez tous vos plans en cliquant sur
           Liste.
     index:
-      title: Liste plans de tournées
+      title: Plans de tournées
       new: Nouveau plan
       none: Aucun plan
       show: Voir la liste complète (%{count})
@@ -2958,7 +2959,7 @@ fr:
         import:
           title: Import des sites
           in_progress: 'Import des sites en cours, merci de patienter'
-      title: Liste sites
+      title: Sites
       new: Nouveau site
       none: Aucun site
       show: Voir la liste complète (%{count})
@@ -3122,7 +3123,7 @@ fr:
         stop_list_help: Permet de peronnaliser le libellé affiché pour chaque arrêt au sein des tournées. Faites glisser les champs entre les listes. Au plus trois éléments peuvent être actifs ; l’ordre dans la liste "Actives" est utilisé de gauche à droite (séparé par «  - »).
         destinations_list: Colonnes liste adresses
         destinations_list_help: Permet de personnaliser les colonnes affichées dans la liste des adresses. Faites glisser les colonnes entre les listes ; au plus %{max} colonnes peuvent être actives ; l’ordre dans « Actives » est respecté de gauche à droite.
-        destinations_index: Liste adresses
+        destinations_index: Adresses
         destinations_index_v2: Nouvelle interface (adresses et flotte)
         destinations_index_help: Activez le nouveau layout (liste d'adresses et menu Flotte). Désactivez pour conserver l'interface classique.
         route_headers: Données tournées
@@ -3837,6 +3838,8 @@ fr:
       confirm: Êtes-vous sûr ?
       duplicate: Dupliquer
       toggle_selection: Inverser sélection
+      select: Sélectionner
+      select_all: Tout sélectionner
       dismiss: Ignorer
       import: Importer
       save: Sauvegarder

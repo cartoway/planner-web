@@ -33,4 +33,13 @@ class V2LayoutHeadTest < ActiveSupport::TestCase
     refute_match(/@import\s+["']scaffolds["']/, styles)
     assert_match(%r{@import\s+["']v2/scaffolds["']}, styles)
   end
+
+  test 'v2 scaffolds enable mobile topbar menu for all cartoway-v2 pages' do
+    scaffolds = Rails.root.join('app/assets/stylesheets/v2/_scaffolds.scss').read
+
+    assert_includes scaffolds, 'body.cartoway-v2'
+    assert_includes scaffolds, '.menu-mobile-topbar'
+    assert_includes scaffolds, 'is-mobile-open'
+    assert_includes scaffolds, '--menu-mobile-topbar-height'
+  end
 end

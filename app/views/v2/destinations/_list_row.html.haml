@@ -1,36 +1,82 @@
--# locals: destination, list_columns, can_destroy_destinations, visit:, visit_subrow:, visit_index:, visits_count:
-%tr.destination{class: [('destination-visit-subrow' if visit_subrow)], data: {destination_id: destination.id, lat: destination.lat, lng: destination.lng}}
-  - if visit_subrow
-    %td.destinations-selection-col.destinations-list-cell--destination-spacer
-    - list_columns.each do |column_id|
-      = render 'v2/destinations/list_column_cell', destination: destination, column_id: column_id, visit: visit, visit_subrow: true, visit_index: visit_index, visits_count: visits_count
-    %td.destinations-list-actions-col.destinations-list-cell--destination-spacer
-  - else
-    %td.destinations-selection-col
-      %input{type: "checkbox", id: "destination_#{destination.id}", name: "destinations[#{destination.id}]", value: "1"}
-    - list_columns.each do |column_id|
-      = render 'v2/destinations/list_column_cell', destination: destination, column_id: column_id, visit: visit, visit_subrow: false, visit_index: visit_index, visits_count: visits_count
-    %td.destinations-list-actions-col.text-nowrap
-      .btn-group{role: "group"}
-        %button.btn.btn-light.destinations-row-center{
-          type: "button",
-          disabled: !destination.position?,
-          title: t('destinations.index.center_view_help'),
-          'aria-label': t('destinations.index.center_view_help')
-        }
-          %i.fa.fa-expand.fa-fw
-        = link_to edit_destination_path(destination), class: 'btn btn-light', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
-          %i.fa.fa-pencil.fa-fw
-        %button.btn.btn-danger.destinations-row-delete{
-          type: "button",
-          disabled: !can_destroy_destinations,
-          title: t('all.verb.destroy'),
-          data: confirm_click_data(
-            group: 'destinations-destroy',
-            wait_message: t('all.verb.destroy_confirm_wait'),
-            confirm_message: t('all.verb.destroy_confirm'),
-            ready_label: '<i class="fa fa-check fa-fw" aria-hidden="true"></i>',
-            base_class: 'btn-danger'
-          ).merge(destination_id: destination.id)
-        }
-          %i.fa.fa-trash.fa-fw
+-# locals: destination, can_destroy_destinations:, list_columns: (optional)
+- list_columns = Array(local_assigns.fetch(:list_columns) { @destinations_list_columns })
+- dest_columns = list_columns.reject { |column_id| destinations_list_visit_scoped_column?(column_id) }
+- visit_columns = list_columns.select { |column_id| destinations_list_visit_scoped_column?(column_id) }
+- field_columns = dest_columns.reject { |column_id| column_id.to_s == 'name' }
+- address_column_ids = destinations_list_card_address_columns(field_columns)
+- meta_column_ids = destinations_list_card_meta_columns(field_columns).select { |column_id| destinations_list_card_field_present?(destination, column_id) }
+- show_geocoding = field_columns.any? { |column_id| column_id.to_s == 'geocoding' }
+- show_ref = field_columns.any? { |column_id| column_id.to_s == 'ref' }
+- address_line = destinations_list_card_address_line(destination, address_column_ids)
+- geocoded_line = show_geocoding ? destinations_list_geocoding_result_free(destination) : nil
+- visits = destination.visits.to_a
+-# String id (not dom_id): Lookbook sample destinations are Structs without to_key.
+.v2-index-card.destination.destinations-index-card{id: "destination_#{destination.id}", data: { destination_id: destination.id, lat: destination.lat, lng: destination.lng }}
+  .v2-index-card-main
+    .v2-index-card-select
+      %input{type: "checkbox", id: "select_destination_#{destination.id}", name: "destinations[#{destination.id}]", value: "1", data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }}
+    .v2-index-card-body
+      .v2-index-card-header.destinations-card-header
+        .destinations-card-identity
+          - if show_ref
+            %span.destinations-card-ref{title: destinations_list_column_label('ref')}= destination.ref
+          %h2.v2-index-card-title.destinations-card-name= destination.name.presence || '–'
+        .v2-index-card-badges
+          - if show_geocoding
+            = render 'v2/destinations/list_card_geocoding_chip', destination: destination
+          - elsif !destination.position?
+            %span.badge.text-bg-warning= t('destinations.index.geocoding_empty')
+        .v2-index-card-actions.destinations-card-actions
+          %button.btn.btn-light.destinations-row-center{
+            type: "button",
+            disabled: !destination.position?,
+            title: t('destinations.index.center_view_help'),
+            'aria-label': t('destinations.index.center_view_help')
+          }
+            %i.fa.fa-expand.fa-fw
+          = link_to edit_destination_path(destination), class: 'btn btn-primary', title: t('all.verb.edit'), 'aria-label': t('all.verb.edit'), data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
+            %i.fa.fa-pencil.fa-fw
+          %button.btn.btn-danger.destinations-row-delete{
+            type: "button",
+            disabled: !can_destroy_destinations,
+            title: t('all.verb.destroy'),
+            'aria-label': t('all.verb.destroy'),
+            data: confirm_click_data(
+              group: 'destinations-destroy',
+              wait_message: t('all.verb.destroy_confirm_wait'),
+              confirm_message: t('all.verb.destroy_confirm'),
+              ready_label: '<i class="fa fa-check fa-fw" aria-hidden="true"></i>',
+              base_class: 'btn-danger'
+            ).merge(destination_id: destination.id)
+          }
+            %i.fa.fa-trash.fa-fw
+      - if address_line.present? || geocoded_line.present?
+        .destinations-card-address-block
+          - if address_line.present?
+            %p.destinations-card-address= address_line
+          - if geocoded_line.present?
+            .alert.alert-light.destinations-card-geocoded{title: t('destinations.index.geocoding_result')}
+              %i.fa.fa-magnifying-glass.fa-fw.destinations-card-geocoded-icon{"aria-hidden": "true"}
+              %span.destinations-card-geocoded-value= geocoded_line
+      - if meta_column_ids.any?
+        .destinations-card-meta
+          - meta_column_ids.each_with_index do |column_id, index|
+            - unless index.zero?
+              %span.destinations-card-meta-sep{"aria-hidden": "true"} ·
+            %span.destinations-card-meta-item{title: destinations_list_column_label(column_id)}
+              = render 'v2/destinations/list_card_value', destination: destination, column_id: column_id
+      - if visit_columns.any?
+        - visits.each_with_index do |visit, visit_index|
+          - visit_meta_ids = visit_columns.select { |column_id| destinations_list_card_field_present?(destination, column_id, visit: visit) }
+          - next if visit_meta_ids.empty?
+          .destinations-card-visit
+            %p.destinations-card-visit-title
+              = "#{Visit.model_name.human} #{visit_index + 1}"
+              - if visits.size > 1
+                %span.text-muted= "/ #{visits.size}"
+            .destinations-card-meta
+              - visit_meta_ids.each_with_index do |column_id, index|
+                - unless index.zero?
+                  %span.destinations-card-meta-sep{"aria-hidden": "true"} ·
+                %span.destinations-card-meta-item{title: destinations_list_column_label(column_id)}
+                  = render 'v2/destinations/list_card_value', destination: destination, column_id: column_id, visit: visit

@@ -122,13 +122,82 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_select '.lookbook-operation-map', 1
   end
 
+  test 'index with cards preview renders' do
+    get '/lookbook/preview/design_system/index_cards/index_with_cards', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_select '.lookbook-index-cards-host', 1
+    assert_select '.v2-index-cards', minimum: 2
+    assert_select '.v2-index-card', minimum: 2
+    assert_select '.v2-index-card-title', text: 'Morning round'
+    assert_select '.lookbook-deliverable-units-cards .v2-index-card-meta-label', minimum: 1
+  end
+
+  test 'index with cards mobile preview renders phone frames' do
+    get '/lookbook/preview/design_system/index_cards/index_with_cards_mobile', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_select '.lookbook-index-cards-mobile', 2
+    assert_select '.lookbook-index-cards-mobile-frame', 2
+    assert_select '.lookbook-index-cards-mobile-toolbar .fa-check-square', minimum: 2
+    assert_select '.lookbook-index-cards-mobile .v2-index-card-actions--slots', minimum: 1
+    assert_select '.lookbook-index-cards-mobile .lookbook-deliverable-units-cards .v2-index-card-actions', minimum: 1
+    assert_select '.lookbook-index-cards-mobile .v2-index-card-title', text: 'Morning round'
+  end
+
+  test 'index cards with_selection preview renders' do
+    get '/lookbook/preview/design_system/index_cards/with_selection', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_select '[data-controller*="v2--index-selection"]', 1
+    assert_select '.v2-index-cards', 1
+    assert_select '[data-v2--table-selection-target="row"]', 3
+    assert_select 'button[data-action*="v2--index-selection#toggle"] .fa-check-square', 1
+    assert_select '.v2-index-card-meta-label', minimum: 1
+  end
+
+  test 'index with cards and map preview renders desktop panel' do
+    get '/lookbook/preview/design_system/index_cards/index_with_cards_and_map', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_select '.lookbook-index-map-desktop .lookbook-index-list-panel', 1
+    assert_select '.lookbook-index-map-desktop .destinations-sidebar-title-row h1', 1
+    assert_select '.lookbook-index-map-desktop .destinations-search-icon.fa-magnifying-glass', 1
+    assert_select '.lookbook-index-map-desktop .destinations-list-toolbar .fa-check-square', 1
+    assert_select '.lookbook-index-map-desktop .v2-index-card', minimum: 1
+    assert_select '.lookbook-index-map-desktop .destinations-index-card', minimum: 1
+    assert_select '.lookbook-index-map-desktop .destinations-card-address', minimum: 1
+    assert_select '.lookbook-index-map-desktop .destinations-card-geocoding-chip', minimum: 1
+    assert_select '.lookbook-index-map-desktop .destinations-card-geocoded.alert-light .fa-magnifying-glass', minimum: 1
+    assert_select '.lookbook-index-map-desktop .destinations-list-deliverable-unit-label', minimum: 1
+    assert_select '.lookbook-index-map-mobile', 0
+  end
+
+  test 'index with cards and map mobile preview renders panes' do
+    get '/lookbook/preview/design_system/index_cards/index_with_cards_and_map_mobile', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_select '.lookbook-index-map-desktop', 0
+    assert_select '.lookbook-index-map-mobile', 2
+    assert_select '.lookbook-index-map-frame.is-mobile-pane-list', 1
+    assert_select '.lookbook-index-map-frame.is-mobile-pane-map', 1
+    assert_select '.lookbook-index-map-mobile .v2-map-index-mobile-panes .btn', 4
+    # Liste pane shows cards only — map placeholder belongs to the Carte pane.
+    assert_select '.lookbook-index-map-frame.is-mobile-pane-list .lookbook-index-map-placeholder', 0
+    assert_select '.lookbook-index-map-frame.is-mobile-pane-list .v2-index-card', minimum: 1
+    assert_select '.lookbook-index-map-frame.is-mobile-pane-map .lookbook-index-map-placeholder', 1
+    assert_select '.lookbook-index-map-mobile .destinations-index-card', minimum: 1
+  end
+
   test 'filtered search preview renders' do
     get '/lookbook/preview/design_system/forms/filtered_search', headers: { 'User-Agent' => MODERN_CHROME_UA }
 
     assert_response :success
     assert_select '[data-controller="v2--filtered-search"]', 1
     assert_select '#lookbook-filtered-search[role="combobox"]', 1
-    assert_select 'label[for="lookbook-filtered-search"]', text: I18n.t('destinations.index.search_label')
+    assert_select '#lookbook-filtered-search[aria-label]', 1
+    assert_select '.destinations-search-icon.fa-magnifying-glass', 1
+    assert_select 'label[for="lookbook-filtered-search"]', 0
     assert_select '#lookbook-filtered-search-dropdown [data-search-key]', DestinationSearchParser::ALLOWED_KEYS.size
   end
 
@@ -151,11 +220,11 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select 'turbo-frame#destinations_list', 1
-    assert_select '.destinations-sidebar', 2
+    assert_select '.destinations-sidebar', minimum: 2
+    assert_select '.destinations-sidebar-title-row', minimum: 2
+    assert_select '#destinations-search-form .destinations-search-icon.fa-magnifying-glass', 1
     assert_select '#destination_box.destinations-list-scroll', 1
-    assert_select 'th.destinations-selection-col', 1
-    assert_select '.destinations-list-geocoding-cell', minimum: 1
-    assert_select 'tbody tr.destination', minimum: 1
+    assert_select 'turbo-frame#destinations_list .v2-index-card.destination', minimum: 1
     assert_select 'button.floating-btn.destinations-sidebar-toggle', minimum: 1
     assert_select 'button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger', minimum: 1
   end
@@ -173,6 +242,18 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_select '.related-item', minimum: 3
     assert_select '.related-item-index', minimum: 3
     assert_select '.related-item-status.stop-status-delivered', 1
+  end
+
+  test 'form sidebar bottom sheet preview renders backdrop and close chrome' do
+    get '/lookbook/preview/design_system/layout_chrome/form_sidebar_bottom_sheet', headers: { 'User-Agent' => MODERN_CHROME_UA }
+
+    assert_response :success
+    assert_select '.lookbook-form-sidebar-host', 1
+    assert_select '#lookbook-form-sidebar-bottom-sheet.lookbook-form-sidebar-demo--bottom-sheet', 1
+    assert_select '.form-sidebar-backdrop.is-visible', 1
+    assert_select 'aside.form-sidebar.form-sidebar--open.is-open', 1
+    assert_select '.form-sidebar-chrome button.btn-close', 1
+    assert_select 'header.destination-form-sidebar-header', 1
   end
 
   test 'grid layout rows and columns preview renders' do

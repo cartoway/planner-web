@@ -22,23 +22,18 @@ class PreferencesCatalogDestinationsListTest < ActiveSupport::TestCase
     units.drop(1).each do |unit|
       assert_not_includes active, Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
     end
-    assert_operator active.size, :<=, Preferences::Catalog::DestinationsList::MAX_ACTIVE
   end
 
-  test 'normalize_zone caps active columns at MAX_ACTIVE' do
+  test 'normalize_zone keeps all requested active columns without capping' do
     allowed = Preferences::Catalog::DestinationsList.allowed_column_ids(@customer)
-    oversized = allowed.first(Preferences::Catalog::DestinationsList::MAX_ACTIVE + 3)
-    assert oversized.size > Preferences::Catalog::DestinationsList::MAX_ACTIVE
+    assert allowed.size > 8, 'fixture customer should expose more than 8 columns'
 
     normalized = Preferences::Catalog::DestinationsList.normalize_zone(
-      { 'active' => oversized, 'hidden' => [] },
+      { 'active' => allowed, 'hidden' => [] },
       customer: @customer
     )
-    assert_equal Preferences::Catalog::DestinationsList::MAX_ACTIVE, normalized['active'].size
-    assert_equal oversized.first(Preferences::Catalog::DestinationsList::MAX_ACTIVE), normalized['active']
-    oversized.drop(Preferences::Catalog::DestinationsList::MAX_ACTIVE).each do |col|
-      assert_includes normalized['hidden'], col
-    end
+    assert_equal allowed.to_set, normalized['active'].to_set
+    assert_empty normalized['hidden']
   end
 
   test 'normalize_zone keeps defaults when active and hidden are both empty' do

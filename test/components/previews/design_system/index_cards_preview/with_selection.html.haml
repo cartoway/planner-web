@@ -1,0 +1,57 @@
+.lookbook-index-cards-host.container-fluid.py-3{data: { controller: 'v2--index-selection v2--table-selection', v2__index_selection_select_label_value: t('all.verb.select'), v2__index_selection_cancel_label_value: t('all.verb.cancel') }}
+  %h1.h4.mb-2 Index with cards — selection mode
+  %p.text-muted.small.mb-3
+    Click
+    %strong= t('all.verb.select')
+    to reveal checkboxes and enable bulk destroy. Controllers:
+    %code v2--index-selection
+    +
+    %code v2--table-selection
+    (same toolbar + labeled meta as deliverable units / plannings).
+  %p.text-muted.small.mb-3
+    %span.badge.text-bg-secondary Demo data
+
+  .d-flex.gap-2.align-items-center.mb-3.flex-wrap
+    %button.btn.btn-primary{type: 'button', disabled: true, title: t('deliverable_units.index.new')}
+      %i.fa.fa-plus.fa-fw
+      %span= t('deliverable_units.index.new')
+    %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
+      %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+      %span{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
+    %button.btn.btn-danger.destinations-bulk-delete{type: 'button', disabled: true, data: { v2__table_selection_target: 'bulk' }}
+      %i.fa.fa-trash.fa-fw
+      = t('all.verb.destroy_selection')
+
+  .v2-index-cards{data: { v2__index_selection_target: 'root' }}
+    .v2-index-cards-select-bar
+      %label.mb-0.d-flex.align-items-center.gap-2
+        %input{type: 'checkbox', data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }}
+        %span= t('all.verb.select_all')
+
+    - [{ name: 'Alpha unit', ref: 'REF-1', capacity: '10', overload: t('deliverable_units.form.optimization_overload_multiplier_yes') }, { name: 'Beta unit', ref: 'REF-2', capacity: '25', overload: t('deliverable_units.form.optimization_overload_multiplier_no') }, { name: 'Gamma unit', ref: 'REF-3', capacity: '5', overload: t('deliverable_units.form.optimization_overload_multiplier_yes') }].each_with_index do |sample, i|
+      .v2-index-card
+        .v2-index-card-main
+          .v2-index-card-select
+            %input{type: 'checkbox', value: i, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }}
+          .v2-index-card-body
+            .v2-index-card-header
+              %h2.v2-index-card-title
+                %i.fa.fa-dumpster.fa-fw{"aria-hidden": "true"}
+                = sample[:name]
+            .v2-index-card-meta.text-muted
+              %span.v2-index-card-meta-item
+                %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:ref)} :"
+                = sample[:ref]
+              %span.v2-index-card-meta-item
+                %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:default_capacity)} :"
+                = sample[:capacity]
+              %span.v2-index-card-meta-item
+                %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:optimization_overload_multiplier)} :"
+                = sample[:overload]
+        .v2-index-card-actions
+          %button.btn.btn-primary{type: 'button', title: t('all.verb.edit')}
+            %i.fa.fa-pencil.fa-fw
+            = t('all.verb.edit')
+          %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy')}
+            %i.fa.fa-trash.fa-fw
+            = t('all.verb.destroy')
