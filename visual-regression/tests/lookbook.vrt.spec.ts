@@ -38,7 +38,12 @@ const LOOKBOOK_PREVIEWS: { path: string; name: string }[] = [
   { path: 'design_system/layout_chrome/list_group', name: 'layout_chrome-list_group' },
   { path: 'design_system/layout_chrome/form_sidebar_chrome', name: 'layout_chrome-form_sidebar_chrome' },
   { path: 'design_system/layout_chrome/xl_floating_button', name: 'layout_chrome-xl_floating_button' },
-  { path: 'design_system/planning_sidebar/default', name: 'planning_sidebar-default' }
+  { path: 'design_system/planning_sidebar/default', name: 'planning_sidebar-default' },
+  { path: 'design_system/index_cards/index_with_cards', name: 'index_cards-index_with_cards' },
+  { path: 'design_system/index_cards/index_with_cards_mobile', name: 'index_cards-index_with_cards_mobile' },
+  { path: 'design_system/index_cards/with_selection', name: 'index_cards-with_selection' },
+  { path: 'design_system/index_cards/index_with_cards_and_map', name: 'index_cards-index_with_cards_and_map' },
+  { path: 'design_system/index_cards/index_with_cards_and_map_mobile', name: 'index_cards-index_with_cards_and_map_mobile' }
 ]
 
 for (const { path, name } of LOOKBOOK_PREVIEWS) {

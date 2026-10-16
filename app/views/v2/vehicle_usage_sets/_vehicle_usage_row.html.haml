@@ -1,29 +1,56 @@
 -# locals: vehicle_usage, vehicle_usage_set, can_update_vehicle_usage, can_view_vehicle_usage
-%tr{id: dom_id(vehicle_usage), class: ('disabled' unless vehicle_usage.active), data: { vehicle_usage_id: vehicle_usage.id, vehicle_id: vehicle_usage.vehicle_id, vehicle_name: vehicle_usage.vehicle.name, router_sort: vehicle_usage_router_label(vehicle_usage) }}
-  - if can_update_vehicle_usage
-    %td.vehicle-usage-sort-handle{data: { action: 'pointerdown->v2--vehicle-usage-sets-index#pointerDown' }}
-      %i.fa.fa-grip-vertical.fa-fw{title: t('vehicle_usages.index.reorder'), draggable: false}
-  %td
-    %label.vehicle-usage-name
+- toggle_icon = vehicle_usage.active ? 'fa-power-off' : 'fa-circle-notch'
+- toggle_label = vehicle_usage.active ? t('vehicle_usages.index.disable') : t('vehicle_usages.index.enable')
+- router_html = vehicle_usage_router(vehicle_usage)
+- emission_html = vehicle_usage_emission_consumption(vehicle_usage, current_user.prefered_unit)
+- capacities_html = vehicle_capacities(vehicle_usage.vehicle)
+- stores_html = vehicle_usage_store_name(vehicle_usage)
+- hours_html = vehicle_usage_store_hours(vehicle_usage)
+- devices_html = vehicle_devices(vehicle_usage.vehicle)
+-# Always emit the same meta slots so columns stay aligned across cards.
+.v2-index-card.vehicle-usage-card{id: dom_id(vehicle_usage), class: ('disabled' unless vehicle_usage.active), data: { vehicle_usage_id: vehicle_usage.id, vehicle_id: vehicle_usage.vehicle_id, vehicle_name: vehicle_usage.vehicle.name, router_sort: vehicle_usage_router_label(vehicle_usage) }}
+  .v2-index-card-main
+    - if can_update_vehicle_usage
+      %span.vehicle-usage-sort-handle{data: { action: 'pointerdown->v2--vehicle-usage-sets-index#pointerDown' }}
+        %i.fa.fa-grip-vertical.fa-fw{title: t('vehicle_usages.index.reorder'), draggable: false}
+    .vehicle-usage-select
       %input.vehicle-select{type: 'checkbox', id: "vehicle_usage_vehicle_#{vehicle_usage.id}", name: "vehicle_usages[#{vehicle_usage_set.id}][#{vehicle_usage.id}]", disabled: !can_update_vehicle_usage, data: { action: 'change->v2--vehicle-usage-sets-index#syncRow' }}
-      %span.vehicle_color{style: "background:#{vehicle_usage.vehicle.color}"}
-      = vehicle_usage.vehicle.name
-  %td= vehicle_usage_router(vehicle_usage)
-  %td= vehicle_usage_emission_consumption(vehicle_usage, current_user.prefered_unit)
-  %td= vehicle_capacities(vehicle_usage.vehicle)
-  %td= vehicle_usage_store_name(vehicle_usage)
-  %td= vehicle_usage_store_hours(vehicle_usage)
-  %td= vehicle_devices(vehicle_usage.vehicle)
-  %td.text-end.text-nowrap
-    .btn-group{role: 'group'}
-      - if vehicle_usage.active && can_view_vehicle_usage
-        = link_to edit_vehicle_usage_path(vehicle_usage), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
-          %i.fa.fa-pencil.fa-fw
-          = t('all.verb.edit')
-    .btn-group{role: 'group'}
-      - toggle_icon = vehicle_usage.active ? 'fa-power-off' : 'fa-circle-notch'
-      - toggle_label = vehicle_usage.active ? t('vehicle_usages.index.disable') : t('vehicle_usages.index.enable')
-      - if can_update_vehicle_usage
-        = link_to [:toggle, vehicle_usage], class: 'btn btn-light', data: { turbo_method: :patch, turbo_confirm: (t('vehicle_usages.index.disable_confirm') if vehicle_usage.active) } do
-          %i.fa.fa-fw{class: toggle_icon}
-          = toggle_label
+    .v2-index-card-body
+      .v2-index-card-header
+        .vehicle-usage-name
+          %span.vehicle_color{style: "background:#{vehicle_usage.vehicle.color}"}
+          %h2.v2-index-card-title.vehicle-usage-card-title= vehicle_usage.vehicle.name
+      .v2-index-card-meta.text-muted
+        %span.v2-index-card-meta-item.vu-meta-router
+          - if router_html.present?
+            %span.v2-index-card-meta-label= "#{Vehicle.human_attribute_name(:router_id)} :"
+            %span.v2-index-card-meta-value= router_html
+        %span.v2-index-card-meta-item.vu-meta-emission
+          - if emission_html.present?
+            %span.v2-index-card-meta-label= "#{Vehicle.human_attribute_name(:emission)} / #{Vehicle.human_attribute_name(:consumption)} :"
+            %span.v2-index-card-meta-value= emission_html
+        %span.v2-index-card-meta-item.vu-meta-capacities
+          - if capacities_html.present?
+            %span.v2-index-card-meta-label= "#{t('vehicle_usages.index.capacities')} :"
+            %span.v2-index-card-meta-value= capacities_html
+        %span.v2-index-card-meta-item.vu-meta-stores
+          - if stores_html.present?
+            %span.v2-index-card-meta-label= "#{t('vehicle_usages.index.stores')} :"
+            %span.v2-index-card-meta-value= stores_html
+        %span.v2-index-card-meta-item.vu-meta-hours
+          - if hours_html.present?
+            %span.v2-index-card-meta-label= "#{t('vehicle_usage_sets.index.time')} :"
+            %span.v2-index-card-meta-value= hours_html
+        %span.v2-index-card-meta-item.vu-meta-devices
+          - if devices_html.present?
+            %span.v2-index-card-meta-label= "#{t('vehicle_usages.index.devices')} :"
+            %span.v2-index-card-meta-value= devices_html
+  .v2-index-card-actions
+    - if vehicle_usage.active && can_view_vehicle_usage
+      = link_to edit_vehicle_usage_path(vehicle_usage), class: 'btn btn-primary', title: t('all.verb.edit'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+        %i.fa.fa-pencil.fa-fw
+        %span.vehicle-usage-btn-label= t('all.verb.edit')
+    - if can_update_vehicle_usage
+      = link_to [:toggle, vehicle_usage], class: 'btn btn-light', title: toggle_label, data: { turbo_method: :patch, turbo_confirm: (t('vehicle_usages.index.disable_confirm') if vehicle_usage.active) } do
+        %i.fa.fa-fw{class: toggle_icon}
+        %span.vehicle-usage-btn-label= toggle_label
