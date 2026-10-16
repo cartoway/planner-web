@@ -7,6 +7,15 @@ const CONFIRM_DELAY = 200
 const CONFIRM_DISARM_AFTER = 4000
 const PHOTO_DB = 'planner-mobile-photos'
 const PHOTO_STORE = 'pending'
+const PHOTO_CONFIRM_READY = '<i class="fa fa-check fa-fw" aria-hidden="true"></i>'
+
+function escapeAttr (value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
 
 // Driver route screen: status, photos, signature and GPS.
 // Offline writes stay in localStorage / IndexedDB and flush through the service worker.
@@ -23,10 +32,12 @@ export default class extends Controller {
     this.stopsAccordion = null
     this.onClick = this.onClick.bind(this)
     this.onChange = this.onChange.bind(this)
+    this.onConfirmClick = this.onConfirmClick.bind(this)
     this.onOnline = this.onOnline.bind(this)
     this.onServiceMessage = this.onServiceMessage.bind(this)
     this.element.addEventListener('click', this.onClick)
     this.element.addEventListener('change', this.onChange)
+    this.element.addEventListener('confirm-click:confirmed', this.onConfirmClick)
     window.addEventListener('online', this.onOnline)
     this.bindSignatureCanvas()
     this.registerServiceWorker()
@@ -43,6 +54,7 @@ export default class extends Controller {
     this.stopsAccordion = null
     this.element.removeEventListener('click', this.onClick)
     this.element.removeEventListener('change', this.onChange)
+    this.element.removeEventListener('confirm-click:confirmed', this.onConfirmClick)
     window.removeEventListener('online', this.onOnline)
     if ('serviceWorker' in navigator) navigator.serviceWorker.removeEventListener('message', this.onServiceMessage)
   }
@@ -217,22 +229,23 @@ export default class extends Controller {
       return
     }
 
-    if (target.closest('.stop-photo-remove')) {
-      event.preventDefault()
-      event.stopPropagation()
-      const button = target.closest('.stop-photo-remove')
-      this.deletePhoto(resolveStopPhotosPanel(button), button.dataset.url)
-      return
-    }
-
     if (target.closest('.stop-photo-modal-close')) this.closePhoto()
     else if (target.closest('.stop-photo-modal-prev')) this.stepPhoto(-1)
     else if (target.closest('.stop-photo-modal-next')) this.stepPhoto(1)
-    else if (target.closest('.stop-photo-modal-delete')) this.deleteModalPhoto()
     else if (target.closest('.stop-signature-open')) this.openSignature(target.closest('.stop-signature'))
     else if (target.closest('.stop-signature-modal-close')) this.closeSignature()
     else if (target.closest('.stop-signature-clear')) this.clearSignature()
     else if (target.closest('.stop-signature-save')) this.saveSignature()
+  }
+
+  onConfirmClick (event) {
+    const button = event.detail?.element
+    if (!button) return
+    if (button.classList.contains('stop-photo-remove')) {
+      this.deletePhoto(resolveStopPhotosPanel(button), button.dataset.url)
+      return
+    }
+    if (button.classList.contains('stop-photo-modal-delete')) this.deleteModalPhoto()
   }
 
   onChange (event) {
@@ -571,13 +584,23 @@ export default class extends Controller {
     ;(photos || []).forEach((photo) => {
       const node = document.createElement('div')
       node.className = 'stop-photo'
-      const remove = photo.deletable === false ? '' : `<button type="button" class="stop-photo-remove btn btn-xs btn-default" data-url="${base}/${photo.id}"><i class="fa fa-trash"></i></button>`
+      const remove = photo.deletable === false ? '' : this.photoRemoveButtonHtml(panel, `${base}/${photo.id}`)
       node.innerHTML = `${remove}<button type="button" class="stop-photo-open" data-url="${photo.url}"><img src="${photo.url}" alt=""></button>`
       const signature = list.querySelector('.stop-signature-doc')
       if (signature) list.insertBefore(node, signature)
       else list.appendChild(node)
     })
     this.refreshDocuments(panel)
+  }
+
+  photoRemoveButtonHtml (panel, url) {
+    const wait = panel.dataset.confirmWait
+    const message = panel.dataset.confirmMessage
+    if (!wait || !message) {
+      return `<button type="button" class="stop-photo-remove btn btn-xs btn-default" data-url="${escapeAttr(url)}"><i class="fa fa-trash"></i></button>`
+    }
+    const ready = panel.dataset.confirmReady || PHOTO_CONFIRM_READY
+    return `<button type="button" class="stop-photo-remove btn btn-xs btn-default" data-controller="confirm-click" data-confirm-click-group-value="stop-photos-destroy" data-confirm-click-wait-message-value="${escapeAttr(wait)}" data-confirm-click-confirm-message-value="${escapeAttr(message)}" data-confirm-click-ready-label-value="${escapeAttr(ready)}" data-confirm-click-base-class-value="btn-default" data-url="${escapeAttr(url)}"><i class="fa fa-trash"></i></button>`
   }
 
   refreshDocuments (panel) {
@@ -638,7 +661,10 @@ export default class extends Controller {
     if (img) img.src = item.url
     modal.querySelectorAll('.stop-photo-modal-nav').forEach((button) => button.classList.toggle('d-none', this.photoModalItems.length < 2))
     const del = modal.querySelector('.stop-photo-modal-delete')
-    if (del) del.classList.toggle('d-none', !item.deleteUrl)
+    if (del) {
+      this.application.getControllerForElementAndIdentifier(del, 'confirm-click')?.disarm()
+      del.classList.toggle('d-none', !item.deleteUrl)
+    }
   }
 
   stepPhoto (delta) {

@@ -172,8 +172,11 @@ class RouteMobileTest < ActiveSupport::TestCase
 
     assert last_response.ok?
     assert_includes last_response.body, 'stop-photo-remove'
+    assert_match(/stop-photo-remove[^>]*data-controller=['"]confirm-click['"]/, last_response.body)
+    assert_match(/stop-photo-remove[^>]*data-confirm-click-group-value=['"]stop-photos-destroy['"]/, last_response.body)
     assert_match(/stop-photo-remove[^>]*>\s*<i class=['"]fa fa-trash/, last_response.body)
     assert_includes last_response.body, 'stop-photo-modal-delete'
+    assert_match(/stop-photo-modal-delete[^>]*data-controller=['"]confirm-click['"]/, last_response.body)
     assert_includes last_response.body, 'stop-photo-open'
     assert_includes last_response.body, 'stop-photo-modal'
     refute_match(/stop-photo-open[\s\S]*target="_blank"/, last_response.body)

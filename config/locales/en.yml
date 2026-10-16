@@ -2783,6 +2783,7 @@ en:
       proofs_disabled: Proof storage is not enabled for this account
       photo_close: Close
       photo_delete: Delete
+      photo_delete_confirm: Confirm photo deletion?
       signature: Signature
       signature_open: Sign
       signature_clear: Clear

@@ -142,4 +142,4 @@
                         %div.color_small{ style: "background: #{route_data[:color]};" }
                         = route_data[:name]
   - if operation_stop
-    = render partial: 'stops/documents', locals: { stop: operation_stop }
+    = render partial: 'stops/documents', locals: { stop: operation_stop, confirm_photo_delete: local_assigns[:confirm_photo_delete] }
