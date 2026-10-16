@@ -45,10 +45,10 @@ export default class extends Controller {
     })
   }
 
-  persistOrder (tbody) {
-    const setId = tbody.dataset.vehicleUsageSetId
+  persistOrder (list) {
+    const setId = list.dataset.vehicleUsageSetId
     if (!setId) return
-    const ids = Array.from(tbody.querySelectorAll("tr[data-vehicle-usage-id]")).map((tr) => tr.dataset.vehicleUsageId)
+    const ids = Array.from(list.querySelectorAll(".vehicle-usage-card[data-vehicle-usage-id]")).map((card) => card.dataset.vehicleUsageId)
     const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute("content")
     fetch(`/vehicle_usage_sets/${setId}/reorder_vehicle_usages`, {
       method: "PATCH",
@@ -62,46 +62,42 @@ export default class extends Controller {
     })
   }
 
-  // HTML5 DnD on nested <tr> is unreliable; pointer drag matches v1 jquery sortable.
+  // Pointer drag matches v1 jquery sortable (works for nested cards).
   pointerDown (event) {
     if (event.button !== 0) return
-    const row = event.currentTarget.closest("tr[data-vehicle-usage-id]")
-    const tbody = row?.closest("tbody.vehicle-usages-sortable--enabled")
-    if (!row || !tbody) return
+    const card = event.currentTarget.closest(".vehicle-usage-card[data-vehicle-usage-id]")
+    const list = card?.closest(".vehicle-usages-sortable--enabled")
+    if (!card || !list) return
     event.preventDefault()
-    this._drag = { row, tbody, startY: event.clientY, moved: false }
+    this._drag = { card, list, startY: event.clientY, moved: false }
     this._onMove = this.pointerMove.bind(this)
     this._onUp = this.pointerUp.bind(this)
     window.addEventListener("pointermove", this._onMove)
     window.addEventListener("pointerup", this._onUp)
-    row.classList.add("is-dragging")
+    card.classList.add("is-dragging")
   }
 
   pointerMove (event) {
     if (!this._drag) return
     if (!this._drag.moved && Math.abs(event.clientY - this._drag.startY) < 3) return
     this._drag.moved = true
-    const { row, tbody } = this._drag
+    const { card, list } = this._drag
     const y = event.clientY
-    const others = Array.from(tbody.querySelectorAll("tr[data-vehicle-usage-id]")).filter((item) => item !== row)
+    const others = Array.from(list.querySelectorAll(".vehicle-usage-card[data-vehicle-usage-id]")).filter((item) => item !== card)
     const next = others.find((item) => {
       const rect = item.getBoundingClientRect()
       return y < rect.top + rect.height / 2
     })
-    if (next) next.before(row)
-    else tbody.appendChild(row)
+    if (next) next.before(card)
+    else list.appendChild(card)
   }
 
   pointerUp () {
     this.clearPointerListeners()
     if (!this._drag) return
-    this._drag.row.classList.remove("is-dragging")
-    if (this._drag.moved) this.persistOrder(this._drag.tbody)
+    this._drag.card.classList.remove("is-dragging")
+    if (this._drag.moved) this.persistOrder(this._drag.list)
     this._drag = null
-  }
-
-  disconnect () {
-    this.clearPointerListeners()
   }
 
   clearPointerListeners () {
@@ -116,39 +112,57 @@ export default class extends Controller {
     const item = event.currentTarget
     const field = item.dataset.sortField
     const direction = item.dataset.sortDirection
-    const table = item.closest("table")
-    const tbody = table?.querySelector("tbody.vehicle-usages-sortable--enabled")
-    if (!tbody) return
-    const rows = Array.from(tbody.querySelectorAll("tr[data-vehicle-usage-id]"))
+    const listRoot = item.closest(".vehicle-usages-list")
+    const list = listRoot?.querySelector(".vehicle-usages-sortable--enabled")
+    if (!list) return
+    const cards = Array.from(list.querySelectorAll(".vehicle-usage-card[data-vehicle-usage-id]"))
     const mult = direction === "desc" ? -1 : 1
-    rows.sort((a, b) => {
+    cards.sort((a, b) => {
       if (field === "id") return mult * (Number(a.dataset.vehicleId) - Number(b.dataset.vehicleId))
       const av = String(field === "name" ? a.dataset.vehicleName : a.dataset.routerSort || "")
       const bv = String(field === "name" ? b.dataset.vehicleName : b.dataset.routerSort || "")
       return mult * av.localeCompare(bv, undefined, { sensitivity: "base" })
     })
-    rows.forEach((row) => tbody.appendChild(row))
-    this.persistOrder(tbody)
+    cards.forEach((card) => list.appendChild(card))
+    this.persistOrder(list)
+  }
+
+  // Reveal nested vehicle checkboxes + bulk enable/disable (mirrors index Sélectionner).
+  toggleVehicleSelect (event) {
+    const btn = event.currentTarget
+    const listRoot = btn.closest(".vehicle-usages-list")
+    if (!listRoot) return
+    const on = listRoot.classList.toggle("is-selecting")
+    const label = btn.querySelector("[data-vehicle-select-label]")
+    if (label) label.textContent = on ? (btn.dataset.cancelLabel || "Cancel") : (btn.dataset.selectLabel || "Select")
+    btn.title = label?.textContent || btn.title
+    if (!on) {
+      listRoot.querySelectorAll(".vehicle-select").forEach((cb) => { cb.checked = false })
+      const all = listRoot.querySelector(".select-unselect-all")
+      if (all) all.checked = false
+      const setId = listRoot.querySelector(".vehicle-usages-sortable")?.dataset.vehicleUsageSetId
+      if (setId) this.syncBulk(setId)
+    }
   }
 
   toggleAll (event) {
     const box = event.currentTarget
     const setId = box.dataset.id
-    const table = this.element.querySelector(`#accordion-${setId}`)
-    table?.querySelectorAll(".vehicle-select").forEach((cb) => {
+    const list = this.element.querySelector(`#accordion-${setId}`)
+    list?.querySelectorAll(".vehicle-select").forEach((cb) => {
       if (!cb.disabled) cb.checked = box.checked
     })
     this.syncBulk(setId)
   }
 
   syncRow (event) {
-    const setId = event.currentTarget.closest("tbody")?.dataset.vehicleUsageSetId
+    const setId = event.currentTarget.closest(".vehicle-usages-sortable")?.dataset.vehicleUsageSetId
     if (setId) this.syncBulk(setId)
   }
 
   syncBulk (setId) {
-    const table = this.element.querySelector(`#accordion-${setId}`)
-    const any = Array.from(table?.querySelectorAll(".vehicle-select") || []).some((cb) => cb.checked)
+    const list = this.element.querySelector(`#accordion-${setId}`)
+    const any = Array.from(list?.querySelectorAll(".vehicle-select") || []).some((cb) => cb.checked)
     this.element.querySelectorAll(`#multiple-actions-${setId} button`).forEach((btn) => { btn.disabled = !any })
   }
 }

@@ -1,5 +1,5 @@
 // Copyright © Cartoway
-// Fleet configs index: set cards + nested vehicle table + collapse.
+// Fleet configs index: set cards + nested vehicle cards + collapse.
 
 #accordion-vehicle-usage-sets.vehicle-usage-sets-cards {
   // Cards stack: main+actions on first row, vehicles full-width below.
@@ -71,63 +71,170 @@
     padding: 0.75rem 0 0.25rem;
   }
 
-  .vehicle-usages-table {
-    caption {
-      caption-side: top;
-      padding: 0 0 0.5rem;
+  // Nested vehicle cards: stacked list, fixed meta columns for cross-row alignment.
+  .vehicle-usages-list {
+    .vehicle-usages-select-all,
+    .vehicle-usages-bulk,
+    .vehicle-usage-select {
+      display: none;
     }
 
-    th,
-    td {
-      vertical-align: middle;
-    }
+    &.is-selecting {
+      .vehicle-usages-select-all {
+        display: flex;
+        align-items: center;
+      }
 
-    .vehicle-usage-name {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      margin: 0;
+      .vehicle-usages-bulk {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.4rem;
+      }
 
-      input[type="checkbox"] {
-        margin: 0;
+      .vehicle-usage-select {
+        display: flex;
+        align-items: center;
         flex-shrink: 0;
+        padding-top: 0.2rem;
       }
     }
 
-    tr.disabled td {
-      opacity: 0.5;
+    // Keep Sélectionner + Tri on one row when selection opens the select-all bar below.
+    .vehicle-usages-toolbar {
+      flex-wrap: nowrap;
+    }
+  }
+
+  .vehicle-usages-sortable {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .vehicle-usage-card.v2-index-card {
+    display: grid;
+    grid-column: auto;
+    grid-template-columns: minmax(0, 1fr) max-content;
+    column-gap: 1rem;
+    align-items: center;
+    padding: 0.55rem 0.85rem;
+    border-radius: 0;
+    background: #fff;
+
+    &:nth-child(even) {
+      background: var(--bs-table-striped-bg, rgba(0, 0, 0, 0.03));
     }
 
-    tr.disabled td:last-child {
-      opacity: 1;
+    &:first-child {
+      border-top-left-radius: 0.75rem;
+      border-top-right-radius: 0.75rem;
     }
 
-    .vehicle_color {
-      display: inline-block;
-      width: 1.25rem;
-      height: 1.25rem;
-      border-radius: 50%;
-      vertical-align: middle;
-      flex-shrink: 0;
+    &:last-child {
+      border-bottom-left-radius: 0.75rem;
+      border-bottom-right-radius: 0.75rem;
     }
 
-    tr.is-dragging td {
+    &:not(:last-child) {
+      border-bottom: 0;
+    }
+
+    &.disabled {
+      .v2-index-card-main {
+        opacity: 0.5;
+      }
+
+      .v2-index-card-actions {
+        opacity: 1;
+      }
+    }
+
+    &.is-dragging {
       opacity: 0.55;
     }
 
-    .vehicle-usage-sort-handle {
-      cursor: grab;
-      color: $text-black;
-      text-align: center;
-      width: 2rem;
-      font-size: 1.1rem;
-      user-select: none;
-      touch-action: none;
-
-      &:active {
-        cursor: grabbing;
-      }
+    > .v2-index-card-main {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      min-width: 0;
     }
+
+    > .v2-index-card-actions {
+      align-self: center;
+      flex-wrap: nowrap;
+    }
+  }
+
+  .vehicle-usage-select input[type="checkbox"] {
+    margin: 0;
+  }
+
+  .vehicle-usage-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    min-width: 0;
+  }
+
+  .vehicle-usage-card-title {
+    font-size: 0.95rem;
+  }
+
+  .vehicle_color {
+    display: inline-block;
+    width: 1.25rem;
+    height: 1.25rem;
+    border-radius: 50%;
+    vertical-align: middle;
+    flex-shrink: 0;
+  }
+
+  .vehicle-usage-sort-handle {
+    cursor: grab;
+    color: $text-black;
+    flex-shrink: 0;
+    font-size: 1.1rem;
+    user-select: none;
+    touch-action: none;
+    line-height: 1;
+    padding-top: 0.2rem;
+
+    &:active {
+      cursor: grabbing;
+    }
+  }
+
+  // Fixed columns keep router / capacities / stores / hours aligned across rows.
+  .vehicle-usage-card .v2-index-card-meta {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 2.4fr)
+      minmax(0, 1fr)
+      minmax(0, 0.85fr)
+      minmax(0, 1.1fr)
+      minmax(0, 1fr)
+      minmax(0, 0.85fr);
+    gap: 0.15rem 0.75rem;
+    align-items: start;
+  }
+
+  .vehicle-usage-card .v2-index-card-meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.05rem;
+    min-width: 0;
+  }
+
+  .vehicle-usage-card .v2-index-card-meta-label {
+    font-weight: 600;
+  }
+
+  .vehicle-usage-card .v2-index-card-meta-value {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -136,6 +243,35 @@
     .vehicle-usage-set-card {
       grid-template-columns: 1fr;
     }
+
+    .vehicle-usage-card.v2-index-card {
+      grid-template-columns: 1fr;
+      row-gap: 0.5rem;
+    }
+
+    .vehicle-usage-card .v2-index-card-meta {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .vehicle-usage-card .v2-index-card-actions {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: stretch;
+
+      > .btn {
+        width: auto;
+        flex: 1 1 0;
+        white-space: nowrap;
+      }
+    }
+
+  }
+}
+
+// Icon-only actions on mobile for the whole VUS index (toolbar + set + nested).
+@media (max-width: 991.98px) {
+  .vehicle-usage-sets-index .vehicle-usage-btn-label {
+    display: none;
   }
 }
 
@@ -181,4 +317,3 @@
     }
   }
 }
-
