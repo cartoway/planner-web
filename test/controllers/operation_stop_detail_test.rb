@@ -69,6 +69,16 @@ class OperationStopDetailTest < ActionController::TestCase
     assert_equal '09:25', @stop.actual_departure_clock
   end
 
+  test 'show labels arrival as planned/estimated and departure as planned/actual' do
+    get :show, params: { id: @stop.id }
+    assert_response :success
+    assert_includes response.body, I18n.t('operations.show.time.arrival.planned')
+    assert_includes response.body, I18n.t('operations.show.time.arrival.estimated')
+    assert_includes response.body, I18n.t('operations.show.time.departure.planned')
+    assert_includes response.body, I18n.t('operations.show.time.departure.actual')
+    assert_select '.operation-time-block', minimum: 2
+  end
+
   test 'show renders the stop detail and status history for the sidebar' do
     get :show, params: { id: @stop.id }
     assert_response :success
