@@ -227,10 +227,8 @@ Rails.application.routes.draw do
   resources :routes do
     member do
       get 'modal'
-      patch 'driver_update'
     end
   end
-  patch 'routes/:id/update_position' => 'routes#update_position'
 
   get 'routes/:route_id/stops/by_index/:index' => 'stops#show'
 

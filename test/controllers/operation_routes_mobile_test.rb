@@ -141,6 +141,44 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
     assert_equal 'mobile', position.source
   end
 
+  test 'mobile position update resolves planning route_id in the URL segment' do
+    refute_equal @route.id, @operation_route.id
+
+    patch "/operations/#{@operation.id}/routes/#{@route.id}/update_position?driver_token=#{@vehicle.driver_token}",
+          {
+            latitude: 48.85,
+            longitude: 2.35,
+            positioned_at: Time.current.iso8601
+          }.to_json,
+          'CONTENT_TYPE' => 'application/json',
+          'HTTP_ACCEPT' => 'application/json'
+
+    assert_equal 200, last_response.status, last_response.body
+    assert @operation_route.vehicle_positions.exists?
+  end
+
+  test 'mobile position update rejects an id outside the operation' do
+    other = Operations::PublishFromPlanning.call(
+      planning: plannings(:planning_one),
+      date: @operation.date + 1.day,
+      route_ids: [@route.id]
+    )
+    other_route = other.operation_routes.find_by!(route_id: @route.id)
+
+    patch "/operations/#{@operation.id}/routes/#{other_route.id}/update_position?driver_token=#{@vehicle.driver_token}",
+          {
+            latitude: 48.85,
+            longitude: 2.35,
+            positioned_at: Time.current.iso8601
+          }.to_json,
+          'CONTENT_TYPE' => 'application/json',
+          'HTTP_ACCEPT' => 'application/json'
+
+    assert_equal 404, last_response.status
+  ensure
+    other&.destroy!
+  end
+
   test 'driver status update keeps an older event without regressing the cursor' do
     stop = @operation_route.operation_stops.find_by!(visit_id: visits(:visit_one).id)
     OperationStops::RecordStatus.call(operation_stop: stop, status: 'delivered', recorded_at: Time.zone.parse('2026-09-25 12:00'), source: 'mobile')
