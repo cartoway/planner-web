@@ -5,7 +5,14 @@
 
 - company_present = [@customer.company_logo.url, @customer.company_name, @customer.company_street, @customer.company_postalcode, @customer.company_city, @customer.company_detail, @customer.company_phone].any?(&:present?)
 - order_lines = []
-- if @customer.enable_orders
+- quantity_lines = @operation_stop&.quantity_lines || []
+- if quantity_lines.any?
+  - quantity_lines.each do |line|
+    - planned = line[:value].to_f
+    - reported = @operation_stop.actual_quantity(line[:kind], line[:unit_id])
+    - actual = reported.nil? ? planned : reported
+    - order_lines << { unit: line[:label], quantity_label: delivery_note_quantity_label(actual, planned) }
+- elsif @customer.enable_orders
   - if @stop.order&.products&.any?
     - stop_order_quantities(@stop).each do |code, quantity|
       - order_lines << { unit: code, quantity_label: quantity }
