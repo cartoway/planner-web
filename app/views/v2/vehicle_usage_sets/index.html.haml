@@ -17,11 +17,13 @@
         %p.mb-0= t 'vehicle_usage_sets.index.over_max_limit', limit: current_user.customer.default_max_vehicle_usage_sets
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
       .d-flex.gap-2.align-items-center.flex-wrap
+        %h1.mb-0.mt-0= t('vehicle_usage_sets.index.title')
         - if show_set_checkbox
           - if current_user.customer.too_many_vehicle_usage_sets?
             %button.btn.btn-primary{
               type: 'button',
               disabled: !can_create_vehicle_usage,
+              title: t('vehicle_usage_sets.index.new'),
               data: {
                 controller: 'v2--toast',
                 action: 'click->v2--toast#notify',
@@ -30,14 +32,14 @@
               }
             }
               %i.fa.fa-plus.fa-fw
-              = t 'vehicle_usage_sets.index.new'
+              %span.vehicle-usage-btn-label= t 'vehicle_usage_sets.index.new'
           - else
-            = link_to new_vehicle_usage_set_path, class: 'btn btn-primary', disabled: !can_create_vehicle_usage, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+            = link_to new_vehicle_usage_set_path, class: 'btn btn-primary', disabled: !can_create_vehicle_usage, title: t('vehicle_usage_sets.index.new'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
               %i.fa.fa-plus.fa-fw
-              = t 'vehicle_usage_sets.index.new'
+              %span.vehicle-usage-btn-label= t 'vehicle_usage_sets.index.new'
           %button.btn.btn-outline-secondary{type: 'button', class: invisible_class, title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
             %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
-            %span{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
+            %span.vehicle-usage-btn-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
           %button{
             type: 'button',
             class: "btn btn-danger #{invisible_class}",
@@ -50,7 +52,7 @@
             ).merge(v2__table_selection_target: 'bulk')
           }
             %i.fa.fa-trash.fa-fw
-            = t('all.verb.destroy_selection')
+            %span.vehicle-usage-btn-label= t('all.verb.destroy_selection')
       = render 'v2/vehicle_usage_sets/counts', sets_count: sets_count, vehicles_count: vehicles_count
   = form_tag vehicle_usage_sets_path, method: :delete, id: 'vehicle-usage-sets-destroy' do
     #accordion-vehicle-usage-sets.v2-index-cards.vehicle-usage-sets-cards.px-3.pb-3{data: { v2__index_selection_target: 'root' }}

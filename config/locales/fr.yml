@@ -3413,7 +3413,7 @@ fr:
     edit:
       title: Modifier configuration de la flotte
     index:
-      title: Configurations de la flotte
+      title: Flotte
       new: Nouvelle configuration de la flotte
       none: Aucune configuration
       show: Voir la liste complète (%{count})

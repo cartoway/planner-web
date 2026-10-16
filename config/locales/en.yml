@@ -3293,7 +3293,7 @@ en:
     edit:
       title: Editing vehicle and configuration
     index:
-      title: Vehicles configurations
+      title: Fleet
       new: New vehicles configuration
       none: No vehicle configuration
       show: See the full list (%{count})

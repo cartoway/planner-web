@@ -1,49 +1,41 @@
-%table.table.table-striped.table-hover.table-sm.vehicle-usages-table{id: "accordion-#{vehicle_usage_set.id}"}
-  %caption
-    .d-flex.justify-content-between.align-items-center.flex-wrap.gap-2
-      %label.mb-0
-        %input.select-unselect-all{type: 'checkbox', data: { id: vehicle_usage_set.id, action: 'change->v2--vehicle-usage-sets-index#toggleAll' }, disabled: !can_update_vehicle_usage}
-        = t('vehicle_usages.index.select_unselect_all')
+-# locals: vehicle_usage_set, can_update_vehicle_usage, can_view_vehicle_usage
+.vehicle-usages-list
+  .vehicle-usages-toolbar.d-flex.justify-content-between.align-items-center.gap-2.mb-2
+    .d-flex.align-items-center.gap-2
       - if can_update_vehicle_usage
-        .dropdown
-          %button.btn.btn-light.dropdown-toggle{type: 'button', 'data-bs-toggle': 'dropdown'}
-            %i.fa.fa-sort.fa-fw
-            = t('vehicle_usages.index.sort')
-          %ul.dropdown-menu.dropdown-menu-end
-            %li
-              %a.dropdown-item{href: '#', data: { sort_field: 'id', sort_direction: 'asc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_id_asc')
-            %li
-              %a.dropdown-item{href: '#', data: { sort_field: 'id', sort_direction: 'desc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_id_desc')
-            %li
-              %a.dropdown-item{href: '#', data: { sort_field: 'name', sort_direction: 'asc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_name_asc')
-            %li
-              %a.dropdown-item{href: '#', data: { sort_field: 'name', sort_direction: 'desc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_name_desc')
-            %li
-              %a.dropdown-item{href: '#', data: { sort_field: 'router', sort_direction: 'asc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_router_asc')
-            %li
-              %a.dropdown-item{href: '#', data: { sort_field: 'router', sort_direction: 'desc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_router_desc')
-  %thead
-    %tr
-      - if can_update_vehicle_usage
-        %th
-      %th= t('activerecord.attributes.vehicle.name')
-      %th= t('activerecord.attributes.vehicle.router_id')
-      %th
-        = t('activerecord.attributes.vehicle.emission')
-        \-
-        = t('activerecord.attributes.vehicle.consumption')
-      %th= t('vehicle_usages.index.capacities')
-      %th= t('vehicle_usages.index.stores')
-      %th= t('vehicle_usage_sets.index.time')
-      %th= t('vehicle_usages.index.devices')
-      %th
-  %tbody.vehicle-usages-sortable{class: ('vehicle-usages-sortable--enabled' if can_update_vehicle_usage), data: { vehicle_usage_set_id: vehicle_usage_set.id }}
+        %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'click->v2--vehicle-usage-sets-index#toggleVehicleSelect', select_label: t('all.verb.select'), cancel_label: t('all.verb.cancel') }}
+          %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+          %span.vehicle-usage-btn-label{data: { vehicle_select_label: true }}= t('all.verb.select')
+    - if can_update_vehicle_usage
+      .dropdown
+        %button.btn.btn-light.dropdown-toggle{type: 'button', 'data-bs-toggle': 'dropdown'}
+          %i.fa.fa-sort.fa-fw
+          %span.vehicle-usage-btn-label= t('vehicle_usages.index.sort')
+        %ul.dropdown-menu.dropdown-menu-end
+          %li
+            %a.dropdown-item{href: '#', data: { sort_field: 'id', sort_direction: 'asc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_id_asc')
+          %li
+            %a.dropdown-item{href: '#', data: { sort_field: 'id', sort_direction: 'desc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_id_desc')
+          %li
+            %a.dropdown-item{href: '#', data: { sort_field: 'name', sort_direction: 'asc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_name_asc')
+          %li
+            %a.dropdown-item{href: '#', data: { sort_field: 'name', sort_direction: 'desc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_name_desc')
+          %li
+            %a.dropdown-item{href: '#', data: { sort_field: 'router', sort_direction: 'asc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_router_asc')
+          %li
+            %a.dropdown-item{href: '#', data: { sort_field: 'router', sort_direction: 'desc', action: 'click->v2--vehicle-usage-sets-index#sort' }}= t('vehicle_usages.index.sort_by_router_desc')
+  - if can_update_vehicle_usage
+    .vehicle-usages-select-all.mb-2
+      %label.mb-0.d-flex.align-items-center.gap-2
+        %input.select-unselect-all{type: 'checkbox', data: { id: vehicle_usage_set.id, action: 'change->v2--vehicle-usage-sets-index#toggleAll' }}
+        %span= t('all.verb.select_all')
+  .vehicle-usages-sortable{id: "accordion-#{vehicle_usage_set.id}", class: ('vehicle-usages-sortable--enabled' if can_update_vehicle_usage), data: { vehicle_usage_set_id: vehicle_usage_set.id }}
     - vehicle_usage_set.vehicle_usages.each do |vehicle_usage|
       = render 'v2/vehicle_usage_sets/vehicle_usage_row', vehicle_usage: vehicle_usage, vehicle_usage_set: vehicle_usage_set, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage
-.mt-2{id: "multiple-actions-#{vehicle_usage_set.id}"}
-  = button_tag type: :submit, class: 'btn btn-light', name: 'disable_multiple', value: vehicle_usage_set.id.to_s, disabled: true, data: { confirm: t('vehicle_usages.index.multiple_disable_confirm') } do
-    %i.fa.fa-power-off.fa-fw
-    = t('vehicle_usages.index.multiple_disable')
-  = button_tag type: :submit, class: 'btn btn-light', name: 'enable_multiple', value: vehicle_usage_set.id.to_s, disabled: true do
-    %i.fa.fa-truck-field.fa-fw
-    = t('vehicle_usages.index.multiple_enable')
+  .vehicle-usages-bulk.mt-2{id: "multiple-actions-#{vehicle_usage_set.id}"}
+    = button_tag type: :submit, class: 'btn btn-light', name: 'disable_multiple', value: vehicle_usage_set.id.to_s, disabled: true, data: { confirm: t('vehicle_usages.index.multiple_disable_confirm') } do
+      %i.fa.fa-power-off.fa-fw
+      %span.vehicle-usage-btn-label= t('vehicle_usages.index.multiple_disable')
+    = button_tag type: :submit, class: 'btn btn-light', name: 'enable_multiple', value: vehicle_usage_set.id.to_s, disabled: true do
+      %i.fa.fa-truck-field.fa-fw
+      %span.vehicle-usage-btn-label= t('vehicle_usages.index.multiple_enable')
