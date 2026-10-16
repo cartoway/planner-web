@@ -4229,6 +4229,7 @@ fr:
       filter_failed: Échec
       filter_exception: Anomalie
       filter_upcoming: À venir
+      filter_en_route: En route
       filter_delivered: Livrés
       cumulative_delay: Retards cumulés
       distance: Distance

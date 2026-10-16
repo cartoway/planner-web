@@ -141,6 +141,15 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes label, 'Bordeaux'
   end
 
+  test 'show exposes en route chip for current phase stops' do
+    stop = @operation.operation_stops.find_by!(stop_id: stops(:stop_one_one).id)
+    stop.update_columns(status: 'intransit')
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_select '.operation-chip[data-phase=current]', text: /#{Regexp.escape(I18n.t('operations.show.filter_en_route'))} 1/
+    assert_select %(#stop-#{stop.id}.is-current[data-phase=current]), 1
+  end
+
   test 'show structures tour header zones' do
     get :show, params: { id: @operation.id }
     assert_response :success
