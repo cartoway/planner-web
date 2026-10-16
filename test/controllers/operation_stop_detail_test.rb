@@ -188,6 +188,23 @@ class OperationStopDetailTest < ActionController::TestCase
     assert_includes response.body, '.delivery-note-title-block'
   end
 
+  test 'delivery note shows actual/planned quantity when they diverge' do
+    stop = @operation.operation_stops.find_by!(visit_id: visits(:visit_two).id)
+    OperationStops::RecordStatus.call(operation_stop: stop, status: 'delivered', recorded_at: Time.zone.parse('2026-09-25 11:00'), source: 'mobile')
+    line = stop.quantity_lines.find { |row| row[:kind] == 'deliveries' && row[:unit_id].to_s == '1' }
+    assert line
+    planned = line[:value].to_f
+    actual = planned - 1
+    stop.update!(actual_quantities: { 'deliveries' => { '1' => actual } })
+
+    get :delivery_note, params: { id: stop.id }
+
+    assert_response :success
+    expected = ActionController::Base.helpers.number_with_precision(actual, precision: 2, strip_insignificant_zeros: true)
+    planned_s = ActionController::Base.helpers.number_with_precision(planned, precision: 2, strip_insignificant_zeros: true)
+    assert_includes response.body, "#{expected}/#{planned_s}"
+  end
+
   test 'show renders photos from the operation stop only' do
     @stop.photos.attach(io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')), filename: 'operation_stop_photo.jpg', content_type: 'image/jpeg')
 
