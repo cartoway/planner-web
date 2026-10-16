@@ -293,15 +293,40 @@
     display: contents;
   }
 
+  // Fixed columns keep ref / capacity / pickup / delivery / overload aligned across rows.
   .v2-index-card-meta {
+    display: grid;
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1.2fr);
+    gap: 0.15rem 0.75rem;
+    align-items: start;
+  }
+
+  .v2-index-card-meta-item {
     display: flex;
-    flex-wrap: wrap;
-    gap: .35rem .75rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.05rem;
+    min-width: 0;
   }
 
   .v2-index-card-meta-label {
     font-weight: 600;
-    margin-right: .25rem;
+  }
+
+  .v2-index-card-meta-value {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 991.98px) {
+  .deliverable-units-index .v2-index-card-meta {
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -314,6 +339,10 @@
 
     .du-col-sidebar-hide {
       display: none;
+    }
+
+    .v2-index-card-meta {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
   }
 }
