@@ -56,10 +56,12 @@ prepare_rails_test() {
   '
 
   echo "==> Starting Rails test server on web:3001 (background)"
+  # Separate pid from the main app server on :8080 (same container shares tmp/pids/server.pid).
   bash "$COMPOSE" exec -d \
     -e RAILS_ENV=test \
     -e DATABASE_URL=postgres://planner:planner@db:5432/planner-test \
-    web sh -c 'cd /srv/app && bundle exec rails server -e test -p 3001 -b 0.0.0.0'
+    -e DISABLE_SPRING=1 \
+    web sh -c 'cd /srv/app && PIDFILE=tmp/pids/server-vrt.pid bundle exec rails server -e test -p 3001 -b 0.0.0.0'
 
   for _ in $(seq 1 60); do
     if rails_test_ready; then

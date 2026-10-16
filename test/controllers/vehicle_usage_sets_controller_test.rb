@@ -61,25 +61,34 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_select 'body.cartoway-v2', 1
     assert_select 'a[data-turbo-frame=form_sidebar][href=?]', edit_vehicle_usage_set_path(@vehicle_usage_set)
     assert_select '.vehicle-usage-sets-index', 1
+    assert_select '.vehicle-usage-sets-toolbar h1', text: I18n.t('vehicle_usage_sets.index.title')
     assert_select '#accordion-vehicle-usage-sets.v2-index-cards', 1
     assert_select '#accordion-vehicle-usage-sets .vehicle-usage-set-card', minimum: 1
     assert_select '#accordion-vehicle-usage-sets .vehicle-usage-set-card--stripe', minimum: 1
-    assert_select '#accordion-vehicle-usage-sets .vehicle-usages-table', minimum: 1
-    assert_select 'table.vehicle-usages-table span.default-color', minimum: 1
+    assert_select '#accordion-vehicle-usage-sets .vehicle-usages-list', minimum: 1
+    assert_select '#accordion-vehicle-usage-sets .vehicle-usage-card', minimum: 1
+    assert_select '.vehicle-usage-card span.default-color', minimum: 1
     assert_select '#accordion-vehicle-usage-sets .v2-index-card-actions .btn-primary', minimum: 1
-    assert_select 'table.vehicle-usages-table td.text-end > .btn-group', minimum: 1
+    assert_select '.vehicle-usage-card .v2-index-card-actions .btn-primary', minimum: 1
+    assert_select '.vehicle-usage-card .v2-index-card-actions .btn-light', minimum: 1
+    assert_select '.vehicle-usage-card .v2-index-card-meta .v2-index-card-meta-item', minimum: 1
+    assert_select '.vehicle-usages-list button[data-action*="toggleVehicleSelect"]', minimum: 1
+    assert_select '.vehicle-usage-card .vehicle-usage-select .vehicle-select', minimum: 1
+    assert_select '.vehicle-usage-card .vehicle-usage-btn-label', minimum: 1
     assert_select '#accordion-vehicle-usage-sets button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
 
     assert_select 'button.usage-set-toggle i.usage-set-chevron.fa-chevron-right', minimum: 1
 
     first_set = assigns(:vehicle_usage_sets).first
+    first_vu = first_set.vehicle_usages.first
     assert_select ".vehicle-usage-set-card##{ActionView::RecordIdentifier.dom_id(first_set)}", 1
-    assert_select "tr##{ActionView::RecordIdentifier.dom_id(first_set.vehicle_usages.first)}", 1
+    assert_select ".vehicle-usage-card##{ActionView::RecordIdentifier.dom_id(first_vu)}", 1
+    assert_select ".vehicle-usage-card##{ActionView::RecordIdentifier.dom_id(first_vu)} .vehicle-usage-card-title", text: first_vu.vehicle.name
     assert_select "button.usage-set-toggle[data-bs-target='#collapseUsageSet#{first_set.id}']:not(.collapsed)[aria-expanded=true]", 1
     assert_select "#collapseUsageSet#{first_set.id}.show", 1
     assert_select '#accordion-vehicle-usage-sets .collapse.show', 1
     assert_select '.collapse[data-bs-parent="#accordion-vehicle-usage-sets"]', minimum: 2
-    assert_select 'td.vehicle-usage-sort-handle[data-action*="pointerDown"]', minimum: 1
+    assert_select '.vehicle-usage-sort-handle[data-action*="pointerDown"]', minimum: 1
     assert_select '.accordion-item', 0
     assert_select '[data-controller*="v2--index-selection"]', 1
     [
