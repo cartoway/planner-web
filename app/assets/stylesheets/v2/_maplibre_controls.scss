@@ -106,4 +106,41 @@
 
 .maplibre-host {
   @include maplibre-shared-controls;
+
+  // Planning Leaflet parity: geocoder result pin stays until dismiss.
+  .focus-geocoder {
+    width: 14px;
+    height: 14px;
+    background-color: red;
+    border: none;
+    border-radius: 100%;
+    box-shadow: 1px 1px 8px 0 rgba(0, 0, 0, 0.75);
+  }
+
+  .focus-geocoder::after {
+    content: "";
+    border-radius: 100%;
+    height: 300%;
+    width: 300%;
+    position: absolute;
+    margin: -100% 0 0 -100%;
+    box-shadow: 0 0 6px 2px red;
+    animation: maplibre-geocoder-focus 2s ease-out;
+  }
+}
+
+@keyframes maplibre-geocoder-focus {
+  0% {
+    transform: scale(0.1, 0.1);
+    opacity: 0;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    transform: scale(1.2, 1.2);
+    opacity: 0;
+  }
 }
