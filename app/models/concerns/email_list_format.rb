@@ -5,8 +5,10 @@
 module EmailListFormat
   extend ActiveSupport::Concern
 
-  # Single address: restricted local part (no whitespace / <>:"' / control chars).
-  ADDRESS_REGEXP = %r{\A[a-z0-9.!\#$%&'*+/=?^_`{|}~-]+@(?:[-a-z0-9]+\.)+[a-z]{2,}\z}i
+  # Single address: no consecutive dots (local or domain), no leading/trailing dot in labels.
+  LOCAL = "[a-z0-9!\#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!\#$%&'*+/=?^_`{|}~-]+)*"
+  DOMAIN_LABEL = '[a-z0-9](?:[-a-z0-9]*[a-z0-9])?'
+  ADDRESS_REGEXP = /\A#{LOCAL}@#{DOMAIN_LABEL}(?:\.#{DOMAIN_LABEL})+\z/i
 
   # Horizontal whitespace only — not \n / \r.
   SEPARATOR = /[ \t]*,[ \t]*|[ \t]*;[ \t]*|[ \t]+/
