@@ -4243,6 +4243,13 @@ fr:
       actual: Réel
       arrival: Arrivée
       departure: Départ
+      time:
+        arrival:
+          planned: Prévue
+          estimated: Estimée
+        departure:
+          planned: Prévu
+          actual: Réel
       center_vehicle: Centrer sur le véhicule
       center_route: Centrer sur la tournée
       hide_trace: Masquer le tracé

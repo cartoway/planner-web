@@ -28,15 +28,15 @@
       - else
         %span.badge.operation-status= status_label
   .operation-times
-    - [['arrival', planned_arrival, actual_arrival], ['departure', planned_departure, actual_departure]].each do |key, planned, actual|
+    - [['arrival', planned_arrival, actual_arrival, 'estimated'], ['departure', planned_departure, actual_departure, 'actual']].each do |key, planned, actual, secondary|
       .operation-time-block
         %p.operation-time-heading= t("operations.show.#{key}")
         .operation-split
           %div
-            %span= t('operations.show.planned')
+            %span= t("operations.show.time.#{key}.planned")
             %strong= planned.presence || '—'
           %div
-            %span= t('operations.show.actual')
+            %span= t("operations.show.time.#{key}.#{secondary}")
             %strong= actual.presence || '—'
   - if depot[:ref].present?
     %section.operation-section
