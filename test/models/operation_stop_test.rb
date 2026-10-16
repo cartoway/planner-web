@@ -80,4 +80,20 @@ class OperationStopTest < ActiveSupport::TestCase
     assert rest
     assert_not rest.delivery_note_available?
   end
+
+  test 'search_label includes name ref street and city' do
+    @stop.update_columns(
+      destination_snapshot: @stop.destination_snapshot.merge(
+        'name' => 'Chez Dupont',
+        'ref' => 'REF-42',
+        'street' => '12 rue des Lilas',
+        'city' => 'Bordeaux'
+      )
+    )
+    label = @stop.search_label
+    assert_includes label, 'Chez Dupont'
+    assert_includes label, 'REF-42'
+    assert_includes label, '12 rue des Lilas'
+    assert_includes label, 'Bordeaux'
+  end
 end

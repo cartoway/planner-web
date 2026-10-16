@@ -80,7 +80,7 @@
               - next unless stop.sync_state == 'active' && stop.active?
               - label = (stop_list_primary_line(stop.list_fields).presence || stop.address_label).to_s
               - delay = stop.delay_minutes
-              %li.operation-stop-row{id: "stop-#{stop.id}", class: "is-#{stop.phase}", data: { stop_id: stop.id, kind: stop.kind, phase: stop.phase, label: label, lat: stop.lat, lng: stop.lng, url: operation_stop_path(stop), action: 'click->v2--operation-show#selectStop' }}
+              %li.operation-stop-row{id: "stop-#{stop.id}", class: "is-#{stop.phase}", data: { stop_id: stop.id, kind: stop.kind, phase: stop.phase, label: stop.search_label, lat: stop.lat, lng: stop.lng, url: operation_stop_path(stop), action: 'click->v2--operation-show#selectStop' }}
                 %span.operation-glyph{class: "is-#{stop.phase}"}
                   - if stop.phase == 'delivered'
                     %i.fa.fa-check
