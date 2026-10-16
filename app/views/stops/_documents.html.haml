@@ -4,9 +4,14 @@
 - photos = stop.serialized_photos
 - signature = stop.serialized_signature
 - docs_count = photos.size + (signature ? 1 : 0)
+- confirm_photo_delete = local_assigns[:confirm_photo_delete]
+- photo_remove_confirm = confirm_photo_delete && confirm_click_data(group: 'stop-photos-destroy', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.photo_delete_confirm'), ready_label: '<i class="fa fa-check fa-fw" aria-hidden="true"></i>', base_class: 'btn-default')
+- photos_data = { url: operation_stop_photos_path(stop), max_count: ProofAttachments::PHOTO_MAX_COUNT, too_many: t('stops.mobile.photos_too_many', count: ProofAttachments::PHOTO_MAX_COUNT) }
+- if photo_remove_confirm
+  - photos_data.merge!(confirm_wait: photo_remove_confirm[:confirm_click_wait_message_value], confirm_message: photo_remove_confirm[:confirm_click_confirm_message_value], confirm_ready: photo_remove_confirm[:confirm_click_ready_label_value])
 .stop-documents
   - if proofs_enabled
-    .stop-photos{ data: { url: operation_stop_photos_path(stop), max_count: ProofAttachments::PHOTO_MAX_COUNT, too_many: t('stops.mobile.photos_too_many', count: ProofAttachments::PHOTO_MAX_COUNT) } }
+    .stop-photos{ data: photos_data }
       %label= t('stops.mobile.photos')
       .stop-photos-actions
         %label.btn.btn-default.stop-photos-pick.mb-0
@@ -37,7 +42,7 @@
           - photos.each do |photo|
             .stop-photo
               - if photo[:deletable]
-                %button.stop-photo-remove.btn.btn-xs.btn-default{ type: 'button', data: { url: operation_stop_photo_path(stop, photo[:id]) } }
+                %button.stop-photo-remove.btn.btn-xs.btn-default{ type: 'button', data: { url: operation_stop_photo_path(stop, photo[:id]) }.merge(photo_remove_confirm || {}) }
                   %i.fa.fa-trash
               %button.stop-photo-open{ type: 'button', data: { url: photo[:url] } }
                 %img{ src: photo[:url], alt: photo[:filename] }
