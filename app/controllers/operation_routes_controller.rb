@@ -183,7 +183,14 @@ class OperationRoutesController < ApplicationController
   end
 
   def set_driver_route
-    @operation_route = OperationRoute.find(params[:id])
+    # URL segment is OperationRoute.id; fall back to planning route_id for stale mobile clients.
+    scope = OperationRoute.where(operation_id: params[:operation_id])
+    @operation_route = scope.find_by(id: params[:id]) || scope.find_by(route_id: params[:id])
+    if @operation_route.blank?
+      head :not_found
+      return
+    end
+
     if @operation_route.unassigned || @operation_route.vehicle_id.blank?
       render plain: t('execution.mobile.unassigned'), status: :forbidden
       return

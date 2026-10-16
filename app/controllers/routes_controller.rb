@@ -21,12 +21,9 @@ require 'value_to_boolean'
 require 'zip'
 
 class RoutesController < ApplicationController
-  before_action :authenticate_user!, except: [:update_position, :driver_update]
+  before_action :authenticate_user!
   before_action :set_route, only: [:update, :modal]
   before_action :authorize_route_paint_for_color!, only: [:update]
-
-  before_action :authenticate_driver!, only: [:update_position, :driver_update]
-  before_action :set_driver_route, only: [:driver_update]
 
   load_and_authorize_resource
 
@@ -103,52 +100,6 @@ class RoutesController < ApplicationController
     end
   end
 
-  def driver_update
-    respond_to do |format|
-      route_params = route_driver_params
-      if @route.update(route_params)
-        format.json do
-          render json: { success: true }
-        end
-        format.html do
-          if request.xhr?
-            head :ok
-          else
-            head :no_content
-          end
-        end
-      else
-        format.json do
-          flash.now[:alert] = I18n.t('routes.error_messages.update.failure')
-          render json: { error: I18n.t('routes.error_messages.update.failure') }.to_json,
-                 status: :unprocessable_entity
-        end
-        format.html do
-          head :unprocessable_entity
-        end
-      end
-    end
-  end
-
-  def update_position
-    @customer = current_vehicle.customer
-    if params['latitude'] && params['longitude'] && params['latitude'].is_a?(Float) && params['longitude'].is_a?(Float)
-      Planner::Application.config.devices.to_h.each{ |key, device|
-        next if @customer.device.enabled_definitions.exclude?(key)
-
-        service = Object.const_get(device.class.name + 'Service').new({customer: @customer})
-        service.cache_position(@route.vehicle_usage.vehicle, params) if service.respond_to?(:cache_position)
-      }
-      if request.xhr?
-        head :ok
-      else
-        head :no_content
-      end
-    else
-      head :bad_request
-    end
-  end
-
   private
 
   def authorize_route_paint_for_color!
@@ -175,56 +126,9 @@ class RoutesController < ApplicationController
     @route = Route.includes_vehicle_usages.for_customer_id(current_user.customer_id).find(params[:id] || params[:route_id])
   end
 
-  def set_driver_route
-    @route = Route.includes_vehicle_usages.find(params[:id])
-
-    if @route.vehicle_usage.vehicle.id != current_vehicle.id
-      head :not_found
-    else
-      @route
-    end
-  end
-
   # Never trust parameters from the scary internet, only allow the white list through.
   def route_params
     params.require(:route).permit(:hidden, :locked, :ref, :color)
-  end
-
-  def route_driver_params
-    route = params.require(:route)
-    return {} if route[:custom_attributes].blank?
-
-    permitted = route.permit(
-      custom_attributes: RecursiveParamsHelper.permit_recursive(route[:custom_attributes])
-    )
-    merge_route_custom_attributes!(permitted)
-    permitted
-  end
-
-  # Merges incoming custom_attributes using composite keys (related_field:name).
-  # Converts nested or flat incoming params to flat hash with composite keys.
-  def merge_route_custom_attributes!(permitted)
-    merged = (@route.custom_attributes || {}).dup
-    nested_keys = %w[start_route_data stop_route_data]
-    incoming = permitted[:custom_attributes]
-
-    # Convert nested structure (from form) to composite keys
-    if incoming.keys.any? { |k| nested_keys.include?(k.to_s) }
-      incoming.each do |key, value|
-        key_s = key.to_s
-        if nested_keys.include?(key_s) && value.is_a?(Hash)
-          value.each { |name, val| merged["#{key_s}:#{name}"] = val }
-        elsif !nested_keys.include?(key_s)
-          merged[key_s] = value
-        end
-      end
-    else
-      incoming.each do |k, v|
-        merged[k.to_s] = v
-      end
-    end
-
-    permitted[:custom_attributes] = merged
   end
 
   def export_params

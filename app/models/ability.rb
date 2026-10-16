@@ -83,12 +83,8 @@ class Ability
       end
     else
       can [:password, :set_password], User
-
-      # Driver updates still hit the planning route (status and GPS from the mobile page).
-      can [:update_position, :driver_update], Route
-      can [:edit, :update], Stop
-      can [:create, :destroy], :stop_photos
-      can [:create], :stop_signatures
+      # Drivers use driver_token auth. OperationRoute / OperationStop controllers authorize by
+      # vehicle ownership — no CanCan write access to planning Route/Stop.
     end
   end
 end
