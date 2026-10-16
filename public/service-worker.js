@@ -143,6 +143,13 @@ self.addEventListener('message', event => {
     case 'STORE_POSITION':
       pendingRequests.positions.add(event.data.payload);
       break;
+    case 'CLEAR_STALE_POSITIONS': {
+      const url = event.data.payload && event.data.payload.url;
+      Array.from(pendingRequests.positions).forEach(position => {
+        if (!url || position.url !== url) pendingRequests.positions.delete(position);
+      });
+      break;
+    }
     case 'STORE_STOP':
       pendingRequests.stops.add(event.data.payload);
       break;
@@ -284,8 +291,13 @@ function syncPositions() {
       return Promise.resolve();
     }
 
-    const positionUrl = position.url || `/routes/${position.routeId}/update_position.json`
-    return fetch(positionUrl, {
+    // GPS only goes through OperationRoute URLs (set by mobile_controller).
+    if (!position.url) {
+      pendingRequests.positions.delete(position);
+      notifyClients('SYNC_ERROR', { type: 'position', error: 'Missing position url' });
+      return Promise.resolve();
+    }
+    return fetch(position.url, {
       method: 'PATCH',
       body: JSON.stringify(position.coords),
       headers: {
@@ -298,32 +310,28 @@ function syncPositions() {
       pendingRequests.positions.delete(position);
       if (response.ok) {
         notifyClients('POSITION_SYNCED', position);
-      } else {
-        return response.json().then(data => {
-          const errorType = data.type;
-
-          switch(response.status) {
-            case 404:
-            case 408:
-            case 502:
-            case 503:
-            case 504:
-              notifyClients('STORE_POSITIONS', Array.from([position]));
-              break;
-            case 409:
-              break;
-            case 422:
-              if (errorType.includes('deadlock')) {
-                position.retryAfter = Date.now() + 500;
-                notifyClients('STORE_POSITIONS', Array.from([{
-                  position
-                }]));
-              }
-            default:
-              throw new Error(`Failed to sync position: ${response.status}`);
-          }
-        });
+        return;
       }
+      // Gone / wrong route: drop permanently (do not requeue — localStorage would loop forever).
+      if (response.status === 404 || response.status === 409) {
+        notifyClients('POSITION_DROPPED', position);
+        return;
+      }
+      if (response.status === 408 || response.status === 502 || response.status === 503 || response.status === 504) {
+        notifyClients('STORE_POSITIONS', Array.from([position]));
+        return;
+      }
+      return response.json().then(data => {
+        const errorType = (data && data.type) || '';
+        if (response.status === 422 && errorType.includes('deadlock')) {
+          position.retryAfter = Date.now() + 500;
+          notifyClients('STORE_POSITIONS', Array.from([position]));
+          return;
+        }
+        throw new Error(`Failed to sync position: ${response.status}`);
+      }).catch(() => {
+        throw new Error(`Failed to sync position: ${response.status}`);
+      });
     })
     .catch(error => {
       notifyClients('SYNC_ERROR', {

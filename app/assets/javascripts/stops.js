@@ -139,7 +139,7 @@ export const stops_edit = function(params) {
     var panel = $(element).closest('.panel');
     var toggled = $(element).data('toggle') || 'active_status';
     var form = panel.find('form');
-    // Support both stop forms (stop[status]) and route driver_update forms (route_*_status by id)
+    // Support both stop forms (stop[status]) and operation route status forms (route_*_status by id)
     var statusInput = form.find('input[name="stop[status]"]').length
       ? form.find('input[name="stop[status]"]')
       : form.find('#' + toggled);
@@ -237,7 +237,7 @@ export const stops_edit = function(params) {
     const formData = new FormData(form);
     const url = current_context.find('form').attr('action');
 
-    // Only append stop-specific field for stop forms (not for route driver_update forms)
+    // Only append stop-specific field for stop forms (not for route status forms)
     if (url.indexOf('/stops/') !== -1) {
       formData.append('stop[status_updated_at]', new Date().toISOString());
     }
