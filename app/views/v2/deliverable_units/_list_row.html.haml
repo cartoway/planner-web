@@ -1,4 +1,7 @@
 -# locals: deliverable_unit, can_destroy:
+- overload = deliverable_unit.default_optimization_overload_multiplier
+- overload_yes = !(overload == 0 || overload == -1)
+-# Always emit the same meta slots so columns stay aligned across cards (like VUS nested list).
 .v2-index-card{id: dom_id(deliverable_unit), data: { v2__table_filter_target: 'row' }}
   .v2-index-card-main
     .v2-index-card-select
@@ -9,33 +12,26 @@
           %i.fa.fa-fw{class: deliverable_unit.default_icon}
           = deliverable_unit.label
       .v2-index-card-meta.text-muted
-        - if deliverable_unit.ref.present?
-          %span.v2-index-card-meta-item
+        %span.v2-index-card-meta-item.du-meta-ref
+          - if deliverable_unit.ref.present?
             %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:ref)} :"
-            = deliverable_unit.ref
-        - if deliverable_unit.localized_default_capacity.present?
-          %span.v2-index-card-meta-item
+            %span.v2-index-card-meta-value= deliverable_unit.ref
+        %span.v2-index-card-meta-item.du-meta-capacity
+          - if deliverable_unit.localized_default_capacity.present?
             %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:default_capacity)} :"
-            = deliverable_unit.localized_default_capacity
-        - if deliverable_unit.localized_default_pickup.present?
-          %span.v2-index-card-meta-item.du-col-sidebar-hide
-            %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:default_pickup)} :"
-            = deliverable_unit.localized_default_pickup
-        - if deliverable_unit.localized_default_delivery.present?
-          %span.v2-index-card-meta-item.du-col-sidebar-hide
+            %span.v2-index-card-meta-value= deliverable_unit.localized_default_capacity
+        %span.v2-index-card-meta-item.du-meta-delivery.du-col-sidebar-hide
+          - if deliverable_unit.localized_default_delivery.present?
             %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:default_delivery)} :"
-            = deliverable_unit.localized_default_delivery
-        - overload = deliverable_unit.default_optimization_overload_multiplier
-        %span.v2-index-card-meta-item.du-col-sidebar-hide
-          %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:optimization_overload_multiplier)} :"
-          - if overload == 0
-            = t('deliverable_units.form.optimization_overload_multiplier_no')
-          - elsif overload == -1
-            = t('deliverable_units.form.optimization_overload_multiplier_ignore')
-          - else
-            = t('deliverable_units.form.optimization_overload_multiplier_yes')
-            = " —"
-            = deliverable_unit.localized_optimization_overload_multiplier.presence || DeliverableUnit.localize_numeric_value(overload)
+            %span.v2-index-card-meta-value= deliverable_unit.localized_default_delivery
+        %span.v2-index-card-meta-item.du-meta-pickup.du-col-sidebar-hide
+          - if deliverable_unit.localized_default_pickup.present?
+            %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:default_pickup)} :"
+            %span.v2-index-card-meta-value= deliverable_unit.localized_default_pickup
+        %span.v2-index-card-meta-item.du-meta-overload.du-col-sidebar-hide
+          - if overload_yes
+            %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:optimization_overload_multiplier)} :"
+            %span.v2-index-card-meta-value= deliverable_unit.localized_optimization_overload_multiplier.presence || DeliverableUnit.localize_numeric_value(overload)
   .v2-index-card-actions
     = link_to edit_deliverable_unit_path(deliverable_unit), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
       %i.fa.fa-pencil.fa-fw

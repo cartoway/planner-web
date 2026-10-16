@@ -4,14 +4,32 @@
 .lookbook-index-cards-host {
   .lookbook-deliverable-units-cards {
     .v2-index-card-meta {
+      display: grid;
+      grid-template-columns:
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1fr)
+        minmax(0, 1.2fr);
+      gap: 0.15rem 0.75rem;
+      align-items: start;
+    }
+
+    .v2-index-card-meta-item {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem 0.75rem;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.05rem;
+      min-width: 0;
     }
 
     .v2-index-card-meta-label {
       font-weight: 600;
-      margin-right: 0.25rem;
+    }
+
+    .v2-index-card-meta-value {
+      min-width: 0;
+      overflow-wrap: anywhere;
     }
   }
 
