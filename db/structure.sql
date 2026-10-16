@@ -56,6 +56,144 @@ END;
 $$;
 
 
+--
+-- Name: operation_execution_write_allowed(integer, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.operation_execution_write_allowed(op_id integer, occurred_at timestamp without time zone) RETURNS boolean
+    LANGUAGE plpgsql
+    STABLE
+    AS $$
+DECLARE
+  op_status character varying;
+  op_closed_at timestamp without time zone;
+BEGIN
+  SELECT status, closed_at INTO op_status, op_closed_at
+  FROM operations
+  WHERE id = op_id;
+
+  IF NOT FOUND THEN
+    RETURN false;
+  END IF;
+
+  IF op_status = 'in_progress' THEN
+    RETURN true;
+  END IF;
+
+  IF op_closed_at IS NULL THEN
+    RETURN false;
+  END IF;
+
+  RETURN COALESCE(occurred_at, clock_timestamp()::timestamp) <= (op_closed_at + INTERVAL '12 hours');
+END;
+$$;
+
+
+--
+-- Name: enforce_operation_stop_status_event_write(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.enforce_operation_stop_status_event_write() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  op_id integer;
+BEGIN
+  SELECT operation_routes.operation_id INTO op_id
+  FROM operation_stops
+  INNER JOIN operation_routes ON operation_routes.id = operation_stops.operation_route_id
+  WHERE operation_stops.id = NEW.operation_stop_id;
+
+  IF NOT public.operation_execution_write_allowed(op_id, NEW.recorded_at) THEN
+    RAISE EXCEPTION 'operation_closed'
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: enforce_operation_stop_execution_write(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.enforce_operation_stop_execution_write() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  op_id integer;
+  occurred_at timestamp without time zone;
+BEGIN
+  IF NEW.status IS NOT DISTINCT FROM OLD.status
+     AND NEW.eta IS NOT DISTINCT FROM OLD.eta
+     AND NEW.status_updated_at IS NOT DISTINCT FROM OLD.status_updated_at
+     AND NEW.custom_attributes IS NOT DISTINCT FROM OLD.custom_attributes
+     AND NEW.actual_quantities IS NOT DISTINCT FROM OLD.actual_quantities THEN
+    RETURN NEW;
+  END IF;
+
+  SELECT operation_id INTO op_id
+  FROM operation_routes
+  WHERE id = NEW.operation_route_id;
+
+  occurred_at := COALESCE(NEW.status_updated_at, clock_timestamp()::timestamp);
+
+  IF NOT public.operation_execution_write_allowed(op_id, occurred_at) THEN
+    RAISE EXCEPTION 'operation_closed'
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
+--
+-- Name: enforce_operation_route_execution_write(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.enforce_operation_route_execution_write() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+DECLARE
+  occurred_at timestamp without time zone;
+BEGIN
+  IF NEW.departure_status IS NOT DISTINCT FROM OLD.departure_status
+     AND NEW.departure_eta IS NOT DISTINCT FROM OLD.departure_eta
+     AND NEW.departure_status_updated_at IS NOT DISTINCT FROM OLD.departure_status_updated_at
+     AND NEW.arrival_status IS NOT DISTINCT FROM OLD.arrival_status
+     AND NEW.arrival_eta IS NOT DISTINCT FROM OLD.arrival_eta
+     AND NEW.arrival_status_updated_at IS NOT DISTINCT FROM OLD.arrival_status_updated_at THEN
+    RETURN NEW;
+  END IF;
+
+  occurred_at := COALESCE(
+    NEW.departure_status_updated_at,
+    NEW.arrival_status_updated_at,
+    clock_timestamp()::timestamp
+  );
+
+  IF NEW.departure_status IS DISTINCT FROM OLD.departure_status
+     OR NEW.departure_eta IS DISTINCT FROM OLD.departure_eta
+     OR NEW.departure_status_updated_at IS DISTINCT FROM OLD.departure_status_updated_at THEN
+    occurred_at := COALESCE(NEW.departure_status_updated_at, occurred_at);
+  ELSIF NEW.arrival_status IS DISTINCT FROM OLD.arrival_status
+        OR NEW.arrival_eta IS DISTINCT FROM OLD.arrival_eta
+        OR NEW.arrival_status_updated_at IS DISTINCT FROM OLD.arrival_status_updated_at THEN
+    occurred_at := COALESCE(NEW.arrival_status_updated_at, occurred_at);
+  END IF;
+
+  IF NOT public.operation_execution_write_allowed(NEW.operation_id, occurred_at) THEN
+    RAISE EXCEPTION 'operation_closed'
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  RETURN NEW;
+END;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
@@ -3816,6 +3954,27 @@ CREATE TRIGGER operation_stops_before_destination_delete BEFORE DELETE ON public
 
 
 --
+-- Name: operation_routes operation_routes_execution_guard; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER operation_routes_execution_guard BEFORE UPDATE ON public.operation_routes FOR EACH ROW EXECUTE FUNCTION public.enforce_operation_route_execution_write();
+
+
+--
+-- Name: operation_stop_status_events operation_stop_status_events_execution_guard; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER operation_stop_status_events_execution_guard BEFORE INSERT ON public.operation_stop_status_events FOR EACH ROW EXECUTE FUNCTION public.enforce_operation_stop_status_event_write();
+
+
+--
+-- Name: operation_stops operation_stops_execution_guard; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER operation_stops_execution_guard BEFORE UPDATE ON public.operation_stops FOR EACH ROW EXECUTE FUNCTION public.enforce_operation_stop_execution_write();
+
+
+--
 -- Name: destinations fk_destinations_customer_id; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4934,6 +5093,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20261014112000'),
 ('20261014120000'),
 ('20261014140000'),
-('20261014150000');
+('20261014150000'),
+('20261016140000');
 
 

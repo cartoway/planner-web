@@ -932,6 +932,7 @@ fr:
     routes:
       bad_barcode_char: Les données du code barre contiennent un caractère non pris en charge
       expired: La tournée a expiré
+      historized: Cette opération est historisée
       enable_store_stops: Les arrêts intermédiaires doivent être activés
     optimizer:
       regulatory_rests_same_ratio: Les pauses par cumul doivent partager le même ratio durée/intervalle

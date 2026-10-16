@@ -3,6 +3,8 @@
 module Operations
   class SendDestinationEmail
     def self.call(operation:, trackings: nil)
+      return 0 unless operation.open?
+
       customer = operation.customer
       return 0 unless customer.enable_email_destination
 
