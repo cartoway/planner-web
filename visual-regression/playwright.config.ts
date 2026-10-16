@@ -23,6 +23,8 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   workers: process.env.CI ? 2 : undefined,
+  // Cold Rails/Lookbook + Google Fonts: default 30s times out on page.goto(waitUntil: 'load').
+  timeout: 60_000,
   reporter: process.env.CI ? [['html', { open: 'never' }], ['list']] : [['list']],
   use: {
     baseURL,
@@ -37,7 +39,8 @@ export default defineConfig({
   },
   expect: {
     toHaveScreenshot: {
-      maxDiffPixels: 120,
+      // CI vs local Docker Chromium: Montserrat AA on intro copy can exceed ~120 px.
+      maxDiffPixels: 200,
       animations: 'disabled',
       caretColor: 'transparent'
     }
