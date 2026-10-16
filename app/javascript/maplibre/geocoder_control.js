@@ -1,5 +1,6 @@
 // Copyright © Cartoway
 // MapLibre IControl: geocoder against /api/0.1/geocoder/search (same-origin JSON).
+// Selecting a result flies to it and keeps a focus marker until dismiss (planning parity).
 
 const DEFAULT_CLASSES = {
   root: 'maplibregl-ctrl maplibregl-ctrl-group maplibre-geocoder',
@@ -12,10 +13,32 @@ const DEFAULT_CLASSES = {
 const MIN_CHARS = 3
 const DEBOUNCE_MS = 300
 
+/** Red pulsing pin element (Leaflet `.focus-geocoder` parity). */
+export function createFocusGeocoderElement () {
+  const el = document.createElement('div')
+  el.className = 'focus-geocoder'
+  el.setAttribute('aria-hidden', 'true')
+  return el
+}
+
+/**
+ * Whether a click target should clear the geocoder focus marker (planning dismiss parity).
+ * @param {EventTarget|null|undefined} target
+ * @param {string[]} [dismissSelectors]
+ * @param {string[]} [ignoreSelectors]
+ */
+export function shouldClearGeocoderFocus (target, dismissSelectors, ignoreSelectors) {
+  if (!target || !dismissSelectors || !dismissSelectors.length) return false
+  const el = target.nodeType === 1 ? target : target.parentElement
+  if (!el || typeof el.closest !== 'function') return false
+  if (ignoreSelectors && ignoreSelectors.some((selector) => el.closest(selector))) return false
+  return dismissSelectors.some((selector) => el.closest(selector))
+}
+
 /**
  * @param {string} placeholder
  * @param {string} emptyMsg
- * @param {{ searchUrl?: string, tooltip?: string, submitLabel?: string, minChars?: number, debounceMs?: number, classes?: Partial<typeof DEFAULT_CLASSES> }} [options]
+ * @param {{ searchUrl?: string, tooltip?: string, submitLabel?: string, minChars?: number, debounceMs?: number, classes?: Partial<typeof DEFAULT_CLASSES>, focusDismissSelectors?: string[], focusIgnoreSelectors?: string[] }} [options]
  */
 export function GeocoderIControl (placeholder, emptyMsg, options = {}) {
   this._placeholder = placeholder
@@ -26,9 +49,18 @@ export function GeocoderIControl (placeholder, emptyMsg, options = {}) {
   this._minChars = options.minChars != null ? options.minChars : MIN_CHARS
   this._debounceMs = options.debounceMs != null ? options.debounceMs : DEBOUNCE_MS
   this._classes = { ...DEFAULT_CLASSES, ...(options.classes || {}) }
+  this._focusDismissSelectors = options.focusDismissSelectors || []
+  this._focusIgnoreSelectors = ['.maplibre-geocoder'].concat(options.focusIgnoreSelectors || [])
   this._debounceTimer = null
   this._abort = null
   this._activeIndex = -1
+  this._focusMarker = null
+}
+
+GeocoderIControl.prototype.clearFocusMarker = function () {
+  if (!this._focusMarker) return
+  try { this._focusMarker.remove() } catch (e) { /* ignore */ }
+  this._focusMarker = null
 }
 
 GeocoderIControl.prototype.onAdd = function (map) {
@@ -122,9 +154,25 @@ GeocoderIControl.prototype.onAdd = function (map) {
     map.flyTo({ center: [lon, lat], zoom: 15 })
   }
 
+  function showFocusMarker (hit) {
+    const lat = parseFloat(hit.lat)
+    const lon = parseFloat(hit.lon)
+    if (!isFinite(lat) || !isFinite(lon)) return
+    const maplibregl = typeof window !== 'undefined' ? window.maplibregl : null
+    if (!maplibregl || typeof maplibregl.Marker !== 'function') return
+    self.clearFocusMarker()
+    self._focusMarker = new maplibregl.Marker({
+      element: createFocusGeocoderElement(),
+      anchor: 'center'
+    }).setLngLat([lon, lat]).addTo(map)
+  }
+
   function selectHit (hit) {
     if (hit && hit.display_name) input.value = hit.display_name
-    if (hit) flyToHit(hit)
+    if (hit) {
+      flyToHit(hit)
+      showFocusMarker(hit)
+    }
     collapse()
   }
 
@@ -159,7 +207,10 @@ GeocoderIControl.prototype.onAdd = function (map) {
       li.setAttribute('data-geocoder-index', String(idx))
       li.textContent = hit.display_name || ''
       li.addEventListener('mousedown', (e) => { e.preventDefault() })
-      li.addEventListener('click', () => selectHit(hit))
+      li.addEventListener('click', (e) => {
+        e.stopPropagation()
+        selectHit(hit)
+      })
       li.addEventListener('mouseenter', () => {
         self._activeIndex = idx
         highlightActive()
@@ -258,6 +309,16 @@ GeocoderIControl.prototype.onAdd = function (map) {
   }
   document.addEventListener('click', this._outside)
 
+  this._onFocusDismiss = (e) => {
+    if (!self._focusMarker) return
+    if (shouldClearGeocoderFocus(e.target, self._focusDismissSelectors, self._focusIgnoreSelectors)) {
+      self.clearFocusMarker()
+    }
+  }
+  if (this._focusDismissSelectors.length) {
+    document.addEventListener('click', this._onFocusDismiss)
+  }
+
   form.appendChild(input)
   form.appendChild(btn)
   container.appendChild(toggle)
@@ -271,7 +332,9 @@ GeocoderIControl.prototype.onAdd = function (map) {
 
 GeocoderIControl.prototype.onRemove = function () {
   if (this._cancelPending) this._cancelPending()
+  this.clearFocusMarker()
   if (this._outside) document.removeEventListener('click', this._outside)
+  if (this._onFocusDismiss) document.removeEventListener('click', this._onFocusDismiss)
   if (this._container && this._container.parentNode) {
     this._container.parentNode.removeChild(this._container)
   }
