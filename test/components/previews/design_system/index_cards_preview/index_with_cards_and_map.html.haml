@@ -1,0 +1,44 @@
+.lookbook-index-cards-host.container-fluid.py-3
+  %h1.h4.mb-2 Index with cards and map
+  %p.text-muted.small.mb-3
+    Map-backed indexes (destinations, stores) on
+    %strong desktop
+    \: map full-bleed with a list panel overlay.
+    Chrome mirrors the live index (title + count, search with loupe, toolbar, dense cards).
+    For phone Liste / Carte panes, see
+    %strong Index with cards and map mobile
+    \.
+  %p.text-muted.small.mb-3
+    %span.badge.text-bg-secondary Demo data
+    Static sample — no ActiveRecord.
+
+  .lookbook-index-map-desktop
+    .lookbook-index-map-frame
+      .lookbook-index-map-placeholder.d-flex.align-items-center.justify-content-center.text-muted.small
+        Map (placeholder)
+      %aside.lookbook-index-list-panel
+        .lookbook-index-list-panel-header
+          %button.floating-btn.destinations-sidebar-toggle{type: 'button', title: t('destinations.index.collapse_list'), 'aria-label': t('destinations.index.collapse_list')}
+            %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}
+          .destinations-sidebar-title-row
+            %h1.h5.mb-0.mt-0= t('destinations.index.title')
+            #count.primary.data-info{title: t('destinations.index.destinations_count_help')}
+              %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+              %span.destinations-list-count-numbers 3 / 3
+              %span.destinations-toolbar-label= t('activerecord.models.destinations', count: 3)
+          .form-group.mb-0
+            .destinations-search-wrapper
+              .destinations-search-input.form-control
+                .destinations-search-clause
+                  %input.form-control-plaintext{type: 'search', placeholder: t('destinations.index.search_label'), 'aria-label': t('destinations.index.search_label'), autocomplete: 'off'}
+                %i.fa.fa-magnifying-glass.destinations-search-icon{"aria-hidden": "true"}
+        .destinations-list-toolbar.d-flex.justify-content-between.align-items-center.px-3.pt-2.pb-2.flex-wrap.gap-2
+          .destinations-list-toolbar-actions.d-flex.gap-1.align-items-center.flex-wrap
+            %button.btn.btn-primary{type: 'button', title: t('destinations.index.new')}
+              %i.fa.fa-plus.fa-fw
+              %span.destinations-toolbar-label= t('destinations.index.new')
+            %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select')}
+              %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+              %span.destinations-toolbar-label= t('all.verb.select')
+        .lookbook-index-list-panel-body.lookbook-destinations-cards
+          = render 'design_system/index_cards_preview/sample_destination_cards'

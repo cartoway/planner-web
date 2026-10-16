@@ -1,0 +1,41 @@
+.lookbook-form-sidebar-host.container-fluid.py-3
+  %h1.h4.mb-3 Form sidebar bottom sheet
+  %p.text-muted.small.mb-3
+    On viewports below Bootstrap
+    %code lg
+    , the form panel is a bottom sheet (same idea as
+    %code .operation-detail
+    ): fixed to the bottom,
+    %code max-height: 75dvh
+    , rounded top corners, dimmed
+    %code .form-sidebar-backdrop
+    , and a visible
+    %code .btn-close
+    in
+    %code .form-sidebar-chrome
+    \. This preview forces that layout inside a phone-width frame so it is visible on desktop Lookbook.
+
+  .lookbook-form-sidebar-phone
+    .lookbook-form-sidebar-phone-label.text-muted.small.mb-2 Phone frame (~390px) — sheet open
+    #lookbook-form-sidebar-bottom-sheet.lookbook-form-sidebar-demo.lookbook-form-sidebar-demo--bottom-sheet
+      .lookbook-form-sidebar-map-placeholder.d-flex.align-items-center.justify-content-center.text-muted.small
+        Map / list (under sheet)
+      %button.form-sidebar-backdrop.is-visible{type: 'button', 'aria-label': 'Close form', 'aria-hidden': 'false'}
+      %aside.form-sidebar.slide-panel.slide-panel--from-right.form-sidebar--open.is-open{role: 'complementary', 'aria-label': 'Destination form'}
+        .form-sidebar-chrome
+          %button.btn-close{type: 'button', title: 'Close form', 'aria-label': 'Close form'}
+        .form-sidebar-inner
+          %header.destination-form-sidebar-header.mb-0
+            %h2.h5.mb-0 Edit destination
+          .mb-3
+            %label.form-label{for: 'lookbook-bs-name'} Name
+            %input#lookbook-bs-name.form-control.form-control-sm{type: 'text', autocomplete: 'off', value: 'Boulangerie Dupont'}
+          .mb-3
+            %label.form-label{for: 'lookbook-bs-city'} City
+            %input#lookbook-bs-city.form-control.form-control-sm{type: 'text', autocomplete: 'off', value: 'Bordeaux'}
+          .mb-3
+            %label.form-label{for: 'lookbook-bs-street'} Street
+            %input#lookbook-bs-street.form-control.form-control-sm{type: 'text', autocomplete: 'off', value: '12 rue Sainte-Catherine'}
+          %p.text-muted.small.mb-3
+            Scroll the sheet body independently of the page behind the backdrop.
+          %button.btn.btn-primary{type: 'button'} Save

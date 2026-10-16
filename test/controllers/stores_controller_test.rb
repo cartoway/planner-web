@@ -33,12 +33,19 @@ class StoresControllerTest < ActionController::TestCase
     assert_select 'body.cartoway-v2', 1
     assert_select '#stores-map-layout[data-controller="v2--stores-index"]', 1
     assert_select %(a[href="#{new_store_path}"][data-turbo-frame="form_sidebar"]), 1
-    assert_select '#store_box tr.store-row[data-store-id=?]', @store.id.to_s, 1
+    assert_select '#stores-map-layout .destinations-sidebar-title-row h1', text: I18n.t('stores.index.title')
+    assert_select '#stores-map-layout .destinations-sidebar-title-row #count', 1
+    assert_select '#stores-search-form .destinations-search-icon.fa-magnifying-glass', 1
+    assert_select '#stores-map-layout .destinations-list-toolbar .fa-check-square', 1
+    assert_select '#store_box .v2-index-card.store-row.destinations-index-card[data-store-id=?]', @store.id.to_s, 1
+    assert_select '#store_box .destinations-card-address', minimum: 1
+    assert_select '#store_box .destinations-card-actions .stores-row-center', minimum: 1
     assert_select '#stores-map-layout.destinations-map-layout #map.destinations-map', 1
-    assert_select '#store_box thead .stores-list-col--name', 1
+    assert_select '#store_box .v2-index-cards', 1
     assert_select '#store_box button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
-    assert_select 'button[data-controller~="confirm-click"][data-confirm-click-form-value="stores-destroy"]', 1
+    assert_select 'button.destinations-bulk-delete[data-controller~="confirm-click"][data-confirm-click-form-value="stores-destroy"]', 1
     assert_select '.destinations-position-drag-cancel', 1
+    assert_select '.v2-map-index-mobile-panes', 1
 
     config = JSON.parse(css_select('#stores-map-layout').first['data-config'])
     assert config['stores'].any? { |s| s['id'] == @store.id }
@@ -58,7 +65,9 @@ class StoresControllerTest < ActionController::TestCase
     assert_response :success
     assert_select '#stores-map-layout', 1
     assert_select 'turbo-frame#form_sidebar form#store-form-sidebar.form-sidebar-form.form-sidebar-form--full-bleed', 1
-    assert_select %(aside.form-sidebar[data-v2--form-sidebar-list-url-value="#{stores_path}"]), 1
+    assert_select %(.form-sidebar-host[data-v2--form-sidebar-list-url-value="#{stores_path}"]), 1
+    assert_select '.form-sidebar-host button.form-sidebar-backdrop', 1
+    assert_select 'aside.form-sidebar .form-sidebar-chrome button.btn-close', 1
   end
 
   test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do

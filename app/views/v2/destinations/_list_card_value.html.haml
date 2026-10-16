@@ -1,0 +1,51 @@
+-# locals: destination, column_id, visit: nil
+-# Value only for dense cards. Empty fields render nothing (no "–").
+- if destinations_list_visit_scoped_column?(column_id)
+  - case column_id.to_s
+  - when 'visit_tags'
+    - tags = destinations_list_visit_tags_for_visit(visit)
+    - if tags.present?
+      .destinations-list-tag-badges
+        - tags.each do |tag|
+          %span.badge.destinations-list-tag-badge.text-bg-light.border
+            - if tag_list_badge_customized?(tag)
+              %i.fa.fa-fw{class: tag_list_badge_icon_class(tag), style: tag_list_badge_icon_style(tag), "aria-hidden": "true"}
+            = tag.label
+  - when 'visit_ref'
+    = visit&.ref
+  - when 'visit_duration'
+    = visit&.duration_time_with_seconds
+  - else
+    - du_data = destinations_list_deliverable_unit_for_visit(visit, column_id, destination.customer)
+    - if du_data && (du_data[:pickup].positive? || du_data[:delivery].positive?)
+      = render 'v2/destinations/list_card_deliverable_unit', du_data: du_data
+- else
+  - case column_id.to_s
+  - when 'street'
+    = destination.street
+  - when 'postalcode'
+    = destination.postalcode
+  - when 'city'
+    = destination.city
+  - when 'ref'
+    = destination.ref
+  - when 'geocoding'
+    = render 'v2/destinations/list_card_geocoding', destination: destination
+  - when 'comment'
+    = destination.comment
+  - when 'phone_number'
+    = destinations_list_phone_link(destination)
+  - when 'tags'
+    - if destination.tags.any?
+      .destinations-list-tag-badges
+        - destination.tags.each do |tag|
+          %span.badge.destinations-list-tag-badge.text-bg-light.border
+            - if tag_list_badge_customized?(tag)
+              %i.fa.fa-fw{class: tag_list_badge_icon_class(tag), style: tag_list_badge_icon_style(tag), "aria-hidden": "true"}
+            = tag.label
+  - when 'destination_duration'
+    = destination.duration_time_with_seconds
+  - else
+    - du_data = destinations_list_deliverable_unit_for_column(destination, column_id)
+    - if du_data && (du_data[:pickup].positive? || du_data[:delivery].positive?)
+      = render 'v2/destinations/list_card_deliverable_unit', du_data: du_data

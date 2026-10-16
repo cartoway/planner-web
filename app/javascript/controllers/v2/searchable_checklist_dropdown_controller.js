@@ -6,6 +6,7 @@ import { Controller } from "@hotwired/stimulus"
 export default class extends Controller {
   static targets = ["form", "count", "search", "option", "resetDefaults"]
   static values = {
+    // 0 = unlimited active items
     maxActive: { type: Number, default: 8 },
     defaultActive: { type: Array, default: [] }
   }
@@ -14,11 +15,15 @@ export default class extends Controller {
     this.syncDisabledState()
   }
 
+  hasMaxActive() {
+    return this.maxActiveValue > 0
+  }
+
   change(event) {
     const checkbox = event.target
     if (!(checkbox instanceof HTMLInputElement) || checkbox.type !== "checkbox") return
 
-    if (checkbox.checked && this.checkedCount() > this.maxActiveValue) {
+    if (this.hasMaxActive() && checkbox.checked && this.checkedCount() > this.maxActiveValue) {
       checkbox.checked = false
       this.syncDisabledState()
       return
@@ -27,6 +32,7 @@ export default class extends Controller {
     this.syncDisabledState()
     this.dispatchChange()
   }
+
 
   filter() {
     const query = this.hasSearchTarget ? this.searchTarget.value.trim().toLowerCase() : ""
@@ -72,17 +78,18 @@ export default class extends Controller {
 
   syncDisabledState() {
     const checked = this.checkedCount()
-    const atMax = checked >= this.maxActiveValue
+    const atMax = this.hasMaxActive() && checked >= this.maxActiveValue
     this.checkboxes().forEach((checkbox) => {
       checkbox.disabled = atMax && !checkbox.checked
     })
     if (this.hasCountTarget) {
-      this.countTarget.textContent = `${checked} / ${this.maxActiveValue}`
+      this.countTarget.textContent = this.hasMaxActive() ? `${checked} / ${this.maxActiveValue}` : String(checked)
     }
     if (this.hasResetDefaultsTarget) {
       this.resetDefaultsTarget.disabled = this.isAtDefaults()
     }
   }
+
 
   dispatchChange() {
     this.element.dispatchEvent(

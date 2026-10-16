@@ -1,0 +1,19 @@
+.lookbook-index-cards-host.container-fluid.py-3
+  %h1.h4.mb-2 Index with cards
+  %p.text-muted.small.mb-3
+    Shared card list for v2 indexes without a map (operations, plannings, deliverable units, …).
+    Desktop uses CSS subgrid so columns align across cards; mobile keeps edit/destroy on one row
+    (see
+    %strong Index with cards mobile
+    ).
+    Styles:
+    %code v2/_index_cards.scss
+  %p.text-muted.small.mb-3
+    %span.badge.text-bg-secondary Demo data
+    Static sample — no ActiveRecord.
+
+  %h2.h6.text-secondary.mb-2 Operations-style (mid column + action slots)
+  = render 'design_system/index_cards_preview/sample_simple_index_cards', variant: 'operations'
+
+  %h2.h6.text-secondary.mb-2.mt-4 Capacités-style (labeled meta + row actions)
+  = render 'design_system/index_cards_preview/sample_simple_index_cards', variant: 'capacites'
