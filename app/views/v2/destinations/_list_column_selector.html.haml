@@ -1,6 +1,6 @@
 -# Column visibility dropdown — thin wrapper around the shared searchable checklist.
 - list_columns = destinations_list_columns_selector_options(@customer)
-- max_active = Preferences::Catalog::DESTINATIONS_LIST_MAX_ACTIVE
+- max_active = list_columns.size
 - default_active_ids = Preferences::Catalog::DestinationsList.default_active_for(@customer)
 - active_column_ids = list_columns.select { |column| column[:active] }.map { |column| column[:id] }
 - active_count = active_column_ids.size

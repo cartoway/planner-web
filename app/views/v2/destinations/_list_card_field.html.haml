@@ -1,0 +1,5 @@
+-# locals: destination, column_id, visit: nil
+-# Labeled field (kept for rare labeled contexts). Dense cards use address + meta instead.
+%dt.destinations-card-field-label= destinations_list_column_label(column_id)
+%dd.destinations-card-field-value
+  = render 'v2/destinations/list_card_value', destination: destination, column_id: column_id, visit: local_assigns[:visit]

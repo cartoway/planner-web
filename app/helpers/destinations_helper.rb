@@ -171,6 +171,18 @@ module DestinationsHelper
     DestinationsListSort.sortable_column?(column_id, customer: customer)
   end
 
+  # Sortable columns for the destinations index dropdown (active columns + name).
+  def destinations_list_sort_options(customer = nil, active_columns = nil)
+    customer ||= @customer if defined?(@customer) && @customer
+    return [] unless customer
+
+    columns = Array(active_columns.presence || destinations_list_active_column_ids(customer))
+    columns = (['name'] + columns).uniq
+    columns.select { |column_id| destinations_list_column_sortable?(column_id, customer) }.map do |column_id|
+      { id: column_id, label: destinations_list_column_label(column_id, customer) }
+    end
+  end
+
   def destinations_list_sort_header(column_id, label, sort_state)
     label_html = content_tag(:span, label, class: 'destinations-list-header-label')
     return label_html unless destinations_list_column_sortable?(column_id)
@@ -248,6 +260,64 @@ module DestinationsHelper
 
   def destinations_list_formatted_address(destination)
     [destination.street, destination.postalcode, destination.city, destination.country].compact.join(' ')
+  end
+
+  # Columns composed into one address line on dense index cards.
+  ADDRESS_CARD_COLUMN_IDS = %w[street postalcode city].freeze
+
+  def destinations_list_card_address_columns(column_ids)
+    Array(column_ids).map(&:to_s) & ADDRESS_CARD_COLUMN_IDS
+  end
+
+  # Remaining destination columns shown as inline meta (not address / geocoding / name / ref).
+  # Ref is rendered to the left of the title when active.
+  def destinations_list_card_meta_columns(column_ids)
+    Array(column_ids).map(&:to_s).reject do |id|
+      ADDRESS_CARD_COLUMN_IDS.include?(id) || %w[geocoding name ref].include?(id)
+    end
+  end
+
+  # "12 rue X, 33000 Bordeaux" from active address columns only.
+  def destinations_list_card_address_line(destination, column_ids)
+    cols = destinations_list_card_address_columns(column_ids)
+    return nil if cols.empty?
+
+    parts = []
+    parts << destination.street.presence if cols.include?('street')
+    postal_city = []
+    postal_city << destination.postalcode.presence if cols.include?('postalcode')
+    postal_city << destination.city.presence if cols.include?('city')
+    parts << postal_city.join(' ').presence
+    parts.compact.join(', ').presence
+  end
+
+  # Dense cards omit empty fields entirely (no "–" placeholders).
+  def destinations_list_card_field_present?(destination, column_id, visit: nil)
+    case column_id.to_s
+    when 'street' then destination.street.present?
+    when 'postalcode' then destination.postalcode.present?
+    when 'city' then destination.city.present?
+    when 'ref' then destination.ref.present?
+    when 'comment' then destination.comment.present?
+    when 'phone_number' then destination.phone_number.present?
+    when 'tags' then destination.tags.any?
+    when 'destination_duration' then destination&.duration_time_with_seconds.present?
+    when 'visit_ref' then visit&.ref.present?
+    when 'visit_duration' then visit&.duration_time_with_seconds.present?
+    when 'visit_tags' then destinations_list_visit_tags_for_visit(visit).any?
+    when 'geocoding' then destinations_list_geocoding_result_free(destination).present? ||
+      destinations_list_geocoding_accuracy_percent(destination).present? ||
+      destinations_list_geocoding_level_icon_class(destination).present? ||
+      !destination.position?
+    else
+      du_data =
+        if destinations_list_visit_scoped_column?(column_id)
+          destinations_list_deliverable_unit_for_visit(visit, column_id, destination.customer)
+        else
+          destinations_list_deliverable_unit_for_column(destination, column_id)
+        end
+      du_data && (du_data[:pickup].positive? || du_data[:delivery].positive?)
+    end
   end
 
   def destinations_list_phone_link(destination)

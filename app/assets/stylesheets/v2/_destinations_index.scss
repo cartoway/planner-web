@@ -144,62 +144,6 @@
     white-space: normal;
   }
 
-  .destinations-list-geocoding-cell {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: flex-start;
-    gap: 0.25rem 0.35rem;
-    max-width: 100%;
-    min-width: 0;
-
-    .geocoding_level {
-      flex: 0 0 auto;
-      width: 1.25rem;
-      padding-top: 0.15rem;
-    }
-
-    .destinations-list-geocoding-progress {
-      flex: 1 1 auto;
-      min-width: 0;
-      height: 1.25rem;
-      margin-bottom: 0;
-
-      .progress-bar-success {
-        background-color: #5cb85c;
-      }
-
-      .progress-bar-warning {
-        background-color: #f0ad4e;
-      }
-
-      .progress-bar-danger {
-        background-color: #d9534f;
-      }
-
-      .progress-bar span {
-        font-size: 14px;
-        line-height: 1.25rem;
-      }
-    }
-
-    .destinations-list-geocoding-result {
-      flex: 1 1 100%;
-      font-size: 12px;
-      line-height: 1.2;
-      color: var(--bs-secondary-color);
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      max-width: 100%;
-    }
-
-    .no_position {
-      color: var(--bs-danger);
-      font-weight: 700;
-      font-size: 12px;
-    }
-  }
-
   .destinations-list-deliverable-unit-qty {
     display: inline-flex;
     align-items: center;
@@ -218,6 +162,277 @@
     overflow: hidden;
     min-width: 0;
     max-width: 100%;
+  }
+}
+
+// Dense destination index cards (contact layout). Shared by app sidebar + Lookbook samples.
+.destinations-index-card {
+  padding: .65rem .85rem;
+  border-radius: .5rem;
+
+  .destinations-card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: .45rem;
+    margin-bottom: 0;
+
+    .v2-index-card-badges {
+      flex: 0 0 auto;
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+      margin-top: .1rem;
+
+      &:empty {
+        display: none;
+      }
+    }
+
+    .destinations-card-actions {
+      flex: 0 0 auto;
+      margin-top: .05rem;
+    }
+  }
+
+  // Ref + name: side by side when space allows; name wraps under if ref is long.
+  .destinations-card-identity {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .1rem .45rem;
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .destinations-card-ref {
+    flex: 0 1 auto;
+    max-width: 100%;
+    font-size: 1.05rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--bs-secondary-color, #6c757d);
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .destinations-card-name {
+    flex: 1 1 10rem;
+    min-width: min(100%, 10rem);
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.3;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .destinations-card-actions {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: .3rem;
+    justify-content: flex-end;
+    flex-shrink: 0;
+  }
+
+  .destinations-card-address-block {
+    margin: .25rem 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .2rem;
+  }
+
+  .destinations-card-address {
+    margin: 0;
+    font-size: .95rem;
+    line-height: 1.4;
+    color: var(--bs-body-color, #212529);
+    word-break: break-word;
+  }
+
+  // Geocoder match — compact alert (width of content), readable type.
+  .destinations-card-geocoded.alert {
+    display: inline-flex;
+    align-items: flex-start;
+    gap: .4rem;
+    width: fit-content;
+    max-width: 100%;
+    margin: 0;
+    padding: .2rem .45rem;
+    border: 0;
+    border-radius: .35rem;
+    font-size: 1rem;
+    line-height: 1.35;
+    color: var(--bs-body-color, #212529);
+    word-break: break-word;
+
+    &.alert-light {
+      background: var(--bs-secondary-bg, #f8f9fa);
+    }
+  }
+
+  .destinations-card-geocoded-icon {
+    flex: 0 0 auto;
+    line-height: 1.35;
+    margin-top: .05rem;
+  }
+
+  .destinations-card-geocoded-value {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .destinations-card-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .2rem .4rem;
+    margin: .3rem 0 0;
+    font-size: .9rem;
+    line-height: 1.4;
+    color: var(--bs-secondary-color, #6c757d);
+    min-width: 0;
+  }
+
+  .destinations-card-meta-sep {
+    color: var(--bs-border-color, #ced4da);
+    user-select: none;
+  }
+
+  .destinations-card-meta-item {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    .destinations-list-tag-badges {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: .25rem;
+      vertical-align: middle;
+    }
+
+    .badge,
+    .destinations-list-tag-badge {
+      font-size: .8rem;
+    }
+  }
+
+  .destinations-card-geocoding-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .3rem .55rem;
+    border-radius: .4rem;
+    background: var(--bs-secondary-bg, #f8f9fa);
+    font-size: .95rem;
+    font-weight: 650;
+    line-height: 1.2;
+    white-space: nowrap;
+    color: var(--bs-body-color, #212529);
+
+    .fa {
+      font-size: 1.05rem;
+    }
+
+    &.badge {
+      font-size: .85rem;
+      font-weight: 650;
+      padding: .3rem .55rem;
+    }
+
+    &--success {
+      color: #2f6b2f;
+      background: rgba(92, 184, 92, 0.18);
+    }
+
+    &--warning {
+      color: #8a6d3b;
+      background: rgba(240, 173, 78, 0.22);
+    }
+
+    &--danger {
+      color: #a94442;
+      background: rgba(217, 83, 79, 0.18);
+    }
+  }
+
+  .destinations-card-geocoding-pct {
+    font-variant-numeric: tabular-nums;
+  }
+
+  .destinations-card-visit {
+    margin-top: .4rem;
+    padding-top: .35rem;
+    border-top: 1px solid var(--status-line, var(--bs-border-color, #dee2e6));
+  }
+
+  .destinations-card-visit-title {
+    margin: 0 0 .15rem;
+    font-size: .8rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--bs-secondary-color, #6c757d);
+    text-transform: uppercase;
+    letter-spacing: .02em;
+  }
+
+  .destinations-card-visit .destinations-card-meta {
+    margin-top: .1rem;
+  }
+}
+
+// Geocoding cell — used by table cells AND destination cards (must not be scoped to .table).
+.destinations-list-geocoding-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  max-width: 100%;
+  min-width: 0;
+
+  .destinations-list-geocoding-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    max-width: 100%;
+  }
+
+  // Compact bar next to the quality icon (override Bootstrap .progress width: 100%).
+  .destinations-list-geocoding-progress.progress {
+    width: 12rem !important;
+
+    .progress-bar-success {
+      background-color: #5cb85c;
+    }
+
+    .progress-bar-warning {
+      background-color: #f0ad4e;
+    }
+
+    .progress-bar-danger {
+      background-color: #d9534f;
+    }
+
+    .progress-bar span {
+      font-size: 9px;
+      line-height: 0.75rem;
+    }
+  }
+
+  .destinations-list-geocoding-result {
+    font-size: .95rem;
+    color: var(--bs-secondary-color);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+  }
+
+  .no_position {
+    color: var(--bs-danger);
+    font-weight: 700;
+    font-size: 12px;
   }
 }
 
@@ -248,8 +463,8 @@
 
 .destinations-search-input {
   display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
+  align-items: center;
+  flex-wrap: nowrap;
   gap: 0.375rem;
   padding: 0.375rem 0.75rem;
   width: 100%;
@@ -265,7 +480,6 @@
   display: flex;
   align-items: center;
   flex: 1 1 auto;
-  width: 100%;
   min-width: 0;
   gap: 0.5rem;
 
@@ -285,6 +499,18 @@
   .form-control-plaintext::-webkit-search-cancel-button {
     -webkit-appearance: none;
   }
+}
+
+.destinations-search-icon {
+  flex: 0 0 auto;
+  color: var(--bs-secondary-color, #6c757d);
+  transform: scaleX(-1);
+  pointer-events: none;
+}
+
+#destinations-search-form.form-group,
+#stores-search-form.form-group {
+  margin-bottom: 4px;
 }
 
 .destinations-search-token {
@@ -403,8 +629,7 @@ body:has(#operation-map-layout) {
 
     .destinations-sidebar-header {
       flex-shrink: 0;
-      padding: 1rem;
-      padding-right: 2.5rem; // space for toggle button
+      padding: 0 1rem;
       border-bottom: 1px solid var(--bs-border-color);
       overflow: visible;
       position: relative;
@@ -416,6 +641,27 @@ body:has(#operation-map-layout) {
         top: 0.5rem;
         right: 0.5rem;
         z-index: 10;
+      }
+
+      .destinations-sidebar-title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: .75rem;
+        // Room for the absolute collapse toggle on the right.
+        padding-right: 2.5rem;
+        margin-bottom: .5rem;
+
+        h1 {
+          margin: 0;
+          min-width: 0;
+        }
+
+        #count {
+          flex-shrink: 0;
+          margin: 0;
+          white-space: nowrap;
+        }
       }
     }
 
@@ -432,7 +678,7 @@ body:has(#operation-map-layout) {
       flex: 1 1 auto;
       min-height: 0;
       min-width: 0;
-      width: max-content;
+      width: 100%;
       max-width: 100%;
       overflow: hidden;
 
@@ -440,7 +686,7 @@ body:has(#operation-map-layout) {
         flex-shrink: 0;
       }
 
-      // Nested body frame (table only) — keep the flex height chain to #destination_box.
+      // Nested body frame — keep the flex height chain to #destination_box.
       turbo-frame#destinations_list_body {
         display: flex;
         flex-direction: column;
@@ -456,10 +702,10 @@ body:has(#operation-map-layout) {
       flex: 1;
       min-height: 0;
       min-width: 0;
-      width: max-content;
+      width: 100%;
       max-width: 100%;
       overflow-y: auto;
-      overflow-x: auto;
+      overflow-x: hidden;
       // Keep wheel / scrollIntoView chain inside the list; avoids moving .main-primary or the window.
       overscroll-behavior: contain;
       // Hide the scrollbar chrome so row striping reaches the sidebar edge (wheel/touch still scroll).
@@ -467,27 +713,72 @@ body:has(#operation-map-layout) {
       scrollbar-width: none;
       -ms-overflow-style: none;
       padding: 0 0 1rem;
+      box-sizing: border-box;
 
       &::-webkit-scrollbar {
         width: 0;
         height: 0;
       }
 
-      .table-responsive {
-        width: max-content;
-        max-width: 100%;
-        overflow: visible;
-      }
-
-      // List row highlight (list click, map pin, or ?highlight_destination_id=).
-      tr.destination.highlight td,
-      tr.store-row.highlight td {
+      // List card highlight (list click, map pin, or ?highlight_destination_id=).
+      .v2-index-card.destination.highlight,
+      .v2-index-card.store-row.highlight {
         font-weight: inherit;
         background-color: rgba(var(--bs-warning-rgb), 0.2);
         transition: background-color 0.15s ease;
       }
-    }
 
+      .v2-index-card--danger {
+        border-color: var(--bs-danger-border-subtle, #f5c2c7);
+        background-color: var(--bs-danger-bg-subtle, #f8d7da);
+      }
+
+      #stores-list {
+        display: contents;
+      }
+
+      // Sidebar is narrow: stack cards (no desktop subgrid) so titles/fields are not clipped.
+      .v2-index-cards {
+        display: flex;
+        flex-direction: column;
+        gap: .45rem;
+        width: 100%;
+        max-width: none;
+        box-sizing: border-box;
+      }
+
+      .v2-index-card {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        width: 100%;
+        box-sizing: border-box;
+        grid-template-columns: none;
+        grid-column: auto;
+        padding: .55rem .7rem;
+        border-radius: .5rem;
+      }
+
+      .v2-index-card-main {
+        width: 100%;
+        min-width: 0;
+        align-items: flex-start;
+      }
+
+      .v2-index-card-header {
+        margin-bottom: 0;
+      }
+
+      .v2-index-card-title {
+        font-size: .9rem;
+        font-weight: 650;
+        line-height: 1.3;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: unset;
+        word-break: break-word;
+      }
+    }
   }
 
   .destinations-sidebar-expand.floating-btn.slide-panel-expand-trigger {
@@ -693,5 +984,114 @@ body:has(#operation-map-layout) {
   .destinations-sidebar {
     width: min(32rem, 92vw);
     max-width: 32rem;
+  }
+}
+
+// Compact list toolbar + hide bulk delete until selection mode.
+#destinations-map-layout,
+#stores-map-layout {
+  .destinations-list-toolbar {
+    gap: .35rem .5rem;
+  }
+
+  .destinations-list-toolbar-actions,
+  .destinations-list-toolbar-meta {
+    gap: .35rem;
+  }
+
+  // Hide until selection mode. Re-show with Bootstrap's .btn display (inline-block),
+  // not inline-flex — flex shrink-wraps tighter and the button looks smaller.
+  .destinations-bulk-delete {
+    display: none;
+  }
+
+  #destinations_list:has(.v2-index-cards.is-selecting) .destinations-bulk-delete,
+  .destinations-sidebar:has(.v2-index-cards.is-selecting) .destinations-bulk-delete {
+    display: inline-block;
+  }
+}
+
+// Mobile Liste / Carte panes (destinations + stores indexes).
+@media (max-width: 991.98px) {
+  #destinations-map-layout,
+  #stores-map-layout {
+    // Fit under the shared v2 mobile topbar (scaffolds).
+    min-height: 0;
+    height: 100%;
+
+    .v2-map-index-mobile-panes {
+      display: flex;
+    }
+
+    .destinations-sidebar-toggle,
+    .destinations-sidebar-expand {
+      display: none !important;
+    }
+
+    // No collapse toggle on mobile — push primary data-info flush right.
+    .destinations-sidebar-title-row {
+      padding-right: 0 !important;
+    }
+
+    // Beat shared .v2-index-card-actions column stack — keep icon actions in one row.
+    .destinations-card-actions.v2-index-card-actions {
+      flex-direction: row;
+      flex-wrap: nowrap;
+      width: auto;
+
+      > .btn {
+        width: auto;
+        padding: .2rem .35rem;
+      }
+    }
+
+    .destinations-list-toolbar {
+      padding-left: .75rem;
+      padding-right: .75rem;
+    }
+
+    .destinations-list-toolbar-actions,
+    .destinations-list-toolbar-meta {
+      .btn {
+        padding: .3rem .45rem;
+      }
+
+      // Narrow phones: icon-only for labeled actions (title keeps meaning).
+      .destinations-toolbar-label {
+        display: none;
+      }
+
+      .dropdown-toggle::after {
+        margin-left: .25rem;
+      }
+    }
+
+    &.is-mobile-pane-list {
+      #map {
+        display: none;
+      }
+
+      .destinations-sidebar {
+        position: relative;
+        width: 100%;
+        max-width: none;
+        height: 100%;
+        box-shadow: none;
+      }
+    }
+
+    &.is-mobile-pane-map {
+      .destinations-sidebar {
+        display: none;
+      }
+
+      #map {
+        display: block;
+        position: absolute;
+        inset: 0;
+        // Leave room for the panes bar above the map.
+        top: 2.75rem;
+      }
+    }
   }
 }

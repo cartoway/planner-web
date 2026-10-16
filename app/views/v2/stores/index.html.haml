@@ -16,22 +16,37 @@
 - v2_js_cfg[:map_base_layers_title] = t('destinations.index.map_base_layers')
 - v2_js_cfg[:map_overlay_title] = t('destinations.index.map_overlay_layers')
 - v2_js_cfg[:highlight_store_id] = params[:highlight_store_id].to_i if params[:highlight_store_id].present?
-#stores-map-layout.destinations-map-layout{data: { controller: 'v2--stores-index', config: v2_js_cfg.to_json }}
+#stores-map-layout.destinations-map-layout.is-mobile-pane-list{data: { controller: 'v2--stores-index', config: v2_js_cfg.to_json, v2__stores_index_target: 'layout' }}
+  .v2-map-index-mobile-panes{role: 'tablist', 'aria-label': t('operations.show.mobile_panes')}
+    %button.btn.btn-primary{type: 'button', role: 'tab', 'aria-selected': 'true', data: { pane: 'list', v2__stores_index_target: 'mobilePane', action: 'click->v2--stores-index#setMobilePane' }}= t('operations.show.pane_list')
+    %button.btn.btn-outline-secondary{type: 'button', role: 'tab', 'aria-selected': 'false', data: { pane: 'map', v2__stores_index_target: 'mobilePane', action: 'click->v2--stores-index#setMobilePane' }}= t('operations.show.pane_map')
   #map.destinations-map.maplibre-host
-  .destinations-sidebar.slide-panel.slide-panel--from-left{data: { controller: 'v2--table-filter v2--table-selection' }}
+  .destinations-sidebar.slide-panel.slide-panel--from-left{data: { controller: 'v2--table-filter v2--table-selection v2--index-selection', v2__index_selection_select_label_value: t('all.verb.select'), v2__index_selection_cancel_label_value: t('all.verb.cancel') }}
     .destinations-sidebar-header
       %button.floating-btn.destinations-sidebar-toggle{type: "button", title: t('destinations.index.collapse_list'), 'aria-label': t('destinations.index.collapse_list')}
-        %i.fa.fa-chevron-left.fa-fw
-      %h1.mb-2= t 'stores.index.title'
+        %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}
+      .destinations-sidebar-title-row
+        %h1.mb-0.mt-0= t 'stores.index.title'
+        = render 'v2/shared/index_count', count: @stores.count, help: t('stores.index.stores_count_help'), model_key: 'activerecord.models.stores'
       - if current_user.customer.job_store_geocoding
         .alert.alert-warning
           %p.mb-0= t('stores.geocoding.geocoding_in_progress')
-      .d-flex.justify-content-between.align-items-center.mb-2.flex-wrap.gap-2
-        .d-flex.gap-2
-          = link_to new_store_path, class: 'btn btn-primary', disabled: !can_create, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+      .form-group#stores-search-form
+        .destinations-search-wrapper
+          .destinations-search-input.form-control
+            .destinations-search-clause
+              = text_field_tag :stores_filter, nil, id: 'stores-filter', type: 'search', autocomplete: 'off', placeholder: t('all.verb.filter'), class: 'form-control-plaintext', 'aria-label': t('all.verb.filter'), data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
+            %i.fa.fa-magnifying-glass.destinations-search-icon{"aria-hidden": "true"}
+    = form_tag stores_path, method: :delete, id: 'stores-destroy' do
+      .destinations-list-toolbar.d-flex.justify-content-between.align-items-center.mb-2.px-3.pt-3.pb-2.flex-wrap.gap-2
+        .destinations-list-toolbar-actions.d-flex.gap-1.align-items-center.flex-wrap
+          = link_to new_store_path, class: 'btn btn-primary', disabled: !can_create, title: t('stores.index.new'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
             %i.fa.fa-plus.fa-fw
-            = t 'stores.index.new'
-          %button.btn.btn-danger{
+            %span.destinations-toolbar-label= t 'stores.index.new'
+          %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
+            %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+            %span.destinations-toolbar-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
+          %button.btn.btn-danger.destinations-bulk-delete{
             type: 'button',
             disabled: true,
             title: t('all.verb.destroy_selection'),
@@ -42,27 +57,18 @@
             ).merge(v2__table_selection_target: 'bulk')
           }
             %i.fa.fa-trash.fa-fw
-            = t('all.verb.destroy_selection')
-
-        = render 'v2/shared/index_count', count: @stores.count, help: t('stores.index.stores_count_help'), model_key: 'activerecord.models.stores'
-      = text_field_tag :stores_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control form-control-sm mb-2', data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
-    = form_tag stores_path, method: :delete, id: 'stores-destroy' do
+            %span.destinations-toolbar-label= t('all.verb.destroy_selection')
       #store_box.destinations-list-scroll
-        %table.table.table-striped.table-hover.table-sm.destinations-list-table
-          %thead
-            %tr
-              %th.destinations-selection-col
-                %input{type: 'checkbox', disabled: !can_destroy, data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }}
-              %th.destinations-list-col.stores-list-col--icon= t 'activerecord.attributes.store.icon'
-              %th.destinations-list-col.stores-list-col--name= t 'activerecord.attributes.store.name'
-              %th.destinations-list-col.stores-list-col--street= t 'activerecord.attributes.store.street'
-              %th.destinations-list-col.stores-list-col--city= t 'activerecord.attributes.store.city'
-              %th.destinations-list-actions-col
-          %tbody#stores-list
+        .v2-index-cards.px-2{data: { v2__index_selection_target: 'root' }}
+          .v2-index-cards-select-bar
+            %label.mb-0.d-flex.align-items-center.gap-2
+              %input{type: 'checkbox', disabled: !can_destroy, data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }}
+              %span= t('all.verb.select_all')
+          #stores-list
             - @stores.each do |store|
               = render 'v2/stores/list_row', store: store, can_destroy: can_destroy
   %button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger{type: "button", title: t('destinations.index.expand_list'), 'aria-label': t('destinations.index.expand_list')}
-    %i.fa.fa-chevron-right.fa-fw
+    %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}
   %button.floating-btn.xl-floating-button.destinations-position-drag-cancel.d-none{type: "button", title: t('destinations.index.cancel_position_drag'), 'aria-label': t('destinations.index.cancel_position_drag')}
     %i.fa.fa-times{"aria-hidden": "true"}
     %span.floating-label= t('destinations.index.cancel_position_drag')

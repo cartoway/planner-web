@@ -10,13 +10,13 @@
   - input_data[:min_chars] = 3
   - input_data[:debounce_ms] = 300
 .destinations-search-wrapper{data: {controller: 'v2--filtered-search'}}
-  %label.form-label{for: input_id}= t('destinations.index.search_label')
   .destinations-search-input.form-control{data: { action: 'click->v2--filtered-search#focusInput' }}
     .destinations-search-clause
       %span.destinations-search-token.badge.bg-primary.d-none{data: {v2__filtered_search_target: 'token'}}
-      - input_attrs = { id: input_id, type: 'search', value: input_value, autocomplete: 'off', data: input_data, role: 'combobox', aria: { expanded: 'false', controls: dropdown_id, autocomplete: 'list' } }
+      - input_attrs = { id: input_id, type: 'search', value: input_value, autocomplete: 'off', data: input_data, role: 'combobox', aria: { label: t('destinations.index.search_label'), expanded: 'false', controls: dropdown_id, autocomplete: 'list' } }
       - input_attrs[:name] = input_name if input_name.present?
       %input.form-control-plaintext{input_attrs}
+    %i.fa.fa-magnifying-glass.destinations-search-icon{"aria-hidden": "true"}
   .destinations-search-dropdown.d-none{id: dropdown_id, role: 'listbox', aria: { label: t('destinations.index.search_dropdown_label') }, data: {v2__filtered_search_target: 'dropdown', action: 'mousedown->v2--filtered-search#keepFocus'}}
     .destinations-search-dropdown-header.small.text-muted
       = t('destinations.index.search_help')

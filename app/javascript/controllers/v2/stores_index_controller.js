@@ -13,6 +13,11 @@ import { createDestinationMarkerElement } from 'maplibre/destination_markers'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
 import { bindMapViewHash, parseMapViewHash } from 'lib/map_view_hash'
+import {
+  applyMobileMapPane,
+  isMapIndexMobileLayout,
+  mapIndexFlyToPadding
+} from 'lib/map_index_mobile'
 
 const DEFAULT_ZOOM = 12
 
@@ -61,6 +66,44 @@ function storesToFeatures (stores) {
 }
 
 export default class extends Controller {
+  static targets = ['layout', 'mobilePane']
+
+  setMobilePane (event) {
+    const pane = event.currentTarget.dataset.pane
+    if (!pane) return
+    this._applyMobilePane(pane)
+  }
+
+  _applyMobilePane (pane) {
+    const layout = this.hasLayoutTarget ? this.layoutTarget : this.element
+    layout.classList.toggle('is-mobile-pane-list', pane === 'list')
+    layout.classList.toggle('is-mobile-pane-map', pane === 'map')
+    this.mobilePaneTargets.forEach((button) => {
+      const active = button.dataset.pane === pane
+      button.classList.toggle('btn-primary', active)
+      button.classList.toggle('btn-outline-secondary', !active)
+      button.setAttribute('aria-selected', active ? 'true' : 'false')
+    })
+    requestAnimationFrame(() => { if (this._map) this._map.resize() })
+  }
+
+  /** On mobile list pane, switch to Carte then run fn after map.resize. */
+  _withMobileMapVisible (fn) {
+    if (!isMapIndexMobileLayout(this.element)) {
+      fn()
+      return
+    }
+    const layout = this.hasLayoutTarget ? this.layoutTarget : this.element
+    const switched = applyMobileMapPane(layout, this.mobilePaneTargets)
+    if (!switched) {
+      fn()
+      return
+    }
+    requestAnimationFrame(() => {
+      if (this._map) this._map.resize()
+      requestAnimationFrame(fn)
+    })
+  }
   connect () {
     this._abort = new AbortController()
     const signal = this._abort.signal
@@ -187,7 +230,7 @@ export default class extends Controller {
     if (!this._mapLayers) return
     const hidden = []
     if (this._domMarkerId) hidden.push(this._domMarkerId)
-    this.element.querySelectorAll('tr.store-row.d-none').forEach((row) => {
+    this.element.querySelectorAll('.store-row.d-none').forEach((row) => {
       const id = row.getAttribute('data-store-id')
       if (id) hidden.push(id)
     })
@@ -231,7 +274,7 @@ export default class extends Controller {
 
   _clearStoreHighlight () {
     if (!this.element) return
-    this.element.querySelectorAll('tr.store-row').forEach((tr) => tr.classList.remove('highlight', 'highlight--map-pin'))
+    this.element.querySelectorAll('.store-row').forEach((tr) => tr.classList.remove('highlight', 'highlight--map-pin'))
     const keepMarker = this._positionEdit && this._domMarkerId === this._positionEdit.markerId
     if (!keepMarker) {
       this._removeDomMarker()
@@ -272,38 +315,25 @@ export default class extends Controller {
   }
 
   _mapFlyToPadding () {
-    const inset = 48
-    const gutter = 16
-    const layoutRect = this.element.getBoundingClientRect()
-    const padding = { top: inset, bottom: inset, left: inset, right: inset }
-    const leftSidebar = this.element.querySelector('.destinations-sidebar')
-    if (leftSidebar) {
-      if (leftSidebar.classList.contains('slide-panel--collapsed')) {
-        const expandBtn = this.element.querySelector('.destinations-sidebar-expand')
-        if (expandBtn) {
-          const expandRect = expandBtn.getBoundingClientRect()
-          padding.left = Math.max(inset, Math.ceil(expandRect.right - layoutRect.left) + gutter)
-        }
-      } else {
-        const sidebarRect = leftSidebar.getBoundingClientRect()
-        if (sidebarRect.width > 0) padding.left = Math.ceil(sidebarRect.width) + gutter
-      }
-    }
-    const formSidebar = document.querySelector('.form-sidebar')
-    if (formSidebar && !formSidebar.classList.contains('slide-panel--collapsed')) {
-      const formRect = formSidebar.getBoundingClientRect()
-      if (formRect.width > 0) {
-        padding.right = Math.max(inset, Math.ceil(layoutRect.right - formRect.left) + gutter)
-      }
-    }
-    return padding
+    return mapIndexFlyToPadding({
+      layoutEl: this.element,
+      leftSidebar: this.element.querySelector('.destinations-sidebar'),
+      expandBtn: this.element.querySelector('.destinations-sidebar-expand'),
+      formSidebar: document.querySelector('.form-sidebar'),
+      mobile: isMapIndexMobileLayout(this.element)
+    })
   }
 
+  /**
+   * @param {{ flyToMap?: boolean, revealMobileMap?: boolean }} [options]
+   *   revealMobileMap: on mobile, switch Liste → Carte before flyTo (fa-expand only).
+   */
   _focusStoreInList (idStr, options = {}) {
     const flyToMap = !!options.flyToMap
+    const revealMobileMap = !!options.revealMobileMap
     this._clearStoreHighlight()
     let rec = this._storeRecord(idStr)
-    const rows = Array.from(this.element.querySelectorAll('tr.store-row')).filter(
+    const rows = Array.from(this.element.querySelectorAll('.store-row')).filter(
       (tr) => tr.getAttribute('data-store-id') === idStr
     )
     const row = rows[0]
@@ -320,11 +350,16 @@ export default class extends Controller {
         const map = this._map
         const center = rec.lngLat
         const zoom = Math.max(map.getZoom(), 14)
-        const padding = this._mapFlyToPadding()
-        requestAnimationFrame(() => {
+        const runFly = () => {
           if (this._map !== map) return
-          map.flyTo({ center, zoom, padding, duration: 500 })
-        })
+          const padding = this._mapFlyToPadding()
+          requestAnimationFrame(() => {
+            if (this._map !== map) return
+            map.flyTo({ center, zoom, padding, duration: 500 })
+          })
+        }
+        if (revealMobileMap) this._withMobileMapVisible(runFly)
+        else runFly()
       }
     }
     if (rows.length) {
@@ -336,7 +371,7 @@ export default class extends Controller {
   _applyPendingHighlight () {
     if (!this._pendingHighlightId) return
     const idStr = this._pendingHighlightId
-    if (!this._storeRecord(idStr) && !this.element.querySelector(`tr.store-row[data-store-id="${CSS.escape(idStr)}"]`)) return
+    if (!this._storeRecord(idStr) && !this.element.querySelector(`.store-row[data-store-id="${CSS.escape(idStr)}"]`)) return
     this._focusStoreInList(idStr, { flyToMap: true })
     this._pendingHighlightId = null
     this._stripHighlightParamFromUrl()
@@ -368,7 +403,7 @@ export default class extends Controller {
   _handleMapPointClick (feature) {
     const props = feature.properties || {}
     const idStr = String(props.id)
-    const row = Array.from(this.element.querySelectorAll('tr.store-row')).find((tr) => tr.getAttribute('data-store-id') === idStr)
+    const row = Array.from(this.element.querySelectorAll('.store-row')).find((tr) => tr.getAttribute('data-store-id') === idStr)
     this._focusStoreInList(idStr, { flyToMap: false })
     if (row) this._navigateFormSidebarToRowIfOpen(row, idStr)
   }
@@ -482,13 +517,14 @@ export default class extends Controller {
     const sidebar = this.element.querySelector('.destinations-sidebar')
     const scheduleResize = () => { afterSlideTransition(sidebar, () => map.resize()) }
     this.element.addEventListener('click', (e) => {
-      const tr = e.target.closest && e.target.closest('tr.store-row[data-store-id]')
+      const tr = e.target.closest && e.target.closest('.store-row[data-store-id]')
       if (tr) {
         if (e.target.closest && e.target.closest('input[type=checkbox], a[data-turbo-frame], a[data-turbo-method], button.btn-danger')) return
         if (e.target.closest && e.target.closest('.stores-row-center:disabled')) return
         const id = tr.getAttribute('data-store-id')
         if (!id) return
-        this._focusStoreInList(id, { flyToMap: true })
+        const centerBtn = e.target.closest && e.target.closest('.stores-row-center')
+        this._focusStoreInList(id, { flyToMap: true, revealMobileMap: !!centerBtn })
         return
       }
       if (e.target.closest && e.target.closest('.destinations-sidebar-toggle')) {
@@ -601,7 +637,7 @@ export default class extends Controller {
     }
     sync(latInp, coordToDbInputString(lat))
     sync(lngInp, coordToDbInputString(lng))
-    const row = this.element.querySelector(`tr.store-row[data-store-id="${storeIdStr}"]`)
+    const row = this.element.querySelector(`.store-row[data-store-id="${storeIdStr}"]`)
     if (row) {
       row.setAttribute('data-lat', coordToDbInputString(lat))
       row.setAttribute('data-lng', coordToDbInputString(lng))

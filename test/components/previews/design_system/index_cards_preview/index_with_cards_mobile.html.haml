@@ -1,0 +1,40 @@
+.lookbook-index-cards-host.container-fluid.py-3
+  %h1.h4.mb-2 Index with cards — mobile
+  %p.text-muted.small.mb-3
+    Phone-width frames (max 24rem) for indexes
+    %strong without
+    a map. Forces the mobile card stack from
+    %code v2/_index_cards.scss
+    (actions on one row for capacités; slots stack for operations).
+  %p.text-muted.small.mb-3
+    %span.badge.text-bg-secondary Demo data
+    Static sample — no ActiveRecord.
+
+  .lookbook-index-cards-mobile-row
+    .lookbook-index-cards-mobile
+      %p.small.text-muted.mb-1.text-center Operations
+      .lookbook-index-cards-mobile-frame
+        .lookbook-index-cards-mobile-toolbar
+          %button.btn.btn-primary{type: 'button', title: t('plannings.index.new')}
+            %i.fa.fa-plus.fa-fw
+          %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select')}
+            %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+          %span.primary.data-info.ms-auto
+            %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+            2
+        .lookbook-index-cards-mobile-body
+          = render 'design_system/index_cards_preview/sample_simple_index_cards', variant: 'operations'
+
+    .lookbook-index-cards-mobile
+      %p.small.text-muted.mb-1.text-center Capacités
+      .lookbook-index-cards-mobile-frame
+        .lookbook-index-cards-mobile-toolbar
+          %button.btn.btn-primary{type: 'button', title: t('deliverable_units.index.new')}
+            %i.fa.fa-plus.fa-fw
+          %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select')}
+            %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+          %span.primary.data-info.ms-auto
+            %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+            2
+        .lookbook-index-cards-mobile-body
+          = render 'design_system/index_cards_preview/sample_simple_index_cards', variant: 'capacites'

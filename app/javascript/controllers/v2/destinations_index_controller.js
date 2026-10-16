@@ -13,6 +13,11 @@ import { createDestinationMarkerElement } from 'maplibre/destination_markers'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
 import { bindMapViewHash, parseMapViewHash } from 'lib/map_view_hash'
+import {
+  applyMobileMapPane,
+  isMapIndexMobileLayout,
+  mapIndexFlyToPadding
+} from 'lib/map_index_mobile'
 
 const DEFAULT_ZOOM = 12
 const MIN_CHARS = 3
@@ -80,6 +85,45 @@ function hasMinCharsForSearch (input) {
 }
 
 export default class extends Controller {
+  static targets = ['layout', 'mobilePane']
+
+  setMobilePane (event) {
+    const pane = event.currentTarget.dataset.pane
+    if (!pane) return
+    this._applyMobilePane(pane)
+  }
+
+  _applyMobilePane (pane) {
+    const layout = this.hasLayoutTarget ? this.layoutTarget : this.element
+    layout.classList.toggle('is-mobile-pane-list', pane === 'list')
+    layout.classList.toggle('is-mobile-pane-map', pane === 'map')
+    this.mobilePaneTargets.forEach((button) => {
+      const active = button.dataset.pane === pane
+      button.classList.toggle('btn-primary', active)
+      button.classList.toggle('btn-outline-secondary', !active)
+      button.setAttribute('aria-selected', active ? 'true' : 'false')
+    })
+    requestAnimationFrame(() => { if (this._map) this._map.resize() })
+  }
+
+  /** On mobile list pane, switch to Carte then run fn after map.resize. */
+  _withMobileMapVisible (fn) {
+    if (!isMapIndexMobileLayout(this.element)) {
+      fn()
+      return
+    }
+    const layout = this.hasLayoutTarget ? this.layoutTarget : this.element
+    const switched = applyMobileMapPane(layout, this.mobilePaneTargets)
+    if (!switched) {
+      fn()
+      return
+    }
+    requestAnimationFrame(() => {
+      if (this._map) this._map.resize()
+      requestAnimationFrame(fn)
+    })
+  }
+
   connect () {
     this._abort = new AbortController()
     const signal = this._abort.signal
@@ -228,7 +272,7 @@ export default class extends Controller {
 
   _clearDestinationHighlight () {
     if (!this.element) return
-    this.element.querySelectorAll('tr.destination').forEach((tr) => tr.classList.remove('highlight', 'highlight--map-pin'))
+    this.element.querySelectorAll('.destination').forEach((tr) => tr.classList.remove('highlight', 'highlight--map-pin'))
     this._iconOverStack = []
     const keepMarker =
       this._positionEdit && this._domMarkerId === this._positionEdit.markerId
@@ -276,55 +320,29 @@ export default class extends Controller {
 
   /**
    * Padding for map.flyTo / fitBounds so the target is not hidden under overlay sidebars.
+   * Mobile map pane: full-bleed (no left list / menu padding).
    */
   _mapFlyToPadding () {
-    const inset = 48
-    const gutter = 16
-    const layoutRect = this.element.getBoundingClientRect()
-    const padding = { top: inset, bottom: inset, left: inset, right: inset }
-
-    const leftSidebar = this.element.querySelector('.destinations-sidebar')
-    if (leftSidebar) {
-      if (leftSidebar.classList.contains('slide-panel--collapsed')) {
-        const expandBtn = this.element.querySelector('.destinations-sidebar-expand')
-        if (expandBtn) {
-          const expandRect = expandBtn.getBoundingClientRect()
-          padding.left = Math.max(
-            inset,
-            Math.ceil(expandRect.right - layoutRect.left) + gutter
-          )
-        }
-      } else {
-        const sidebarRect = leftSidebar.getBoundingClientRect()
-        if (sidebarRect.width > 0) {
-          padding.left = Math.ceil(sidebarRect.width) + gutter
-        }
-      }
-    }
-
-    const formSidebar = document.querySelector('.form-sidebar')
-    if (formSidebar && !formSidebar.classList.contains('slide-panel--collapsed')) {
-      const formRect = formSidebar.getBoundingClientRect()
-      if (formRect.width > 0) {
-        padding.right = Math.max(
-          inset,
-          Math.ceil(layoutRect.right - formRect.left) + gutter
-        )
-      }
-    }
-
-    return padding
+    return mapIndexFlyToPadding({
+      layoutEl: this.element,
+      leftSidebar: this.element.querySelector('.destinations-sidebar'),
+      expandBtn: this.element.querySelector('.destinations-sidebar-expand'),
+      formSidebar: document.querySelector('.form-sidebar'),
+      mobile: isMapIndexMobileLayout(this.element)
+    })
   }
 
   /**
    * Highlight table row + map pin; optionally fly map to pin. Used for list clicks, marker clicks, and ?highlight_destination_id=.
-   * @param {{ flyToMap?: boolean }} [options]
+   * @param {{ flyToMap?: boolean, revealMobileMap?: boolean }} [options]
+   *   revealMobileMap: on mobile, switch Liste → Carte before flyTo (fa-expand only).
    */
   _focusDestinationInList (idStr, options = {}) {
     const flyToMap = !!options.flyToMap
+    const revealMobileMap = !!options.revealMobileMap
     this._clearDestinationHighlight()
     let rec = this._destinationRecord(idStr)
-    const rows = Array.from(this.element.querySelectorAll('tr.destination')).filter(
+    const rows = Array.from(this.element.querySelectorAll('.destination')).filter(
       (tr) => tr.getAttribute('data-destination-id') === idStr
     )
     const row = rows[0]
@@ -342,12 +360,17 @@ export default class extends Controller {
         const map = this._map
         const center = rec.lngLat
         const zoom = Math.max(map.getZoom(), 14)
-        const padding = this._mapFlyToPadding()
-        // Let the yellow disc paint in place before the camera moves.
-        requestAnimationFrame(() => {
+        const runFly = () => {
           if (this._map !== map) return
-          map.flyTo({ center, zoom, padding, duration: 500 })
-        })
+          const padding = this._mapFlyToPadding()
+          requestAnimationFrame(() => {
+            if (this._map !== map) return
+            map.flyTo({ center, zoom, padding, duration: 500 })
+          })
+        }
+        // Card click centers behind the list; only fa-expand reveals the map pane.
+        if (revealMobileMap) this._withMobileMapVisible(runFly)
+        else runFly()
       }
     }
     if (rows.length) {
@@ -388,7 +411,7 @@ export default class extends Controller {
   _handleMapPointClick (feature) {
     const props = feature.properties || {}
     const idStr = String(props.id)
-    const row = Array.from(this.element.querySelectorAll('tr.destination')).find((tr) => tr.getAttribute('data-destination-id') === idStr)
+    const row = Array.from(this.element.querySelectorAll('.destination')).find((tr) => tr.getAttribute('data-destination-id') === idStr)
     if (row) {
       this._focusDestinationInList(idStr, { flyToMap: false })
       this._navigateFormSidebarToRowIfOpen(row, idStr)
@@ -581,14 +604,15 @@ export default class extends Controller {
     const scheduleResize = () => { afterSlideTransition(sidebar, () => map.resize()) }
 
     this.element.addEventListener('click', (e) => {
-      const tr = e.target.closest && e.target.closest('tr.destination[data-destination-id]')
+      const tr = e.target.closest && e.target.closest('.destination[data-destination-id]')
       if (tr) {
         if (e.target.closest && e.target.closest('input[type=checkbox], .destinations-row-delete, a[data-turbo-frame]')) return
         if (e.target.closest && e.target.closest('.destinations-row-center:disabled')) return
         const id = tr.getAttribute('data-destination-id')
         if (!id) return
-        // Any click on the list row: highlight + center map on pin (when coordinates exist).
-        this._focusDestinationInList(id, { flyToMap: true })
+        const centerBtn = e.target.closest && e.target.closest('.destinations-row-center')
+        // Card click: center map behind the list. fa-expand: also switch to Carte on mobile.
+        this._focusDestinationInList(id, { flyToMap: true, revealMobileMap: !!centerBtn })
         return
       }
       if (e.target.closest && e.target.closest('.destinations-sidebar-toggle')) {
@@ -693,13 +717,14 @@ export default class extends Controller {
     }
     if (frame.id === 'destinations_list' || frame.id === 'destinations_list_body') {
       this._syncPerPageFromListFrame()
+      this._syncCountFromListFrame()
       requestAnimationFrame(() => {
         const url = new URL(window.location.href)
         const hid = url.searchParams.get('highlight_destination_id')
         if (hid) {
           this._normalizeDestinationsPageScroll()
           this._focusDestinationInList(String(hid), { flyToMap: false })
-          const row = this.element.querySelector(`tr.destination[data-destination-id="${CSS.escape(String(hid))}"]`)
+          const row = this.element.querySelector(`.destination[data-destination-id="${CSS.escape(String(hid))}"]`)
           if (row) this._navigateFormSidebarToRowIfOpen(row, String(hid))
           this._stripHighlightParamFromUrl()
         }
@@ -720,6 +745,18 @@ export default class extends Controller {
     const fromUrl = new URL(window.location.href).searchParams.get('per_page')
     const next = (fromOption || fromFrame || fromUrl || '').toString().trim()
     if (next) perInput.value = next
+  }
+
+  // Count lives in the sidebar title row (outside turbo-frame#destinations_list).
+  _syncCountFromListFrame () {
+    const frame = document.getElementById('destinations_list')
+    const numbers = this.element.querySelector('#count .destinations-list-count-numbers')
+    if (!frame || !numbers) return
+
+    const shown = frame.getAttribute('data-shown-count')
+    const total = frame.getAttribute('data-total-count')
+    if (shown == null || total == null) return
+    numbers.textContent = `${shown} / ${total}`
   }
 
   _refreshListAfterSidebarSave (destinationId) {
@@ -767,7 +804,7 @@ export default class extends Controller {
     }
     sync(latInp, coordToDbInputString(lat))
     sync(lngInp, coordToDbInputString(lng))
-    const row = this.element.querySelector(`tr.destination[data-destination-id="${destinationIdStr}"]`)
+    const row = this.element.querySelector(`.destination[data-destination-id="${destinationIdStr}"]`)
     if (row) {
       row.setAttribute('data-lat', coordToDbInputString(lat))
       row.setAttribute('data-lng', coordToDbInputString(lng))
@@ -1105,7 +1142,7 @@ export default class extends Controller {
   _toggleRowSelection () {
     const box = this.element.querySelector('#destination_box')
     if (!box) return
-    box.querySelectorAll('tbody tr.destination input[type=checkbox]').forEach((cb) => {
+    box.querySelectorAll('.destination[data-destination-id] input[type=checkbox]').forEach((cb) => {
       cb.checked = !cb.checked
     })
   }
@@ -1113,9 +1150,9 @@ export default class extends Controller {
   _selectedDestinationIds () {
     const box = this.element.querySelector('#destination_box')
     if (!box) return []
-    return Array.from(box.querySelectorAll('tbody tr.destination input[type=checkbox]:checked'))
+    return Array.from(box.querySelectorAll('.destination[data-destination-id] input[type=checkbox]:checked'))
       .map((cb) => {
-        const row = cb.closest('tr.destination')
+        const row = cb.closest('.destination[data-destination-id]')
         return row && row.getAttribute('data-destination-id')
       })
       .filter(Boolean)

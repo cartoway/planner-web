@@ -1,0 +1,7 @@
+-# locals: optional size / total_count (defaults to controller assigns)
+- size = local_assigns.fetch(:size) { @destinations.size }
+- total = local_assigns.fetch(:total_count) { @total_count }
+#count.primary.data-info{title: t('destinations.index.destinations_count_help')}
+  %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+  %span.destinations-list-count-numbers= "#{size} / #{total}"
+  %span.destinations-toolbar-label= t('activerecord.models.destinations', count: total)

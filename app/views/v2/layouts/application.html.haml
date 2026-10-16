@@ -330,16 +330,18 @@
             -# Marker for lib/v2_body_page.js: Turbo only swaps #main, so body attrs must be re-synced.
             %div{hidden: true, "aria-hidden": true, data: { v2_body_page: true, v2_body_controller: v2_body_controller, v2_body_action: v2_body_action }}
             = yield
-        %aside.form-sidebar.slide-panel.slide-panel--from-right.form-sidebar--collapsed.slide-panel--collapsed.d-print-none{ role: 'complementary', 'aria-label': t('v2.layout.form_sidebar_aria'), data: { controller: 'v2--form-sidebar', 'v2--form-sidebar-list-url-value': (@form_sidebar_list_url.presence || request.fullpath) } }
-          .form-sidebar-chrome.d-none{ data: { 'v2--form-sidebar-target': 'chrome' } }
-            %button.btn-close{ type: 'button', title: t('v2.layout.form_sidebar_close'), 'aria-label': t('v2.layout.form_sidebar_close'), data: { action: 'v2--form-sidebar#close' } }
-          .form-sidebar-inner
-            - if @sidebar_template
-              = render template: @sidebar_template
-            - else
-              = turbo_frame_tag 'form_sidebar', data: { 'v2--form-sidebar-target': 'frame' } do
-                - if content_for?(:form_sidebar)
-                  = yield :form_sidebar
+        .form-sidebar-host.d-print-none{data: { controller: 'v2--form-sidebar', 'v2--form-sidebar-list-url-value': (@form_sidebar_list_url.presence || request.fullpath) }}
+          %button.form-sidebar-backdrop{type: 'button', 'aria-label': t('v2.layout.form_sidebar_close'), 'aria-hidden': 'true', data: { action: 'v2--form-sidebar#close', 'v2--form-sidebar-target': 'backdrop' }}
+          %aside.form-sidebar.slide-panel.slide-panel--from-right.form-sidebar--collapsed.slide-panel--collapsed{ role: 'complementary', 'aria-label': t('v2.layout.form_sidebar_aria'), data: { 'v2--form-sidebar-target': 'panel' } }
+            .form-sidebar-chrome.d-none{ data: { 'v2--form-sidebar-target': 'chrome' } }
+              %button.btn-close{ type: 'button', title: t('v2.layout.form_sidebar_close'), 'aria-label': t('v2.layout.form_sidebar_close'), data: { action: 'v2--form-sidebar#close' } }
+            .form-sidebar-inner
+              - if @sidebar_template
+                = render template: @sidebar_template
+              - else
+                = turbo_frame_tag 'form_sidebar', data: { 'v2--form-sidebar-target': 'frame' } do
+                  - if content_for?(:form_sidebar)
+                    = yield :form_sidebar
         %template#form-sidebar-placeholder-template
           = render 'v2/layouts/form_sidebar_placeholder'
       %footer.d-print-none

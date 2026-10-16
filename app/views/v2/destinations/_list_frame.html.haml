@@ -1,13 +1,16 @@
 -# V2 destinations index list + pagination — wrapped for Turbo Frame partial updates (see destinations#index).
-= turbo_frame_tag "destinations_list", data: { per_page: @pagination[:per_page] } do
-  .d-flex.justify-content-between.align-items-center.mb-2.p-3
-    .d-flex.gap-2.align-items-center
-      = link_to new_destination_path, class: 'btn btn-primary', data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
+= turbo_frame_tag "destinations_list", data: { per_page: @pagination[:per_page], shown_count: @destinations.size, total_count: @total_count, controller: 'v2--table-selection v2--index-selection', v2__index_selection_select_label_value: t('all.verb.select'), v2__index_selection_cancel_label_value: t('all.verb.cancel') } do
+  .destinations-list-toolbar.d-flex.justify-content-between.align-items-center.mb-2.px-3.pt-3.pb-2.flex-wrap.gap-2
+    .destinations-list-toolbar-actions.d-flex.gap-1.align-items-center.flex-wrap
+      = link_to new_destination_path, class: 'btn btn-primary', title: t('destinations.index.new'), data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
         %i.fa.fa-plus.fa-fw
-        = t 'destinations.index.new'
+        %span.destinations-toolbar-label= t 'destinations.index.new'
+      %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
+        %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+        %span.destinations-toolbar-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
       %button.btn.btn-danger.destinations-bulk-delete{
         type: "button",
-        disabled: !current_user_form_destroy_enabled?(:destination),
+        disabled: true,
         title: t('all.verb.destroy_selection'),
         data: confirm_click_data(
           group: 'destinations-destroy',
@@ -15,24 +18,22 @@
           confirm_message: t('all.verb.destroy_confirm'),
           ready_label: %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{t('all.verb.destroy_selection')}),
           base_class: 'btn-danger'
-        )
+        ).merge(v2__table_selection_target: 'bulk')
       }
         %i.fa.fa-trash.fa-fw
-        = t('all.verb.destroy_selection')
-      = render 'v2/destinations/list_column_selector'
+        %span.destinations-toolbar-label= t('all.verb.destroy_selection')
+    .destinations-list-toolbar-meta.d-flex.gap-1.align-items-center.flex-wrap.ms-auto
+      = render 'v2/destinations/list_sort_selector'
       .dropdown
-        %button.btn.btn-light.dropdown-toggle{type: 'button', data: { 'bs-toggle': 'dropdown' }, 'aria-expanded': 'false'}
+        %button.btn.btn-light.dropdown-toggle{type: 'button', data: { 'bs-toggle': 'dropdown' }, 'aria-expanded': 'false', title: t('all.misc.per_page')}
           %i.fa.fa-list-ol.fa-fw
-          = "#{@pagination[:per_page]} #{t('all.misc.per_page')}"
-        %ul.dropdown-menu
+          %span.destinations-toolbar-label= "#{@pagination[:per_page]} #{t('all.misc.per_page')}"
+        %ul.dropdown-menu.dropdown-menu-end
           - destinations_index_per_page_options.each do |option|
             %li
               = link_to destinations_path(destinations_index_params(page: 1, per_page: option)),
                 class: "dropdown-item destinations-per-page-option#{' active' if @pagination[:per_page] == option}",
                 data: { turbo_frame: 'destinations_list', turbo_action: 'advance', per_page: option } do
                 = "#{option} #{t('all.misc.per_page')}"
-    #count.primary.data-info{title: t('destinations.index.destinations_count_help')}
-      %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
-      = "#{@destinations.size} / #{@total_count}"
-      = t('activerecord.models.destinations', count: @total_count)
+      = render 'v2/destinations/list_column_selector'
   = render 'v2/destinations/list_body'

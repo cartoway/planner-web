@@ -1,0 +1,75 @@
+-# Static sample cards matching v2 destinations dense contact layout.
+:ruby
+  samples = [
+    {
+      ref: 'DUP-12',
+      name: 'Boulangerie Dupont',
+      address: '12 rue des Lilas, 33000 Bordeaux',
+      geocoded: '12 Rue des Lilas, 33000 Bordeaux',
+      accuracy: 92,
+      tag: 'Client',
+      qty: { icon: 'fa-dumpster', delivery: '2', unit: 'kg' }
+    },
+    {
+      ref: 'CAF-01',
+      name: 'Café Central',
+      address: 'Place de la Bourse, 33000 Bordeaux',
+      geocoded: '1 Place de la Bourse, 33000 Bordeaux',
+      accuracy: 78,
+      tag: 'Prioritaire',
+      qty: nil
+    },
+    {
+      ref: 'ENT-N',
+      name: 'Entrepôt Nord',
+      address: 'Zone industrielle, 33700 Mérignac',
+      geocoded: nil,
+      accuracy: 55,
+      tag: nil,
+      qty: nil
+    }
+  ]
+.v2-index-cards
+  - samples.each do |sample|
+    .v2-index-card.destination.destinations-index-card
+      .v2-index-card-main
+        .v2-index-card-body
+          .v2-index-card-header.destinations-card-header
+            .destinations-card-identity
+              %span.destinations-card-ref= sample[:ref]
+              %h2.v2-index-card-title.destinations-card-name= sample[:name]
+            .v2-index-card-badges
+              %span.destinations-card-geocoding-chip.destinations-card-geocoding-chip--success
+                %i.fa.fa-fw.fa-store.geocoding-level{"aria-hidden": "true"}
+                %span.destinations-card-geocoding-pct= "#{sample[:accuracy]}%"
+            .v2-index-card-actions.destinations-card-actions
+              %button.btn.btn-light{type: 'button', title: t('destinations.index.center_view_help'), 'aria-label': t('destinations.index.center_view_help')}
+                %i.fa.fa-expand.fa-fw
+              %button.btn.btn-primary{type: 'button', title: t('all.verb.edit'), 'aria-label': t('all.verb.edit')}
+                %i.fa.fa-pencil.fa-fw
+              %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy'), 'aria-label': t('all.verb.destroy')}
+                %i.fa.fa-trash.fa-fw
+          - if sample[:address].present? || sample[:geocoded].present?
+            .destinations-card-address-block
+              - if sample[:address].present?
+                %p.destinations-card-address= sample[:address]
+              - if sample[:geocoded].present?
+                .alert.alert-light.destinations-card-geocoded{title: t('destinations.index.geocoding_result')}
+                  %i.fa.fa-magnifying-glass.fa-fw.destinations-card-geocoded-icon{"aria-hidden": "true"}
+                  %span.destinations-card-geocoded-value= sample[:geocoded]
+
+          - if sample[:tag] || sample[:qty]
+            .destinations-card-meta
+              - if sample[:tag]
+                %span.destinations-card-meta-item{title: t('display_ui.destinations_list_columns.tags', default: 'Tags')}
+                  .destinations-list-tag-badges
+                    %span.badge.destinations-list-tag-badge.text-bg-light.border= sample[:tag]
+              - if sample[:qty]
+                - if sample[:tag]
+                  %span.destinations-card-meta-sep{"aria-hidden": "true"} ·
+                %span.destinations-card-meta-item{title: sample[:qty][:unit]}
+                  %span.destinations-list-deliverable-unit-qty
+                    %i.fa{class: sample[:qty][:icon], "aria-hidden": "true"}
+                    %i.fa.fa-down-long.fa-fw{"aria-hidden": "true"}
+                    = sample[:qty][:delivery]
+                    %span.destinations-list-deliverable-unit-label= sample[:qty][:unit]

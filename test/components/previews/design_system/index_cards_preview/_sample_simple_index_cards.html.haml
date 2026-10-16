@@ -1,0 +1,105 @@
+-# locals: variant: ('operations' | 'capacites')
+- variant = local_assigns.fetch(:variant, 'operations')
+- if variant.to_s == 'capacites'
+  .v2-index-cards.lookbook-deliverable-units-cards.px-2.pb-2
+    .v2-index-card
+      .v2-index-card-main
+        .v2-index-card-body
+          .v2-index-card-header
+            %h2.v2-index-card-title
+              %i.fa.fa-dumpster.fa-fw{"aria-hidden": "true"}
+              kg
+          .v2-index-card-meta.text-muted
+            %span.v2-index-card-meta-item
+              %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:ref)} :"
+              ref_kg
+            %span.v2-index-card-meta-item
+              %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:default_capacity)} :"
+              100
+            %span.v2-index-card-meta-item
+              %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:optimization_overload_multiplier)} :"
+              = "#{t('deliverable_units.form.optimization_overload_multiplier_yes')} — 1,5"
+      .v2-index-card-actions
+        %button.btn.btn-primary{type: 'button', title: t('all.verb.edit')}
+          %i.fa.fa-pencil.fa-fw
+          = t('all.verb.edit')
+        %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy')}
+          %i.fa.fa-trash.fa-fw
+          = t('all.verb.destroy')
+    .v2-index-card
+      .v2-index-card-main
+        .v2-index-card-body
+          .v2-index-card-header
+            %h2.v2-index-card-title
+              %i.fa.fa-dumpster.fa-fw{"aria-hidden": "true"}
+              L
+          .v2-index-card-meta.text-muted
+            %span.v2-index-card-meta-item
+              %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:ref)} :"
+              ref_L
+            %span.v2-index-card-meta-item
+              %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:default_capacity)} :"
+              50
+            %span.v2-index-card-meta-item
+              %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:optimization_overload_multiplier)} :"
+              = t('deliverable_units.form.optimization_overload_multiplier_no')
+      .v2-index-card-actions
+        %button.btn.btn-primary{type: 'button', title: t('all.verb.edit')}
+          %i.fa.fa-pencil.fa-fw
+          = t('all.verb.edit')
+        %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy')}
+          %i.fa.fa-trash.fa-fw
+          = t('all.verb.destroy')
+- else
+  .v2-index-cards.v2-index-cards--with-mid.px-2.pb-2
+    .v2-index-card
+      .v2-index-card-main
+        .v2-index-card-body
+          .v2-index-card-header
+            %h2.v2-index-card-title Morning round
+            .v2-index-card-badges
+              %span.badge.text-bg-primary In progress
+              %span.badge.text-bg-success Fresh
+          .v2-index-card-meta.text-muted
+            %span REF-42
+            %span ·
+            %span 15/10/2026
+      .v2-index-card-mid
+        .status-segments{style: 'display:flex;height:.5rem;border-radius:.25rem;overflow:hidden;background:var(--bs-secondary-bg)'}
+          %span{style: 'flex:12;background:var(--status-delivered,#198754)'}
+          %span{style: 'flex:2;background:var(--status-failed,#dc3545)'}
+          %span{style: 'flex:1;background:var(--status-exception,#fd7e14)'}
+          %span{style: 'flex:5;background:transparent'}
+        %span.text-muted.small 15 / 20 stops
+      .v2-index-card-actions.v2-index-card-actions--slots
+        %button.btn.btn-primary{type: 'button'}
+          %i.fa.fa-tower-broadcast.fa-fw
+          Open
+        .v2-index-card-secondary
+          %a.btn.btn-secondary{href: '#'}
+            %i.fa.fa-map-location.fa-fw
+            %span.v2-index-card-secondary-label Plan A
+          %button.btn.btn-danger{type: 'button'}
+            %i.fa.fa-trash.fa-fw
+            Destroy
+    .v2-index-card
+      .v2-index-card-main
+        .v2-index-card-body
+          .v2-index-card-header
+            %h2.v2-index-card-title Archived delivery
+            .v2-index-card-badges
+              %span.badge.text-bg-secondary Historized
+          .v2-index-card-meta.text-muted
+            %span 01/09/2026
+      .v2-index-card-mid
+        .status-segments{style: 'display:flex;height:.5rem;border-radius:.25rem;overflow:hidden;background:var(--bs-secondary-bg)'}
+          %span{style: 'flex:20;background:var(--status-delivered,#198754)'}
+        %span.text-muted.small 20 / 20 stops
+      .v2-index-card-actions.v2-index-card-actions--slots
+        %button.btn.btn-secondary{type: 'button'}
+          %i.fa.fa-tower-broadcast.fa-fw
+          Open
+        .v2-index-card-secondary
+          %button.btn.btn-danger{type: 'button'}
+            %i.fa.fa-trash.fa-fw
+            Destroy

@@ -1,0 +1,23 @@
+-# Sort dropdown for the destinations index cards (replaces former table column headers).
+- sort_state = @destinations_list_sort
+- sort_options = destinations_list_sort_options(@customer, @destinations_list_columns)
+- if sort_options.any?
+  - active_option = sort_options.find { |option| sort_state&.column_id == option[:id] }
+  - toggle_label = active_option ? active_option[:label] : t('destinations.index.sort')
+  .dropdown.destinations-list-sort-selector
+    %button.btn.btn-light.dropdown-toggle{type: 'button', data: { 'bs-toggle': 'dropdown' }, 'aria-expanded': 'false', title: t('destinations.index.sort')}
+      %i.fa.fa-sort.fa-fw{"aria-hidden": "true"}
+      %span.destinations-toolbar-label= toggle_label
+      - if sort_state
+        %i.fa.fa-fw.destinations-list-sort-direction{class: (sort_state.direction == 'desc' ? 'fa-sort-down' : 'fa-sort-up'), "aria-hidden": "true"}
+    %ul.dropdown-menu
+      - sort_options.each do |option|
+        - active = sort_state&.column_id == option[:id]
+        - next_direction = sort_state&.next_direction_for(option[:id]) || 'asc'
+        %li
+          = link_to destinations_path(destinations_index_params(sort: option[:id], direction: next_direction, page: 1)),
+            class: "dropdown-item#{' active' if active}",
+            data: { turbo_frame: 'destinations_list', turbo_action: 'advance' } do
+            %span= option[:label]
+            - if active
+              %i.fa.fa-fw{class: (sort_state.direction == 'desc' ? 'fa-sort-down' : 'fa-sort-up'), "aria-hidden": "true"}
