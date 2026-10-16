@@ -3,6 +3,8 @@
 module Operations
   class SendDriverSms
     def self.call(operation:, routes:)
+      return 0 unless operation.open?
+
       customer = operation.customer
       return 0 unless customer.enable_sms_driver
 

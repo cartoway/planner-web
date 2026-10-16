@@ -59,7 +59,7 @@
     - current_route_data_quantities = route_data_quantities(@route.start_route_data, @route.vehicle_usage&.vehicle)
     - if is_expired
       .alert.alert-warning
-        = t("errors.routes.expired")
+        = t(@operation_route.operation.open? ? 'errors.routes.expired' : 'errors.routes.historized')
     - else
       #accordion.panel-group.route-stops{ role: 'tablist', aria_multiselectable: 'true' }
         - previous = nil
