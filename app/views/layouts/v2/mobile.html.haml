@@ -26,7 +26,7 @@
         = yield
 
       #stop-photo-modal.stop-photo-modal.d-none{ role: 'dialog', 'aria-modal': 'true' }
-        %button.stop-photo-modal-delete.btn.btn-xs.btn-default.d-none{ type: 'button', 'aria-label': t('stops.mobile.photo_delete') }
+        %button.stop-photo-modal-delete.btn.btn-xs.btn-default.d-none{ type: 'button', 'aria-label': t('stops.mobile.photo_delete'), data: confirm_click_data(group: 'stop-photos-destroy', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.photo_delete_confirm'), ready_label: '<i class="fa fa-check fa-fw" aria-hidden="true"></i>', base_class: 'btn-default') }
           %i.fa.fa-trash
         %button.stop-photo-modal-close.btn.btn-xs.btn-default{ type: 'button', 'aria-label': t('stops.mobile.photo_close') }
           %i.fa.fa-times

@@ -2896,6 +2896,7 @@ fr:
       proofs_disabled: Le stockage des preuves n’est pas activé pour ce compte
       photo_close: Fermer
       photo_delete: Supprimer
+      photo_delete_confirm: Confirmer la suppression de la photo ?
       signature: Signature
       signature_open: Signer
       signature_clear: Effacer
