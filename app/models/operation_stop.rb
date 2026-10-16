@@ -365,6 +365,12 @@ class OperationStop < ApplicationRecord
     label
   end
 
+  # Client-side filter text for the operation board search (name, ref, street, city).
+  def search_label
+    snap = place_snapshot
+    [snap['name'], snap['ref'], snap['street'], snap['city']].compact_blank.join(' ').presence || address_label
+  end
+
   def lat
     raw = place_snapshot['lat']
     return if raw.blank?
