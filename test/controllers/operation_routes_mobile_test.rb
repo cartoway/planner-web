@@ -93,6 +93,39 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
     assert_equal 'atstore', @operation_route.reload.departure_status
   end
 
+  test 'historized operation locks the driver form in the UI' do
+    @operation.update!(status: 'historized', closed_at: Time.current)
+
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{@vehicle.driver_token}"
+    assert_equal 200, last_response.status
+    assert_includes last_response.body, I18n.t('errors.routes.historized')
+    refute_includes last_response.body, 'id="accordion"'
+  end
+
+  test 'queued driver status still flushes within the historized grace window' do
+    closed_at = Time.zone.parse('2026-10-16 12:00')
+    @operation.update!(status: 'historized', closed_at: closed_at)
+    stop = @operation_route.operation_stops.find_by!(visit_id: visits(:visit_one).id)
+
+    patch "/operation_stops/#{stop.id}?driver_token=#{@vehicle.driver_token}",
+          { operation_stop: { status: 'delivered', status_updated_at: (closed_at - 1.minute).iso8601 } },
+          'HTTP_ACCEPT' => 'application/json'
+    assert_equal 200, last_response.status
+    assert_equal 'delivered', stop.reload.status
+  end
+
+  test 'driver status after the historized grace window is rejected' do
+    closed_at = Time.zone.parse('2026-10-16 12:00')
+    @operation.update!(status: 'historized', closed_at: closed_at)
+    stop = @operation_route.operation_stops.find_by!(visit_id: visits(:visit_one).id)
+
+    patch "/operation_stops/#{stop.id}?driver_token=#{@vehicle.driver_token}",
+          { operation_stop: { status: 'delivered', status_updated_at: (closed_at + 13.hours).iso8601 } },
+          'HTTP_ACCEPT' => 'application/json'
+    assert_equal 422, last_response.status
+    assert_nil stop.reload.status
+  end
+
   test 'mobile shows the operation date and the stop time on that date' do
     @planning.update!(date: Date.new(2026, 1, 1))
     @operation.update!(date: Date.new(2026, 9, 30))

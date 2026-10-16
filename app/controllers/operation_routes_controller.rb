@@ -58,7 +58,7 @@ class OperationRoutesController < ApplicationController
       route: @route,
       enable_driver_move: ValueToBoolean.value_to_boolean(current_vehicle.customer.devices.dig(:deliver, :driver_move)),
       date: @operation_route.operation.date,
-      is_expired: @operation_route.expired?,
+      is_expired: @operation_route.expired? || !@operation_route.operation.open?,
       visit_custom_attributes: current_vehicle.customer.custom_attributes.for_visit.visible_on_mobile,
       vehicle_custom_attributes: current_vehicle.customer.custom_attributes.for_vehicle.visible_on_mobile,
       route_custom_attributes: current_vehicle.customer.custom_attributes.for_route.without_related_field.visible_on_mobile,
@@ -85,6 +85,10 @@ class OperationRoutesController < ApplicationController
     end
     merge_custom_attributes(@operation_route, params.dig(:route, :custom_attributes))
     render json: { success: true }
+  rescue ActiveRecord::StatementInvalid => e
+    raise unless e.message.include?('operation_closed')
+
+    head :unprocessable_entity
   end
 
   def transfer_stop
