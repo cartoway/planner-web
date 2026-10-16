@@ -117,6 +117,7 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '.operation-board', 1
     assert_select '.operation-chip', text: /#{Regexp.escape(I18n.t('operations.show.filter_exception'))}/
+    assert_select '.operation-chip', text: /#{Regexp.escape(I18n.t('operations.show.filter_en_route'))}/
     assert_select '.operation-glyph.is-exception', 1
     assert_select '.operation-glyph.is-failed', 1
     assert_select '.lookbook-operation-map', 1
