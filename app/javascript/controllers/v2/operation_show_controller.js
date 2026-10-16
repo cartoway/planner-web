@@ -375,6 +375,10 @@ export default class extends Controller {
 
   _teardownMap () {
     this._clearStopMarkers()
+    if (this._geocoderControl && typeof this._geocoderControl.clearFocusMarker === 'function') {
+      this._geocoderControl.clearFocusMarker()
+    }
+    this._geocoderControl = null
     if (this.map && this._onVehicleAccuracyZoom) {
       try {
         this.map.off('zoom', this._onVehicleAccuracyZoom)
@@ -797,7 +801,22 @@ export default class extends Controller {
         ((typeof I18n !== 'undefined' && I18n.t) ? I18n.t('web.geocoder.tooltip') : placeholder)
       const submitLabel = params.geocoder_submit ||
         ((typeof I18n !== 'undefined' && I18n.t) ? I18n.t('web.geocoder.submit_search') : 'Search')
-      this.map.addControl(new GeocoderIControl(placeholder, emptyMsg, { tooltip, submitLabel }), 'top-right')
+      // Planning parity: keep geocoder pin until list/header/menu/detail interaction.
+      this._geocoderControl = new GeocoderIControl(placeholder, emptyMsg, {
+        tooltip,
+        submitLabel,
+        focusDismissSelectors: [
+          '.operation-list',
+          '.operation-header',
+          '.operation-detail',
+          '.operation-mobile-panes',
+          '.menu-left'
+        ],
+        focusIgnoreSelectors: [
+          '.operation-route-toolbar'
+        ]
+      })
+      this.map.addControl(this._geocoderControl, 'top-right')
     }
 
     const { bases: basesOnly, overlays: overlayLayers } = pickLayers(mapLayers)
@@ -1704,6 +1723,9 @@ export default class extends Controller {
 
   _flyToStop ({ lng, lat, stopId }) {
     if (!this.map) return
+    if (this._geocoderControl && typeof this._geocoderControl.clearFocusMarker === 'function') {
+      this._geocoderControl.clearFocusMarker()
+    }
     this._activeStopId = stopId
     this._paintActiveStop()
     this._syncStopClusters()
