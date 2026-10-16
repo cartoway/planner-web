@@ -152,6 +152,7 @@
           %button.operation-chip{type: 'button', data: { phase: 'failed', action: 'click->v2--operation-show#filterPhase' }}= "#{t('operations.show.filter_failed')} #{stats[:failed]}"
           %button.operation-chip{type: 'button', data: { phase: 'exception', action: 'click->v2--operation-show#filterPhase' }}= "#{t('operations.show.filter_exception')} #{stats[:exception]}"
           %button.operation-chip{type: 'button', data: { phase: 'upcoming', action: 'click->v2--operation-show#filterPhase' }}= "#{t('operations.show.filter_upcoming')} #{stats[:upcoming]}"
+          %button.operation-chip{type: 'button', data: { phase: 'current', action: 'click->v2--operation-show#filterPhase' }}= "#{t('operations.show.filter_en_route')} #{stats[:current]}"
           %button.operation-chip{type: 'button', data: { phase: 'delivered', action: 'click->v2--operation-show#filterPhase' }}= "#{t('operations.show.filter_delivered')} #{stats[:delivered]}"
         - selector_count = @selector_routes.size
         - selector_label = selector_count.zero? ? t('web.select2.route_none') : "#{selector_count} #{t(selector_count == 1 ? 'web.select2.route_selected' : 'web.select2.routes_selected')}"
