@@ -20,15 +20,15 @@
       - elsif delay && delay.positive?
         %span.badge.text-bg-warning= "+#{delay} min"
     .operation-times
-      - [['arrival', @operation_stop.planned_arrival_clock, @operation_stop.actual_arrival_clock], ['departure', @operation_stop.planned_departure_clock, @operation_stop.actual_departure_clock]].each do |key, planned, actual|
+      - [['arrival', @operation_stop.planned_arrival_clock, @operation_stop.actual_arrival_clock, 'estimated'], ['departure', @operation_stop.planned_departure_clock, @operation_stop.actual_departure_clock, 'actual']].each do |key, planned, actual, secondary|
         .operation-time-block
           %p.operation-time-heading= t("operations.show.#{key}")
           .operation-split
             %div
-              %span= t('operations.show.planned')
+              %span= t("operations.show.time.#{key}.planned")
               %strong= planned.presence || '—'
             %div
-              %span= t('operations.show.actual')
+              %span= t("operations.show.time.#{key}.#{secondary}")
               %strong= actual.presence || '—'
     - unless rest
       - windows = @operation_stop.time_windows_label

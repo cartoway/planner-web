@@ -4097,6 +4097,13 @@ en:
       actual: Actual
       arrival: Arrival
       departure: Departure
+      time:
+        arrival:
+          planned: Planned
+          estimated: Estimated
+        departure:
+          planned: Planned
+          actual: Actual
       center_vehicle: Center on the vehicle
       center_route: Center on the route
       hide_trace: Hide the route
