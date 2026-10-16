@@ -120,6 +120,27 @@ class OperationsControllerTest < ActionController::TestCase
     assert_select '.operation-tour-segments', minimum: 1
   end
 
+  test 'show stop rows expose name ref street and city for client search' do
+    stop = @operation.operation_stops.find_by!(stop_id: stops(:stop_one_one).id)
+    stop.update_columns(
+      destination_snapshot: stop.destination_snapshot.merge(
+        'name' => 'Chez Dupont',
+        'ref' => 'REF-42',
+        'street' => '12 rue des Lilas',
+        'city' => 'Bordeaux'
+      )
+    )
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    row = css_select(%(#stop-#{stop.id}[data-label])).first
+    assert row, 'expected stop row with data-label'
+    label = row['data-label']
+    assert_includes label, 'Chez Dupont'
+    assert_includes label, 'REF-42'
+    assert_includes label, '12 rue des Lilas'
+    assert_includes label, 'Bordeaux'
+  end
+
   test 'show structures tour header zones' do
     get :show, params: { id: @operation.id }
     assert_response :success
