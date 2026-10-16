@@ -4083,6 +4083,7 @@ en:
       filter_failed: Failed
       filter_exception: Exception
       filter_upcoming: Upcoming
+      filter_en_route: On the way
       filter_delivered: Delivered
       cumulative_delay: Cumulative delays
       distance: Distance
