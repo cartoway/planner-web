@@ -63,7 +63,7 @@ class DestinationsController < ApplicationController
         render :index
       end
       format.excel do
-        @destinations = current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes([:tags, visits: :tags])
+        @destinations = current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes([:tags, { visits: :tags }, { customer: [:custom_attributes, :deliverable_units] }])
         @tags = current_user.customer.tags
         send_data render_to_string.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: ''),
             type: 'text/csv',
@@ -71,7 +71,7 @@ class DestinationsController < ApplicationController
             disposition: params.key?(:disposition) ? params[:disposition] : 'attachment'
       end
       format.csv do
-        @destinations = current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes([:tags, visits: :tags])
+        @destinations = current_user.customer.destinations.reorder('geocoding_accuracy ASC NULLS LAST').includes([:tags, { visits: :tags }, { customer: [:custom_attributes, :deliverable_units] }])
         @tags = current_user.customer.tags
         response.headers['Content-Disposition'] = 'attachment; filename="' + format_filename(t('activerecord.models.destinations.other')) + '.csv"'
       end

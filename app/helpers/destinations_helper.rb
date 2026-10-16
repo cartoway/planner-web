@@ -382,7 +382,7 @@ module DestinationsHelper
       elsif (m = m = /^(.+)\[(.*)\]$/.match(c))
         I18n.t('destinations.import_file.' + m[1]) + "[#{m[2]}]"
       elsif (m = /^([a-z]+(?:_[a-z]+)*)(\d+)$/.match(c))
-        deliverable_unit = customer.deliverable_units.where(id: m[2].to_i).first
+        deliverable_unit = customer.deliverable_units.find { |du| du.id == m[2].to_i }
         I18n.t("destinations.import_file.#{m[1]}") + (deliverable_unit.label ? "[#{deliverable_unit.label}]" : "#{deliverable_unit.id}")
       else
         I18n.t('destinations.import_file.' + c.to_s)
@@ -406,7 +406,7 @@ module DestinationsHelper
         visit_columns += ["pickup#{du.id}".to_sym, "delivery#{du.id}".to_sym]
       }
     end
-    visit_columns += @customer.custom_attributes.for_visit.map{ |ca| "custom_attributes_visit[#{ca.name}]" }
+    visit_columns += visit_custom_attributes(customer).map{ |ca| "custom_attributes_visit[#{ca.name}]" }
     visit_columns
   end
 
@@ -449,6 +449,8 @@ module DestinationsHelper
       }
     end
     if destination.visits.size > 0
+      deliverable_units = customer.enable_orders ? [] : customer.deliverable_units.to_a
+      visit_attrs = visit_custom_attributes(customer)
       destination.visits.each { |visit|
         csv << destination_columns + [
           '',
@@ -462,17 +464,15 @@ module DestinationsHelper
           visit.revenue,
           visit.tags.collect(&:label).join(','),
           I18n.t("activerecord.models.visits.force_position.#{visit.force_position}")
-        ] + (customer.enable_orders ?
-          [] :
-          customer.deliverable_units.flat_map{ |du|
+        ] + deliverable_units.flat_map{ |du|
             [
               visit.pickups[du.id],
               visit.deliveries[du.id]
             ]
-          }) +
-          customer.custom_attributes.for_visit.map{ |ca|
-            visit.custom_attributes_typed_hash[ca.name]
-          }
+        } +
+        visit_attrs.map{ |ca|
+          visit.custom_attributes_typed_hash[ca.name]
+        }
       }
     else
       csv << destination_columns + ['x']
@@ -482,6 +482,12 @@ module DestinationsHelper
 
   def destination_operation_stops(destination, include_past: false)
     OperationStop.for_destination(destination, include_past: include_past)
+  end
+
+  # Prefer in-memory filter when custom_attributes were eager-loaded (export includes).
+  def visit_custom_attributes(customer)
+    attrs = customer.custom_attributes
+    attrs.loaded? ? attrs.select(&:visit?) : attrs.for_visit.to_a
   end
 
   private
