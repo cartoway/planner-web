@@ -117,4 +117,12 @@ module StopsHelper
   def sms_uri_body(content)
     ERB::Util.url_encode(content.to_s)
   end
+
+  # Delivery note: show "19/20" when actual diverges from planned, else just the amount.
+  def delivery_note_quantity_label(actual, planned)
+    opts = { precision: 2, delimiter: t('number.format.delimiter'), strip_insignificant_zeros: true }
+    actual_s = number_with_precision(actual, **opts)
+    planned_s = number_with_precision(planned, **opts)
+    actual_s == planned_s ? actual_s : "#{actual_s}/#{planned_s}"
+  end
 end
