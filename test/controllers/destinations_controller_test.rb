@@ -1263,6 +1263,15 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_includes response.body, 'client@example.com'
   end
 
+  test 'csv export eager loads customer custom attributes and deliverable units' do
+    get :index, format: :csv
+    assert_response :success
+    destination = assigns(:destinations).first
+    assert destination.association(:customer).loaded?
+    assert destination.customer.association(:custom_attributes).loaded?
+    assert destination.customer.association(:deliverable_units).loaded?
+  end
+
   test 'should import with custom columns headers' do
     options = { import: { destinations: { spreadsheetColumnsDef: { route: 'my_route' } } } }
     users(:user_one).customer.update advanced_options: options
