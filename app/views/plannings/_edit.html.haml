@@ -65,6 +65,7 @@
                   .d-flex.justify-content-center
                     - dis = @manage_planning[:disable_zoning] || !current_user_planning_form_submit_enabled?(@planning)
                     = f.submit message: t('plannings.edit.zonings.action'), button: "btn #{@planning.zoning_outdated ? 'btn-warning' : 'btn-default'}", title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil), disabled: dis
+        = render 'plannings/execution' if @planning.persisted? && can?(:manage, Operation)
         #global_tools.row
           - if @manage_planning[:manage_optimize]
             .btn-group
@@ -77,7 +78,6 @@
               - path = Preferences::Catalog.toolbar_operation_partial('planning', op)
               - next if path.blank?
               = render partial: path
-        = render 'plannings/execution' if @planning.persisted? && can?(:manage, Operation)
         #planning.row
 
 #map.sidebar-map
