@@ -25,6 +25,14 @@ class EmailListFormatTest < ActiveSupport::TestCase
     assert_not EmailListFormat.valid_list?('a@b')
   end
 
+  test 'valid_list rejects consecutive dots in local or domain' do
+    assert_not EmailListFormat.valid_list?('nobody@example..com')
+    assert_not EmailListFormat.valid_list?('no..body@example.com')
+    assert_not EmailListFormat.valid_list?('.nobody@example.com')
+    assert_not EmailListFormat.valid_list?('nobody.@example.com')
+    assert EmailListFormat.valid_list?('no.body@example.com')
+  end
+
   test 'valid_list rejects header injection and xss-ish local parts' do
     assert_not EmailListFormat.valid_list?("a@b.com\nBcc:evil@x.co")
     assert_not EmailListFormat.valid_list?("a@b.com\r\nCc:evil@x.co")
