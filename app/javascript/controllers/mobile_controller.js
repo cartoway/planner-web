@@ -14,6 +14,7 @@ export default class extends Controller {
   static values = { positionUrl: String }
 
   connect () {
+    this._dead = false
     this.positionTimer = null
     this.photoModalItems = []
     this.photoModalIndex = 0
@@ -29,11 +30,14 @@ export default class extends Controller {
     window.addEventListener('online', this.onOnline)
     this.bindSignatureCanvas()
     this.registerServiceWorker()
+    // Drop GPS queued for another operation/route — otherwise SW replays the old URL forever.
+    this.discardStalePositions()
     if (sessionStorage.getItem('tracking_value') !== 'false') this.startTracking()
     this.flushPending()
   }
 
   disconnect () {
+    this._dead = true
     this.stopTracking()
     this.stopsAccordion?.destroy()
     this.stopsAccordion = null
@@ -82,6 +86,7 @@ export default class extends Controller {
     if (sessionStorage.getItem('tracking_value') === 'false') return
     if (!navigator.geolocation || !this.positionUrlValue) return
     navigator.geolocation.getCurrentPosition((position) => {
+      if (this._dead) return
       const { latitude, longitude, accuracy, altitude, heading, speed } = position.coords
       const body = {
         latitude,
@@ -97,8 +102,29 @@ export default class extends Controller {
         this.queuePosition(body)
         return
       }
-      this.patchJson(this.positionUrlValue, body).catch(() => this.queuePosition(body))
+      this.patchJson(this.positionUrlValue, body).catch((error) => {
+        // 404/409: route gone — never queue, would loop forever on a dead URL.
+        if (this._dead || this.isGoneError(error)) return
+        this.queuePosition(body)
+      })
     }, () => {}, { enableHighAccuracy: true, maximumAge: 30_000, timeout: 20_000 })
+  }
+
+  // GPS points bound to another mobile URL must not keep PATCHing after navigation.
+  discardStalePositions () {
+    const current = this.positionUrlValue
+    Object.keys(localStorage).forEach((key) => {
+      if (!key.startsWith('position_')) return
+      const item = this.readStored(key)
+      if (!item || (current && item.url === current)) return
+      localStorage.removeItem(key)
+    })
+    this.postToWorker('CLEAR_STALE_POSITIONS', { url: current })
+  }
+
+  clearQueuedPosition (id) {
+    if (id == null) return
+    localStorage.removeItem(`position_${id}`)
   }
 
   queuePosition (body) {
@@ -784,7 +810,11 @@ export default class extends Controller {
   onServiceMessage (event) {
     const type = event.data && event.data.type
     const payload = event.data && event.data.data
-    if (type === 'POSITION_SYNCED' || type === 'STOP_SYNCED' || type === 'ROUTE_SYNCED') {
+    if (type === 'POSITION_SYNCED' || type === 'POSITION_DROPPED') {
+      this.clearQueuedPosition(payload && payload.id)
+      this.hidePending()
+    }
+    if (type === 'STOP_SYNCED' || type === 'ROUTE_SYNCED') {
       this.hidePending()
     }
     if (type === 'PHOTO_SYNCED') {
@@ -826,7 +856,16 @@ export default class extends Controller {
       const request = key.startsWith('position_')
         ? this.patchJson(item.url, item.coords)
         : this.sendStoredForm(item)
-      request.then(() => localStorage.removeItem(key)).then(() => this.hidePending()).catch(() => {})
+      request
+        .then(() => localStorage.removeItem(key))
+        .then(() => this.hidePending())
+        .catch((error) => {
+          // Drop dead GPS URLs from the queue; keep stops/routes for retry.
+          if (key.startsWith('position_') && this.isGoneError(error)) {
+            localStorage.removeItem(key)
+            this.hidePending()
+          }
+        })
     })
   }
 
@@ -865,6 +904,12 @@ export default class extends Controller {
     }).then((response) => {
       if (!response.ok) throw new Error(String(response.status))
     })
+  }
+
+  // Permanent failures: do not keep retrying GPS to a missing operation route.
+  isGoneError (error) {
+    const status = String(error && error.message)
+    return status === '404' || status === '409'
   }
 
   sendForm (url, formData) {

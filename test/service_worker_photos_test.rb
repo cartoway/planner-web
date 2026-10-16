@@ -9,6 +9,16 @@ class ServiceWorkerPhotosTest < ActiveSupport::TestCase
     assert_includes sw, "case 'sync-photos'"
     assert_includes sw, "case 'STORE_PHOTO'"
     assert_includes sw, 'function syncPhotos'
+    assert_includes sw, 'Missing position url'
+    refute_includes sw, '/routes/${position.routeId}/update_position'
+    assert_includes sw, "case 'CLEAR_STALE_POSITIONS'"
+    assert_includes sw, "notifyClients('POSITION_DROPPED'"
+    assert_includes mobile, 'discardStalePositions'
+    assert_includes mobile, "type === 'POSITION_DROPPED'"
+    assert_includes mobile, 'clearQueuedPosition'
+    assert_includes mobile, "this.postToWorker('CLEAR_STALE_POSITIONS'"
+    assert_includes mobile, 'isGoneError'
+    assert_includes mobile, "key.startsWith('position_') && this.isGoneError(error)"
     assert_includes stops, 'queuePhotoUpload'
     assert_includes stops, 'planner-mobile-photos'
     assert_includes stops, 'xhr.status === 404'
