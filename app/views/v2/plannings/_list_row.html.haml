@@ -1,0 +1,44 @@
+-# locals: planning, can_destroy:, dashboard_visible:, dashboard_usable:
+.v2-index-card{id: dom_id(planning), data: { v2__table_filter_target: 'row' }}
+  .v2-index-card-main
+    .v2-index-card-select
+      = check_box_tag "plannings[#{planning.id}]", planning.id, false, disabled: !can_destroy, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
+    .v2-index-card-body
+      .v2-index-card-header
+        %h2.v2-index-card-title= planning.name
+      .v2-index-card-meta.text-muted
+        %span.v2-index-card-meta-item.planning-meta-ref
+          - if @customer.enable_references && planning.ref.present?
+            %span.v2-index-card-meta-label= "#{Planning.human_attribute_name(:ref)} :"
+            %span.v2-index-card-meta-value= planning.ref
+        %span.v2-index-card-meta-item.planning-meta-date
+          - if planning.date
+            %span.v2-index-card-meta-label= "#{Planning.human_attribute_name(:date)} :"
+            %span.v2-index-card-meta-value= l(planning.date)
+        %span.v2-index-card-meta-item.planning-meta-tags
+          - if planning.tags.any?
+            %span.v2-index-card-meta-label= "#{Planning.human_attribute_name(:tags)} :"
+            %span.v2-index-card-meta-value.planning-meta-tags-value
+              - planning.tags.each do |tag|
+                %span.planning-meta-tag
+                  = tag_icon tag
+                  %span= tag.label
+  .v2-index-card-actions
+    - if @reseller.planning_dashboard_url && dashboard_visible
+      = link_to @reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', class: 'btn btn-light', disabled: !dashboard_usable, title: t('customers.menu.analytics'), data: { turbo: false } do
+        %i.fa.fa-chart-line.fa-fw
+        %span.plannings-btn-label= t('customers.menu.analytics')
+    = link_to planning_duplicate_path(planning), class: 'btn btn-light', disabled: current_user.customer.too_many_plannings? || !current_user_planning_form_submit_enabled?(planning), data: { turbo_method: :patch, turbo_frame: '_top' }, title: t('all.verb.duplicate') do
+      %i.fa.fa-copy.fa-fw
+      %span.plannings-btn-label= t('all.verb.duplicate')
+    = link_to edit_planning_path(planning), class: 'btn btn-primary', data: { turbo: false }, title: t('all.verb.edit') do
+      %i.fa.fa-pencil.fa-fw
+      %span.plannings-btn-label= t('all.verb.edit')
+    %button.btn.btn-danger{
+      type: 'button',
+      disabled: !can_destroy,
+      title: t('all.verb.destroy'),
+      data: (can_destroy ? confirm_click_destroy_data(group: 'plannings-destroy', url: planning_path(planning), ready_label: %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{t('all.verb.destroy')})) : {})
+    }
+      %i.fa.fa-trash.fa-fw
+      %span.plannings-btn-label= t('all.verb.destroy')
