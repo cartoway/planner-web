@@ -1,0 +1,14 @@
+-# locals: destination
+-# Compact geocoding indicator for the card header (icon + % or warning).
+- level_icon = destinations_list_geocoding_level_icon_class(destination)
+- accuracy_percent = destinations_list_geocoding_accuracy_percent(destination)
+- tooltip = destinations_list_geocoding_tooltip(destination)
+- unless destination.position?
+  %span.badge.text-bg-warning.destinations-card-geocoding-chip{title: tooltip}= t('destinations.index.geocoding_empty')
+- else
+  - if level_icon || accuracy_percent
+    %span.destinations-card-geocoding-chip{title: tooltip, class: ("destinations-card-geocoding-chip--#{destination.geocode_progress_bar_class}" if accuracy_percent)}
+      - if level_icon
+        %i.fa.fa-fw.geocoding-level{class: level_icon, "aria-hidden": "true"}
+      - if accuracy_percent
+        %span.destinations-card-geocoding-pct= "#{accuracy_percent}%"

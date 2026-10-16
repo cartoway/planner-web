@@ -27,6 +27,26 @@ class DestinationsHelperTest < ActionView::TestCase
     assert_equal '12 rue Example, Paris', destinations_list_geocoding_result_free(@destination)
   end
 
+  test 'destinations_list_card_address_line composes active address columns' do
+    @destination.assign_attributes(street: '12 rue des Lilas', postalcode: '33200', city: 'Bordeaux')
+
+    assert_equal '12 rue des Lilas, 33200 Bordeaux',
+                 destinations_list_card_address_line(@destination, %w[street postalcode city])
+    assert_equal '12 rue des Lilas',
+                 destinations_list_card_address_line(@destination, %w[street])
+    assert_equal '33200 Bordeaux',
+                 destinations_list_card_address_line(@destination, %w[postalcode city])
+    assert_nil destinations_list_card_address_line(@destination, %w[ref tags])
+    assert_equal %w[tags], destinations_list_card_meta_columns(%w[name street ref geocoding tags])
+  end
+
+  test 'destinations_list_card_field_present? is false for blank values' do
+    @destination.assign_attributes(comment: nil, phone_number: nil, ref: 'b')
+    assert destinations_list_card_field_present?(@destination, 'ref')
+    assert_not destinations_list_card_field_present?(@destination, 'comment')
+    assert_not destinations_list_card_field_present?(@destination, 'phone_number')
+  end
+
   test 'destination_form_address_geocodable? is true when street postalcode or city is present' do
     @destination.assign_attributes(street: nil, postalcode: nil, city: nil)
     assert_not destination_form_address_geocodable?(@destination)

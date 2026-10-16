@@ -27,9 +27,10 @@ module Preferences
       ].freeze
       VISIT_SCOPED_COLUMN_IDS = %w[visit_duration visit_ref visit_tags].freeze
       DEFAULT_ACTIVE = %w[name street postalcode city geocoding].freeze
-      # Cap simultaneous visible columns so the sidebar table stays usable with many deliverable units.
-      MAX_ACTIVE = 8
+      # Soft ceiling for the legacy drag-drop preferences UI only (normalize_zone no longer caps).
+      MAX_ACTIVE = 99
       DELIVERABLE_UNIT_COLUMN_PREFIX = 'deliverable_unit_'
+
       LEGACY_COLUMN_EXPANSIONS = {
         'address' => %w[street postalcode city],
         'visits' => ['visit_ref']
@@ -93,8 +94,7 @@ module Preferences
       def default_active_for(customer)
         static = DEFAULT_ACTIVE.select { |id| column_available?(id, customer) }
         first_unit_column = deliverable_unit_column_ids(customer).first
-        active = first_unit_column ? static + [first_unit_column] : static
-        active.take(MAX_ACTIVE)
+        first_unit_column ? static + [first_unit_column] : static
       end
 
       def default_zone(customer = nil)
@@ -115,7 +115,6 @@ module Preferences
         active.uniq!
         hidden_src.uniq!
         hidden_src -= active
-        active = active.take(MAX_ACTIVE)
         # Uninitialized zone → defaults. Explicit "deactivate all" keeps active empty.
         if active.empty? && hidden_src.empty?
           active = Core.filter_order(default_active, allowed)
@@ -127,8 +126,9 @@ module Preferences
 
             hidden_src << id
           end
-          active = Core.filter_order(active, allowed).take(MAX_ACTIVE)
+          active = Core.filter_order(active, allowed)
         end
+
         missing_hidden = allowed.reject { |id| active.include?(id) }
         hidden_ordered = (hidden_src & missing_hidden) + (missing_hidden - hidden_src).sort_by { |id| allowed.index(id) }
         { 'active' => ensure_visit_ref_before_visit_tags(active), 'hidden' => hidden_ordered }

@@ -29,7 +29,7 @@ export default class extends Controller {
   }
 
   accordionCollapses () {
-    return Array.from(this.element.querySelectorAll("table#accordion-vehicle-usage-sets .collapse"))
+    return Array.from(this.element.querySelectorAll("#accordion-vehicle-usage-sets .collapse"))
   }
 
   openExclusivePanel (panel) {

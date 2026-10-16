@@ -20,23 +20,24 @@
 - v2_js_cfg[:form_sidebar_placeholder] = t('v2.layout.form_sidebar_placeholder')
 - v2_js_cfg[:highlight_destination_id] = params[:highlight_destination_id].to_i if params[:highlight_destination_id].present?
 - v2_js_config = v2_js_cfg.to_json
-#destinations-map-layout{data: { controller: 'v2--destinations-index', config: v2_js_config }}
+#destinations-map-layout.is-mobile-pane-list{data: { controller: 'v2--destinations-index', config: v2_js_config, v2__destinations_index_target: 'layout' }}
+  .v2-map-index-mobile-panes{role: 'tablist', 'aria-label': t('operations.show.mobile_panes')}
+    %button.btn.btn-primary{type: 'button', role: 'tab', 'aria-selected': 'true', data: { pane: 'list', v2__destinations_index_target: 'mobilePane', action: 'click->v2--destinations-index#setMobilePane' }}= t('operations.show.pane_list')
+    %button.btn.btn-outline-secondary{type: 'button', role: 'tab', 'aria-selected': 'false', data: { pane: 'map', v2__destinations_index_target: 'mobilePane', action: 'click->v2--destinations-index#setMobilePane' }}= t('operations.show.pane_map')
   #map.destinations-map.maplibre-host
 
   .destinations-sidebar.slide-panel.slide-panel--from-left
     .destinations-sidebar-header
       %button.floating-btn.destinations-sidebar-toggle{type: "button", title: t('destinations.index.collapse_list', default: 'Réduire la liste'), 'aria-label': t('destinations.index.collapse_list', default: 'Réduire la liste')}
         %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}
-      %h1.mb-2= t 'destinations.index.title'
+      .destinations-sidebar-title-row
+        %h1.mb-0.mt-0= t 'destinations.index.title'
+        = render 'v2/destinations/list_count'
       - if current_user.customer.too_many_destinations?
         .alert.alert-warning{data: {error: "true"}}
           %p= t 'destinations.index.over_max_limit', limit: current_user.customer.default_max_destinations
       = form_tag destinations_path, method: :get, id: 'destinations-search-form', class: 'form-group' do
         %input{type: "hidden", name: "per_page", value: @pagination[:per_page]}
-        - if params[:sort].present?
-          %input{type: "hidden", name: "sort", value: params[:sort]}
-        - if params[:direction].present?
-          %input{type: "hidden", name: "direction", value: params[:direction]}
         - Array(@active_filters).each do |filter|
           %input{type: "hidden", name: "filters[]", value: filter}
         = render 'v2/destinations/filtered_search_field', input_id: 'search-query', input_value: @search_query, active_filters: Array(@active_filters), debounce: true

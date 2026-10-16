@@ -111,7 +111,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
     assert_response :success
     assert_equal 1, assigns(:pagination)[:per_page]
-    assert_select 'turbo-frame#destinations_list tbody tr.destination', 1
+    assert_select 'turbo-frame#destinations_list .v2-index-card.destination', 1
   end
 
   test 'v2 index persists per_page preference when changed from params' do
@@ -176,7 +176,10 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select '.main > .main-primary', 1
     assert_select '.main > .main-primary turbo-frame#main', 1
     assert_select 'a[href=?][data-turbo-frame=main][data-turbo-action=advance]', destinations_path
+    assert_select '.form-sidebar-host', 1
+    assert_select '.form-sidebar-host button.form-sidebar-backdrop', 1
     assert_select 'aside.form-sidebar.slide-panel--from-right.form-sidebar--collapsed', 1
+    assert_select 'aside.form-sidebar .form-sidebar-chrome button.btn-close', 1
     assert_select 'aside.form-sidebar turbo-frame#form_sidebar', 1
     assert_select 'button.floating-btn.xl-floating-button.destinations-position-drag-cancel.d-none', 1
   end
@@ -195,6 +198,15 @@ class DestinationsControllerTest < ActionController::TestCase
     get :index
     assert_response :success
     assert_select %(a[href="#{destinations_path}"][data-turbo-method="delete"][data-turbo-confirm]), text: I18n.t('destinations.menu.clear')
+  end
+
+  test 'v2 layout exposes mobile topbar menu chrome' do
+    get :index
+    assert_response :success
+    assert_select 'body.cartoway-v2', 1
+    assert_select '.menu-mobile-topbar', 1
+    assert_select '.menu-mobile-topbar-burger[data-action*="menu-left#toggleMobile"]', 1
+    assert_select '.menu-left-backdrop[data-action*="menu-left#closeMobile"]', 1
   end
 
   test 'v2 index includes vector_style_url in map layers config as-is' do
@@ -271,11 +283,11 @@ class DestinationsControllerTest < ActionController::TestCase
     get :index, params: { per_page: 1, page: 1 }
     assert_response :success
     assert_select 'turbo-frame#destinations_list', 1
-    assert_select 'turbo-frame#destinations_list tbody tr.destination', 1
+    assert_select 'turbo-frame#destinations_list .v2-index-card.destination', 1
     assert_select '#destinations-map-layout', 0
   end
 
-  test 'v2 index list renders visit subrows when destination has several visits' do
+  test 'v2 index list renders one card per destination even with several visits' do
     assert_difference('Visit.count', 1) do
       @request.headers['Turbo-Frame'] = 'form_sidebar'
       post :append_visit, params: { id: @destination.id }
@@ -283,22 +295,8 @@ class DestinationsControllerTest < ActionController::TestCase
     @request.headers['Turbo-Frame'] = 'destinations_list'
     get :index, params: { per_page: 100, page: 1 }
     assert_response :success
-    assert_select %(turbo-frame#destinations_list tbody tr.destination[data-destination-id="#{@destination.id}"]), 2
-    assert_select 'turbo-frame#destinations_list tr.destination-visit-subrow', 1
-  end
-
-  test 'v2 index list skips visit subrows when no visit-scoped column is active' do
-    assert_difference('Visit.count', 1) do
-      @request.headers['Turbo-Frame'] = 'form_sidebar'
-      post :append_visit, params: { id: @destination.id }
-    end
-    patch :list_columns, params: { active: %w[name street] }
-    assert_response :success
-    @request.headers['Turbo-Frame'] = 'destinations_list'
-    get :index, params: { per_page: 100, page: 1 }
-    assert_response :success
-    assert_select %(turbo-frame#destinations_list tbody tr.destination[data-destination-id="#{@destination.id}"]), 1
-    assert_select 'turbo-frame#destinations_list tr.destination-visit-subrow', 0
+    assert_select %(turbo-frame#destinations_list .v2-index-card.destination[data-destination-id="#{@destination.id}"]), 1
+    assert_select 'turbo-frame#destinations_list .destination-visit-subrow', 0
   end
 
   test 'v2 index edit links target form_sidebar turbo frame' do
@@ -318,7 +316,9 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select '#destinations-map-layout', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar', 1
-    assert_select %(aside.form-sidebar[data-v2--form-sidebar-list-url-value="#{destinations_path}"]), 1
+    assert_select %(.form-sidebar-host[data-v2--form-sidebar-list-url-value="#{destinations_path}"]), 1
+    assert_select '.form-sidebar-host button.form-sidebar-backdrop', 1
+    assert_select 'aside.form-sidebar .form-sidebar-chrome button.btn-close', 1
   end
 
   test 'v2 new html renders the list with the form inlined so the url is shareable' do
@@ -695,21 +695,24 @@ class DestinationsControllerTest < ActionController::TestCase
   test 'index renders v2 list and search when destinations exist' do
     get :index
     assert_response :success
-    assert_select '#destinations-search-form'
+    assert_select '#destinations-search-form.form-group'
     assert_select '#search-query[role="combobox"]', 1
+    assert_select '#search-query[aria-label]', 1
+    assert_select '.destinations-search-icon.fa-magnifying-glass', 1
+    assert_select 'label[for="search-query"]', 0
     assert_select '#search-query-dropdown [data-search-key]', DestinationSearchParser::ALLOWED_KEYS.size
     assert_select '#search-filters-badges', 1
-    assert_select 'turbo-frame#destinations_list tr.destination', assigns(:destinations).size
+    assert_select 'turbo-frame#destinations_list .v2-index-card.destination', assigns(:destinations).size
   end
 
   test 'v2 index list renders selection checkboxes and destroy controls' do
     get :index
     assert_response :success
     assert_map_config_json_key('can_destroy', true)
-    assert_select 'turbo-frame#destinations_list .destinations-toggle-selection', 1
+    assert_select 'turbo-frame#destinations_list[data-controller*="v2--index-selection"]', 1
     assert_select 'turbo-frame#destinations_list .destinations-bulk-delete', 1
     assert_select 'turbo-frame#destinations_list .destinations-bulk-delete[data-confirm-click-ready-label-value*="fa-check"]', 1
-    assert_select 'turbo-frame#destinations_list tr.destination input[type=checkbox][name^="destinations"]',
+    assert_select 'turbo-frame#destinations_list .v2-index-card.destination input[type=checkbox][name^="destinations"]',
                   assigns(:destinations).size
     assert_select 'turbo-frame#destinations_list button.destinations-row-delete',
                   assigns(:destinations).size
@@ -717,41 +720,30 @@ class DestinationsControllerTest < ActionController::TestCase
                   assigns(:destinations).size
     assert_select 'turbo-frame#destinations_list button.destinations-row-delete[data-confirm-click-ready-label-value*="fa-check"]',
                   assigns(:destinations).size
+    assert_select '.v2-map-index-mobile-panes', 1
   end
 
   test 'v2 index list disables center view when destination has no position' do
     @destination.update_columns(lat: nil, lng: nil)
     get :index
     assert_response :success
-    assert_select "turbo-frame#destinations_list tr.destination[data-destination-id=\"#{@destination.id}\"] button.destinations-row-center[disabled]", 1
+    assert_select "turbo-frame#destinations_list .v2-index-card.destination[data-destination-id=\"#{@destination.id}\"] button.destinations-row-center[disabled]", 1
   end
 
-  test 'v2 index list renders sortable column headers' do
+  test 'v2 index list uses index cards instead of sortable table headers' do
     get :index
     assert_response :success
-    assert_select 'turbo-frame#destinations_list th.destinations-list-sortable-col a.destinations-list-sort-link', minimum: 1
-    assert_select 'turbo-frame#destinations_list a.destinations-list-sort-link[data-turbo-frame="destinations_list"]', minimum: 1
+    assert_select 'turbo-frame#destinations_list .v2-index-card.destination', minimum: 1
+    assert_select 'turbo-frame#destinations_list th.destinations-list-sortable-col', 0
   end
 
-  test 'v2 index list sorts destinations by selected column' do
-    destination_a = destinations(:destination_unaffected_one)
-    destination_b = destinations(:destination_one)
-    destination_a.update_columns(name: 'AAA controller sort')
-    destination_b.update_columns(name: 'ZZZ controller sort')
-
-    get :index, params: { sort: 'name', direction: 'asc', per_page: 100 }
-    assert_response :success
-    ids = css_select('turbo-frame#destinations_list tbody tr.destination').map { |row| row['data-destination-id'].to_i }
-    assert_operator ids.index(destination_a.id), :<, ids.index(destination_b.id)
-  end
-
-  test 'list_columns persists user column preferences and refreshes list body' do
+  test 'list_columns persists user column preferences and refreshes list body cards' do
     @request.headers['Turbo-Frame'] = 'destinations_list_body'
     patch :list_columns, params: { active: %w[name street] }
     assert_response :success
     assert_equal %w[name street], users(:user_one).reload.destinations_list_active_column_ids
-    assert_select 'turbo-frame#destinations_list_body thead th', text: I18n.t('display_ui.destinations_list_columns.name')
-    assert_select 'turbo-frame#destinations_list_body thead th', text: I18n.t('display_ui.destinations_list_columns.geocoding'), count: 0
+    assert_select 'turbo-frame#destinations_list_body .v2-index-card.destination', minimum: 1
+    assert_select 'turbo-frame#destinations_list_body .destinations-card-address', minimum: 1
     assert_select '.destinations-list-column-selector', count: 0
   end
 
@@ -761,7 +753,9 @@ class DestinationsControllerTest < ActionController::TestCase
     patch :list_columns, params: { active: [], hidden: allowed }
     assert_response :success
     assert_empty users(:user_one).reload.destinations_list_active_column_ids
-    assert_select 'turbo-frame#destinations_list_body thead th.destinations-list-col', count: 0
+    assert_select 'turbo-frame#destinations_list_body .v2-index-card.destination', minimum: 1
+    assert_select 'turbo-frame#destinations_list_body .destinations-card-address', count: 0
+    assert_select 'turbo-frame#destinations_list_body .destinations-card-meta', count: 0
   end
 
   test 'list_columns can reset to default columns' do
@@ -775,10 +769,10 @@ class DestinationsControllerTest < ActionController::TestCase
     patch :list_columns, params: { active: defaults }
     assert_response :success
     assert_equal defaults, users(:user_one).reload.destinations_list_active_column_ids
-    assert_select 'turbo-frame#destinations_list_body thead th.destinations-list-col', count: defaults.size
+    assert_select 'turbo-frame#destinations_list_body .v2-index-card.destination', minimum: 1
   end
 
-  test 'list_columns refreshes table without replacing toolbar dropdown' do
+  test 'list_columns refreshes cards without replacing toolbar' do
     @request.headers['Turbo-Frame'] = 'destinations_list_body'
     patch :list_columns, params: { active: %w[name city] }
     assert_response :success
@@ -786,27 +780,73 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#destinations_list', count: 0
     assert_select '.destinations-list-column-selector', count: 0
     assert_select '.destinations-bulk-delete', count: 0
-    assert_select 'turbo-frame#destinations_list_body tbody', 1
+    assert_select 'turbo-frame#destinations_list_body .v2-index-cards', 1
+    assert_select 'turbo-frame#destinations_list_body .destinations-card-address', text: /./, minimum: 1
   end
 
-  test 'list_columns selector mirrors route selector structure' do
+  test 'index renders column selector and dense contact cards' do
+    @destination.update_columns(
+      geocoding_accuracy: 0.92,
+      geocoding_level: 'house',
+      geocoding_result: { 'free' => 'Rue des Lilas, 33200 Bordeaux' }
+    )
+    user = users(:user_one)
+    active = %w[name street postalcode city ref geocoding]
+    user.apply_self_service_display_ui!(headers_params: { destinations_list: { active: active, hidden: [] } })
+    user.save!
     get :index
     assert_response :success
-    assert_select '.destinations-list-column-selector.searchable-checklist-dropdown', 1
-    assert_select '.searchable-checklist-dropdown-search input[type=search]', 1
-    assert_select '.searchable-checklist-dropdown-results', 1
-    assert_select '.searchable-checklist-dropdown-option--global button[data-action*="resetDefaults"]',
-                  text: /#{Regexp.escape(I18n.t('destinations.index.columns_reset_defaults'))}/
-    assert_select 'button[data-action*="deactivateAll"]', count: 0
-    assert_select '.searchable-checklist-dropdown-option .searchable-checklist-dropdown-checkbox[name="active[]"]', minimum: 1
-    assert_select '.searchable-checklist-dropdown-option .form-check', count: 0
-    assert_select '.text-muted', text: I18n.t('destinations.index.columns_help', max: Preferences::Catalog::DESTINATIONS_LIST_MAX_ACTIVE), count: 0
-    assert_select 'button[data-action*="reverseSelection"]', count: 0
-    assert_select 'button[data-action="click->v2--destinations-list-columns#activateAll"]', count: 0
-    assert_select 'form[data-turbo-frame="destinations_list_body"]', 1
+    assert_select 'turbo-frame#destinations_list .destinations-list-column-selector', 1
     assert_select 'turbo-frame#destinations_list turbo-frame#destinations_list_body', 1
-    assert_select '.searchable-checklist-dropdown-toggle[data-bs-auto-close="outside"]', 1
-    assert_select '[data-controller*="v2--searchable-checklist-dropdown"][data-controller*="v2--destinations-list-columns"]', 1
+    assert_select 'turbo-frame#destinations_list .v2-index-cards', 1
+    assert_select 'turbo-frame#destinations_list .destinations-card-address', minimum: 1
+    assert_select 'turbo-frame#destinations_list .destinations-card-geocoding-chip', minimum: 1
+    assert_select 'turbo-frame#destinations_list .destinations-card-geocoded.alert-light .fa-magnifying-glass', minimum: 1
+    assert_select 'turbo-frame#destinations_list .destinations-card-geocoded .destinations-card-geocoded-value',
+                  text: 'Rue des Lilas, 33200 Bordeaux',
+                  minimum: 1
+    assert_select "turbo-frame#destinations_list .v2-index-card.destination[data-destination-id=\"#{@destination.id}\"] .destinations-card-ref",
+                  text: @destination.ref
+  end
+
+  test 'index page title is Adresses without Liste prefix' do
+    get :index
+    assert_response :success
+    assert_select '#destinations-map-layout .destinations-sidebar-title-row h1', text: 'Adresses'
+  end
+
+  test 'index card quantities include deliverable unit label' do
+    unit = deliverable_units(:deliverable_unit_one_one)
+    col_id = Preferences::Catalog::DestinationsList.deliverable_unit_column_id(unit)
+    user = users(:user_one)
+    active = %w[name street] + [col_id]
+    user.apply_self_service_display_ui!(headers_params: { destinations_list: { active: active, hidden: [] } })
+    user.save!
+
+    get :index
+    assert_response :success
+    assert_select 'turbo-frame#destinations_list .destinations-list-deliverable-unit-qty .destinations-list-deliverable-unit-label',
+                  text: unit.label,
+                  minimum: 1
+  end
+
+  test 'index renders sort selector and applies sort params' do
+    get :index, params: { sort: 'city', direction: 'asc' }
+    assert_response :success
+    assert_select 'turbo-frame#destinations_list .destinations-list-sort-selector', 1
+    assert_select 'turbo-frame#destinations_list .destinations-list-sort-selector .dropdown-item.active', minimum: 1
+    assert_equal 'city', assigns(:destinations_list_sort).column_id
+    assert_equal 'asc', assigns(:destinations_list_sort).direction
+  end
+
+  test 'index places count beside title and meta actions on the toolbar right' do
+    get :index
+    assert_response :success
+    assert_select '.destinations-sidebar-title-row #count .destinations-list-count-numbers', 1
+    assert_select 'turbo-frame#destinations_list #count', 0
+    assert_select 'turbo-frame#destinations_list .destinations-list-toolbar-meta .destinations-list-sort-selector', 1
+    assert_select 'turbo-frame#destinations_list .destinations-list-toolbar-meta .destinations-list-column-selector', 1
+    assert_select 'turbo-frame#destinations_list .destinations-list-toolbar-actions .btn-primary', 1
   end
 
   test 'should filter destinations by key value search' do

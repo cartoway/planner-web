@@ -33,13 +33,44 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     assert_select 'body.cartoway-v2', 1
     assert_select %(a[href="#{new_deliverable_unit_path}"][data-turbo-frame="form_sidebar"]), 1
     assert_select '.deliverable-units-index', 1
-    assert_select 'table#deliverable-units', 1
-    assert_select 'table#deliverable-units td.deliverable-units-actions-col.text-end > .btn-group', minimum: 1
-    assert_select 'table#deliverable-units td.btn-group', 0
-    assert_select 'table#deliverable-units thead th.du-col-sidebar-hide', 3
-    assert_select 'table#deliverable-units tbody td.du-col-sidebar-hide', minimum: 3
-    assert_select 'table#deliverable-units button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
+    assert_select '#deliverable-units.v2-index-cards', 1
+    assert_select '.v2-index-card', minimum: 1
+    assert_select '.v2-index-card-actions .btn-primary', minimum: 1
+    assert_select '.v2-index-card button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
     assert_select '.deliverable-units-toolbar button[data-controller~="confirm-click"][data-confirm-click-form-value][data-v2--table-selection-target=bulk]', 1
+    assert_select '[data-controller*="v2--index-selection"]', 1
+    assert_select '.deliverable-units-toolbar button[data-action*="v2--index-selection#toggle"] .fa-check-square', 1
+  end
+
+  test 'v2 index cards show field labels for present attributes' do
+    enable_layout_v2!
+    unit = deliverable_units(:deliverable_unit_one_one)
+    get :index
+    assert_response :success
+    assert_select "##{ActionView::RecordIdentifier.dom_id(unit)} .v2-index-card-meta-label",
+                  text: /#{Regexp.escape(DeliverableUnit.human_attribute_name(:ref))}/,
+                  minimum: 1
+    assert_select "##{ActionView::RecordIdentifier.dom_id(unit)} .v2-index-card-meta-item",
+                  text: /#{Regexp.escape(unit.ref)}/,
+                  minimum: 1
+  end
+
+  test 'v2 index cards show overload allowed and coefficient value' do
+    enable_layout_v2!
+    unit = deliverable_units(:deliverable_unit_one_one)
+    unit.update!(optimization_overload_multiplier: 1.5)
+    get :index
+    assert_response :success
+    card = "##{ActionView::RecordIdentifier.dom_id(unit)}"
+    assert_select "#{card} .v2-index-card-meta-label",
+                  text: /#{Regexp.escape(DeliverableUnit.human_attribute_name(:optimization_overload_multiplier))}/,
+                  minimum: 1
+    assert_select "#{card} .v2-index-card-meta-item",
+                  text: /#{Regexp.escape(I18n.t('deliverable_units.form.optimization_overload_multiplier_yes'))}/,
+                  minimum: 1
+    assert_select "#{card} .v2-index-card-meta-item",
+                  text: /#{Regexp.escape(unit.reload.localized_optimization_overload_multiplier)}/,
+                  minimum: 1
   end
 
   test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do
@@ -69,7 +100,7 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     assert_select '.deliverable-units-index', 1
     assert_select 'turbo-frame#form_sidebar form#deliverable-unit-form-sidebar', 1
     assert assigns(:deliverable_units).all?(&:persisted?)
-    assert_select 'table#deliverable-units tbody tr', assigns(:deliverable_units).size
+    assert_select '#deliverable-units-list .v2-index-card', assigns(:deliverable_units).size
   end
 
   test 'v2 create from sidebar closes the form frame' do

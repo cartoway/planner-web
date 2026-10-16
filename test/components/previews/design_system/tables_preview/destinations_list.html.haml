@@ -1,11 +1,12 @@
 .lookbook-destinations-list-host.container-fluid.py-3
-  %h1.h4.mb-2 Destinations list (v2)
+  %h1.h4.mb-2 Destinations list (live partial)
   %p.text-muted.small.mb-3
-    Same rendering as the v2 index: shared partial
+    Renders the real
     %code v2/destinations/_list_frame
-    (toolbar, column selector, geocoding, category badges, shared pagination controls with first/last page actions) and
-    %code .floating-btn
-    buttons (collapse / expand the list).
+    partial (toolbar, search chrome, pagination, index cards) inside the desktop map+sidebar shell.
+    For the design-system pattern (Liste / Carte mobile), see
+    %strong Index cards → Index with cards and map
+    \.
   %p.text-muted.small.mb-3
     %span.badge.text-bg-secondary Demo data
     Static sample data for the design system.
@@ -18,7 +19,11 @@
       .destinations-sidebar-header
         %button.floating-btn.destinations-sidebar-toggle{type: 'button', title: t('destinations.index.collapse_list', default: 'Collapse list'), 'aria-label': t('destinations.index.collapse_list', default: 'Collapse list')}
           %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}
-        %h1.h5.mb-0= t('destinations.index.title')
+        .destinations-sidebar-title-row
+          %h1.h5.mb-0.mt-0= t('destinations.index.title')
+          = render 'v2/destinations/list_count'
+        .form-group#destinations-search-form
+          = render 'v2/destinations/filtered_search_field', input_id: 'lookbook-destinations-search', input_name: nil, input_value: '', active_filters: []
       = render 'v2/destinations/list_frame'
     %button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger{type: 'button', title: t('destinations.index.expand_list', default: 'Show list'), 'aria-label': t('destinations.index.expand_list', default: 'Show list')}
       %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}
@@ -31,6 +36,7 @@
       .destinations-sidebar-header
         %button.floating-btn.destinations-sidebar-toggle{type: 'button', title: t('destinations.index.collapse_list', default: 'Collapse list'), 'aria-label': t('destinations.index.collapse_list', default: 'Collapse list')}
           %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}
-        %h1.h5.mb-0= t('destinations.index.title')
+        .destinations-sidebar-title-row
+          %h1.h5.mb-0.mt-0= t('destinations.index.title')
     %button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger{type: 'button', title: t('destinations.index.expand_list', default: 'Show list'), 'aria-label': t('destinations.index.expand_list', default: 'Show list')}
       %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}

@@ -4,13 +4,16 @@
 - content_for :title, t('deliverable_units.index.title')
 - can_destroy = current_user_form_destroy_enabled?(:deliverable_units)
 - can_create = current_user_form_create?(:deliverable_units)
-.deliverable-units-index{data: { controller: 'v2--table-filter v2--table-selection' }}
+.deliverable-units-index{data: { controller: 'v2--table-filter v2--table-selection v2--index-selection', v2__index_selection_select_label_value: t('all.verb.select'), v2__index_selection_cancel_label_value: t('all.verb.cancel') }}
   .deliverable-units-toolbar.px-3.pt-3
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
-      .d-flex.gap-2.align-items-center
+      .d-flex.gap-2.align-items-center.flex-wrap
         = link_to new_deliverable_unit_path, class: 'btn btn-primary', disabled: !can_create, data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
           %i.fa.fa-plus.fa-fw
           = t 'deliverable_units.index.new'
+        %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
+          %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+          %span{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
         %button.btn.btn-danger{
           type: 'button',
           disabled: true,
@@ -27,19 +30,11 @@
         = text_field_tag :deliverable_units_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control form-control-sm deliverable-units-filter', data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
         = render 'v2/shared/index_count', count: @deliverable_units.count, help: t('deliverable_units.index.deliverable_units_count_help'), model_key: 'activerecord.models.deliverable_units', nowrap: true
   = form_tag deliverable_units_path, method: :delete, id: 'deliverable-units-destroy' do
-    %table#deliverable-units.table.table-striped.table-hover.table-sm.deliverable-units-table.mb-0
-      %thead
-        %tr
-          %th
-            %input{type: 'checkbox', disabled: !can_destroy, data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }, title: t('all.verb.toggle_selection')}
-          %th= t 'activerecord.attributes.deliverable_unit.label'
-          %th= t 'activerecord.attributes.deliverable_unit.ref'
-          %th= t 'activerecord.attributes.deliverable_unit.icon'
-          %th.du-col-sidebar-hide= t 'activerecord.attributes.deliverable_unit.default_pickup'
-          %th.du-col-sidebar-hide= t 'activerecord.attributes.deliverable_unit.default_delivery'
-          %th= t 'activerecord.attributes.deliverable_unit.default_capacity'
-          %th.du-col-sidebar-hide= t 'activerecord.attributes.deliverable_unit.optimization_overload_multiplier'
-          %th.deliverable-units-actions-col
-      %tbody#deliverable-units-list
+    #deliverable-units.v2-index-cards.px-3.pb-3{data: { v2__index_selection_target: 'root' }}
+      .v2-index-cards-select-bar
+        %label.mb-0.d-flex.align-items-center.gap-2
+          %input{type: 'checkbox', disabled: !can_destroy, data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }, title: t('all.verb.toggle_selection')}
+          %span= t('all.verb.select_all')
+      #deliverable-units-list
         - @deliverable_units.each do |deliverable_unit|
           = render 'v2/deliverable_units/list_row', deliverable_unit: deliverable_unit, can_destroy: can_destroy

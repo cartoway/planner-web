@@ -72,15 +72,16 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :success
     assert_select 'body.cartoway-v2', 1
     assert_select '.plannings-index', 1
-    assert_select 'table#plannings', 1
+    assert_select '#plannings.v2-index-cards', 1
     assert_select %(.plannings-toolbar a[href="#{new_planning_path}"]), 1
-    assert_select 'table#plannings a[href=?]', edit_planning_path(@planning)
-    assert_select %(table#plannings a[href="#{planning_duplicate_path(@planning)}"][data-turbo-method="patch"][data-turbo-frame="_top"]), 1
-    assert_select %(table#plannings tr##{ActionView::RecordIdentifier.dom_id(@planning)}), 1
+    assert_select %(#plannings.v2-index-cards a[href=?]), edit_planning_path(@planning)
+    assert_select %(#plannings.v2-index-cards a[href="#{planning_duplicate_path(@planning)}"][data-turbo-method="patch"][data-turbo-frame="_top"]), 1
+    assert_select %(#plannings.v2-index-cards .v2-index-card##{ActionView::RecordIdentifier.dom_id(@planning)}), 1
     assert_select %(#planningsCollpase li##{ActionView::RecordIdentifier.dom_id(@planning, :menu)}), 1
     assert_select 'form#plannings-destroy[data-turbo-frame="_top"]', 1
-    assert_select 'table#plannings button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
+    assert_select '#plannings.v2-index-cards button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
     assert_select '.plannings-toolbar button[data-controller~="confirm-click"][data-confirm-click-form-value="plannings-destroy"]', 1
+    assert_select '[data-controller*="v2--index-selection"]', 1
 
     assert_select 'a[data-action="click->v2--plannings-index#spreadsheet"]', 2
     assert_select '#planning-spreadsheet-modal', 1

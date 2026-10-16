@@ -13,6 +13,7 @@
 @import "v2/vehicle_usage_sets";
 @import "v2/form_sidebar_form";
 @import "v2/delivery_note";
+@import "v2/index_cards";
 @import "v2/operations";
 @import "v2/related_list";
 
@@ -240,13 +241,25 @@
       }
     }
 
+    // Overlay host: backdrop + panel; does not shrink .main-primary.
+    .form-sidebar-host {
+      position: absolute;
+      inset: 0;
+      z-index: 10;
+      pointer-events: none;
+
+      .form-sidebar,
+      .form-sidebar-backdrop.is-visible {
+        pointer-events: auto;
+      }
+    }
+
     // Overlay on the right; does not shrink .main-primary (map stays full width).
     .form-sidebar.slide-panel {
       position: absolute;
       right: 0;
       top: 0;
       bottom: 0;
-      z-index: 10;
       width: clamp(300px, 38vw, 560px);
       max-width: min(560px, 48vw);
       display: flex;
@@ -457,14 +470,83 @@
     }
   }
 
+  // Mobile: form panel as bottom sheet (same pattern as .operation-detail).
   @media (max-width: 991.98px) {
     &.main--form-sidebar {
+      .form-sidebar-backdrop {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 1050;
+        background: rgba(0, 0, 0, 0.35);
+        border: 0;
+        padding: 0;
+
+        &.is-visible {
+          display: block;
+        }
+      }
+
       .form-sidebar.slide-panel {
-        width: min(100%, 28rem);
-        max-width: 100%;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: auto;
+        z-index: 1055;
+        width: 100% !important;
+        max-width: none !important;
+        max-height: 0;
+        overflow: hidden;
+        border-left: 0;
+        border-top-left-radius: 1rem;
+        border-top-right-radius: 1rem;
+        box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.18);
+        // Bottom sheet uses max-height (not translateX from slide-panel--from-right).
+        transform: none !important;
+        opacity: 1;
+        transition: max-height 0.2s ease;
+
+        &.slide-panel--collapsed,
+        &.form-sidebar--collapsed {
+          max-height: 0;
+          visibility: hidden;
+          pointer-events: none;
+        }
+
+        &.form-sidebar--open,
+        &.is-open {
+          flex: none;
+          max-height: 75dvh;
+          visibility: visible;
+          pointer-events: auto;
+        }
+      }
+
+      .form-sidebar-chrome {
+        justify-content: flex-end;
+        padding: 0.5rem 0.75rem 0.25rem;
+        position: relative;
+        z-index: 1;
+
+        .btn-close {
+          width: 2rem;
+          height: 2rem;
+          opacity: 1;
+        }
+      }
+
+      .form-sidebar-inner {
+        max-height: calc(75dvh - 2.75rem);
+        padding-top: 0.35rem;
       }
     }
   }
+}
+
+// Backdrop hidden on desktop (host may still render it).
+.form-sidebar-backdrop {
+  display: none;
 }
 
 // Tom Select (v2--tom-select): dropdown is portaled to document.body so it is not clipped by
