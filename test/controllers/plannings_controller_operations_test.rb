@@ -163,6 +163,12 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_includes @response.body, I18n.t('execution.badge_dirty')
     assert_includes @response.body, I18n.t('execution.modal.stops_count', count: routes(:route_one_one).size_active)
     assert_operator @response.body.index('planning-execution-card'), :<, @response.body.index('planning-execution-historized')
+    tools_idx = @response.body.index(/id=["']planning_tools["']/)
+    execution_idx = @response.body.index(/id=["']planning-execution["']/)
+    global_tools_idx = @response.body.index(/id=["']global_tools["']/)
+    assert tools_idx && execution_idx && global_tools_idx
+    assert_operator tools_idx, :<, execution_idx
+    assert_operator execution_idx, :<, global_tools_idx
     assert_includes @response.body, open_op.ref.presence || open_op.name
     assert_select ".planning-execution-sync[data-operation-id=#{open_op.id}]"
     assert_select ".planning-execution-badge[data-operation-id=#{open_op.id}].label-warning"
