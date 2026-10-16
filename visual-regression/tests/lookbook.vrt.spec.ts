@@ -49,7 +49,8 @@ const LOOKBOOK_PREVIEWS: { path: string; name: string }[] = [
 for (const { path, name } of LOOKBOOK_PREVIEWS) {
   test(`lookbook: ${name}`, async ({ page }) => {
     const url = `/lookbook/preview/${path}`
-    await page.goto(url, { waitUntil: 'load' })
+    // domcontentloaded: waiting for full 'load' hangs on Google Fonts and aborts under CI load.
+    await page.goto(url, { waitUntil: 'domcontentloaded' })
     await expect(page.locator('body')).toBeVisible()
     await assertCartowayStylesheetsLoaded(page)
     await waitForLookbookFonts(page)
