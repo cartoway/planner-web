@@ -47,30 +47,46 @@ class DeliverableUnitsControllerTest < ActionController::TestCase
     unit = deliverable_units(:deliverable_unit_one_one)
     get :index
     assert_response :success
-    assert_select "##{ActionView::RecordIdentifier.dom_id(unit)} .v2-index-card-meta-label",
+    card = "##{ActionView::RecordIdentifier.dom_id(unit)}"
+    # Fixed meta slots keep columns aligned across cards (same pattern as VUS nested list).
+    assert_select "#{card} .du-meta-ref", 1
+    assert_select "#{card} .du-meta-capacity", 1
+    assert_select "#{card} .du-meta-pickup", 1
+    assert_select "#{card} .du-meta-delivery", 1
+    assert_select "#{card} .du-meta-overload", 1
+    assert_select "#{card} .v2-index-card-meta-label",
                   text: /#{Regexp.escape(DeliverableUnit.human_attribute_name(:ref))}/,
                   minimum: 1
-    assert_select "##{ActionView::RecordIdentifier.dom_id(unit)} .v2-index-card-meta-item",
+    assert_select "#{card} .v2-index-card-meta-value",
                   text: /#{Regexp.escape(unit.ref)}/,
                   minimum: 1
   end
 
-  test 'v2 index cards show overload allowed and coefficient value' do
+  test 'v2 index cards show overload coefficient value only when allowed' do
     enable_layout_v2!
     unit = deliverable_units(:deliverable_unit_one_one)
     unit.update!(optimization_overload_multiplier: 1.5)
     get :index
     assert_response :success
     card = "##{ActionView::RecordIdentifier.dom_id(unit)}"
-    assert_select "#{card} .v2-index-card-meta-label",
+    assert_select "#{card} .du-meta-overload .v2-index-card-meta-label",
                   text: /#{Regexp.escape(DeliverableUnit.human_attribute_name(:optimization_overload_multiplier))}/,
                   minimum: 1
-    assert_select "#{card} .v2-index-card-meta-item",
-                  text: /#{Regexp.escape(I18n.t('deliverable_units.form.optimization_overload_multiplier_yes'))}/,
-                  minimum: 1
-    assert_select "#{card} .v2-index-card-meta-item",
+    assert_select "#{card} .du-meta-overload .v2-index-card-meta-value",
                   text: /#{Regexp.escape(unit.reload.localized_optimization_overload_multiplier)}/,
                   minimum: 1
+    assert_select "#{card} .du-meta-overload",
+                  text: /#{Regexp.escape(I18n.t('deliverable_units.form.optimization_overload_multiplier_yes'))}/,
+                  count: 0
+  end
+
+  test 'v2 index cards hide overload when not allowed' do
+    enable_layout_v2!
+    unit = deliverable_units(:deliverable_unit_one_one)
+    unit.update!(optimization_overload_multiplier: 0)
+    get :index
+    assert_response :success
+    assert_select "##{ActionView::RecordIdentifier.dom_id(unit)} .du-meta-overload .v2-index-card-meta-label", 0
   end
 
   test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do

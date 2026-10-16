@@ -10,15 +10,21 @@
               %i.fa.fa-dumpster.fa-fw{"aria-hidden": "true"}
               kg
           .v2-index-card-meta.text-muted
-            %span.v2-index-card-meta-item
+            %span.v2-index-card-meta-item.du-meta-ref
               %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:ref)} :"
-              ref_kg
-            %span.v2-index-card-meta-item
+              %span.v2-index-card-meta-value ref_kg
+            %span.v2-index-card-meta-item.du-meta-capacity
               %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:default_capacity)} :"
-              100
-            %span.v2-index-card-meta-item
+              %span.v2-index-card-meta-value 100
+            %span.v2-index-card-meta-item.du-meta-delivery
+              %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:default_delivery)} :"
+              %span.v2-index-card-meta-value 0
+            %span.v2-index-card-meta-item.du-meta-pickup
+              %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:default_pickup)} :"
+              %span.v2-index-card-meta-value 0
+            %span.v2-index-card-meta-item.du-meta-overload
               %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:optimization_overload_multiplier)} :"
-              = "#{t('deliverable_units.form.optimization_overload_multiplier_yes')} — 1,5"
+              %span.v2-index-card-meta-value 1,5
       .v2-index-card-actions
         %button.btn.btn-primary{type: 'button', title: t('all.verb.edit')}
           %i.fa.fa-pencil.fa-fw
@@ -34,15 +40,15 @@
               %i.fa.fa-dumpster.fa-fw{"aria-hidden": "true"}
               L
           .v2-index-card-meta.text-muted
-            %span.v2-index-card-meta-item
+            %span.v2-index-card-meta-item.du-meta-ref
               %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:ref)} :"
-              ref_L
-            %span.v2-index-card-meta-item
+              %span.v2-index-card-meta-value ref_L
+            %span.v2-index-card-meta-item.du-meta-capacity
               %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:default_capacity)} :"
-              50
-            %span.v2-index-card-meta-item
-              %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:optimization_overload_multiplier)} :"
-              = t('deliverable_units.form.optimization_overload_multiplier_no')
+              %span.v2-index-card-meta-value 50
+            %span.v2-index-card-meta-item.du-meta-delivery
+            %span.v2-index-card-meta-item.du-meta-pickup
+            %span.v2-index-card-meta-item.du-meta-overload
       .v2-index-card-actions
         %button.btn.btn-primary{type: 'button', title: t('all.verb.edit')}
           %i.fa.fa-pencil.fa-fw
