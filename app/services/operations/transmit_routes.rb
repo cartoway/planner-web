@@ -3,11 +3,14 @@
 module Operations
   class TransmitRoutes
     def self.call(operation:, routes:)
+      return { emailed: 0, sms: 0 } unless operation.open?
+
       emailed = routes.count { |operation_route| send_email(operation_route) }
       { emailed: emailed, sms: send_sms(operation, routes) }
     end
 
     def self.send_sms(operation, routes)
+      return 0 unless operation.open?
       return 0 unless operation.customer.enable_sms_driver
 
       SendDriverSms.call(operation: operation, routes: routes)
@@ -18,7 +21,10 @@ module Operations
     # Returns whether the mail was queued/delivered (used as a count predicate).
     # rubocop:disable Naming/PredicateMethod
     def self.send_email(operation_route)
-      customer = operation_route.operation.customer
+      operation = operation_route.operation
+      return false unless operation.open?
+
+      customer = operation.customer
       return false unless customer.enable_email_driver
 
       email = operation_route.driver_email

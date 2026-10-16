@@ -31,4 +31,17 @@ class TransmitRoutesChannelFlagsTest < ActiveSupport::TestCase
     @customer.update!(enable_email_driver: false, enable_sms_driver: false)
     assert_equal 0, Operations::SendDriverSms.call(operation: @operation, routes: [@route])
   end
+
+  test 'driver email and sms are skipped once the operation is historized' do
+    @customer.update!(enable_email_driver: true, enable_sms_driver: true)
+    @operation.update!(status: 'historized', closed_at: Time.current)
+
+    assert_no_difference 'ActionMailer::Base.deliveries.size' do
+      result = Operations::TransmitRoutes.call(operation: @operation, routes: [@route])
+      assert_equal 0, result[:emailed]
+      assert_equal 0, result[:sms]
+    end
+    assert_equal 0, Operations::SendDriverSms.call(operation: @operation, routes: [@route])
+    assert_equal false, Operations::TransmitRoutes.send_email(@route)
+  end
 end

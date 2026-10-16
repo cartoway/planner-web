@@ -56,11 +56,11 @@
                       %i.fa.fa-paper-plane.fa-fw
                       = t('plannings.edit.deliver_send.singular.transmit')
                     %ul.dropdown-menu
-                      - if operation.customer.enable_email_driver
+                      - if operation.open? && operation.customer.enable_email_driver
                         %li
                           %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'email', route_id: route.id, field: 'contact_email', contact: route.driver_email, vehicle_name: route.vehicle_name }}
                             = t('operations.show.send_email')
-                      - if operation.customer.enable_sms_driver
+                      - if operation.open? && operation.customer.enable_sms_driver
                         %li
                           %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'sms', route_id: route.id, field: 'phone_number', contact: route.driver_phone, vehicle_name: route.vehicle_name }}
                             = t('operations.show.send_sms')

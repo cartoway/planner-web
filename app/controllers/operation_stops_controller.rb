@@ -94,6 +94,10 @@ class OperationStopsController < ApplicationController
     end
   rescue ArgumentError
     head :unprocessable_entity
+  rescue ActiveRecord::StatementInvalid => e
+    raise unless e.message.include?('operation_closed')
+
+    head :unprocessable_entity
   end
 
   PRINT_IMAGE_MAX_EDGE = 880

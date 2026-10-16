@@ -25,6 +25,16 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     Operation.where(customer_id: @customer.id).delete_all
   end
 
+  test 'destination email and sms are skipped once the operation is historized' do
+    @customer.update!(enable_email_destination: true, enable_sms_destination: true, recipient_template: 'Hi {URL}')
+    @operation.update!(status: 'historized', closed_at: Time.current)
+
+    assert_no_difference 'ActionMailer::Base.deliveries.size' do
+      assert_equal 0, Operations::SendDestinationEmail.call(operation: @operation, trackings: [@tracking])
+    end
+    assert_equal 0, Operations::SendDestinationSms.call(operation: @operation, trackings: [@tracking])
+  end
+
   test 'send destination email injects tracking url' do
     @customer.update!(recipient_template: 'Bonjour {NAME} {URL}')
     assert_difference 'ActionMailer::Base.deliveries.size', 1 do
