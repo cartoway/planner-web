@@ -2,12 +2,42 @@
 
 module Operations
   class TransmitRoutes
-    def self.call(operation:, routes:)
+    # channel: global 'email'|'sms' (legacy). row_channels: { planning_route_id => 'email'|'sms'|'none' }.
+    def self.call(operation:, routes:, channel: nil, row_channels: nil)
       return { emailed: 0, sms: 0 } unless operation.open?
 
-      emailed = routes.count { |operation_route| send_email(operation_route) }
-      { emailed: emailed, sms: send_sms(operation, routes) }
+      if row_channels.present?
+        email_routes = []
+        sms_routes = []
+        routes.each do |operation_route|
+          ch = row_channel_for(operation_route, row_channels, channel)
+          case ch
+          when 'email' then email_routes << operation_route
+          when 'sms' then sms_routes << operation_route
+          end
+        end
+        return {
+          emailed: email_routes.count { |operation_route| send_email(operation_route) },
+          sms: sms_routes.empty? ? 0 : send_sms(operation, sms_routes)
+        }
+      end
+
+      case channel.to_s
+      when 'email'
+        { emailed: routes.count { |operation_route| send_email(operation_route) }, sms: 0 }
+      when 'sms'
+        { emailed: 0, sms: send_sms(operation, routes) }
+      else
+        emailed = routes.count { |operation_route| send_email(operation_route) }
+        { emailed: emailed, sms: send_sms(operation, routes) }
+      end
     end
+
+    def self.row_channel_for(operation_route, row_channels, fallback = nil)
+      rid = operation_route.route_id
+      (row_channels[rid] || row_channels[rid.to_s] || fallback).to_s
+    end
+    private_class_method :row_channel_for
 
     def self.send_sms(operation, routes)
       return 0 unless operation.open?

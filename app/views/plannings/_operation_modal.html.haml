@@ -15,6 +15,8 @@
   - { id: route.id, label: label, checked: selected_ids.include?(route.id), filter_label: filter_label, data: { stops: stops, hidden: route.hidden.to_s, locked: route.locked.to_s, tag_ids: skills.map(&:id).join(','), unavailable: (stops <= 0 ? '1' : '0') } }
 - checklist_actions = [{ mode: 'all', label: t('web.select2.route_all'), icon_class: 'fa fa-check-square fa-fw' }, { mode: 'clear', label: t('web.select2.route_clear'), icon_class: 'fa fa-regular fa-square fa-fw' }, { mode: 'reverse', label: t('web.select2.route_reverse'), icon_class: 'fa fa-random fa-fw' }, { mode: 'visible', label: t('execution.modal.select_visible'), icon_class: 'fa fa-eye fa-fw' }]
 - contact_by_route_id = planning_driver_contact_rows(assignable_routes).index_by { |row| row[:route_id] }
+- driver_channels = driver_contact_channels(@planning.customer)
+- show_channels = driver_channels.any?
 #planning-operation-modal.modal.fade{ role: 'dialog', tabindex: '-1', data: { planning_id: @planning.id, taken_by_date: taken_by_date.to_json, already_in_template: t('execution.modal.already_in', name: '__NAME__'), stops_count_one: t('execution.modal.stops_count.one'), stops_count_other: t('execution.modal.stops_count.other') } }
   .modal-dialog.modal-xl
     .modal-content
@@ -40,41 +42,54 @@
             = label_tag nil, t('execution.modal.routes')
             %p.help-block= t('execution.modal.routes_with_stops_only')
             = render 'shared/searchable_checklist_dropdown', id: 'execution-route-selector', id_prefix: 'execution_route_selector', checkbox_name: nil, items: checklist_items, filter_tags: filter_tags, global_actions: checklist_actions, wrapper_class: 'planning-execution-route-selector'
-            %ul#execution-driver-contacts.list-unstyled.planning-execution-routes
-              - assignable_routes.each do |route|
-                - label = [route.ref, route.vehicle_usage&.vehicle&.name].compact.join(' ').presence || "##{route.id}"
-                - stops = route.route_data&.size_active.to_i
-                - default_on = selected_ids.include?(route.id)
-                - contact = contact_by_route_id[route.id]
-                %li.planning-execution-route{ class: ('hidden' unless default_on), data: { route_id: route.id, hidden: route.hidden.to_s, locked: route.locked.to_s, default_on: default_on.to_s, stops: stops } }
-                  .planning-execution-route-row
-                    .form-switch
-                      = check_box_tag 'route_ids[]', route.id, default_on, id: "execution_route_#{route.id}", class: 'execution-route-checkbox form-check-input', data: { hidden: route.hidden.to_s, locked: route.locked.to_s, stops: stops }
-                    %label.planning-execution-route-label{ for: "execution_route_#{route.id}" }
-                      %span.execution-route-name= label
-                      %span.text-muted.execution-route-stops= t('execution.modal.stops_count', count: stops)
-                    - if contact
-                      %span.contacts-list-handle.text-muted{draggable: true, title: t('operations.contacts.drag'), aria: { label: t('operations.contacts.drag') }}
-                        %i.fa.fa-grip-vertical
-                      .planning-execution-route-contacts
-                        .planning-execution-route-contact
-                          .input-group.input-group-sm
-                            %span.input-group-addon
-                              %i.fa.fa-envelope
-                            = text_field_tag "driver_contacts[#{route.id}][contact_email]", contact[:email].to_s, class: 'form-control', autocomplete: 'off', disabled: true, data: { contacts_field: 'email', contacts_lockable: true }
-                            .input-group-btn
-                              %button.btn.btn-default{type: 'button', aria: { label: t('operations.contacts.edit') }, data: { contacts_edit: true }}
-                                %i.fa.fa-pencil
-                        .planning-execution-route-contact
-                          .input-group.input-group-sm
-                            %span.input-group-addon
-                              %i.fa.fa-phone
-                            = text_field_tag "driver_contacts[#{route.id}][phone_number]", contact[:phone].to_s, class: 'form-control', autocomplete: 'off', disabled: true, data: { contacts_field: 'phone', contacts_lockable: true }
-                            .input-group-btn
-                              %button.btn.btn-default{type: 'button', aria: { label: t('operations.contacts.edit') }, data: { contacts_edit: true }}
-                                %i.fa.fa-pencil
-                  %span.help-block.execution-route-taken-hint.hidden
-                  .planning-execution-route-extras
+            .contacts-list.planning-execution-contacts
+              - if show_channels
+                .contacts-list-toolbar
+                  .input-group.input-group-sm
+                    %span.input-group-addon= t('operations.contacts.channel_all')
+                    %select.form-control#execution-global-channel{aria: { label: t('operations.contacts.channel_all') }}
+                      - driver_channels.each do |channel|
+                        %option{value: channel}= t("operations.contacts.channel_#{channel}")
+                      %option{value: 'none'}= t('operations.contacts.channel_none')
+              %ul#execution-driver-contacts.list-unstyled.planning-execution-routes
+                - assignable_routes.each do |route|
+                  - label = [route.ref, route.vehicle_usage&.vehicle&.name].compact.join(' ').presence || "##{route.id}"
+                  - stops = route.route_data&.size_active.to_i
+                  - default_on = selected_ids.include?(route.id)
+                  - contact = contact_by_route_id[route.id]
+                  - channel_val = contact ? default_contact_channel(contact[:email], contact[:phone], driver_channels) : 'none'
+                  %li.planning-execution-route.contacts-list-row{ class: ('hidden' unless default_on), data: { route_id: route.id, hidden: route.hidden.to_s, locked: route.locked.to_s, default_on: default_on.to_s, stops: stops } }
+                    .planning-execution-route-row
+                      .form-switch
+                        = check_box_tag 'route_ids[]', route.id, default_on, id: "execution_route_#{route.id}", class: 'execution-route-checkbox form-check-input', data: { hidden: route.hidden.to_s, locked: route.locked.to_s, stops: stops }
+                      %label.planning-execution-route-label{ for: "execution_route_#{route.id}" }
+                        %span.execution-route-name= label
+                        %span.text-muted.execution-route-stops= t('execution.modal.stops_count', count: stops)
+                      - if contact
+                        %span.contacts-list-handle.text-muted{draggable: true, title: t('operations.contacts.drag'), aria: { label: t('operations.contacts.drag') }}
+                          %i.fa.fa-grip-vertical
+                        .planning-execution-route-contacts
+                          .planning-execution-route-contact
+                            .input-group.input-group-sm
+                              %span.input-group-addon
+                                %i.fa.fa-envelope
+                              = text_field_tag "driver_contacts[#{route.id}][contact_email]", contact[:email].to_s, class: 'form-control', autocomplete: 'off', disabled: true, data: { contacts_field: 'email', contacts_lockable: true }
+                              .input-group-btn
+                                %button.btn.btn-default{type: 'button', aria: { label: t('operations.contacts.edit') }, data: { contacts_edit: true }}
+                                  %i.fa.fa-pencil
+                          .planning-execution-route-contact
+                            .input-group.input-group-sm
+                              %span.input-group-addon
+                                %i.fa.fa-phone
+                              = text_field_tag "driver_contacts[#{route.id}][phone_number]", contact[:phone].to_s, class: 'form-control', autocomplete: 'off', disabled: true, data: { contacts_field: 'phone', contacts_lockable: true }
+                              .input-group-btn
+                                %button.btn.btn-default{type: 'button', aria: { label: t('operations.contacts.edit') }, data: { contacts_edit: true }}
+                                  %i.fa.fa-pencil
+                          - if show_channels
+                            .planning-execution-route-channel
+                              = select_tag "driver_contacts[#{route.id}][channel]", options_for_select(driver_channels.map { |c| [t("operations.contacts.channel_#{c}"), c.to_s] } + [[t('operations.contacts.channel_none'), 'none']], channel_val), class: 'form-control input-sm', disabled: !default_on, data: { contacts_channel: true }, aria: { label: t('operations.contacts.channel') }
+                    %span.help-block.execution-route-taken-hint.hidden
+                    .planning-execution-route-extras
             %p.help-block#execution-route-count{ data: { template: t('execution.modal.selected_count') } }
         .modal-footer
           %button.btn.btn-default{ type: 'button', 'data-dismiss': 'modal' }= t('all.verb.dismiss')
