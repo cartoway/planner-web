@@ -255,6 +255,7 @@ Rails.application.routes.draw do
       get :map
       get :search_stops
       get :routes
+      get :export
     end
     resources :operation_routes, only: [:show], path: 'routes' do
       member do

@@ -81,6 +81,30 @@ class OperationsController < ApplicationController
     render json: Operations::MapGeojson.call(operation: @operation, routes: routes)
   end
 
+  def export
+    exporter = Operations::Export.new(@operation)
+    respond_to do |format|
+      format.csv do
+        send_data exporter.to_csv,
+                  type: 'text/csv; charset=utf-8',
+                  filename: "#{exporter.basename}.csv",
+                  disposition: 'attachment'
+      end
+      format.excel do
+        send_data exporter.to_csv(excel: true),
+                  type: 'text/csv',
+                  filename: "#{exporter.basename}.csv",
+                  disposition: 'attachment'
+      end
+      format.zip do
+        send_data exporter.to_zip.string,
+                  type: 'application/zip',
+                  filename: "#{exporter.basename}.zip",
+                  disposition: 'attachment'
+      end
+    end
+  end
+
   def search_stops
     stops = @operation.operation_stops.executable.where(operation_route_id: @filtered_routes.select(:id))
     if params[:q].present?

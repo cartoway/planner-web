@@ -1,0 +1,10 @@
+!!!
+%html{lang: I18n.locale.to_s}
+  %head
+    %meta{charset: 'utf-8'}
+    %title= content_for?(:title) ? yield(:title) : t('stops.delivery_note.title')
+    %style= File.read(Rails.root.join('app/assets/stylesheets/v2/delivery_note.css')).html_safe
+    :css
+      .print-layout[data-action='delivery_note'] .btn-print { display: none !important; }
+  %body.print-layout.cartoway-v2{data: { action: 'delivery_note' }}
+    = yield

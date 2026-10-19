@@ -198,6 +198,7 @@ gem 'savon-multipart'
 gem 'rest-client'
 gem 'macaddr'
 gem 'rubyzip'
+gem 'ferrum'
 gem 'barby'
 
 gem 'pnotify-rails'

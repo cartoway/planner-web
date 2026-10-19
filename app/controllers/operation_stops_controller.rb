@@ -31,23 +31,10 @@ class OperationStopsController < ApplicationController
   def delivery_note
     authorize! :read, @operation_stop.operation_route.operation
     raise ActiveRecord::RecordNotFound unless @operation_stop.delivery_note_available?
+    raise ActiveRecord::RecordNotFound unless @operation_stop.stop.is_a?(StopVisit)
 
-    source = @operation_stop.stop
-    raise ActiveRecord::RecordNotFound unless source.is_a?(StopVisit)
-
-    photos = @operation_stop.photos
-    signature = @operation_stop.signature if @operation_stop.signature.attached?
-
-    @stop = source.dup
-    @stop.custom_attributes = delivery_note_stop_attributes(@operation_stop, source)
-
-    @visit = @stop.visit
-    @destination = @visit.destination
-    @route = @stop.route
-    @planning = @route.planning
-    @customer = @planning.customer
-    @photos = photos.map { |photo| print_embedded_image(photo) }
-    @signature = signature ? print_embedded_image(signature) : nil
+    assigns = Operations::DeliveryNoteDocument.assigns(@operation_stop)
+    assigns.each { |key, value| instance_variable_set("@#{key}", value) }
     render 'stops/delivery_note', layout: 'v2/print'
   end
 
@@ -100,9 +87,6 @@ class OperationStopsController < ApplicationController
     head :unprocessable_entity
   end
 
-  PRINT_IMAGE_MAX_EDGE = 880
-  PRINT_IMAGE_JPEG_QUALITY = 70
-
   private
 
   def save_actual_quantities(raw)
@@ -138,37 +122,6 @@ class OperationStopsController < ApplicationController
                                    .with_attached_signature
                                    .includes(:operation_stop_status_events)
                                    .find(params[:id])
-  end
-
-  def print_embedded_image(attachment)
-    bytes, content_type = print_image_bytes(attachment)
-    {
-      filename: attachment.blob.filename.to_s,
-      url: "data:#{content_type};base64,#{Base64.strict_encode64(bytes)}"
-    }
-  end
-
-  def print_image_bytes(attachment)
-    blob = attachment.blob
-    return [blob.download, blob.content_type] unless attachment.variable?
-
-    processed = attachment.variant(
-      resize_to_limit: [PRINT_IMAGE_MAX_EDGE, PRINT_IMAGE_MAX_EDGE],
-      format: :jpeg,
-      saver: { quality: PRINT_IMAGE_JPEG_QUALITY, strip: true }
-    ).processed
-    [processed.download, 'image/jpeg']
-  rescue StandardError => e
-    Rails.logger.warn("delivery_note image resize failed (#{e.class}): #{e.message}")
-    [blob.download, blob.content_type]
-  end
-
-  def delivery_note_stop_attributes(operation_stop, stop)
-    merged = (stop.custom_attributes || {}).dup
-    [operation_stop.stop_snapshot['custom_attributes'], operation_stop.custom_attributes].each do |bag|
-      (bag || {}).each { |key, value| merged[key] = value if value.present? }
-    end
-    merged
   end
 
   def set_driver_stop

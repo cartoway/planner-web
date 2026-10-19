@@ -17,6 +17,20 @@ class OperationRoute < ApplicationRecord
   scope :includes_for_show, -> {
     includes(:operation, :vehicle, :operation_stops)
   }
+  # Export ZIP/CSV: vehicles, tracks, proofs, and live BL graph (stop→visit→destination / route→planning).
+  scope :includes_for_export, -> {
+    includes(
+      :vehicle,
+      :vehicle_positions,
+      operation_stops: [
+        :visit,
+        :destination,
+        { stop: [{ visit: :destination }, { route: :planning }] },
+        { photos_attachments: :blob },
+        { signature_attachment: :blob }
+      ]
+    )
+  }
 
   def progress_counts
     stops = operation_stops.select { |stop| stop.sync_state == 'active' && stop.kind != 'rest' && stop.active != false }
@@ -230,7 +244,6 @@ class OperationRoute < ApplicationRecord
     return if place.blank? || place['name'].blank?
 
     seconds = (route_snapshot || {})[time_key].presence
-    seconds ||= Operations::Snapshots.schedule_seconds(route.route_data, time_key.to_sym) if route&.route_data
     {
       name: place['name'],
       time: planned_clock(seconds),
