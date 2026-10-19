@@ -1255,6 +1255,13 @@ class PlanningTest < ActiveSupport::TestCase
     assert_equal 1, averages[:vehicles_used], averages.inspect
   end
 
+  test 'taken_route_ids plucks without PG distinct order conflict' do
+    planning = plannings(:planning_one)
+    # Would raise PG::InvalidColumnReference if an Operation ORDER BY leaked into DISTINCT.
+    ids = planning.taken_route_ids(date: Date.current)
+    assert_kind_of Array, ids
+  end
+
   test 'averages should ignore costs of active routes without visit stops' do
     planning = plannings(:planning_one)
     vehicle_routes = planning.routes.select(&:vehicle_usage?)

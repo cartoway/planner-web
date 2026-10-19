@@ -72,7 +72,7 @@ class Planning < ApplicationRecord
     return [] if date.blank?
 
     scope = OperationRoute.joins(:operation)
-                          .merge(operations.open_status.where(date: date))
+                          .merge(operations.unscope(:order).open_status.where(date: date))
                           .where.not(route_id: nil)
     scope = scope.where.not(operations: { id: except_operation_id }) if except_operation_id
     scope.distinct.pluck(:route_id)
