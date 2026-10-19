@@ -3,7 +3,8 @@
   - if @destination.name.present?
     = " — #{@destination.name}"
 
-- company_present = [@customer.company_logo.url, @customer.company_name, @customer.company_street, @customer.company_postalcode, @customer.company_city, @customer.company_detail, @customer.company_phone].any?(&:present?)
+- logo_url = @company_logo_url.presence || @customer.company_logo.url.presence
+- company_present = [logo_url, @customer.company_name, @customer.company_street, @customer.company_postalcode, @customer.company_city, @customer.company_detail, @customer.company_phone].any?(&:present?)
 - order_lines = []
 - quantity_lines = @operation_stop&.quantity_lines || []
 - if quantity_lines.any?
@@ -28,6 +29,7 @@
 - attribute_sources = visit_cas.map { |ca| [ca, @visit] } + filled_cas.map { |ca| [ca, @stop] }
 - attribute_sources.sort_by! { |ca, _| [ca.object_type_before_type_cast, ca.name] }
 - attribute_lines = attribute_sources.map { |ca, object| { header: ca.name, value: delivery_note_custom_attribute_value(ca, object) } }
+- validated_at = @operation_stop&.status_updated_at.presence || @stop.status_updated_at
 
 .delivery-note
   = button_tag type: 'button', class: 'btn btn-primary btn-print hidden-print', onclick: 'window.print()' do
@@ -37,8 +39,8 @@
   .delivery-note-top
     .delivery-note-company
       - if company_present
-        - if @customer.company_logo.url.present?
-          %p= image_tag @customer.company_logo.url, alt: @customer.company_name.presence || @customer.name, class: 'delivery-note-company-logo', style: 'max-height: 64px; max-width: 200px;'
+        - if logo_url.present?
+          %p= image_tag logo_url, alt: @customer.company_name.presence || @customer.name, class: 'delivery-note-company-logo', style: 'max-height: 64px; max-width: 200px;'
         - if @customer.company_name.present?
           %p.delivery-note-company-name= @customer.company_name
         - if @customer.company_street.present?
@@ -56,10 +58,10 @@
       - ref = @visit.ref.presence || @destination.ref.presence
       - if ref.present?
         %p.delivery-note-ref=ref
-      - if @stop.status_updated_at
+      - if validated_at
         - place = @customer.company_city.presence
-        - date_label = l(@stop.status_updated_at.to_date, format: :date)
-        - time_label = l(@stop.status_updated_at, format: :hour_minute)
+        - date_label = l(validated_at.to_date, format: :date)
+        - time_label = l(validated_at, format: :hour_minute)
         %p.delivery-note-place-date
           - if place.present?
             = t('stops.delivery_note.place_date', city: place, date: date_label, time: time_label)

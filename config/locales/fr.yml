@@ -4158,8 +4158,30 @@ fr:
       destroy_body: "Pour confirmer, saisissez le nom de l’opération : %{name}"
       destroy_confirm: Supprimer définitivement
       destroy_input_label: Nom de l’opération
+    export:
+      kind: Type
+      status: Statut
+      address: Adresse
+      times: Horaires (prévu / réel)
+      quantities: Quantités
+      proofs: Preuves
+      delivery_note: Bon de livraison
+      note: 'Note :'
+      distance: Distance
+      drive_time: Temps de conduite
+      track: Tracé
+      track_file: Tracé GeoJSON
+      prev: Preuve précédente
+      next: Preuve suivante
+      close: Fermer
+      fullscreen: Afficher la preuve en plein écran
+      operation_stats: Synthèse opération
+      route_stats: Synthèse tournée
     show:
       planning: Plan
+      export: Exporter
+      export_spreadsheet: Tableur
+      export_archive: Archive (preuves)
       search_routes: Nom du véhicule ou référence
       search_stops: Nom, référence, rue ou ville
       all_routes: Toutes les tournées

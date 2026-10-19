@@ -333,6 +333,11 @@ class OperationStop < ApplicationRecord
     visit? && stop_id.present? && DELIVERY_NOTE_STATUSES.include?(status.to_s.downcase)
   end
 
+  # Snapshot-only: usable in exports even when the live planning stop is gone.
+  def delivery_note_exportable?
+    visit? && DELIVERY_NOTE_STATUSES.include?(status.to_s.downcase)
+  end
+
   def active_delivery_tracking
     return unless kind == 'visit'
 

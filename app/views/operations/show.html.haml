@@ -45,6 +45,19 @@
           = link_to edit_planning_path(@operation.planning), class: 'btn btn-light', target: '_blank', rel: 'noopener', data: { turbo: false } do
             %i.fa.fa-map-location.fa-fw
             = t('operations.show.planning')
+        .dropdown
+          %button.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
+            %i.fa.fa-download.fa-fw
+            = t('operations.show.export')
+          %ul.dropdown-menu
+            %li
+              = link_to export_operation_path(@operation, format: :excel), class: 'dropdown-item', data: { turbo: false } do
+                %i.fa.fa-file-csv.fa-fw
+                = t('operations.show.export_spreadsheet')
+            %li
+              = link_to export_operation_path(@operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
+                %i.fa.fa-file-zipper.fa-fw
+                = t('operations.show.export_archive')
         = render 'operations/demo_actions'
         #operation-send-buttons
           - if @operation.open? && @send_routes.present?
@@ -74,6 +87,14 @@
               = link_to edit_planning_path(@operation.planning), class: 'dropdown-item', target: '_blank', rel: 'noopener', data: { turbo: false } do
                 %i.fa.fa-map-location.fa-fw
                 = t('operations.show.planning')
+          %li
+            = link_to export_operation_path(@operation, format: :excel), class: 'dropdown-item', data: { turbo: false } do
+              %i.fa.fa-file-csv.fa-fw
+              = t('operations.show.export_spreadsheet')
+          %li
+            = link_to export_operation_path(@operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
+              %i.fa.fa-file-zipper.fa-fw
+              = t('operations.show.export_archive')
           - if @operation.open? && @send_routes.present?
             - if @operation.customer.enable_email_driver
               %li

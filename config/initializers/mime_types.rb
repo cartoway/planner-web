@@ -8,3 +8,4 @@ Mime::Type.register 'text/csv', :excel
 Mime::Type.register 'image/svg+xml', :svg
 Mime::Type.register 'application/vnd.google-earth.kml+xml', :kml
 Mime::Type.register 'application/vnd.google-earth.kmz', :kmz
+Mime::Type.register 'application/zip', :zip
