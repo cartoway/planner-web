@@ -1,13 +1,45 @@
 // Copyright © Cartoway
 
 .related-list {
-  margin: 0.75rem 0 0.5rem;
+  margin: 1rem 0 0.5rem;
 }
 
+// Match Bootstrap 5 legend sizing used by visit `.scheduler-border` titles.
 .related-list-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+  margin: 0 0 0.75rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-family: inherit;
+  font-size: calc(1.275rem + 0.3vw);
+  line-height: inherit;
+  text-align: left;
+  cursor: pointer;
+
+  .related-list-icon {
+    flex-shrink: 0;
+  }
+
+  .accordion-chevron {
+    flex-shrink: 0;
+    line-height: 1;
+    transition: transform 0.15s ease;
+  }
+
+  &:not(.collapsed) .accordion-chevron {
+    transform: rotate(90deg);
+  }
+}
+
+.related-list-body {
+  > .related-item:first-child {
+    border-top: 0;
+  }
 }
 
 .related-item {
