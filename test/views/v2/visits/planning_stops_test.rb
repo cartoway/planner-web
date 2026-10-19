@@ -10,6 +10,10 @@ class VisitPlanningStopsPartialTest < ActionView::TestCase
     render partial: 'v2/visits/planning_stops', locals: { visit: visit }
 
     assert_select '.related-list', 1
+    assert_select %(button.related-list-title[data-bs-toggle="collapse"][data-bs-target="#visit-#{visit.id}-planning-stops"][aria-expanded="true"]), 1
+    assert_select 'button.related-list-title .fa-map-location.related-list-icon', 1
+    assert_select 'button.related-list-title .accordion-chevron', 1
+    assert_select %(.related-list-body.collapse.show#visit-#{visit.id}-planning-stops), 1
     assert_select '.related-item', minimum: 1
     assert_includes rendered, plannings(:planning_one).name
     assert_select '.related-item-index', text: stops(:stop_one_one).index.to_s

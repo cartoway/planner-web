@@ -12,6 +12,7 @@
     %a{name: "visit_id=#{visit.id}"}
     %legend.scheduler-border
       %a.accordion-toggle.text-decoration-none{href: "#", role: "button", "data-bs-toggle": "collapse", "data-bs-target": "#collapseVisit#{visit.id || 0}", "aria-expanded": "true", "aria-controls": "collapseVisit#{visit.id || 0}"}
+        %i.fa.fa-chevron-right.fa-fw.accordion-chevron{'aria-hidden': 'true'}
         %span= vf.call('legend', n: i)
       - if !current_page?(action: 'new')
         - visit_delete_confirm_ready_label = %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{vf.call('delete_visit')})
@@ -146,8 +147,3 @@
             = custom_attribute_form_field(f, visit, custom_attribute, "destination[visits_attributes][#{i}]")
             %p.help-block
               = custom_attribute.description
-
-      - if visit.persisted?
-        = render 'v2/visits/planning_stops', visit: visit
-        - if can?(:manage, Operation)
-          = render 'v2/visits/operation_stops', visit: visit

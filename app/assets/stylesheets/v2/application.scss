@@ -399,6 +399,11 @@
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
+          color: inherit;
+
+          &:hover {
+            color: $primary-color;
+          }
 
           .accordion-chevron {
             flex-shrink: 0;
