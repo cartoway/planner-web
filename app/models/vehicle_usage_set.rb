@@ -217,9 +217,11 @@ class VehicleUsageSet < ApplicationRecord
       errors.add(:base, I18n.t('activerecord.errors.models.vehicle_usage_set.at_least_one'))
       throw :abort
     else
-      # Preload route details so update_vehicle_usage_set / compute do not N+1 on stops/visits.
+      # Preload route details so remapping does not N+1 on stops/visits. Skip compute_saved!:
+      # remapping marks routes outdated; full recompute (router + geojson) is the destroy bottleneck.
       Route.no_touching do
         customer.plannings.where(vehicle_usage_set_id: id).preload_route_details.each{ |planning|
+          planning.skip_compute_on_vehicle_usage_set_change = true
           planning.vehicle_usage_set = default
           planning.save!
         }

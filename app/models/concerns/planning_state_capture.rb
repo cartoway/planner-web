@@ -24,7 +24,7 @@ module PlanningStateCapture
   included do
     has_many :planning_states, dependent: :destroy
 
-    attr_accessor :skip_state_capture, :skip_vehicle_usage_set_callback
+    attr_accessor :skip_state_capture, :skip_vehicle_usage_set_callback, :skip_compute_on_vehicle_usage_set_change
   end
 
   def capture_state!(trigger:)
