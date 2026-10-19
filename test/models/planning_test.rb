@@ -1255,6 +1255,40 @@ class PlanningTest < ActiveSupport::TestCase
     assert_equal 1, averages[:vehicles_used], averages.inspect
   end
 
+  test 'averages should ignore costs of active routes without visit stops' do
+    planning = plannings(:planning_one)
+    vehicle_routes = planning.routes.select(&:vehicle_usage?)
+    assert vehicle_routes.size > 1
+
+    empty_route = vehicle_routes.first
+    busy_route = vehicle_routes.second
+
+    vehicle_routes.each do |route|
+      route.stops.select { |s| s.is_a?(StopVisit) }.each { |s| s.update!(active: false) }
+    end
+    busy_route.reload
+    busy_route.stops.order(:index).select { |s| s.is_a?(StopVisit) }.first.update!(active: true)
+
+    vehicle_routes.each do |route|
+      route.reload
+      route.outdated = true
+      route.compute_saved!
+      route.reload
+    end
+
+    assert empty_route.size_active_destinations.zero?
+    assert busy_route.size_active_destinations.positive?
+
+    # Empty active vehicles must not inflate planning cost (depot→depot / rests only).
+    averages = planning.averages('km')
+    assert averages
+    assert_equal 1, averages[:vehicles_used], averages.inspect
+    expected_cost = [busy_route.cost_fixed, busy_route.cost_distance, busy_route.cost_time].compact.sum
+    assert_in_delta expected_cost, averages[:routes_cost].to_f, 0.01
+    # Stale fixed cost on empty routes must not leak into the total.
+    assert_operator averages[:routes_cost].to_f, :<, expected_cost + empty_route.vehicle_usage.default_cost_fixed.to_f
+  end
+
   test 'routes are ordered by vehicle usage index with out of route first' do
     planning = plannings(:planning_one)
     vehicle_usage_set = planning.vehicle_usage_set

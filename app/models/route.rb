@@ -537,7 +537,11 @@ class Route < ApplicationRecord
         previous_route_data_attributes[:drive_time] += drive_time
         route_attributes[:cost_distance] = route_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
         previous_route_data_attributes[:cost_distance] = previous_route_data_attributes[:distance].to_f / 1000 * vehicle_usage.default_cost_distance if vehicle_usage.default_cost_distance
-        route_attributes[:cost_fixed] = vehicle_usage.default_cost_fixed if vehicle_usage.default_cost_fixed
+        # Fixed cost only when the vehicle actually serves visits (not empty depot→depot).
+        if vehicle_usage.default_cost_fixed &&
+           stops_sort.any? { |stop| stop.is_a?(StopVisit) && stop.active? }
+          route_attributes[:cost_fixed] = vehicle_usage.default_cost_fixed
+        end
       end
       previous_route_data.assign_attributes(previous_route_data_attributes.compact)
       route_attributes[:stop_no_path] = vehicle_usage.default_store_stop&.position? && stops_sort.any?{ |s| s.active && s.position? } && trace.nil?

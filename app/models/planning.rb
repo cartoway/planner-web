@@ -1257,7 +1257,7 @@ class Planning < ApplicationRecord
     route_collection = routes || self.routes
 
     route_collection.each do |route|
-      if route.vehicle_usage && (route.size_active.positive? || (route.vehicle_usage.default_store_start.present? && route.vehicle_usage.default_store_stop.present? && route.drive_time.present?))
+      if route.vehicle_usage && route.size_active_destinations.positive?
         result[:routes_drive_time] += route.drive_time if route.drive_time.present?
         composed_cost = [route.cost_distance, route.cost_fixed, route.cost_time].compact.reduce(&:+)
         result[:routes_cost] =
