@@ -1,42 +1,47 @@
 -# locals: visit
 - stops = visit_planning_stops(visit)
 - if stops.any?
+  - collapse_id = "visit-#{visit.id}-planning-stops"
   .related-list
-    %h6.related-list-title= t('visits.form.plannings')
-    - stops.each do |stop|
-      - planning = stop.route.planning
-      .related-item
-        .d-flex.justify-content-between.align-items-start.gap-2
-          .related-item-body.min-w-0
-            .related-item-name
-              = planning.name
-              - if planning.date
-                %span.text-muted= l(planning.date.to_date)
-            .related-item-meta.small
-              %span.related-item-index{class: ('is-unassigned' unless stop.route.vehicle_usage), style: "background: #{visit_stop_vehicle_color(stop)}"}
-                = stop.index
-              %span.text-muted= visit_stop_vehicle_name(stop)
-              - if stop.time
-                %span.text-muted
-                  ·
-                  = stop.time_time
-                  - days = number_of_days(stop.time)
-                  - if days
-                    = "(+#{days})"
-              - status = visit_stop_status_label(stop)
-              - status_code = visit_stop_status_code(stop)
-              - if status && status_code
-                %span.badge.related-item-status{class: "stop-status-#{status_code}"}
-                  = status
-              - if stop.status_updated_at
-                %span.text-muted
-                  ·
-                  = l(stop.status_updated_at, format: :hour_minute)
-          .d-flex.gap-1.flex-shrink-0
-            = link_to edit_planning_path(planning, stop_id: stop.id, route_id: stop.route_id),
-              class: 'btn btn-light',
-              target: '_blank',
-              rel: 'noopener noreferrer',
-              title: t('visits.form.open_in_planning'),
-              'aria-label': t('visits.form.open_in_planning') do
-              %i.fa.fa-calendar.fa-fw
+    %button.related-list-title.accordion-toggle.text-decoration-none{type: 'button', data: { 'bs-toggle': 'collapse', 'bs-target': "##{collapse_id}" }, 'aria-expanded': 'true', 'aria-controls': collapse_id}
+      %i.fa.fa-chevron-right.fa-fw.accordion-chevron{'aria-hidden': 'true'}
+      %i.fa.fa-map-location.fa-fw.related-list-icon{'aria-hidden': 'true'}
+      %span= t('visits.form.plannings')
+    .related-list-body.collapse.show{id: collapse_id}
+      - stops.each do |stop|
+        - planning = stop.route.planning
+        .related-item
+          .d-flex.justify-content-between.align-items-start.gap-2
+            .related-item-body.min-w-0
+              .related-item-name
+                = planning.name
+                - if planning.date
+                  %span.text-muted= l(planning.date.to_date)
+              .related-item-meta.small
+                %span.related-item-index{class: ('is-unassigned' unless stop.route.vehicle_usage), style: "background: #{visit_stop_vehicle_color(stop)}"}
+                  = stop.index
+                %span.text-muted= visit_stop_vehicle_name(stop)
+                - if stop.time
+                  %span.text-muted
+                    ·
+                    = stop.time_time
+                    - days = number_of_days(stop.time)
+                    - if days
+                      = "(+#{days})"
+                - status = visit_stop_status_label(stop)
+                - status_code = visit_stop_status_code(stop)
+                - if status && status_code
+                  %span.badge.related-item-status{class: "stop-status-#{status_code}"}
+                    = status
+                - if stop.status_updated_at
+                  %span.text-muted
+                    ·
+                    = l(stop.status_updated_at, format: :hour_minute)
+            .d-flex.gap-1.flex-shrink-0
+              = link_to edit_planning_path(planning, stop_id: stop.id, route_id: stop.route_id),
+                class: 'btn btn-light',
+                target: '_blank',
+                rel: 'noopener noreferrer',
+                title: t('visits.form.open_in_planning'),
+                'aria-label': t('visits.form.open_in_planning') do
+                %i.fa.fa-calendar.fa-fw
