@@ -217,8 +217,9 @@ class VehicleUsageSet < ApplicationRecord
       errors.add(:base, I18n.t('activerecord.errors.models.vehicle_usage_set.at_least_one'))
       throw :abort
     else
+      # Preload route details so update_vehicle_usage_set / compute do not N+1 on stops/visits.
       Route.no_touching do
-        customer.plannings.select{ |planning| planning.vehicle_usage_set == self }.each{ |planning|
+        customer.plannings.where(vehicle_usage_set_id: id).preload_route_details.each{ |planning|
           planning.vehicle_usage_set = default
           planning.save!
         }

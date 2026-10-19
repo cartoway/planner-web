@@ -1442,10 +1442,17 @@ class Planning < ApplicationRecord
   end
 
   def preload_routes_for_compute!(routes_to_compute)
-    routes_missing_stops = Array(routes_to_compute).select { |route| !route.association(:stops).loaded? }
-    return if routes_missing_stops.empty?
+    # Reload when stops are missing, or loaded without visit/destination includes
+    # (e.g. update_vehicle_usage touched stops before compute).
+    routes_needing_preload = Array(routes_to_compute).select { |route|
+      next true unless route.association(:stops).loaded?
 
-    routes_by_id = routes_missing_stops.index_by(&:id)
+      sample = route.stops.detect { |stop| stop.is_a?(StopVisit) }
+      sample && !sample.association(:visit).loaded?
+    }
+    return if routes_needing_preload.empty?
+
+    routes_by_id = routes_needing_preload.index_by(&:id)
     Route.where(id: routes_by_id.keys)
          .includes_vehicle_usages
          .includes_destinations_and_stores
