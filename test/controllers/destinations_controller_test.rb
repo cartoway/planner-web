@@ -720,14 +720,16 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_map_config_json_key('can_destroy', true)
     assert_select 'turbo-frame#destinations_list[data-controller*="v2--index-selection"]', 1
     assert_select 'turbo-frame#destinations_list .destinations-bulk-delete', 1
-    assert_select 'turbo-frame#destinations_list .destinations-bulk-delete[data-confirm-click-ready-label-value*="fa-check"]', 1
+    assert_select 'turbo-frame#destinations_list .destinations-bulk-delete[data-controller~="confirm-click"]', 1
+    assert_select 'turbo-frame#destinations_list .destinations-bulk-delete .destinations-toolbar-label',
+                  text: I18n.t('all.verb.destroy_selection'), count: 1
     assert_select 'turbo-frame#destinations_list .v2-index-card.destination input[type=checkbox][name^="destinations"]',
                   assigns(:destinations).size
     assert_select 'turbo-frame#destinations_list button.destinations-row-delete',
                   assigns(:destinations).size
     assert_select 'turbo-frame#destinations_list button.destinations-row-center',
                   assigns(:destinations).size
-    assert_select 'turbo-frame#destinations_list button.destinations-row-delete[data-confirm-click-ready-label-value*="fa-check"]',
+    assert_select 'turbo-frame#destinations_list button.destinations-row-delete[data-controller~="confirm-click"]',
                   assigns(:destinations).size
     assert_select '.v2-map-index-mobile-panes', 1
   end

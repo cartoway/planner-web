@@ -110,12 +110,14 @@ module ApplicationHelper
   end
 
   # Timed double-click delete via confirm-click (optional url / form → spinner + DELETE).
+  # Omit ready_label: confirm-click derives check/spinner from the button and keeps any label.
+  # Pass ready_label only to override (e.g. custom copy); icon-only buttons stay icon-only.
   def confirm_click_destroy_data(group:, url: nil, form: nil, ready_label: nil, base_class: 'btn-danger', confirm_message: nil)
     confirm_click_data(
       group: group,
       wait_message: t('all.verb.destroy_confirm_wait'),
       confirm_message: confirm_message || t('all.verb.destroy_confirm'),
-      ready_label: ready_label || '<i class="fa fa-check fa-fw" aria-hidden="true"></i>',
+      ready_label: ready_label,
       base_class: base_class
     ).tap do |data|
       data[:confirm_click_url_value] = url if url.present?

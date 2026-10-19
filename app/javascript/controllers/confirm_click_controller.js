@@ -2,12 +2,14 @@
 // Two-click confirmation with a short delay before the action runs.
 // - Default: dispatches `confirm-click:confirmed` (bubbles) on the second valid click.
 // - Optional url / form values: show a spinner and DELETE (or submit the form) instead.
+// - Button labels (if any) persist into the armed and spinner states; icon-only stays icon-only.
 import { Controller } from '@hotwired/stimulus'
 import { renderStreamMessage } from '@hotwired/turbo'
 import { visit } from 'turbo/frame_promoted_visit'
 
 const ARMED_CLASS = 'confirm-click-armed'
 const PENDING_CLASS = 'confirm-click-pending'
+const CHECK_HTML = '<i class="fa fa-check fa-fw" aria-hidden="true"></i>'
 const SPINNER_HTML = '<i class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i>'
 
 let documentListenerCount = 0
@@ -16,6 +18,17 @@ function disarmAllConfirmClickControllers (application) {
   document.querySelectorAll(`[data-controller~="confirm-click"].${ARMED_CLASS}`).forEach((element) => {
     application.getControllerForElementAndIdentifier(element, 'confirm-click')?.disarm()
   })
+}
+
+function labelTextFrom (html) {
+  const template = document.createElement('template')
+  template.innerHTML = html || ''
+  template.content.querySelectorAll('i').forEach((el) => el.remove())
+  return template.content.textContent.replace(/\s+/g, ' ').trim()
+}
+
+function withIconAndLabel (iconHtml, label) {
+  return label ? `${iconHtml} ${label}` : iconHtml
 }
 
 export default class extends Controller {
@@ -38,6 +51,7 @@ export default class extends Controller {
     this.disarmTimeout = null
     this.originalHtml = null
     this.originalTitle = null
+    this.armedHtml = null
     this._destroyPending = false
     this._onClick = this.click.bind(this)
     this.element.addEventListener('click', this._onClick)
@@ -102,6 +116,11 @@ export default class extends Controller {
     this._clearArmedState({ restoreContent: true })
   }
 
+  // Public for hosts (e.g. destinations index) that show their own spinner after confirmed.
+  spinnerHtml () {
+    return withIconAndLabel(SPINNER_HTML, this._persistedLabel())
+  }
+
   _clearArmedState ({ restoreContent }) {
     this._clearTimers()
     this.element.classList.remove(ARMED_CLASS, PENDING_CLASS, this.armedClassValue)
@@ -112,10 +131,29 @@ export default class extends Controller {
       this.element.title = this.originalTitle || ''
     }
     this.armedAt = null
+    this.armedHtml = null
   }
 
   _hasDestroyTarget () {
     return (this.hasUrlValue && !!this.urlValue) || (this.hasFormValue && !!this.formValue)
+  }
+
+  // Prefer explicit readyLabel text, else the button's own label (if any).
+  _persistedLabel () {
+    if (this.hasReadyLabelValue && this.readyLabelValue) {
+      const fromReady = labelTextFrom(this.readyLabelValue)
+      if (fromReady) return fromReady
+    }
+    return labelTextFrom(this.originalHtml || this.element.innerHTML)
+  }
+
+  _readyHtml () {
+    // Full custom readyLabel that already includes text (e.g. lookbook / visit delete).
+    if (this.hasReadyLabelValue && this.readyLabelValue && labelTextFrom(this.readyLabelValue)) {
+      return this.readyLabelValue
+    }
+
+    return withIconAndLabel(CHECK_HTML, this._persistedLabel())
   }
 
   async _startDestroy () {
@@ -125,7 +163,7 @@ export default class extends Controller {
     this.element.style.opacity = ''
     this.armedAt = null
     this.element.disabled = true
-    this.element.innerHTML = SPINNER_HTML
+    this.element.innerHTML = this.spinnerHtml()
 
     try {
       if (this.hasFormValue && this.formValue) {
@@ -178,11 +216,13 @@ export default class extends Controller {
     this.element.disabled = false
     if (this.originalHtml !== null) this.element.innerHTML = this.originalHtml
     this.element.title = this.originalTitle || ''
+    this.armedHtml = null
   }
 
   _arm () {
     this.originalHtml = this.element.innerHTML
     this.originalTitle = this.element.title || ''
+    this.armedHtml = null
 
     this.element.classList.add(ARMED_CLASS, PENDING_CLASS, this.armedClassValue)
     if (this.baseClassValue) this.element.classList.remove(this.baseClassValue)
@@ -193,9 +233,8 @@ export default class extends Controller {
     this.confirmReadyTimeout = window.setTimeout(() => {
       this.element.classList.remove(PENDING_CLASS)
       this.element.style.opacity = ''
-      if (this.hasReadyLabelValue) {
-        this.element.innerHTML = this.readyLabelValue
-      }
+      this.armedHtml = this._readyHtml()
+      this.element.innerHTML = this.armedHtml
       this.element.title = this.confirmMessageValue || ''
     }, this.delayValue)
 
