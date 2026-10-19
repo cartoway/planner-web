@@ -19,11 +19,11 @@ module Operations
   end
 
   class PublishFromPlanning
-    def self.call(planning:, date: nil, name: nil, ref: nil, route_ids: nil, visible_routes_only: false, allow_past: false)
-      new(planning, date, name, ref, route_ids, visible_routes_only: visible_routes_only, allow_past: allow_past).call
+    def self.call(planning:, date: nil, name: nil, ref: nil, route_ids: nil, visible_routes_only: false, allow_past: false, driver_contacts: nil)
+      new(planning, date, name, ref, route_ids, visible_routes_only: visible_routes_only, allow_past: allow_past, driver_contacts: driver_contacts).call
     end
 
-    def initialize(planning, date = nil, name = nil, ref = nil, route_ids = nil, visible_routes_only: false, allow_past: false)
+    def initialize(planning, date = nil, name = nil, ref = nil, route_ids = nil, visible_routes_only: false, allow_past: false, driver_contacts: nil)
       @planning = planning
       @date = date
       @name = name
@@ -31,6 +31,7 @@ module Operations
       @route_ids = route_ids&.map(&:to_i)&.uniq
       @visible_routes_only = visible_routes_only
       @allow_past = allow_past
+      @driver_contacts = normalize_driver_contacts(driver_contacts)
     end
 
     def call
@@ -117,7 +118,7 @@ module Operations
         hidden: route.hidden || false,
         unassigned: unassigned,
         sync_state: 'active',
-        vehicle_snapshot: Snapshots.vehicle(vehicle),
+        vehicle_snapshot: vehicle_snapshot_for(route, vehicle),
         vehicle_usage_snapshot: Snapshots.vehicle_usage(route.vehicle_usage),
         route_snapshot: Snapshots.route(route),
         departure_status: copy_cursor ? departure_status : nil,
@@ -202,6 +203,31 @@ module Operations
 
     def routes_for(planning)
       planning.routes.includes(:vehicle_usage, :route_geojson, :route_data, :start_route_data, :stop_route_data, stops: [:visit, :store, :store_reload]).to_a
+    end
+
+    def vehicle_snapshot_for(route, vehicle)
+      snapshot = Snapshots.vehicle(vehicle)
+      overrides = @driver_contacts[route.id]
+      return snapshot unless overrides
+
+      snapshot = snapshot.dup
+      snapshot['contact_email'] = overrides['contact_email'] if overrides.key?('contact_email')
+      snapshot['phone_number'] = overrides['phone_number'] if overrides.key?('phone_number')
+      snapshot
+    end
+
+    def normalize_driver_contacts(raw)
+      return {} if raw.blank?
+
+      hash = raw.respond_to?(:to_unsafe_h) ? raw.to_unsafe_h : raw.to_h
+      hash.each_with_object({}) do |(route_id, row), memo|
+        next unless row.is_a?(Hash)
+
+        entry = {}
+        entry['contact_email'] = row['contact_email'].to_s.strip if row.key?('contact_email')
+        entry['phone_number'] = row['phone_number'].to_s.strip if row.key?('phone_number')
+        memo[route_id.to_i] = entry if entry.any?
+      end
     end
   end
 end

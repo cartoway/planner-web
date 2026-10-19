@@ -60,24 +60,14 @@
                 = t('operations.show.export_archive')
         = render 'operations/demo_actions'
         #operation-send-buttons
-          - if @operation.open? && @send_routes.present?
-            - if @operation.customer.enable_email_driver
-              %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
-                %i.fa.fa-envelope.fa-fw
-                = t('operations.show.send_email')
-            - if @operation.customer.enable_sms_driver
-              %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-sms' }}
-                %i.fa.fa-comment-sms.fa-fw
-                = t('operations.show.send_sms')
-          - if @operation.open? && @send_trackings.present?
-            - if @operation.customer.enable_email_destination
-              %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-email' }}
-                %i.fa.fa-envelope-open-text.fa-fw
-                = t('operations.show.send_destinations_email')
-            - if @operation.customer.enable_sms_destination
-              %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-sms' }}
-                %i.fa.fa-mobile-screen.fa-fw
-                = t('operations.show.send_destinations_sms')
+          - if @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
+            %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-drivers' }}
+              %i.fa.fa-paper-plane.fa-fw
+              = t('operations.show.send_drivers')
+          - if @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
+            %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations' }}
+              %i.fa.fa-envelope-open-text.fa-fw
+              = t('operations.show.send_destinations')
       .dropdown.operation-header-actions-mobile
         %button.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
           = t('operations.show.more_actions')
@@ -95,28 +85,16 @@
             = link_to export_operation_path(@operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
               %i.fa.fa-file-zipper.fa-fw
               = t('operations.show.export_archive')
-          - if @operation.open? && @send_routes.present?
-            - if @operation.customer.enable_email_driver
-              %li
-                %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-email' }}
-                  %i.fa.fa-envelope.fa-fw
-                  = t('operations.show.send_email')
-            - if @operation.customer.enable_sms_driver
-              %li
-                %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-sms' }}
-                  %i.fa.fa-comment-sms.fa-fw
-                  = t('operations.show.send_sms')
-          - if @operation.open? && @send_trackings.present?
-            - if @operation.customer.enable_email_destination
-              %li
-                %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-email' }}
-                  %i.fa.fa-envelope-open-text.fa-fw
-                  = t('operations.show.send_destinations_email')
-            - if @operation.customer.enable_sms_destination
-              %li
-                %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations-sms' }}
-                  %i.fa.fa-mobile-screen.fa-fw
-                  = t('operations.show.send_destinations_sms')
+          - if @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
+            %li
+              %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-drivers' }}
+                %i.fa.fa-paper-plane.fa-fw
+                = t('operations.show.send_drivers')
+          - if @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
+            %li
+              %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations' }}
+                %i.fa.fa-envelope-open-text.fa-fw
+                = t('operations.show.send_destinations')
           - if @operation.open? && @deliver_demo_enabled
             %li
               %hr.dropdown-divider
@@ -255,13 +233,7 @@
         .modal-footer
           %button.btn.btn-light{type: 'button', data: { bs_dismiss: 'modal' }}= t('all.verb.cancel')
           = submit_tag t('operations.show.send_email'), class: 'btn btn-primary', data: { route_send_submit: true }
-- if @operation.open? && @send_routes.present?
-  - if @operation.customer.enable_email_driver
-    = render 'operations/send_drivers_modal', operation: @operation, routes: @send_routes, channel: 'email'
-  - if @operation.customer.enable_sms_driver
-    = render 'operations/send_drivers_modal', operation: @operation, routes: @send_routes, channel: 'sms'
-- if @operation.open? && @send_trackings.present?
-  - if @operation.customer.enable_email_destination
-    = render 'operations/send_destinations_modal', operation: @operation, trackings: @send_trackings, channel: 'email'
-  - if @operation.customer.enable_sms_destination
-    = render 'operations/send_destinations_modal', operation: @operation, trackings: @send_trackings, channel: 'sms'
+- if @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
+  = render 'operations/send_drivers_modal', operation: @operation, routes: @send_routes
+- if @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
+  = render 'operations/send_destinations_modal', operation: @operation, trackings: @send_trackings

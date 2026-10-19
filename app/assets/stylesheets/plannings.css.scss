@@ -980,6 +980,7 @@ $sidebar-margins: 10px;
       .planning-execution-route-row {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
         gap: 8px;
       }
 
@@ -989,12 +990,36 @@ $sidebar-margins: 10px;
         padding-left: 0;
       }
 
-      label {
+      .planning-execution-route-label {
+        flex: 0 1 12rem;
+        min-width: 0;
         margin: 0;
         font-weight: normal;
 
         .text-muted {
           margin-left: 6px;
+        }
+      }
+
+      .contacts-list-handle {
+        flex-shrink: 0;
+        cursor: grab;
+        padding: 0 2px;
+      }
+
+      .planning-execution-route-contacts {
+        display: flex;
+        flex: 1 1 16rem;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .planning-execution-route-contact {
+        flex: 1 1 0;
+        min-width: 0;
+
+        .input-group {
+          width: 100%;
         }
       }
 
