@@ -1766,7 +1766,13 @@ class Planning < ApplicationRecord
       persist_destroyed_stops!
       sync_routes_association_order!
       routes.each { |route| route.association(:planning).target = self; route.association(:planning).loaded! }
-      compute_saved!(bang: true, skip_planning_save: true)
+
+      if skip_compute_on_vehicle_usage_set_change
+        routes.select(&:persisted?).each { |route| route.outdated = true unless route.outdated }
+      else
+        compute_saved!(bang: true, skip_planning_save: true)
+      end
+
       sync_routes_association_order!
     end
   end
