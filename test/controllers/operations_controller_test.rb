@@ -67,7 +67,8 @@ class OperationsControllerTest < ActionController::TestCase
         customer: customer,
         name: "Menu Op #{i}",
         date: Date.current - i.days,
-        status: 'in_progress'
+        status: 'in_progress',
+        allow_past_date: true
       )
     end
 
@@ -81,6 +82,12 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes counter.text, I18n.t('operations.menu')
   ensure
     Operation.where(customer_id: customer.id).where.not(id: @operation.id).delete_all
+  end
+
+  test 'show wires past-date change confirmation on the operation board' do
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_select %([data-v2--operation-show-past-date-confirm-value="#{I18n.t('operations.show.past_date_change_confirm')}"])
   end
 
   test 'show exposes mobile panes and detail sheet chrome' do
@@ -165,7 +172,8 @@ class OperationsControllerTest < ActionController::TestCase
     historized = Operations::PublishFromPlanning.call(
       planning: @planning,
       date: Date.current - 1,
-      route_ids: [routes(:route_three_one).id]
+      route_ids: [routes(:route_three_one).id],
+      allow_past: true
     )
     historized.update!(status: 'historized', ref: 'ref-hist', name: 'Hist Op')
 
@@ -414,19 +422,33 @@ class OperationsControllerTest < ActionController::TestCase
   end
 
   test 'update changes the operation date' do
-    patch :update, params: { id: @operation.id, operation: { date: '2026-10-01' } }
+    today = Time.use_zone(users(:user_one).time_zone) { Date.current }
+    patch :update, params: { id: @operation.id, operation: { date: today + 1 } }
     assert_redirected_to operation_path(@operation)
-    assert_equal Date.new(2026, 10, 1), @operation.reload.date
-    patch :update, params: { id: @operation.id, operation: { date: '2026-10-02' }, format: :json }
+    assert_equal today + 1, @operation.reload.date
+    patch :update, params: { id: @operation.id, operation: { date: today + 2 }, format: :json }
     assert_response :success
-    assert_equal '2026-10-02', JSON.parse(response.body)['date']
+    assert_equal (today + 2).iso8601, JSON.parse(response.body)['date']
+  end
+
+  test 'update rejects a date in the past with a json error for the warning toast' do
+    original = @operation.date
+    past = Time.use_zone(users(:user_one).time_zone) { Date.current - 1 }
+    patch :update, params: { id: @operation.id, operation: { date: past }, format: :json }
+
+    assert_response :unprocessable_entity
+    body = JSON.parse(response.body)
+    assert_includes body['error'], I18n.t('activerecord.errors.models.operation.attributes.date.past')
+    assert_equal original, @operation.reload.date
   end
 
   test 'update rejects a date change once historized' do
-    @operation.update_columns(status: 'historized', date: Date.new(2026, 9, 1))
-    patch :update, params: { id: @operation.id, operation: { date: '2026-10-01' } }
+    locked_date = Date.new(2026, 9, 1)
+    @operation.update_columns(status: 'historized', date: locked_date)
+    today = Time.use_zone(users(:user_one).time_zone) { Date.current }
+    patch :update, params: { id: @operation.id, operation: { date: today + 1 } }
     assert_redirected_to operation_path(@operation)
-    assert_equal Date.new(2026, 9, 1), @operation.reload.date
+    assert_equal locked_date, @operation.reload.date
     assert_equal I18n.t('operations.show.date_locked'), flash[:alert]
   end
 

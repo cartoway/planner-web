@@ -18,7 +18,7 @@ module Operations
     end
 
     def backfill(planning)
-      operation = PublishFromPlanning.call(planning: planning, date: planning.date)
+      operation = PublishFromPlanning.call(planning: planning, date: planning.date, allow_past: true)
       copy_stop_cursor(operation)
       copy_route_cursor(operation)
       copy_proofs(operation)

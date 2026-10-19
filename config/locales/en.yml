@@ -694,6 +694,10 @@ en:
           attributes:
             name:
               cannot_contain_colon: cannot contain the character ":"
+        operation:
+          attributes:
+            date:
+              past: cannot be in the past
         operation_stop:
           attributes:
             photos:
@@ -3946,6 +3950,7 @@ en:
     already_published: An operation is already published for this planning
     route_conflict: A selected route is already in an open operation on that date
     empty_routes: Select at least one route
+    past_date: The operation date cannot be in the past
     missing: No open operation
     badge_unpublished: Not published
     badge_fresh: Up to date
@@ -4048,6 +4053,7 @@ en:
       edit_name: Edit the name
       edit_ref: Edit the reference
       date_locked: The date of a historized operation cannot be changed
+      past_date_change_confirm: This operation is dated in the past. After changing it, you will not be able to set a past date again. Continue?
       date_taken: An operation with this ref already exists on that date
       route_date_conflict: A route of this operation is already used by another open operation on that date
       more: Load more
