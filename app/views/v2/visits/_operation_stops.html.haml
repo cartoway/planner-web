@@ -3,7 +3,7 @@
 - if stops.any?
   - collapse_id = "visit-#{visit.id}-operation-stops"
   .related-list
-    %button.related-list-title.accordion-toggle.text-decoration-none{type: 'button', data: { 'bs-toggle': 'collapse', 'bs-target': "##{collapse_id}" }, 'aria-expanded': 'true', 'aria-controls': collapse_id}
+    %button.related-list-title.v2-collapse-toggle.accordion-toggle.text-decoration-none{type: 'button', data: { 'bs-toggle': 'collapse', 'bs-target': "##{collapse_id}" }, 'aria-expanded': 'true', 'aria-controls': collapse_id}
       %i.fa.fa-chevron-right.fa-fw.accordion-chevron{'aria-hidden': 'true'}
       %i.fa.fa-clipboard-check.fa-fw.related-list-icon{'aria-hidden': 'true'}
       %span= t('operations.form.title')
