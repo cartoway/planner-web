@@ -92,7 +92,8 @@ module Operations
     end
 
     def scoped_planning_routes
-      routes = @planning.routes.includes(:vehicle_usage, :route_geojson, :route_data, :start_route_data, :stop_route_data, stops: [:visit, :store, :store_reload]).to_a
+      # Same graph as PublishFromPlanning#routes_for (destinations + vehicle snapshots).
+      routes = @planning.routes.includes([:route_geojson] + Planning::ROUTE_DETAILS_ROUTE_PRELOAD).to_a
       routes = routes.reject { |route| route.vehicle_usage_id.nil? }
       routes = routes.reject(&:hidden) if visible_routes_only?
       return routes unless @route_ids

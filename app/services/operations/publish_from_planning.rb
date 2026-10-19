@@ -95,19 +95,57 @@ module Operations
       operation.allow_past_date = @allow_past
       operation.save!
 
+      # Bulk insert: one INSERT for routes, then batched INSERTs for stops (vs N create!).
+      route_models = []
+      stops_by_route = []
       selected.each_with_index do |route, index|
-        build_route(operation, route, index, false, date, units_by_id, copy_cursor: false, with_stops: true)
+        route_models << new_operation_route(operation, route, index, false, date, copy_cursor: false)
+        stops_by_route << route.stops.select(&:active?).map { |stop|
+          new_operation_stop(nil, stop, units_by_id, copy_cursor: false)
+        }
       end
+
+      imported = OperationRoute.import(route_models, validate: true, raise_error: true)
+      stop_models = []
+      imported.ids.each_with_index do |operation_route_id, index|
+        stops_by_route[index].each do |stop|
+          stop.operation_route_id = operation_route_id
+          stop_models << stop
+        end
+      end
+      # validate: false — belongs_to :operation_route would SELECT each parent if validate: true.
+      OperationStop.import_in_batches(stop_models, validate: false) if stop_models.any?
+
       OperationDeliveryTracking.ensure_for!(operation)
       operation
     end
 
+    # Sync path: single-row create! (incremental adds).
     def build_route(operation, route, index, unassigned, date, units_by_id, copy_cursor:, with_stops: true)
+      operation_route = new_operation_route(operation, route, index, unassigned, date, copy_cursor: copy_cursor)
+      operation_route.save!
+      return operation_route unless with_stops
+
+      route.stops.each do |stop|
+        next unless stop.active?
+
+        build_stop(operation_route, stop, units_by_id, copy_cursor: copy_cursor)
+      end
+      operation_route
+    end
+
+    def build_stop(operation_route, stop, units_by_id, copy_cursor:)
+      return unless stop.active?
+
+      new_operation_stop(operation_route, stop, units_by_id, copy_cursor: copy_cursor).tap(&:save!)
+    end
+
+    def new_operation_route(operation, route, index, unassigned, date, copy_cursor:)
       vehicle = route.vehicle_usage&.vehicle
       departure_status, departure_eta = leg(route.start_route_data, route.try(:departure_eta), date)
       arrival_status, arrival_eta = leg(route.stop_route_data, route.try(:arrival_eta), date)
       arrival_status ||= route.arrival_status
-      OperationRoute.create!(
+      OperationRoute.new(
         operation: operation,
         route: route,
         vehicle_usage: route.vehicle_usage,
@@ -128,25 +166,15 @@ module Operations
         last_sent_at: copy_cursor ? route.last_sent_at : nil,
         last_sent_to: copy_cursor ? route.last_sent_to : nil,
         custom_attributes: {}
-      ).tap do |operation_route|
-        next unless with_stops
-
-        route.stops.each do |stop|
-          next unless stop.active?
-
-          build_stop(operation_route, stop, units_by_id, copy_cursor: copy_cursor)
-        end
-      end
+      )
     end
 
-    def build_stop(operation_route, stop, units_by_id, copy_cursor:)
-      return unless stop.active?
-
+    def new_operation_stop(operation_route, stop, units_by_id, copy_cursor:)
       kind = Snapshots.kind_for(stop)
       visit = stop.visit
       destination = visit&.destination
       store = Snapshots.store_for(stop)
-      OperationStop.create!(
+      OperationStop.new(
         operation_route: operation_route,
         stop: stop,
         visit: visit,
@@ -202,7 +230,8 @@ module Operations
     end
 
     def routes_for(planning)
-      planning.routes.includes(:vehicle_usage, :route_geojson, :route_data, :start_route_data, :stop_route_data, stops: [:visit, :store, :store_reload]).to_a
+      # Reuse planning edit preloads: stop destinations + vehicle/router/stores (Snapshots.*).
+      planning.routes.includes([:route_geojson] + Planning::ROUTE_DETAILS_ROUTE_PRELOAD).to_a
     end
 
     def vehicle_snapshot_for(route, vehicle)

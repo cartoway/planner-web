@@ -52,6 +52,29 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     assert_equal Date.current + 4, operation.date
   end
 
+  test 'publish bulk-inserts routes stops and delivery trackings' do
+    inserts = Hash.new(0)
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql].to_s
+      next unless sql.match?(/\A\s*INSERT/i)
+
+      inserts[:routes] += 1 if sql.include?('"operation_routes"')
+      inserts[:stops] += 1 if sql.include?('"operation_stops"')
+      inserts[:trackings] += 1 if sql.include?('"operation_delivery_trackings"')
+    end
+
+    operation = nil
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      operation = Operations::PublishFromPlanning.call(planning: @planning)
+    end
+
+    assert_operator operation.operation_routes.count, :>, 0
+    assert_operator operation.operation_stops.count, :>, 0
+    assert_equal 1, inserts[:routes]
+    assert_equal 1, inserts[:stops]
+    assert_equal 1, inserts[:trackings] if operation.operation_delivery_trackings.exists?
+  end
+
   test 'publish rejects a date in the past' do
     assert_raises(Operations::PastDate) do
       Operations::PublishFromPlanning.call(planning: @planning, date: Date.current - 1)
@@ -409,5 +432,18 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     assert_equal 'orphaned', stop.sync_state
     assert_equal 1, stop.operation_stop_status_events.count
     assert_equal 'started', stop.status
+  end
+
+  test 'routes_for preloads destinations and vehicles for snapshots' do
+    routes = Operations::PublishFromPlanning.new(@planning).send(:routes_for, @planning)
+    visit_stop = routes.flat_map(&:stops).find { |stop| stop.visit_id.present? }
+    assert visit_stop
+    assert visit_stop.association(:visit).loaded?
+    assert visit_stop.visit.association(:destination).loaded?
+
+    usage = routes.find { |route| route.vehicle_usage_id.present? }&.vehicle_usage
+    assert usage
+    assert usage.association(:vehicle).loaded?
+    assert usage.vehicle.association(:router).loaded? || usage.vehicle.association(:customer).loaded?
   end
 end
