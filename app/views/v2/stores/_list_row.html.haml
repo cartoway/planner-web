@@ -25,7 +25,7 @@
             disabled: !can_destroy,
             title: t('all.verb.destroy'),
             'aria-label': t('all.verb.destroy'),
-            data: (can_destroy ? confirm_click_destroy_data(group: 'stores-destroy', url: store_path(store), ready_label: '<i class="fa fa-check fa-fw" aria-hidden="true"></i>') : {})
+            data: (can_destroy ? confirm_click_destroy_data(group: 'stores-destroy', url: store_path(store)) : {})
           }
             %i.fa.fa-trash.fa-fw
       - if address_line.present? || geocoded_line.present?
