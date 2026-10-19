@@ -76,6 +76,8 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_select '.vehicle-usage-card .vehicle-usage-select .vehicle-select', minimum: 1
     assert_select '.vehicle-usage-card .vehicle-usage-btn-label', minimum: 1
     assert_select '#accordion-vehicle-usage-sets button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
+    assert_select '#accordion-vehicle-usage-sets button[data-controller~="confirm-click"][data-confirm-click-url-value] .vehicle-usage-btn-label',
+                  text: I18n.t('all.verb.destroy'), minimum: 1
 
     assert_select 'button.usage-set-toggle i.usage-set-chevron.fa-chevron-right', minimum: 1
 
