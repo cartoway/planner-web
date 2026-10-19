@@ -1,0 +1,33 @@
+-# Row body for contacts_list (shared by flat list and accordion groups).
+- rows.each do |row|
+  - row_id = row[:id]
+  - email_val = row[:email].to_s
+  - phone_val = row[:phone].to_s
+  - channel_val = (row[:channel].presence || default_contact_channel(email_val, phone_val, channels)).to_s
+  - visible = row.fetch(:visible, true)
+  .contacts-list-row.row.g-2.align-items-center.mb-2{class: ('d-none' unless visible), data: { v2__contacts_list_target: 'row', row_id: row_id, route_id: row[:route_id] || row_id, action: (allow_reorder ? 'dragover->v2--contacts-list#dragOver drop->v2--contacts-list#drop' : nil) }}
+    .col-12.col-md-3.pe-2
+      %strong= row[:label]
+      - if row[:sublabel].present?
+        .text-muted.small= row[:sublabel]
+    - if allow_reorder
+      .col-auto
+        %span.contacts-list-handle.text-muted{draggable: true, title: t('operations.contacts.drag'), aria: { label: t('operations.contacts.drag') }, data: { action: 'dragstart->v2--contacts-list#dragStart dragend->v2--contacts-list#dragEnd' }}
+          %i.fa.fa-grip-vertical
+    .col-12.col-md.pe-2
+      .input-group.input-group-sm
+        %span.input-group-text
+          %i.fa.fa-envelope
+        = text_field_tag "#{param_namespace}[#{row_id}][#{email_key}]", email_val, class: 'form-control', autocomplete: 'off', disabled: true, data: { contacts_field: 'email', contacts_lockable: true, action: 'blur->v2--contacts-list#lockField', v2__contacts_list_target: 'field' }
+        %button.btn.btn-light{type: 'button', aria: { label: t('operations.contacts.edit') }, data: { action: 'v2--contacts-list#unlock', contacts_edit: true }}
+          %i.fa.fa-pencil
+    .col-12.col-md.pe-2
+      .input-group.input-group-sm
+        %span.input-group-text
+          %i.fa.fa-phone
+        = text_field_tag "#{param_namespace}[#{row_id}][#{phone_key}]", phone_val, class: 'form-control', autocomplete: 'off', disabled: true, data: { contacts_field: 'phone', contacts_lockable: true, action: 'blur->v2--contacts-list#lockField', v2__contacts_list_target: 'field' }
+        %button.btn.btn-light{type: 'button', aria: { label: t('operations.contacts.edit') }, data: { action: 'v2--contacts-list#unlock', contacts_edit: true }}
+          %i.fa.fa-pencil
+    - if show_channels
+      .col-auto
+        = select_tag "#{param_namespace}[#{row_id}][channel]", options_for_select(channels.map { |c| [t("operations.contacts.channel_#{c}"), c.to_s] } + [[t('operations.contacts.channel_none'), 'none']], channel_val), class: 'form-select form-select-sm', disabled: !visible, data: { contacts_channel: true }, aria: { label: t('operations.contacts.channel') }

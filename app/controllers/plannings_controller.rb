@@ -804,9 +804,16 @@ class PlanningsController < ApplicationController
       name: params[:name],
       ref: params[:ref],
       route_ids: route_ids,
-      visible_routes_only: params[:visible_routes_only].present?
+      visible_routes_only: params[:visible_routes_only].present?,
+      driver_contacts: params[:driver_contacts]
     )
-    redirect_to operation_path(operation), notice: t('execution.published')
+    if params[:transmit].present?
+      routes = operation.operation_routes.planned.where.not(vehicle_id: nil)
+      result = Operations::TransmitRoutes.call(operation: operation, routes: routes)
+      redirect_to operation_path(operation), **publish_transmit_flash(result)
+    else
+      redirect_to operation_path(operation), notice: t('execution.published')
+    end
   rescue Operations::RouteConflict
     redirect_to edit_planning_path(@planning), alert: t('execution.route_conflict')
   rescue Operations::EmptyRoutes
@@ -840,6 +847,25 @@ class PlanningsController < ApplicationController
   end
 
   private
+
+  def publish_transmit_flash(result)
+    emailed = result[:emailed].to_i
+    sms = result[:sms].to_i
+    published = t('execution.published')
+    if emailed.zero? && sms.zero?
+      { notice: published, alert: t('operations.show.drivers_send_fail') }
+    else
+      sent =
+        if emailed.positive? && sms.positive?
+          t('operations.show.send_success_email_sms', email: emailed, sms: sms)
+        elsif emailed.positive?
+          t('operations.show.send_success_email', count: emailed)
+        else
+          t('operations.show.send_success_sms', count: sms)
+        end
+      { notice: [published, sent].join(t('execution.alert_separator')) }
+    end
+  end
 
   def stops_for_move_list(stops)
     return [] if stops.blank?

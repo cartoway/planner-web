@@ -940,3 +940,12 @@ tr.is-past { color: #6b7280; }
     }
   }
 }
+
+.contacts-list-handle {
+  cursor: grab;
+  padding-right: 6px;
+}
+
+.contacts-list-row.is-dragging {
+  opacity: .6;
+}

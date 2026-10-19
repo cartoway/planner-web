@@ -368,14 +368,14 @@ class OperationsControllerTest < ActionController::TestCase
     assert_response :success
   end
 
-  test 'list turbo frame main still renders send email buttons' do
+  test 'list turbo frame main still renders send drivers button' do
     @request.headers['Turbo-Frame'] = 'main'
     @request.headers['X-Turbo-Request-Id'] = 'visit-1'
 
     get :show, params: { id: @operation.id }
     assert_response :success
-    assert_includes response.body, I18n.t('operations.show.send_email')
-    assert_includes response.body, 'operation-send-email'
+    assert_includes response.body, I18n.t('operations.show.send_drivers')
+    assert_includes response.body, 'operation-send-drivers'
   end
 
   test 'transmit emails the assigned drivers' do
@@ -390,13 +390,16 @@ class OperationsControllerTest < ActionController::TestCase
   end
 
   test 'send modals keep scrollable body and footer submit' do
+    @operation.customer.update_columns(enable_email_destination: true)
     get :show, params: { id: @operation.id }
     assert_response :success
-    assert_select '#operation-send-email.modal .modal-dialog.modal-dialog-scrollable', 1
-    assert_select '#operation-send-email form.operation-send-form .modal-body', 1
-    assert_select '#operation-send-email form.operation-send-form .modal-footer input[type=submit]', 1
-    assert_select '#operation-send-destinations-email.modal .modal-dialog.modal-dialog-scrollable', 1
-    assert_select '#operation-send-destinations-email form.operation-send-form .modal-footer input[type=submit]', 1
+    assert_select '#operation-send-drivers.modal .modal-dialog.modal-dialog-scrollable', 1
+    assert_select '#operation-send-drivers form.operation-send-form .modal-body', 1
+    assert_select '#operation-send-drivers form.operation-send-form .modal-footer input[type=submit]', 1
+    assert_select '#operation-send-drivers .modal-title [data-contacts-total-count]', 1
+    assert_select '#operation-send-destinations.modal .modal-dialog.modal-dialog-scrollable', 1
+    assert_select '#operation-send-destinations form.operation-send-form .modal-footer input[type=submit]', 1
+    assert_select '#operation-send-destinations .modal-title [data-contacts-total-count]', 1
   end
 
   test 'sms can be sent after typing a number on a route that had none' do
@@ -406,7 +409,7 @@ class OperationsControllerTest < ActionController::TestCase
     route.update_columns(vehicle_snapshot: snapshot)
     route.vehicle.update_columns(phone_number: nil)
     get :show, params: { id: @operation.id }
-    assert_includes response.body, 'operation-send-sms'
+    assert_includes response.body, 'operation-send-drivers'
     post :transmit, params: { id: @operation.id, channel: 'sms', routes: { route.id.to_s => { phone_number: '0600000000', send: '1' } } }
     assert_redirected_to operation_path(@operation)
     assert_equal '0600000000', route.reload.vehicle_snapshot['phone_number']
@@ -422,6 +425,113 @@ class OperationsControllerTest < ActionController::TestCase
     assert_equal 'email', route.last_sent_to
     sent = ActionMailer::Base.deliveries.drop(before)
     assert_includes sent.flat_map(&:to), 'autre@exemple.fr'
+    assert_equal I18n.t('operations.show.send_success_email', count: 1), flash[:notice]
+  end
+
+  test 'transmit flash reports email and sms counts' do
+    @operation.customer.update_columns(enable_email_driver: true, enable_sms_driver: true)
+    routes = @operation.operation_routes.planned.where.not(vehicle_id: nil).limit(2).to_a
+    skip 'need two vehicle routes' if routes.size < 2
+    a, b = routes
+    a.update!(vehicle_snapshot: a.vehicle_snapshot.merge('contact_email' => 'a@example.com', 'phone_number' => '0600000001'))
+    b.update!(vehicle_snapshot: b.vehicle_snapshot.merge('contact_email' => 'b@example.com', 'phone_number' => '0600000002'))
+    messaging = Object.new
+    def messaging.content(*)
+      'ok'
+    end
+    def messaging.send_message(*)
+      true
+    end
+    def messaging.class
+      Class.new {
+        def self.name
+          'FakeSms'
+        end
+      }.new.class
+    end
+    Operations::SendDriverSms.stubs(:messaging_service).returns(messaging)
+
+    post :transmit, params: {
+      id: @operation.id,
+      routes: {
+        a.id.to_s => { contact_email: 'a@example.com', phone_number: '0600000001', channel: 'email' },
+        b.id.to_s => { contact_email: 'b@example.com', phone_number: '0600000002', channel: 'sms' }
+      }
+    }
+    assert_redirected_to operation_path(@operation)
+    assert_equal I18n.t('operations.show.send_success_email_sms', email: 1, sms: 1), flash[:notice]
+  end
+
+  test 'transmit persists swapped driver contacts and sends per row channel' do
+    @operation.customer.update_columns(enable_email_driver: true, enable_sms_driver: true)
+    routes = @operation.operation_routes.planned.where.not(vehicle_id: nil).limit(2).to_a
+    skip 'need two vehicle routes' if routes.size < 2
+    a, b = routes
+    a.update!(vehicle_snapshot: a.vehicle_snapshot.merge('contact_email' => 'a@example.com', 'phone_number' => '0600000001'))
+    b.update!(vehicle_snapshot: b.vehicle_snapshot.merge('contact_email' => 'b@example.com', 'phone_number' => '0600000002'))
+
+    messaging = Object.new
+    def messaging.content(*)
+      'ok'
+    end
+    def messaging.send_message(*)
+      true
+    end
+    def messaging.class
+      Class.new {
+        def self.name
+          'FakeSms'
+        end
+      }.new.class
+    end
+    Operations::SendDriverSms.stubs(:messaging_service).returns(messaging)
+
+    before = ActionMailer::Base.deliveries.size
+    post :transmit, params: {
+      id: @operation.id,
+      routes: {
+        a.id.to_s => { contact_email: 'b@example.com', phone_number: '0600000002', channel: 'email' },
+        b.id.to_s => { contact_email: 'a@example.com', phone_number: '0600000001', channel: 'sms' }
+      }
+    }
+    assert_redirected_to operation_path(@operation)
+    assert_equal 'b@example.com', a.reload.vehicle_snapshot['contact_email']
+    assert_equal '0600000002', a.vehicle_snapshot['phone_number']
+    assert_equal 'a@example.com', b.reload.vehicle_snapshot['contact_email']
+    assert_equal '0600000001', b.vehicle_snapshot['phone_number']
+    sent = ActionMailer::Base.deliveries.drop(before)
+    assert_includes sent.flat_map(&:to), 'b@example.com'
+    assert_equal 'email', a.last_sent_to
+    assert_equal 'sms', b.last_sent_to
+  end
+
+  test 'transmit_destinations persists edited contacts on operation stops' do
+    @operation.customer.update_columns(enable_email_destination: true, enable_sms_destination: true)
+    tracking = @operation.operation_delivery_trackings.first || begin
+      OperationDeliveryTracking.ensure_for!(@operation)
+      @operation.operation_delivery_trackings.first
+    end
+    skip 'need a destination tracking' unless tracking
+    OperationDeliveryTracking.preload_visit_stops!([tracking])
+    stop = tracking.visit_stops.first
+    skip 'need a visit stop' unless stop
+
+    before = ActionMailer::Base.deliveries.size
+    post :transmit_destinations, params: {
+      id: @operation.id,
+      trackings: {
+        tracking.id.to_s => {
+          email: 'nouveau@destinataire.fr',
+          phone_number: '0611223344',
+          channel: 'email'
+        }
+      }
+    }
+    assert_redirected_to operation_path(@operation)
+    assert_equal 'nouveau@destinataire.fr', stop.reload.destination_snapshot['email']
+    assert_equal '0611223344', stop.destination_snapshot['phone_number']
+    sent = ActionMailer::Base.deliveries.drop(before)
+    assert_includes sent.flat_map(&:to), 'nouveau@destinataire.fr'
   end
 
   test 'update changes the operation name' do

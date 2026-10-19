@@ -3925,6 +3925,7 @@ en:
       one: '%{count} historized operation'
       other: '%{count} historized operations'
     publish: Create operation
+    publish_and_transmit: Create and send
     date: Date
     visible_routes_only: Visible routes only
     sync: Synchronize
@@ -3969,6 +3970,8 @@ en:
       ref: Reference
       routes: Routes
       routes_with_stops_only: Only routes with stops can be sent to an operation.
+      driver_contacts: Driver contacts
+      driver_contacts_help: Review or fix emails and phone numbers before publishing. You can drag contacts between routes.
       filter_by_tag: Filter by tag
       select_all: All
       select_none: None
@@ -3983,6 +3986,14 @@ en:
   operations:
     menu: Operations
     historized: Operation historized
+    contacts:
+      drag: Drag to swap contacts
+      edit: Edit contact
+      channel: Send channel
+      channel_all: Send all by
+      channel_email: Email
+      channel_sms: SMS
+      channel_none: Do not send
     statuses:
       in_progress: In progress
       historized: Historized
@@ -4044,16 +4055,27 @@ en:
       mobile: Driver view
       mobile_access: Mobile access
       send_drivers: Send to drivers
+      send_drivers_title: Driver contacts
       send_email: Send by email
       send_sms: Send by SMS
       send_email_title: Route email addresses
       send_sms_title: Route phone numbers
+      send_destinations: Send to recipients
+      send_destinations_title: Recipient contacts
       send_destinations_email: Recipient emails
       send_destinations_sms: Recipient SMS
       send_destinations_email_title: Recipient emails
       send_destinations_sms_title: Recipient SMS
       destinations_send_success: "%{sms} SMS and %{email} email(s) sent"
       destinations_send_fail: No recipient message could be sent
+      drivers_send_fail: No driver message could be sent
+      send_success_email:
+        one: "%{count} email sent"
+        other: "%{count} emails sent"
+      send_success_sms:
+        one: "%{count} SMS sent"
+        other: "%{count} SMS sent"
+      send_success_email_sms: "%{email} email(s) and %{sms} SMS sent"
       start_demo: Simulate
       stop_demo: Stop simulation
       reset_demo: Reset
