@@ -38,7 +38,7 @@
       type: 'button',
       disabled: !can_destroy,
       title: t('all.verb.destroy'),
-      data: (can_destroy ? confirm_click_destroy_data(group: 'plannings-destroy', url: planning_path(planning), ready_label: %(<i class="fa fa-check fa-fw" aria-hidden="true"></i> #{t('all.verb.destroy')})) : {})
+      data: (can_destroy ? confirm_click_destroy_data(group: 'plannings-destroy', url: planning_path(planning)) : {})
     }
       %i.fa.fa-trash.fa-fw
       %span.plannings-btn-label= t('all.verb.destroy')

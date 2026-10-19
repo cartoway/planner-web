@@ -1195,7 +1195,9 @@ export default class extends Controller {
     const originalHtml = confirmClick?.originalHtml ?? button?.innerHTML ?? null
     if (button) {
       button.disabled = true
-      button.innerHTML = '<i class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i>'
+      // Keep button label on the spinner when present (same rules as confirm-click).
+      button.innerHTML = confirmClick?.spinnerHtml?.() ||
+        '<i class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i>'
     }
 
     try {
