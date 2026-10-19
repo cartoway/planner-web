@@ -113,7 +113,8 @@ if [[ "$needs_v1" -eq 1 ]]; then
   # Uglifier 3 cannot parse Turbo 8 / modern Sprockets JS (optional chaining, private fields).
   # Keep yarn/babel/webpacker tooling (devDependencies) available under RAILS_ENV=production.
   # Clear webpacker + sprockets caches so CSS/JS source updates are actually recompiled.
-  docker exec -e YARN_PRODUCTION=false -e NODE_ENV=development -w /srv/app "$cid" yarn install --frozen-lockfile
+  # fsevents is a macOS-only optional dep of chokidar; yarn can fail resolving it on Linux.
+  docker exec -e YARN_PRODUCTION=false -e NODE_ENV=development -w /srv/app "$cid" yarn install --frozen-lockfile --ignore-optional
   docker exec -w /srv/app "$cid" sh -c 'rm -rf tmp/cache/webpacker tmp/cache/assets'
   docker exec -e API_DOC_MODE=true -e SKIP_JS_COMPRESSOR=1 -e YARN_PRODUCTION=false -w /srv/app "$cid" bundle exec rake assets:precompile
 elif [[ "$needs_v2" -eq 1 ]]; then
