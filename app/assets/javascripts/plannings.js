@@ -511,8 +511,26 @@ var initPlanningExecution = function(planningId) {
     if (group && group.contains(event.target)) return;
     lockContactInput($unlocked);
   });
-  $modal.off('submit.planningContactsEnable').on('submit.planningContactsEnable', 'form', function() {
+  $modal.off('submit.planningContactsEnable').on('submit.planningContactsEnable', 'form', function(event) {
     $modal.find('#execution-driver-contacts .planning-execution-route:not(.hidden) [data-contacts-lockable]').prop('disabled', false);
+    var $form = $(this);
+    if ($form.data('planning-publishing')) {
+      event.preventDefault();
+      return false;
+    }
+    $form.data('planning-publishing', true);
+    var $btns = $form.find('#execution-publish-submit, #execution-publish-transmit-submit');
+    var submitter = event.originalEvent && event.originalEvent.submitter;
+    var $clicked = submitter ? $(submitter) : $btns.filter(':focus');
+    if (!$clicked.length || !$btns.is($clicked)) $clicked = $btns.last();
+    // Disabled submitters are omitted from POST — keep action via hidden field.
+    var name = $clicked.attr('name');
+    if (name) {
+      $('<input type="hidden">').attr({ name: name, value: $clicked.attr('value') || '1' }).appendTo($form);
+    }
+    var label = $.trim($clicked.text());
+    $btns.prop('disabled', true);
+    $clicked.html('<i class="fa fa-spinner fa-spin fa-fw" aria-hidden="true"></i> ' + label);
   });
   var dragContactRow = null;
   $modal.off('dragstart.planningContacts').on('dragstart.planningContacts', '#execution-driver-contacts .contacts-list-handle', function(event) {
