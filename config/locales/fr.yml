@@ -4070,7 +4070,7 @@ fr:
       one: '%{count} opération historisée'
       other: '%{count} opérations historisées'
     publish: Créer l’opération
-    publish_and_transmit: Créer et transmettre
+    publish_and_transmit: Créer et Envoyer
     date: Date
     visible_routes_only: Uniquement les tournées visibles
     sync: Synchroniser
@@ -4200,13 +4200,13 @@ fr:
       media: Médias
       mobile: Vue chauffeur
       mobile_access: Accès mobile
-      send_drivers: Transmettre aux chauffeurs
+      send_drivers: Envoyer aux chauffeurs
       send_drivers_title: Contacts chauffeurs
       send_email: Envoyer par e-mail
       send_sms: Envoyer par SMS
       send_email_title: E-mails des tournées
       send_sms_title: Numéros des tournées
-      send_destinations: Transmettre aux destinataires
+      send_destinations: Envoyer aux destinataires
       send_destinations_title: Contacts destinataires
       send_destinations_email: E-mails destinataires
       send_destinations_sms: SMS destinataires
@@ -4233,7 +4233,7 @@ fr:
       send_route: Envoyer cette tournée
       clear_selection: Tout désélectionner
       last_sent: "Dernier envoi : %{at}"
-      transmitted: Transmises
+      transmitted: Envoyées
       scroll_top: Remonter en haut
       sms_sent: "%{count} SMS envoyé(s)"
       sms_unavailable: L’envoi de SMS n’est pas disponible
