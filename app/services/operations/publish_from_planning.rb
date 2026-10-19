@@ -12,18 +12,25 @@ module Operations
 
   class EmptyRoutes < StandardError; end
 
+  class PastDate < StandardError
+    def initialize
+      super(I18n.t('execution.past_date'))
+    end
+  end
+
   class PublishFromPlanning
-    def self.call(planning:, date: nil, name: nil, ref: nil, route_ids: nil, visible_routes_only: false)
-      new(planning, date, name, ref, route_ids, visible_routes_only: visible_routes_only).call
+    def self.call(planning:, date: nil, name: nil, ref: nil, route_ids: nil, visible_routes_only: false, allow_past: false)
+      new(planning, date, name, ref, route_ids, visible_routes_only: visible_routes_only, allow_past: allow_past).call
     end
 
-    def initialize(planning, date = nil, name = nil, ref = nil, route_ids = nil, visible_routes_only: false)
+    def initialize(planning, date = nil, name = nil, ref = nil, route_ids = nil, visible_routes_only: false, allow_past: false)
       @planning = planning
       @date = date
       @name = name
       @ref = ref
       @route_ids = route_ids&.map(&:to_i)&.uniq
       @visible_routes_only = visible_routes_only
+      @allow_past = allow_past
     end
 
     def call
@@ -32,6 +39,8 @@ module Operations
         raise EmptyRoutes if selected.empty?
 
         date = chosen_date
+        raise PastDate if past_date?(date)
+
         conflict_ids = conflicting_route_ids(selected.map(&:id), date)
         raise RouteConflict, conflict_ids if conflict_ids.any?
 
@@ -64,7 +73,7 @@ module Operations
       attrs['_visible_routes_only'] = true if @visible_routes_only
       attrs['_route_ids'] = selected_ids if @route_ids || @visible_routes_only
 
-      operation = Operation.create!(
+      operation = Operation.new(
         customer: @planning.customer,
         planning: @planning,
         date: date,
@@ -82,6 +91,9 @@ module Operations
         deliverable_units_snapshot: Snapshots.deliverable_units(@planning.customer),
         custom_attributes: attrs
       )
+      operation.allow_past_date = @allow_past
+      operation.save!
+
       selected.each_with_index do |route, index|
         build_route(operation, route, index, false, date, units_by_id, copy_cursor: false, with_stops: true)
       end
@@ -161,11 +173,19 @@ module Operations
     end
 
     def chosen_date
-      return Date.iso8601(@date.to_s) if @date.present?
+      return default_operation_date if @date.blank?
 
-      Date.current + @planning.customer.operation_date_offset_default
+      @date.respond_to?(:to_date) ? @date.to_date : Date.parse(@date.to_s)
     rescue ArgumentError, TypeError
+      default_operation_date
+    end
+
+    def default_operation_date
       Date.current + @planning.customer.operation_date_offset_default
+    end
+
+    def past_date?(date)
+      !@allow_past && date < Date.current
     end
 
     # (customer, lower(ref), date) is unique when ref is present.

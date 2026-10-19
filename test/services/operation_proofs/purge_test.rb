@@ -8,7 +8,7 @@ class OperationProofsPurgeTest < ActiveSupport::TestCase
     @customer = @planning.customer
     @customer.update!(proof_retention_days: 365)
     @planning.update!(date: Date.new(2024, 1, 1))
-    @operation = Operations::PublishFromPlanning.call(planning: @planning, date: '2024-01-01')
+    @operation = Operations::PublishFromPlanning.call(planning: @planning, date: '2024-01-01', allow_past: true)
     @stop = @operation.operation_stops.find { |row| row.kind == 'visit' }
     file = Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/stop_photo.jpg'), 'image/jpeg')
     assert @stop.attach_photos([file])

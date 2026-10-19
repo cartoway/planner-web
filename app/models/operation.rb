@@ -18,9 +18,13 @@ class Operation < ApplicationRecord
 
   include RefSanitizer
 
+  # Migration/backfill may create historized ops on past dates.
+  attr_accessor :allow_past_date
+
   validates :customer, :name, :date, presence: true
   validates :status, inclusion: { in: STATUSES }
   validate :date_locked_when_historized
+  validate :date_not_in_past, if: :date_changed?
   validate :routes_available_on_date, if: -> { open? && date_changed? && planning_id.present? }
 
   # Aligns with DB partial unique index (customer_id, lower(ref), date) WHERE ref IS NOT NULL.
@@ -36,6 +40,13 @@ class Operation < ApplicationRecord
     return unless persisted? && status == 'historized' && date_changed?
 
     errors.add(:base, I18n.t('operations.show.date_locked'))
+  end
+
+  def date_not_in_past
+    return if allow_past_date
+    return if date.blank? || date >= Date.current
+
+    errors.add(:date, :past)
   end
 
   def routes_available_on_date
