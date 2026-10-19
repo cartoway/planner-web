@@ -102,7 +102,7 @@ module OperationsHelper
   end
 
   def planning_driver_contact_rows(routes, selected_ids: nil)
-    selected = selected_ids&.map(&:to_i)&.to_set
+    selected = selected_ids&.map(&:to_i)
     Array(routes).filter_map do |route|
       vehicle = route.vehicle_usage&.vehicle
       next unless vehicle
