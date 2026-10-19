@@ -174,10 +174,16 @@ class OperationRoutesController < ApplicationController
   end
 
   def transmit_flash(result)
-    if result[:emailed].zero? && result[:sms].zero?
-      { alert: t('plannings.edit.deliver_send.singular.fail') }
+    emailed = result[:emailed].to_i
+    sms = result[:sms].to_i
+    if emailed.zero? && sms.zero?
+      { alert: t('operations.show.drivers_send_fail') }
+    elsif emailed.positive? && sms.positive?
+      { notice: t('operations.show.send_success_email_sms', email: emailed, sms: sms) }
+    elsif emailed.positive?
+      { notice: t('operations.show.send_success_email', count: emailed) }
     else
-      { notice: t('plannings.edit.deliver_send.singular.success') }
+      { notice: t('operations.show.send_success_sms', count: sms) }
     end
   end
 

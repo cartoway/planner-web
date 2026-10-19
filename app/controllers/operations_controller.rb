@@ -137,15 +137,10 @@ class OperationsController < ApplicationController
 
   def transmit
     routes = transmittable_routes.to_a
-    routes = save_driver_contacts!(routes) if params[:routes].present?
-    result = case params[:channel]
-             when 'email'
-               { emailed: routes.count { |route| Operations::TransmitRoutes.send_email(route) }, sms: 0 }
-             when 'sms'
-               { emailed: 0, sms: Operations::SendDriverSms.call(operation: @operation, routes: routes) }
-             else
-               Operations::TransmitRoutes.call(operation: @operation, routes: routes)
-             end
+    submitted = params[:routes].present? ? params[:routes].to_unsafe_h : {}
+    save_driver_contacts!(routes, submitted) if submitted.present?
+    sendable = submitted.present? ? routes.select { |route| driver_row_channel(submitted[route.id.to_s] || {}) != 'none' } : routes
+    result = transmit_drivers(sendable, submitted)
     redirect_to operation_path(@operation), **transmit_flash(result, :plural)
   rescue ArgumentError
     redirect_to operation_path(@operation), alert: t('operations.show.sms_unavailable')
@@ -160,15 +155,11 @@ class OperationsController < ApplicationController
   end
 
   def transmit_destinations
-    trackings = destination_trackings_for_send
-    result = case params[:channel]
-             when 'email'
-               { emailed: Operations::SendDestinationEmail.call(operation: @operation, trackings: trackings), sms: 0 }
-             when 'sms'
-               { emailed: 0, sms: Operations::SendDestinationSms.call(operation: @operation, trackings: trackings) }
-             else
-               { emailed: 0, sms: 0 }
-             end
+    trackings = destination_trackings_for_send.to_a
+    submitted = params[:trackings].present? ? params[:trackings].to_unsafe_h : {}
+    save_destination_contacts!(trackings, submitted) if submitted.present?
+    sendable = submitted.present? ? trackings.select { |tracking| destination_row_channel(submitted[tracking.id.to_s] || {}) != 'none' } : trackings
+    result = transmit_destination_rows(sendable, submitted)
     redirect_to operation_path(@operation), **destination_transmit_flash(result)
   rescue ArgumentError
     redirect_to operation_path(@operation), alert: t('operations.show.sms_unavailable')
@@ -240,34 +231,156 @@ class OperationsController < ApplicationController
     @operation.operation_routes.planned.where.not(vehicle_id: nil).includes(:vehicle, :operation, route: { vehicle_usage: :vehicle })
   end
 
-  def save_driver_contacts!(routes)
-    field = params[:channel] == 'sms' ? 'phone_number' : 'contact_email'
-    submitted = params[:routes].to_unsafe_h
+  def save_driver_contacts!(routes, submitted)
     by_id = routes.index_by { |route| route.id.to_s }
     submitted.each do |id, row|
       route = by_id[id.to_s]
       next unless route
 
       snapshot = (route.vehicle_snapshot || {}).dup
-      snapshot[field] = row[field].to_s.strip
+      snapshot['contact_email'] = row['contact_email'].to_s.strip if row.key?('contact_email')
+      snapshot['phone_number'] = row['phone_number'].to_s.strip if row.key?('phone_number')
       route.update!(vehicle_snapshot: snapshot)
     end
-    routes.select { |route| submitted.dig(route.id.to_s, 'send').present? && route.vehicle_snapshot[field].present? }
   end
 
-  def transmit_flash(result, scope)
-    if result[:emailed].zero? && result[:sms].zero?
-      { alert: t("plannings.edit.deliver_send.#{scope}.fail") }
+  def save_destination_contacts!(trackings, submitted)
+    OperationDeliveryTracking.preload_visit_stops!(trackings)
+    trackings.each do |tracking|
+      row = submitted[tracking.id.to_s]
+      next unless row
+
+      tracking.visit_stops.each do |stop|
+        snapshot = (stop.destination_snapshot || {}).dup
+        snapshot['email'] = row['email'].to_s.strip if row.key?('email')
+        snapshot['phone_number'] = row['phone_number'].to_s.strip if row.key?('phone_number')
+        stop.update!(destination_snapshot: snapshot)
+      end
+    end
+  end
+
+  def transmit_drivers(routes, submitted)
+    per_row = submitted.present? && submitted.values.any? { |row| row['channel'].present? }
+    if per_row
+      email_routes = []
+      sms_routes = []
+      routes.each do |route|
+        case driver_row_channel(submitted[route.id.to_s] || {})
+        when 'email'
+          email_routes << route if contact_present?(route, 'email')
+        when 'sms'
+          sms_routes << route if contact_present?(route, 'sms')
+        end
+      end
+      return {
+        emailed: email_routes.count { |route| Operations::TransmitRoutes.send_email(route) },
+        sms: sms_routes.empty? ? 0 : Operations::SendDriverSms.call(operation: @operation, routes: sms_routes)
+      }
+    end
+
+    case params[:channel]
+    when 'email'
+      sendable = routes.select { |route| legacy_driver_send?(route, submitted) && contact_present?(route, 'email') }
+      { emailed: sendable.count { |route| Operations::TransmitRoutes.send_email(route) }, sms: 0 }
+    when 'sms'
+      sendable = routes.select { |route| legacy_driver_send?(route, submitted) && contact_present?(route, 'sms') }
+      { emailed: 0, sms: Operations::SendDriverSms.call(operation: @operation, routes: sendable) }
     else
-      { notice: t("plannings.edit.deliver_send.#{scope}.success") }
+      Operations::TransmitRoutes.call(operation: @operation, routes: routes)
+    end
+  end
+
+  def transmit_destination_rows(trackings, submitted)
+    email_trackings = []
+    sms_trackings = []
+    trackings.each do |tracking|
+      row = submitted[tracking.id.to_s] || {}
+      channel = destination_row_channel(row)
+      case channel
+      when 'email'
+        email_trackings << tracking if destination_contact_present?(tracking, 'email')
+      when 'sms'
+        sms_trackings << tracking if destination_contact_present?(tracking, 'sms')
+      when 'none'
+        next
+      else
+        # Legacy top-level channel without per-row channel.
+        case params[:channel]
+        when 'email' then email_trackings << tracking if destination_contact_present?(tracking, 'email')
+        when 'sms' then sms_trackings << tracking if destination_contact_present?(tracking, 'sms')
+        end
+      end
+    end
+    {
+      emailed: email_trackings.empty? ? 0 : Operations::SendDestinationEmail.call(operation: @operation, trackings: email_trackings),
+      sms: sms_trackings.empty? ? 0 : Operations::SendDestinationSms.call(operation: @operation, trackings: sms_trackings)
+    }
+  end
+
+  def driver_row_channel(row)
+    return row['channel'].to_s if row['channel'].present?
+    return params[:channel].to_s if row['send'].present? && params[:channel].present?
+    return 'none' if row['send'].blank? && params[:routes].present?
+
+    params[:channel].presence || 'email'
+  end
+
+  def destination_row_channel(row)
+    return row['channel'].to_s if row['channel'].present?
+    return params[:channel].to_s if row['send'].present? && params[:channel].present?
+    return 'none' if row['send'].blank? && params[:trackings].present?
+
+    params[:channel].presence || 'none'
+  end
+
+  def legacy_driver_send?(route, submitted)
+    return true if submitted.blank?
+
+    row = submitted[route.id.to_s] || {}
+    row['send'].present? || row['channel'].present?
+  end
+
+  def contact_present?(route, channel)
+    channel == 'sms' ? route.driver_phone.present? : route.driver_email.present?
+  end
+
+  def destination_contact_present?(tracking, channel)
+    stop = tracking.visit_stops.first
+    snap = stop&.destination_snapshot || {}
+    if channel == 'sms'
+      snap['phone_number'].presence || tracking.destination&.phone_number
+    else
+      snap['email'].presence || tracking.destination&.email
+    end.present?
+  end
+
+  def transmit_flash(result, _scope = nil)
+    emailed = result[:emailed].to_i
+    sms = result[:sms].to_i
+    if emailed.zero? && sms.zero?
+      { alert: t('operations.show.drivers_send_fail') }
+    else
+      { notice: send_channel_success_message(emailed, sms) }
     end
   end
 
   def destination_transmit_flash(result)
-    if result[:emailed].zero? && result[:sms].zero?
+    emailed = result[:emailed].to_i
+    sms = result[:sms].to_i
+    if emailed.zero? && sms.zero?
       { alert: t('operations.show.destinations_send_fail') }
     else
-      { notice: t('operations.show.destinations_send_success', sms: result[:sms], email: result[:emailed]) }
+      { notice: send_channel_success_message(emailed, sms) }
+    end
+  end
+
+  def send_channel_success_message(emailed, sms)
+    if emailed.positive? && sms.positive?
+      t('operations.show.send_success_email_sms', email: emailed, sms: sms)
+    elsif emailed.positive?
+      t('operations.show.send_success_email', count: emailed)
+    else
+      t('operations.show.send_success_sms', count: sms)
     end
   end
 
@@ -285,10 +398,7 @@ class OperationsController < ApplicationController
     OperationDeliveryTracking.ensure_for!(@operation)
     trackings = @operation.operation_delivery_trackings.with_destination.to_a
     OperationDeliveryTracking.preload_visit_stops!(trackings)
-    return trackings if params[:trackings].blank?
-
-    submitted = params[:trackings].to_unsafe_h
-    trackings.select { |tracking| submitted.dig(tracking.id.to_s, 'send').present? }
+    trackings
   end
 
   def set_filtered_routes
