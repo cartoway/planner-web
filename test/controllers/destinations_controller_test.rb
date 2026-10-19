@@ -340,7 +340,16 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#form_sidebar .form-submit-bar button[type="submit"][form="destination-form-sidebar"]', 1
     assert_select 'turbo-frame#form_sidebar form#destination-form-sidebar[data-tag-entity-create-allowed]', 1
     assert_select 'turbo-frame#form_sidebar .related-list', minimum: 1
+    assert_select 'turbo-frame#form_sidebar .visit-fieldset legend.scheduler-border > .accordion-toggle .accordion-chevron', minimum: 1
+    assert_select 'turbo-frame#form_sidebar button.related-list-title[data-bs-toggle="collapse"] .fa-map-location', minimum: 1
+    assert_select 'turbo-frame#form_sidebar .related-list-body.collapse.show', minimum: 1
     assert_select 'turbo-frame#form_sidebar .related-item', minimum: 1
+    body = response.body
+    visit_new_idx = body.index('id="visit-new"') || body.index("id='visit-new'")
+    related_idx = body.index('related-list')
+    assert visit_new_idx, 'expected #visit-new in form_sidebar'
+    assert related_idx, 'expected .related-list in form_sidebar'
+    assert_operator visit_new_idx, :<, related_idx, 'expected #visit-new before .related-list'
     assert_select %(turbo-frame#form_sidebar a[href*="stop_id=#{stops(:stop_one_one).id}"][href*="route_id=#{stops(:stop_one_one).route_id}"][target="_blank"]), 1
     assert_select 'form#destination-form-sidebar[data-controller~="v2--time-fields"]', 1
     assert_select 'script[src*="destination"]', 0

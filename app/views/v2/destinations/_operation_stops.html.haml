@@ -1,6 +1,11 @@
 - stops = destination_operation_stops(destination)
 - if stops.any?
+  - collapse_id = "destination-#{destination.id}-operation-stops"
   .related-list
-    %h6.related-list-title= t('operations.form.title')
-    - stops.each do |stop|
-      = render 'v2/operation_stops/row', stop: stop, docs_prefix: "destination-#{destination.id}-op-stop-#{stop.id}"
+    %button.related-list-title.accordion-toggle.text-decoration-none{type: 'button', data: { 'bs-toggle': 'collapse', 'bs-target': "##{collapse_id}" }, 'aria-expanded': 'true', 'aria-controls': collapse_id}
+      %i.fa.fa-chevron-right.fa-fw.accordion-chevron{'aria-hidden': 'true'}
+      %i.fa.fa-clipboard-check.fa-fw.related-list-icon{'aria-hidden': 'true'}
+      %span= t('operations.form.title')
+    .related-list-body.collapse.show{id: collapse_id}
+      - stops.each do |stop|
+        = render 'v2/operation_stops/row', stop: stop, docs_prefix: "destination-#{destination.id}-op-stop-#{stop.id}"

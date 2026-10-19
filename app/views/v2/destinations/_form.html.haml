@@ -136,8 +136,6 @@
       placeholder: @destination.customer.destination_duration ? "#{@destination.customer.destination_duration_time_with_seconds} (#{df.call('duration_default')})" : t('all.unit.hour_minute_second'),
       append: content_tag('i', '', class: 'fa fa-map-marker fa-fw'),
       help: df.call('duration_help')
-  - if @destination.persisted? && can?(:manage, Operation)
-    = render 'v2/destinations/operation_stops', destination: @destination
   - visits_to_show = @destination.visits.to_a
   - if !@destination.persisted? && visits_to_show.empty?
     - visits_to_show = [@destination.visits.build]
@@ -159,6 +157,13 @@
         = t('destinations.form.visit.new')
     %template#visit-fieldset-template{data: {v2__visit_new_target: 'template'}}
       = render 'v2/visits/form', visit: @destination.visits.build, i: 0, destination_form_mutable: dest_form_mutable, v2_label_col: v2_label_col, v2_bootstrap_label_col: v2_bootstrap_label_col, v2_control_col: v2_control_col
+    - if @destination.persisted?
+      - visits_to_show.select(&:persisted?).each do |visit|
+        = render 'v2/visits/planning_stops', visit: visit
+        - if can?(:manage, Operation)
+          = render 'v2/visits/operation_stops', visit: visit
+      - if can?(:manage, Operation)
+        = render 'v2/destinations/operation_stops', destination: @destination
   = hidden_field :destination, :geocoder_version, :value => @destination.geocoder_version
   = hidden_field :destination, :geocoded_at, :value => @destination.geocoded_at
 #visits-attributes-change-bulk-modal.modal.fade{role: "dialog", tabindex: "-1", "aria-labelledby": "visits-attributes-change-bulk-modal-title", data: { controller: 'v2--visit-tags-bulk' }}
