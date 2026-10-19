@@ -330,14 +330,14 @@ fr:
       deliver_send:
         singular:
           access: Accéder à la tournée
-          transmit: Transmettre au livreur
+          transmit: Envoyer au livreur
           action: Envoyer email au livreur
           send_sms: Envoyer SMS au livreur
           success: Envoyé au livreur avec succès
           fail: Échec lors de l'envoi
         plural:
           access: Accéder aux tournées
-          transmit: Transmettre aux livreurs
+          transmit: Envoyer aux livreurs
           action: Envoyer email aux livreurs
           send_sms: Envoyer SMS aux livreurs
           success: Envoyé aux livreurs avec succès
