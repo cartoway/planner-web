@@ -4070,6 +4070,7 @@ fr:
       one: '%{count} opération historisée'
       other: '%{count} opérations historisées'
     publish: Créer l’opération
+    publish_and_transmit: Créer et transmettre
     date: Date
     visible_routes_only: Uniquement les tournées visibles
     sync: Synchroniser
@@ -4115,6 +4116,8 @@ fr:
       ref: Référence
       routes: Tournées
       routes_with_stops_only: Seules les tournées avec des arrêts peuvent être envoyées en opération.
+      driver_contacts: Contacts chauffeurs
+      driver_contacts_help: Vérifiez ou corrigez les e-mails et téléphones avant de publier. Vous pouvez glisser les contacts entre tournées.
       filter_by_tag: Filtrer par tag
       select_all: Toutes
       select_none: Aucune
@@ -4129,6 +4132,14 @@ fr:
   operations:
     menu: Opérations
     historized: Opération historisée
+    contacts:
+      drag: Glisser pour échanger les contacts
+      edit: Modifier le contact
+      channel: Canal d’envoi
+      channel_all: Tout envoyer par
+      channel_email: E-mail
+      channel_sms: SMS
+      channel_none: Ne pas envoyer
     statuses:
       in_progress: En cours
       historized: Historisée
@@ -4189,17 +4200,28 @@ fr:
       media: Médias
       mobile: Vue chauffeur
       mobile_access: Accès mobile
-      send_drivers: Envoyer aux chauffeurs
+      send_drivers: Transmettre aux chauffeurs
+      send_drivers_title: Contacts chauffeurs
       send_email: Envoyer par e-mail
       send_sms: Envoyer par SMS
       send_email_title: E-mails des tournées
       send_sms_title: Numéros des tournées
+      send_destinations: Transmettre aux destinataires
+      send_destinations_title: Contacts destinataires
       send_destinations_email: E-mails destinataires
       send_destinations_sms: SMS destinataires
       send_destinations_email_title: E-mails des destinataires
       send_destinations_sms_title: SMS des destinataires
       destinations_send_success: "%{sms} SMS et %{email} e-mail(s) envoyé(s)"
       destinations_send_fail: Aucun message destinataire n’a pu être envoyé
+      drivers_send_fail: Aucun message chauffeur n’a pu être envoyé
+      send_success_email:
+        one: "%{count} e-mail envoyé"
+        other: "%{count} e-mails envoyés"
+      send_success_sms:
+        one: "%{count} SMS envoyé"
+        other: "%{count} SMS envoyés"
+      send_success_email_sms: "%{email} e-mail(s) et %{sms} SMS envoyé(s)"
       start_demo: Simuler
       stop_demo: Arrêter la simulation
       reset_demo: Réinitialiser

@@ -1,0 +1,37 @@
+-# Shared contact rows for operation create / transmit (drivers & destinations).
+-# locals: rows OR groups ([{label:, rows:}]), mode, channels, param_namespace, allow_reorder, show_channels
+- mode = (mode || :drivers).to_sym
+- channels = Array(channels).map(&:to_sym)
+- allow_reorder = local_assigns.fetch(:allow_reorder, mode == :drivers)
+- show_channels = local_assigns.fetch(:show_channels, channels.any?)
+- email_key = mode == :destinations ? 'email' : 'contact_email'
+- phone_key = 'phone_number'
+- groups = local_assigns[:groups].presence || [{ label: nil, rows: Array(rows) }]
+- count_channel = channels.first || :email
+.contacts-list{data: { controller: 'v2--contacts-list', v2__contacts_list_allow_reorder_value: allow_reorder }}
+  - if show_channels
+    .row.g-2.align-items-center.mb-2
+      .col-auto.ms-auto.pe-2
+        .input-group.input-group-sm
+          %span.input-group-text= t('operations.contacts.channel_all')
+          %select.form-select{data: { v2__contacts_list_target: 'globalChannel', action: 'change->v2--contacts-list#applyGlobalChannel' }}
+            - channels.each do |channel|
+              %option{value: channel}= t("operations.contacts.channel_#{channel}")
+            %option{value: 'none'}= t('operations.contacts.channel_none')
+  - use_accordion = groups.size > 1 || groups.any? { |group| group[:label].present? }
+  - if use_accordion
+    .v2-collapse-stack.v2-collapse-stack--bordered
+      - groups.each_with_index do |group, index|
+        - collapse_id = "contacts-list-group-#{index}"
+        - total = group[:rows].size
+        - filled = contact_rows_filled_count(group[:rows], count_channel)
+        .v2-collapse-section{data: { contacts_group: true }}
+          %button.v2-collapse-toggle{type: 'button', class: ('collapsed' unless index.zero?), data: { bs_toggle: 'collapse', bs_target: "##{collapse_id}" }, aria: { expanded: index.zero?, controls: collapse_id }}
+            %i.fa.fa-chevron-right.fa-fw.accordion-chevron{'aria-hidden': 'true'}
+            %span.v2-collapse-toggle-label= group[:label]
+            %span.badge{class: contact_rows_count_badge_class(filled, total), data: { contacts_group_count: true }}= "#{filled}/#{total}"
+          .collapse{id: collapse_id, class: ('show' if index.zero?)}
+            .v2-collapse-body
+              = render 'operations/contacts_list_rows', rows: group[:rows], channels: channels, param_namespace: param_namespace, allow_reorder: allow_reorder, show_channels: show_channels, email_key: email_key, phone_key: phone_key
+  - else
+    = render 'operations/contacts_list_rows', rows: groups.first[:rows], channels: channels, param_namespace: param_namespace, allow_reorder: allow_reorder, show_channels: show_channels, email_key: email_key, phone_key: phone_key

@@ -472,11 +472,70 @@ var initPlanningExecution = function(planningId) {
     var meta = routeMeta($el);
     return !(meta.hidden && meta.locked);
   };
+  var lockContactInput = function($input) {
+    if (!$input.length || $input.prop('disabled')) return;
+    $input.prop('disabled', true);
+    $input.closest('.input-group').find('[data-contacts-edit]').show();
+  };
+  var swapContactFields = function($a, $b) {
+    ['email', 'phone'].forEach(function(field) {
+      var $inputA = $a.find('[data-contacts-field="' + field + '"]');
+      var $inputB = $b.find('[data-contacts-field="' + field + '"]');
+      if (!$inputA.length || !$inputB.length) return;
+      var tmp = $inputA.val();
+      $inputA.val($inputB.val());
+      $inputB.val(tmp);
+      lockContactInput($inputA);
+      lockContactInput($inputB);
+    });
+  };
   var refreshCount = function() {
     var n = enabledBoxes().filter(':checked').length;
     if ($countEl.length && template) $countEl.text(String(template).replace('%{count}', n));
-    $('#execution-publish-submit').prop('disabled', n === 0);
+    $('#execution-publish-submit, #execution-publish-transmit-submit').prop('disabled', n === 0);
   };
+  $modal.off('click.planningContactsUnlock').on('click.planningContactsUnlock', '#execution-driver-contacts [data-contacts-edit]', function(event) {
+    event.preventDefault();
+    var $btn = $(this);
+    var $input = $btn.closest('.input-group').find('[data-contacts-lockable]');
+    $modal.find('#execution-driver-contacts [data-contacts-lockable]:not(:disabled)').each(function() {
+      if (this !== $input[0]) lockContactInput($(this));
+    });
+    $input.prop('disabled', false).focus();
+    $btn.hide();
+  });
+  $modal.off('pointerdown.planningContactsLock').on('pointerdown.planningContactsLock', function(event) {
+    var $unlocked = $modal.find('#execution-driver-contacts [data-contacts-lockable]:not(:disabled)');
+    if (!$unlocked.length) return;
+    var group = $unlocked.closest('.input-group')[0];
+    if (group && group.contains(event.target)) return;
+    lockContactInput($unlocked);
+  });
+  $modal.off('submit.planningContactsEnable').on('submit.planningContactsEnable', 'form', function() {
+    $modal.find('#execution-driver-contacts .planning-execution-route:not(.hidden) [data-contacts-lockable]').prop('disabled', false);
+  });
+  var dragContactRow = null;
+  $modal.off('dragstart.planningContacts').on('dragstart.planningContacts', '#execution-driver-contacts .contacts-list-handle', function(event) {
+    dragContactRow = $(this).closest('.planning-execution-route')[0];
+    if (event.originalEvent && event.originalEvent.dataTransfer) {
+      event.originalEvent.dataTransfer.effectAllowed = 'move';
+      event.originalEvent.dataTransfer.setData('text/plain', 'contact');
+    }
+  });
+  $modal.off('dragover.planningContacts').on('dragover.planningContacts', '#execution-driver-contacts .planning-execution-route', function(event) {
+    if (!dragContactRow) return;
+    event.preventDefault();
+  });
+  $modal.off('drop.planningContacts').on('drop.planningContacts', '#execution-driver-contacts .planning-execution-route', function(event) {
+    event.preventDefault();
+    if (!dragContactRow || dragContactRow === this) return;
+    if (!$(this).find('[data-contacts-field]').length) return;
+    swapContactFields($(dragContactRow), $(this));
+    dragContactRow = null;
+  });
+  $modal.off('dragend.planningContacts').on('dragend.planningContacts', '#execution-driver-contacts .contacts-list-handle', function() {
+    dragContactRow = null;
+  });
   // Selector = which routes appear. List toggle = submitted route_ids[].
   // Unchecking a toggle must not uncheck the selector (different behaviours).
   var syncListFromSelector = function(checkedIds) {

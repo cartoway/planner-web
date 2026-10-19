@@ -35,6 +35,71 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_equal [route.id], operation.operation_routes.pluck(:route_id)
   end
 
+  test 'publish_operation applies driver contact overrides on vehicle_snapshot' do
+    route = routes(:route_one_one)
+    post :publish_operation, params: {
+      id: @planning.id,
+      name: 'Contacts',
+      date: Date.current,
+      route_ids: [route.id],
+      driver_contacts: {
+        route.id.to_s => {
+          contact_email: 'override@example.com',
+          phone_number: '0699988877'
+        }
+      }
+    }
+
+    operation = @planning.operations.open_status.last
+    assert_redirected_to operation_path(operation)
+    snap = operation.operation_routes.find_by!(route_id: route.id).vehicle_snapshot
+    assert_equal 'override@example.com', snap['contact_email']
+    assert_equal '0699988877', snap['phone_number']
+    refute_equal 'override@example.com', route.vehicle_usage.vehicle.reload.contact_email
+  end
+
+  test 'publish_operation with transmit sends driver emails' do
+    route = routes(:route_one_one)
+    @planning.customer.update_columns(enable_email_driver: true, enable_sms_driver: false)
+    before = ActionMailer::Base.deliveries.size
+
+    post :publish_operation, params: {
+      id: @planning.id,
+      name: 'Transmit',
+      date: Date.current,
+      route_ids: [route.id],
+      transmit: 'Créer et transmettre',
+      driver_contacts: {
+        route.id.to_s => { contact_email: 'chauffeur@example.com' }
+      }
+    }
+
+    operation = @planning.operations.open_status.last
+    assert_redirected_to operation_path(operation)
+    sent = ActionMailer::Base.deliveries.drop(before)
+    assert sent.any?
+    assert_includes sent.flat_map(&:to), 'chauffeur@example.com'
+  end
+
+  test 'publish_operation without transmit does not send emails' do
+    route = routes(:route_one_one)
+    @planning.customer.update_columns(enable_email_driver: true, enable_sms_driver: false)
+    before = ActionMailer::Base.deliveries.size
+
+    post :publish_operation, params: {
+      id: @planning.id,
+      name: 'No transmit',
+      date: Date.current,
+      route_ids: [route.id],
+      driver_contacts: {
+        route.id.to_s => { contact_email: 'chauffeur@example.com' }
+      }
+    }
+
+    assert_redirected_to operation_path(@planning.operations.open_status.last)
+    assert_equal before, ActionMailer::Base.deliveries.size
+  end
+
   test 'publish_operation rejects a past date' do
     route = routes(:route_one_one)
     # Users are in Hawaii: compare against Date.current in that zone, not UTC.
