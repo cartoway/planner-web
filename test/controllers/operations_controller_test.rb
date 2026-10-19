@@ -435,20 +435,7 @@ class OperationsControllerTest < ActionController::TestCase
     a, b = routes
     a.update!(vehicle_snapshot: a.vehicle_snapshot.merge('contact_email' => 'a@example.com', 'phone_number' => '0600000001'))
     b.update!(vehicle_snapshot: b.vehicle_snapshot.merge('contact_email' => 'b@example.com', 'phone_number' => '0600000002'))
-    messaging = Object.new
-    def messaging.content(*)
-      'ok'
-    end
-    def messaging.send_message(*)
-      true
-    end
-    def messaging.class
-      Class.new {
-        def self.name
-          'FakeSms'
-        end
-      }.new.class
-    end
+    messaging = fake_sms_messaging
     Operations::SendDriverSms.stubs(:messaging_service).returns(messaging)
 
     post :transmit, params: {
@@ -470,20 +457,7 @@ class OperationsControllerTest < ActionController::TestCase
     a.update!(vehicle_snapshot: a.vehicle_snapshot.merge('contact_email' => 'a@example.com', 'phone_number' => '0600000001'))
     b.update!(vehicle_snapshot: b.vehicle_snapshot.merge('contact_email' => 'b@example.com', 'phone_number' => '0600000002'))
 
-    messaging = Object.new
-    def messaging.content(*)
-      'ok'
-    end
-    def messaging.send_message(*)
-      true
-    end
-    def messaging.class
-      Class.new {
-        def self.name
-          'FakeSms'
-        end
-      }.new.class
-    end
+    messaging = fake_sms_messaging
     Operations::SendDriverSms.stubs(:messaging_service).returns(messaging)
 
     before = ActionMailer::Base.deliveries.size
@@ -600,5 +574,20 @@ class OperationsControllerTest < ActionController::TestCase
     assert_redirected_to root_path
   ensure
     @planning.customer.update!(devices: previous) if previous
+  end
+
+  private
+
+  def fake_sms_messaging
+    messaging = Object.new
+    messaging.define_singleton_method(:content) { |*| 'ok' }
+    messaging.define_singleton_method(:send_message) { |*| true }
+    klass = Class.new {
+      def self.name
+        'FakeSms'
+      end
+    }
+    messaging.define_singleton_method(:class) { klass }
+    messaging
   end
 end
