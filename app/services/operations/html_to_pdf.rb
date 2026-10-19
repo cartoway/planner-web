@@ -27,6 +27,8 @@ module Operations
         browser_path: self.class.chromium_path,
         headless: true,
         timeout: 30,
+        # Cold Chromium start often exceeds Ferrum's default 10s process_timeout in CI/dev containers.
+        process_timeout: (ENV['FERRUM_PROCESS_TIMEOUT'].presence || 60).to_i,
         browser_options: {
           'no-sandbox': nil,
           'disable-gpu': nil,
