@@ -959,6 +959,11 @@ $sidebar-margins: 10px;
   }
 
   #planning-operation-modal {
+    .modal-dialog {
+      width: 96%;
+      max-width: 1200px;
+    }
+
     .modal-dialog,
     .modal-content,
     .modal-body {
@@ -969,13 +974,42 @@ $sidebar-margins: 10px;
       margin-bottom: 10px;
     }
 
-    .planning-execution-routes {
+    .planning-execution-contacts {
       margin-top: 8px;
+      clear: both;
+    }
+
+    .contacts-list-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+
+      .input-group {
+        width: auto;
+        max-width: 100%;
+      }
+
+      .input-group-addon {
+        white-space: nowrap;
+      }
+
+      select.form-control {
+        width: auto;
+        min-width: 8rem;
+      }
+    }
+
+    .planning-execution-routes {
+      margin-top: 0;
       clear: both;
     }
 
     .planning-execution-route {
       margin-bottom: 8px;
+
+      &.contacts-list-row.is-dragging {
+        opacity: 0.6;
+      }
 
       .planning-execution-route-row {
         display: flex;
@@ -1009,7 +1043,8 @@ $sidebar-margins: 10px;
 
       .planning-execution-route-contacts {
         display: flex;
-        flex: 1 1 16rem;
+        flex: 1 1 20rem;
+        align-items: center;
         gap: 8px;
         min-width: 0;
       }
@@ -1020,6 +1055,15 @@ $sidebar-margins: 10px;
 
         .input-group {
           width: 100%;
+        }
+      }
+
+      .planning-execution-route-channel {
+        flex: 0 0 auto;
+
+        select.form-control {
+          width: auto;
+          min-width: 7rem;
         }
       }
 

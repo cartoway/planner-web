@@ -488,7 +488,18 @@ var initPlanningExecution = function(planningId) {
       lockContactInput($inputA);
       lockContactInput($inputB);
     });
+    var $chA = $a.find('[data-contacts-channel]');
+    var $chB = $b.find('[data-contacts-channel]');
+    if ($chA.length && $chB.length) {
+      var chTmp = $chA.val();
+      $chA.val($chB.val());
+      $chB.val(chTmp);
+    }
   };
+  $modal.off('change.planningContactsChannel').on('change.planningContactsChannel', '#execution-global-channel', function() {
+    var value = $(this).val();
+    rows().filter(':not(.hidden)').find('[data-contacts-channel]').prop('disabled', false).val(value);
+  });
   var refreshCount = function() {
     var n = enabledBoxes().filter(':checked').length;
     if ($countEl.length && template) $countEl.text(String(template).replace('%{count}', n));
@@ -512,7 +523,7 @@ var initPlanningExecution = function(planningId) {
     lockContactInput($unlocked);
   });
   $modal.off('submit.planningContactsEnable').on('submit.planningContactsEnable', 'form', function(event) {
-    $modal.find('#execution-driver-contacts .planning-execution-route:not(.hidden) [data-contacts-lockable]').prop('disabled', false);
+    $modal.find('#execution-driver-contacts .planning-execution-route:not(.hidden) [data-contacts-lockable], #execution-driver-contacts .planning-execution-route:not(.hidden) [data-contacts-channel]').prop('disabled', false);
     var $form = $(this);
     if ($form.data('planning-publishing')) {
       event.preventDefault();
@@ -535,6 +546,7 @@ var initPlanningExecution = function(planningId) {
   var dragContactRow = null;
   $modal.off('dragstart.planningContacts').on('dragstart.planningContacts', '#execution-driver-contacts .contacts-list-handle', function(event) {
     dragContactRow = $(this).closest('.planning-execution-route')[0];
+    if (dragContactRow) $(dragContactRow).addClass('is-dragging');
     if (event.originalEvent && event.originalEvent.dataTransfer) {
       event.originalEvent.dataTransfer.effectAllowed = 'move';
       event.originalEvent.dataTransfer.setData('text/plain', 'contact');
@@ -549,9 +561,11 @@ var initPlanningExecution = function(planningId) {
     if (!dragContactRow || dragContactRow === this) return;
     if (!$(this).find('[data-contacts-field]').length) return;
     swapContactFields($(dragContactRow), $(this));
+    $(dragContactRow).removeClass('is-dragging');
     dragContactRow = null;
   });
   $modal.off('dragend.planningContacts').on('dragend.planningContacts', '#execution-driver-contacts .contacts-list-handle', function() {
+    if (dragContactRow) $(dragContactRow).removeClass('is-dragging');
     dragContactRow = null;
   });
   // Selector = which routes appear. List toggle = submitted route_ids[].
@@ -566,6 +580,7 @@ var initPlanningExecution = function(planningId) {
       var $box = $row.find('.execution-route-checkbox');
       var wasHidden = $row.hasClass('hidden') && !$row.hasClass('is-taken');
       $row.toggleClass('hidden', !inSelector && !$row.hasClass('is-taken'));
+      $row.find('[data-contacts-channel]').prop('disabled', !inSelector);
       if ($box.prop('disabled')) return;
       if (!inSelector) {
         $box.prop('checked', false).removeData('user-touched');
