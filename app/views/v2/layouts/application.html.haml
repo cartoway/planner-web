@@ -77,7 +77,7 @@
                       %span
                         = current_user.customer.operations.count
                       \- #{t 'operations.menu'}
-                    - current_user.customer.operations.order(date: :desc, id: :desc).limit(10).each do |operation|
+                    - current_user.customer.operations.reorder(id: :desc).limit(10).reverse.each do |operation|
                       %li{id: dom_id(operation, :menu), style: "display: inline;" }
                         = link_to operation_path(operation), data: { turbo_frame: 'main', turbo_action: 'advance' } do
                           .text-overflow
@@ -118,7 +118,7 @@
                           %span
                             = current_user.customer.default_max_plannings
                           \- #{t 'plannings.menu.plannings'}
-                      - current_user.customer.plannings.reorder(updated_at: :desc, id: :desc).limit(10).each do |planning|
+                      - current_user.customer.plannings.reorder(id: :desc).limit(10).reverse.each do |planning|
                         %li{id: dom_id(planning, :menu), style: "display: inline;" }
                           = link_to edit_planning_path(planning) do
                             .text-overflow
