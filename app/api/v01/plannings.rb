@@ -446,7 +446,7 @@ class V01::Plannings < Grape::API
       )
       status 201
       present operation, with: V01::Entities::Operation, type: :full
-    rescue Operations::RouteConflict, Operations::EmptyRoutes => e
+    rescue Operations::RouteConflict, Operations::EmptyRoutes, Operations::PastDate => e
       error!({ message: e.message, status: 422 }, 422)
     end
 

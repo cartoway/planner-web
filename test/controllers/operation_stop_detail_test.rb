@@ -36,7 +36,9 @@ class OperationStopDetailTest < ActionController::TestCase
   test 'actual time and status history show the full date when off the operation day' do
     Time.use_zone('Hawaii') do
       # Update via the association the clock reads (setup may have cached another Operation instance).
-      @stop.operation_route.operation.update!(date: Date.new(2026, 9, 30))
+      operation = @stop.operation_route.operation
+      operation.allow_past_date = true
+      operation.update!(date: Date.new(2026, 9, 30))
       @stop.update!(status_updated_at: Time.zone.local(2026, 9, 30, 9, 0))
       assert_equal '09:00', @stop.actual_clock
 

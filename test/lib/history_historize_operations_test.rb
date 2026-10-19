@@ -16,7 +16,7 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
   end
 
   test 'publish snapshots include planned route and stop fields without status' do
-    operation = Operations::PublishFromPlanning.call(planning: @planning, date: '2026-09-30', name: 'Snap')
+    operation = Operations::PublishFromPlanning.call(planning: @planning, date: '2026-09-30', name: 'Snap', allow_past: true)
     route = operation.operation_routes.planned.first
     stop = route.operation_stops.find { |row| row.kind == 'visit' }
 
@@ -31,7 +31,7 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
   end
 
   test 'to_history_stops uses operation status not planning live status' do
-    operation = Operations::PublishFromPlanning.call(planning: @planning, date: '2026-09-30', name: 'Map')
+    operation = Operations::PublishFromPlanning.call(planning: @planning, date: '2026-09-30', name: 'Map', allow_past: true)
     route = operation.operation_routes.planned.first
     stop = route.operation_stops.find { |row| row.kind == 'visit' }
     live = stop.stop
@@ -59,7 +59,7 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
       assert_operator route_ids.size, :>=, 2
 
       matching = Operations::PublishFromPlanning.call(
-        planning: @planning, date: '2026-09-30', name: 'Match', route_ids: [route_ids.first]
+        planning: @planning, date: '2026-09-30', name: 'Match', route_ids: [route_ids.first], allow_past: true
       )
       other = Operations::PublishFromPlanning.call(
         planning: @planning, date: '2026-10-02', name: 'Other', route_ids: [route_ids.last]
@@ -89,7 +89,7 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
       route_id = @planning.routes.where.not(vehicle_usage_id: nil).order(:id).pick(:id)
 
       yesterday = Operations::PublishFromPlanning.call(
-        planning: @planning, date: '2026-09-30', name: 'Yesterday', route_ids: [route_id]
+        planning: @planning, date: '2026-09-30', name: 'Yesterday', route_ids: [route_id], allow_past: true
       )
       today = Operations::PublishFromPlanning.call(
         planning: @planning, date: '2026-10-01', name: 'Today', route_ids: [route_id]

@@ -700,6 +700,10 @@ fr:
           attributes:
             name:
               cannot_contain_colon: ne peut pas contenir le caractère « : »
+        operation:
+          attributes:
+            date:
+              past: ne peut pas être dans le passé
         operation_stop:
           attributes:
             photos:
@@ -4092,6 +4096,7 @@ fr:
     already_published: Une opération est déjà publiée pour ce planning
     route_conflict: Une tournée sélectionnée est déjà dans une opération ouverte à cette date
     empty_routes: Sélectionnez au moins une tournée
+    past_date: La date de l’opération ne peut pas être dans le passé
     missing: Aucune opération ouverte
     badge_unpublished: Non publié
     badge_fresh: À jour
@@ -4194,6 +4199,7 @@ fr:
       edit_name: Modifier le nom
       edit_ref: Modifier la référence
       date_locked: La date d'une opération historisée ne peut pas être modifiée
+      past_date_change_confirm: Cette opération est datée dans le passé. Après modification, vous ne pourrez plus revenir à une date passée. Continuer ?
       date_taken: Une opération avec cette référence existe déjà à cette date
       route_date_conflict: Une tournée de cette opération est déjà utilisée par une autre opération ouverte à cette date
       more: Charger la suite

@@ -23,7 +23,7 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
       id: @planning.id,
       name: 'Secteur A',
       ref: 'OP-A',
-      date: '2026-09-30',
+      date: Date.current,
       route_ids: [route.id]
     }
 
@@ -31,18 +31,34 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_redirected_to operation_path(operation)
     assert_equal 'Secteur A', operation.name
     assert_equal 'OP-A', operation.ref
-    assert_equal Date.new(2026, 9, 30), operation.date
+    assert_equal Date.current, operation.date
     assert_equal [route.id], operation.operation_routes.pluck(:route_id)
+  end
+
+  test 'publish_operation rejects a past date' do
+    route = routes(:route_one_one)
+    # Users are in Hawaii: compare against Date.current in that zone, not UTC.
+    past = Time.use_zone(users(:user_one).time_zone) { Date.current - 1 }
+    post :publish_operation, params: {
+      id: @planning.id,
+      name: 'Past',
+      date: past,
+      route_ids: [route.id]
+    }
+
+    assert_redirected_to edit_planning_path(@planning)
+    assert_equal I18n.t('execution.past_date'), flash[:alert]
+    assert_nil @planning.operations.open_status.last
   end
 
   test 'publish_operation rejects a route already in an open operation' do
     route = routes(:route_one_one)
-    Operations::PublishFromPlanning.call(planning: @planning, date: '2026-09-30', route_ids: [route.id])
+    Operations::PublishFromPlanning.call(planning: @planning, date: Date.current, route_ids: [route.id])
 
     post :publish_operation, params: {
       id: @planning.id,
       name: 'Collision',
-      date: '2026-09-30',
+      date: Date.current,
       route_ids: [route.id]
     }
 
@@ -102,18 +118,33 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_equal 'active', operation.operation_routes.find_by!(route_id: route.id).reload.sync_state
   end
 
-  test 'operation modal prefills date from planning when present' do
-    assert @planning.date.present?
+  test 'operation modal prefills date from planning when present and not past' do
+    today = Time.use_zone(users(:user_one).time_zone) { Date.current }
+    @planning.update!(date: today + 2)
 
     get :edit, params: { id: @planning.id }
 
     assert_response :success
     assert_select '#execution-operation-date[value=?]', @planning.date.strftime('%Y-%m-%d')
+    assert_select '#execution-operation-date[min=?]', today.strftime('%Y-%m-%d')
+  end
+
+  test 'operation modal clamps past planning date to today' do
+    today = Time.use_zone(users(:user_one).time_zone) { Date.current }
+    assert @planning.date.present?
+    assert_operator @planning.date, :<, today
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_select '#execution-operation-date[value=?]', today.strftime('%Y-%m-%d')
   end
 
   test 'operation modal falls back to offset date when planning has no date' do
     @planning.update!(date: nil)
-    expected = Date.current + @planning.customer.operation_date_offset_default
+    expected = Time.use_zone(users(:user_one).time_zone) {
+      Date.current + @planning.customer.operation_date_offset_default
+    }
 
     get :edit, params: { id: @planning.id }
 
@@ -133,7 +164,8 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
       planning: @planning,
       name: 'Veille',
       date: Date.current - 1,
-      route_ids: [routes(:route_three_one).id]
+      route_ids: [routes(:route_three_one).id],
+      allow_past: true
     )
     historized.update!(status: 'historized')
 
