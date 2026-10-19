@@ -358,7 +358,7 @@
           %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usages.cost_fixed'
           = number_field :vehicle_usage, :cost_fixed,
             value: @vehicle_usage.cost_fixed,
-            placeholder: @vehicle_usage.default_cost_fixed && t('customers.form.field_default', n: @vehicle_usage.default_cost_fixed),
+            placeholder: @vehicle_usage.vehicle_usage_set.cost_fixed && t('customers.form.field_default', n: @vehicle_usage.vehicle_usage_set.cost_fixed),
             step: 'any', class: 'form-control', min: 0
           %span.input-group-text.fleet-cost-unit
             = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
@@ -366,7 +366,7 @@
           %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usages.cost_time'
           = number_field :vehicle_usage, :cost_time,
             value: @vehicle_usage.cost_time,
-            placeholder: @vehicle_usage.default_cost_time && t('customers.form.field_default', n: @vehicle_usage.default_cost_time),
+            placeholder: @vehicle_usage.vehicle_usage_set.cost_time && t('customers.form.field_default', n: @vehicle_usage.vehicle_usage_set.cost_time),
             step: 'any', class: 'form-control', min: 0
           %span.input-group-text.fleet-cost-unit
             = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
@@ -376,7 +376,7 @@
           %span.input-group-text.fleet-bound-label= t 'activerecord.attributes.vehicle_usages.cost_distance'
           = number_field :vehicle_usage, :cost_distance,
             value: @vehicle_usage.cost_distance,
-            placeholder: @vehicle_usage.default_cost_distance && t('customers.form.field_default', n: @vehicle_usage.default_cost_distance),
+            placeholder: @vehicle_usage.vehicle_usage_set.cost_distance && t('customers.form.field_default', n: @vehicle_usage.vehicle_usage_set.cost_distance),
             step: 'any', class: 'form-control', min: 0
           %span.input-group-text.fleet-cost-unit
             = t "all.unit.currency_symbol.#{current_user.prefered_currency}"
