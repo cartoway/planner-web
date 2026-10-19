@@ -73,10 +73,23 @@ class OperationDeliveryTracking < ApplicationRecord
     return if destination_ids.empty?
 
     existing = where(operation_id: operation.id, destination_id: destination_ids).pluck(:destination_id).to_set
+    missing = destination_ids - existing.to_a
+    return if missing.empty?
+
     expires = expires_at_for(operation)
-    (destination_ids - existing.to_a).each do |destination_id|
-      create!(operation: operation, destination_id: destination_id, expires_at: expires)
-    end
+    now = Time.current
+    rows = missing.map { |destination_id|
+      {
+        operation_id: operation.id,
+        destination_id: destination_id,
+        token: SecureRandom.urlsafe_base64(24),
+        expires_at: expires,
+        created_at: now,
+        updated_at: now
+      }
+    }
+    # Skip per-row uniqueness SELECTs; tokens are collision-resistant and destination_id is pre-filtered.
+    import(rows, validate: false)
   end
 
   private
