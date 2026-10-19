@@ -78,5 +78,7 @@
             %p.help-block#execution-route-count{ data: { template: t('execution.modal.selected_count') } }
         .modal-footer
           %button.btn.btn-default{ type: 'button', 'data-dismiss': 'modal' }= t('all.verb.dismiss')
-          = submit_tag t('execution.publish'), class: 'btn btn-default', id: 'execution-publish-submit', name: 'publish_only'
-          = submit_tag t('execution.publish_and_transmit'), class: 'btn btn-primary', id: 'execution-publish-transmit-submit', name: 'transmit'
+          = button_tag type: 'submit', name: 'publish_only', value: '1', class: 'btn btn-default', id: 'execution-publish-submit' do
+            = t('execution.publish')
+          = button_tag type: 'submit', name: 'transmit', value: '1', class: 'btn btn-primary', id: 'execution-publish-transmit-submit' do
+            = t('execution.publish_and_transmit')
