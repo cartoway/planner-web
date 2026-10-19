@@ -107,10 +107,18 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     assert route.reload.outdated
   end
 
-  test 'should delete in use' do
+  test 'should delete in use and reassign plannings' do
+    planning = plannings(:planning_one)
+    destroyed_id = vehicle_usage_sets(:vehicle_usage_set_one).id
+    assert_equal destroyed_id, planning.vehicle_usage_set_id
+
     assert_difference('VehicleUsageSet.count', -1) do
       customers(:customer_one).vehicle_usage_sets.delete(vehicle_usage_sets(:vehicle_usage_set_one))
     end
+
+    planning.reload
+    assert_not_equal destroyed_id, planning.vehicle_usage_set_id
+    assert_includes customers(:customer_one).vehicle_usage_sets.reload.map(&:id), planning.vehicle_usage_set_id
   end
 
   test 'should keep at least one' do
