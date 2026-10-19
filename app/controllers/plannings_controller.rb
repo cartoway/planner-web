@@ -809,7 +809,12 @@ class PlanningsController < ApplicationController
     )
     if params[:transmit].present?
       routes = operation.operation_routes.planned.where.not(vehicle_id: nil)
-      result = Operations::TransmitRoutes.call(operation: operation, routes: routes)
+      result = Operations::TransmitRoutes.call(
+        operation: operation,
+        routes: routes,
+        channel: params[:channel],
+        row_channels: publish_driver_row_channels(params[:driver_contacts])
+      )
       redirect_to operation_path(operation), **publish_transmit_flash(result)
     else
       redirect_to operation_path(operation), notice: t('execution.published')
@@ -865,6 +870,21 @@ class PlanningsController < ApplicationController
         end
       { notice: [published, sent].join(t('execution.alert_separator')) }
     end
+  end
+
+  # { planning_route_id => 'email'|'sms'|'none' } from creation-modal per-row selects.
+  def publish_driver_row_channels(driver_contacts)
+    return nil if driver_contacts.blank?
+
+    hash = driver_contacts.respond_to?(:to_unsafe_h) ? driver_contacts.to_unsafe_h : driver_contacts.to_h
+    channels = hash.each_with_object({}) do |(route_id, row), memo|
+      next unless row
+
+      row = row.to_unsafe_h if row.respond_to?(:to_unsafe_h)
+      channel = row['channel'].presence || row[:channel].presence
+      memo[route_id.to_i] = channel if channel
+    end
+    channels.presence
   end
 
   def stops_for_move_list(stops)

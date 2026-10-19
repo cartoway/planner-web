@@ -11,6 +11,11 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     @planning = plannings(:planning_one)
     sign_in users(:user_one)
     Operation.where(customer_id: @planning.customer_id).delete_all
+    shortener = Object.new
+    def shortener.shorten(url)
+      url
+    end
+    Rails.application.config.stubs(:url_shortener).returns(shortener)
   end
 
   teardown do
@@ -79,6 +84,53 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     sent = ActionMailer::Base.deliveries.drop(before)
     assert sent.any?
     assert_includes sent.flat_map(&:to), 'chauffeur@example.com'
+  end
+
+  test 'publish_operation with transmit respects per-row email channel when both are enabled' do
+    route = routes(:route_one_one)
+    @planning.customer.update_columns(enable_email_driver: true, enable_sms_driver: true)
+    Operations::SendDriverSms.expects(:call).never
+    before = ActionMailer::Base.deliveries.size
+
+    post :publish_operation, params: {
+      id: @planning.id,
+      name: 'Transmit email only',
+      date: Date.current,
+      route_ids: [route.id],
+      transmit: '1',
+      driver_contacts: {
+        route.id.to_s => { contact_email: 'mail-only@example.com', phone_number: '0601020304', channel: 'email' }
+      }
+    }
+
+    operation = @planning.operations.open_status.last
+    assert_redirected_to operation_path(operation)
+    sent = ActionMailer::Base.deliveries.drop(before)
+    assert_includes sent.flat_map(&:to), 'mail-only@example.com'
+    assert_equal 'email', operation.operation_routes.find_by!(route_id: route.id).last_sent_to
+  end
+
+  test 'publish_operation with transmit respects per-row sms channel when both are enabled' do
+    route = routes(:route_one_one)
+    @planning.customer.update_columns(enable_email_driver: true, enable_sms_driver: true)
+    Operations::SendDriverSms.stubs(:messaging_service).returns(fake_sms_messaging)
+    before = ActionMailer::Base.deliveries.size
+
+    post :publish_operation, params: {
+      id: @planning.id,
+      name: 'Transmit sms only',
+      date: Date.current,
+      route_ids: [route.id],
+      transmit: '1',
+      driver_contacts: {
+        route.id.to_s => { contact_email: 'sms-only@example.com', phone_number: '0601020304', channel: 'sms' }
+      }
+    }
+
+    operation = @planning.operations.open_status.last
+    assert_redirected_to operation_path(operation)
+    assert_equal before, ActionMailer::Base.deliveries.size
+    assert_equal 'sms', operation.operation_routes.find_by!(route_id: route.id).last_sent_to
   end
 
   test 'publish_operation without transmit does not send emails' do
@@ -469,4 +521,18 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
                     "expected at most one operation_routes lookup, got #{operation_route_queries}"
   end
 
+  private
+
+  def fake_sms_messaging
+    messaging = Object.new
+    messaging.define_singleton_method(:content) { |*| 'ok' }
+    messaging.define_singleton_method(:send_message) { |*| true }
+    klass = Class.new {
+      def self.name
+        'FakeSms'
+      end
+    }
+    messaging.define_singleton_method(:class) { klass }
+    messaging
+  end
 end
