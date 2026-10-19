@@ -81,6 +81,12 @@ class OperationStopTest < ActiveSupport::TestCase
     assert_not rest.delivery_note_available?
   end
 
+  test 'delivery_note_exportable? does not require live stop_id' do
+    @stop.update_columns(status: 'delivered', stop_id: nil)
+    assert @stop.delivery_note_exportable?
+    assert_not @stop.delivery_note_available?
+  end
+
   test 'search_label includes name ref street and city' do
     @stop.update_columns(
       destination_snapshot: @stop.destination_snapshot.merge(

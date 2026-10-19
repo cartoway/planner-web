@@ -69,8 +69,13 @@ class Operation < ApplicationRecord
     )
   end
 
-  def board
-    routes = operation_routes.active_sync.includes(:operation_stops).to_a
+  # Metrics come from frozen route_snapshot only — never from live Route/route_data.
+  def board(routes: nil)
+    routes = if routes
+               Array(routes).select { |route| route.sync_state == 'active' }
+             else
+               operation_routes.active_sync.includes(:operation_stops).to_a
+             end
     parts = routes.map(&:board)
     keys = %i[delivered failed exception late upcoming current total]
     summed = keys.index_with { |key| parts.sum { |part| part[key].to_i } }
@@ -106,31 +111,12 @@ class Operation < ApplicationRecord
   end
 
   def snapshot_number(route, key)
-    value = route.route_snapshot&.[](key)
-    return value.to_f unless value.nil?
-
-    live = route.route
-    return 0.0 unless live
-
-    case key
-    when 'duration' then live.total_duration.to_f
-    when 'work_duration' then live.work_duration.to_f
-    else live.public_send(key).to_f
-    end
-  rescue NoMethodError
-    0.0
+    route.route_snapshot&.[](key).to_f
   end
 
   def snapshot_cost(route)
     snap = route.route_snapshot || {}
-    if snap.key?('cost_distance') || snap.key?('cost_fixed') || snap.key?('cost_time')
-      return [snap['cost_distance'], snap['cost_fixed'], snap['cost_time']].compact.sum(&:to_f)
-    end
-
-    live = route.route
-    return 0.0 unless live
-
-    [live.cost_distance, live.cost_fixed, live.cost_time].compact.sum(&:to_f)
+    [snap['cost_distance'], snap['cost_fixed'], snap['cost_time']].compact.sum(&:to_f)
   end
 
   def quantity_catalog
