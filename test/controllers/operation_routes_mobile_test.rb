@@ -128,6 +128,7 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
 
   test 'mobile shows the operation date and the stop time on that date' do
     @planning.update!(date: Date.new(2026, 1, 1))
+    @operation.allow_past_date = true
     @operation.update!(date: Date.new(2026, 9, 30))
     stop = @operation_route.operation_stops.where(kind: 'visit').order(:index).first
     stop.update!(stop_snapshot: stop.stop_snapshot.merge('time' => 8.hours.to_i))

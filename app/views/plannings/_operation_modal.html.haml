@@ -1,6 +1,7 @@
 - assignable_routes = @planning.routes.select { |route| route.vehicle_usage_id.present? }
--# Prefer the planning date when set; otherwise keep the customer offset default.
+-# Prefer the planning date when set; otherwise keep the customer offset default. Never prefill a past day.
 - operation_date = @planning.date || (Date.current + @planning.customer.operation_date_offset_default)
+- operation_date = [operation_date, Date.current].max
 - taken_by_date = @planning.open_taken_routes_by_date
 - selected_ids = assignable_routes.select { |route| !(route.hidden && route.locked) && route.route_data&.size_active.to_i.positive? }.map(&:id)
 - route_skills_by_id = assignable_routes.to_h { |route| [route.id, route.route_skills] }
@@ -33,7 +34,7 @@
               = text_field_tag :ref, @planning.ref, class: 'form-control'
           .form-group
             = label_tag :date, t('execution.date')
-            = date_field_tag :date, operation_date, class: 'form-control', required: true, id: 'execution-operation-date'
+            = date_field_tag :date, operation_date, class: 'form-control', required: true, id: 'execution-operation-date', min: Date.current.strftime('%Y-%m-%d')
           .form-group
             = label_tag nil, t('execution.modal.routes')
             %p.help-block= t('execution.modal.routes_with_stops_only')

@@ -811,6 +811,8 @@ class PlanningsController < ApplicationController
     redirect_to edit_planning_path(@planning), alert: t('execution.route_conflict')
   rescue Operations::EmptyRoutes
     redirect_to edit_planning_path(@planning), alert: t('execution.empty_routes')
+  rescue Operations::PastDate
+    redirect_to edit_planning_path(@planning), alert: t('execution.past_date')
   end
 
   def sync_operation

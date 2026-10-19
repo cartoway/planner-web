@@ -14,6 +14,7 @@ import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
 import { bindMapViewHash, parseMapViewHash, parseStopFocusHash } from 'lib/map_view_hash'
+import { showToast } from 'lib/toast'
 document.addEventListener('turbo:before-stream-render', (event) => {
   const stream = event.detail.newStream
   const action = stream.getAttribute('action')
@@ -57,7 +58,7 @@ const PHASE_COLORS = {
 
 export default class extends Controller {
   static targets = ['map', 'list', 'more', 'stopQuery', 'nameLabel', 'nameInput', 'refLabel', 'refInput', 'body', 'mobilePane', 'detailBackdrop']
-  static values = { mapUrl: String, searchUrl: String, positionsUrl: String }
+  static values = { mapUrl: String, searchUrl: String, positionsUrl: String, pastDateConfirm: String }
 
   connect () {
     this.selectedRouteId = null
@@ -171,9 +172,27 @@ export default class extends Controller {
 
   saveDate (event) {
     const input = event.currentTarget
+    const previous = input.defaultValue
+    // Leaving a past date is irreversible (server rejects past dates on update).
+    if (this._isPastDate(previous) && this.hasPastDateConfirmValue) {
+      if (!window.confirm(this.pastDateConfirmValue)) {
+        input.value = previous
+        return
+      }
+    }
     this._saveField(input, 'date', (data) => {
       if (data && data.date) input.defaultValue = data.date
     })
+  }
+
+  _isPastDate (value) {
+    if (!value) return false
+    const parts = String(value).split('-').map(Number)
+    if (parts.length < 3 || parts.some((n) => Number.isNaN(n))) return false
+    const date = new Date(parts[0], parts[1] - 1, parts[2])
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    return date < today
   }
 
   async _saveField (input, key, done) {
@@ -189,7 +208,7 @@ export default class extends Controller {
     })
     const data = await response.json()
     if (!response.ok) {
-      if (data && data.error) window.alert(data.error)
+      if (data && data.error) showToast({ message: data.error, className: 'warning' })
       if (key === 'date') input.value = input.defaultValue
       return
     }

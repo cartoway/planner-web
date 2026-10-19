@@ -14,7 +14,7 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
 
   test 'expected stop time follows the operation date' do
     @planning.update!(date: Date.new(2026, 1, 1))
-    operation = Operations::PublishFromPlanning.call(planning: @planning, date: '2026-09-30')
+    operation = Operations::PublishFromPlanning.call(planning: @planning, date: '2026-09-30', allow_past: true)
     stop = operation.operation_stops.where(kind: 'visit').order(:index).first
     stop.update!(stop_snapshot: stop.stop_snapshot.merge('time' => 26.hours.to_i))
 
@@ -52,10 +52,28 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     assert_equal Date.current + 4, operation.date
   end
 
+  test 'publish rejects a date in the past' do
+    assert_raises(Operations::PastDate) do
+      Operations::PublishFromPlanning.call(planning: @planning, date: Date.current - 1)
+    end
+    assert_equal 0, Operation.where(customer_id: @customer.id).count
+  end
+
+  test 'publish can create a past date when allow_past is set' do
+    operation = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      date: Date.current - 1,
+      allow_past: true,
+      route_ids: [routes(:route_one_one).id]
+    )
+
+    assert_equal Date.current - 1, operation.date
+  end
+
   test 'publish accepts a custom ref and falls back to the planning ref' do
     custom = Operations::PublishFromPlanning.call(
       planning: @planning,
-      date: Date.new(2026, 9, 25),
+      date: Date.current,
       route_ids: [routes(:route_one_one).id],
       ref: 'custom-op'
     )
@@ -63,14 +81,14 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
 
     defaulted = Operations::PublishFromPlanning.call(
       planning: @planning,
-      date: Date.new(2026, 9, 26),
+      date: Date.current + 1,
       route_ids: [routes(:route_one_one).id]
     )
     assert_equal @planning.ref, defaulted.ref
 
     cleared = Operations::PublishFromPlanning.call(
       planning: @planning,
-      date: Date.new(2026, 9, 27),
+      date: Date.current + 2,
       route_ids: [routes(:route_one_one).id],
       ref: '  '
     )
@@ -82,11 +100,11 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
 
     operation = Operations::PublishFromPlanning.call(
       planning: @planning,
-      date: '2026-09-25',
+      date: Date.current,
       visible_routes_only: true
     )
 
-    assert_equal Date.new(2026, 9, 25), operation.date
+    assert_equal Date.current, operation.date
     assert operation.operation_routes.exists?(route_id: routes(:route_one_one).id)
     assert_nil operation.operation_routes.find_by(route_id: routes(:route_three_one).id)
     assert operation.current_structure?(@planning)
@@ -210,7 +228,7 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
   end
 
   test 'a later operation does not inherit status or photos' do
-    first = Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 25))
+    first = Operations::PublishFromPlanning.call(planning: @planning, date: Date.current)
     planning_stop = stops(:stop_one_one)
     owned = first.operation_stops.find_by!(stop_id: planning_stop.id)
     OperationStops::RecordStatus.call(
@@ -225,7 +243,7 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     assert owned.attach_signature(file)
 
     first.update!(status: 'historized', closed_at: Time.current)
-    second = Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 26))
+    second = Operations::PublishFromPlanning.call(planning: @planning, date: Date.current + 1)
     other = second.operation_stops.find_by!(stop_id: planning_stop.id)
 
     assert_equal 'delivered', owned.reload.status
@@ -244,9 +262,9 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
   end
 
   test 'two dates keep the same planning stop and route ids' do
-    first = Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 25))
+    first = Operations::PublishFromPlanning.call(planning: @planning, date: Date.current)
     first.update!(status: 'historized', closed_at: Time.current)
-    second = Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 26))
+    second = Operations::PublishFromPlanning.call(planning: @planning, date: Date.current + 1)
 
     stop_id = stops(:stop_one_one).id
     route_id = routes(:route_one_one).id
@@ -262,13 +280,13 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     first = Operations::PublishFromPlanning.call(
       planning: @planning,
       name: 'Matin',
-      date: Date.new(2026, 9, 25),
+      date: Date.current,
       route_ids: [route_a.id]
     )
     second = Operations::PublishFromPlanning.call(
       planning: @planning,
       name: 'Aprem',
-      date: Date.new(2026, 9, 25),
+      date: Date.current,
       route_ids: [route_b.id]
     )
 
@@ -283,31 +301,31 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
 
   test 'publish rejects a route already in an open operation on the same date' do
     route_id = routes(:route_one_one).id
-    Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 25), route_ids: [route_id])
+    Operations::PublishFromPlanning.call(planning: @planning, date: Date.current, route_ids: [route_id])
 
     error = assert_raises(Operations::RouteConflict) do
-      Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 25), route_ids: [route_id])
+      Operations::PublishFromPlanning.call(planning: @planning, date: Date.current, route_ids: [route_id])
     end
     assert_includes error.route_ids, route_id
   end
 
   test 'publish allows the same route on a different date while the first stays open' do
     route_id = routes(:route_one_one).id
-    first = Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 25), route_ids: [route_id])
-    second = Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 26), route_ids: [route_id])
+    first = Operations::PublishFromPlanning.call(planning: @planning, date: Date.current, route_ids: [route_id])
+    second = Operations::PublishFromPlanning.call(planning: @planning, date: Date.current + 1, route_ids: [route_id])
 
     assert_equal 'in_progress', first.status
     assert_equal 'in_progress', second.status
-    assert_equal Date.new(2026, 9, 25), first.date
-    assert_equal Date.new(2026, 9, 26), second.date
+    assert_equal Date.current, first.date
+    assert_equal Date.current + 1, second.date
   end
 
   test 'changing an open operation date fails when a route is already taken that day' do
     route_id = routes(:route_one_one).id
-    Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 25), route_ids: [route_id])
-    other = Operations::PublishFromPlanning.call(planning: @planning, date: Date.new(2026, 9, 26), route_ids: [route_id])
+    Operations::PublishFromPlanning.call(planning: @planning, date: Date.current, route_ids: [route_id])
+    other = Operations::PublishFromPlanning.call(planning: @planning, date: Date.current + 1, route_ids: [route_id])
 
-    assert_not other.update(date: Date.new(2026, 9, 25))
+    assert_not other.update(date: Date.current)
     assert_includes other.errors[:base], I18n.t('operations.show.route_date_conflict')
   end
 
