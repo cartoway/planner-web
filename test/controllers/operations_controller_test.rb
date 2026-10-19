@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'zip'
 
 class OperationsControllerTest < ActionController::TestCase
   setup do
@@ -88,6 +89,36 @@ class OperationsControllerTest < ActionController::TestCase
     get :show, params: { id: @operation.id }
     assert_response :success
     assert_select %([data-v2--operation-show-past-date-confirm-value="#{I18n.t('operations.show.past_date_change_confirm')}"])
+  end
+
+  test 'show exposes export spreadsheet and archive links' do
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_select %(a[href="#{export_operation_path(@operation, format: :excel)}"]), minimum: 1
+    assert_select %(a[href="#{export_operation_path(@operation, format: :zip)}"]), minimum: 1
+  end
+
+  test 'export csv downloads spreadsheet rows' do
+    get :export, params: { id: @operation.id, format: :csv }
+    assert_response :success
+    assert_equal 'text/csv', response.media_type
+    assert_includes response.body, 'operation_name'
+    assert_includes response.body, @operation.name
+  end
+
+  test 'export zip downloads archive with index and csv' do
+    get :export, params: { id: @operation.id, format: :zip }
+    assert_response :success
+    assert_equal 'application/zip', response.media_type
+
+    names = []
+    Zip::InputStream.open(StringIO.new(response.body)) do |io|
+      while (entry = io.get_next_entry)
+        names << entry.name
+      end
+    end
+    assert_includes names, 'index.html'
+    assert_includes names, 'stops.csv'
   end
 
   test 'show exposes mobile panes and detail sheet chrome' do

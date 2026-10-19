@@ -1,0 +1,287 @@
+- board = @operation_board
+- plan = board[:plan] || {}
+- format_hms = ->(seconds) { seconds.blank? ? nil : format('%02d:%02d', seconds.to_i / 3600, (seconds.to_i % 3600) / 60) }
+!!!
+%html
+  %head
+    %meta{charset: 'utf-8'}
+    %title= [@operation.name, @operation.ref, @operation.date].compact.join(' — ')
+    :css
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; color: #222; }
+      h1 { font-size: 1.4rem; margin-bottom: .25rem; }
+      h2 { font-size: 1.1rem; margin-top: 1.75rem; border-bottom: 1px solid #ddd; padding-bottom: .25rem; }
+      .meta { color: #555; margin-bottom: 1rem; line-height: 1.45; }
+      .stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: .65rem; margin: 0 0 1.25rem; }
+      .stat { display: flex; flex-direction: column; gap: .2rem; min-width: 0; padding: .7rem .85rem; border: 1px solid #d9dee7; border-radius: .55rem; background: #f8f9fb; box-sizing: border-box; }
+      .stat strong { display: block; color: #1a2332; font-size: 1.15rem; font-weight: 700; line-height: 1.2; font-variant-numeric: tabular-nums; }
+      .stat span { color: #5b677a; font-size: .78rem; line-height: 1.3; }
+      .stat.is-delivered { border-color: #b7e0c4; background: #f1faf4; }
+      .stat.is-delivered strong { color: #1f7a3f; }
+      .stat.is-failed { border-color: #f0c2c2; background: #fdf4f4; }
+      .stat.is-failed strong { color: #b42318; }
+      .stat.is-exception { border-color: #f0d4a8; background: #fff8ee; }
+      .stat.is-exception strong { color: #b54708; }
+      .stat.is-late { border-color: #f0d4a8; background: #fff8ee; }
+      .stat.is-late strong { color: #b54708; }
+      .stat.is-metric { border-color: #c9d4ea; background: #f3f6fc; }
+      .stat.is-metric strong { color: #25417c; }
+      .stat.is-metric strong a { color: #25417c; text-decoration: none; border-bottom: 1px solid rgba(37, 65, 124, .35); }
+      .stats-section-label { margin: 0 0 .45rem; color: #5b677a; font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+      table { border-collapse: collapse; width: 100%; margin-top: .75rem; font-size: .85rem; }
+      th, td { border: 1px solid #ddd; padding: .35rem .45rem; text-align: left; vertical-align: top; }
+      th { background: #f5f5f5; }
+      .muted { color: #666; font-size: .8rem; }
+      a { color: #0b57d0; }
+      .proof-carousel { width: 160px; }
+      .proof-carousel-viewport { position: relative; width: 160px; height: 120px; background: #f7f7f7; border: 1px solid #ddd; overflow: hidden; cursor: zoom-in; }
+      .proof-carousel-viewport button.proof-slide { display: none; width: 100%; height: 100%; padding: 0; border: 0; background: transparent; cursor: zoom-in; }
+      .proof-carousel-viewport button.proof-slide.is-active { display: block; }
+      .proof-carousel-viewport img { width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
+      .proof-carousel-nav { display: flex; align-items: center; justify-content: space-between; margin-top: .25rem; gap: .25rem; }
+      .proof-carousel-nav button { border: 1px solid #ccc; background: #fff; border-radius: 4px; padding: .1rem .45rem; cursor: pointer; }
+      .proof-carousel-nav button:disabled { opacity: .4; cursor: default; }
+      .proof-carousel-count { font-size: .75rem; color: #555; }
+      .empty-proofs { color: #999; font-size: .8rem; }
+      .proof-lightbox { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, .92); color: #fff; }
+      .proof-lightbox.is-open { display: flex; flex-direction: column; }
+      .proof-lightbox-toolbar { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: .75rem 1rem; gap: 1rem; }
+      .proof-lightbox-stage { position: relative; z-index: 1; flex: 1; display: flex; align-items: center; justify-content: center; min-height: 0; padding: 0 4.5rem 1.5rem; }
+      .proof-lightbox-stage img { max-width: 100%; max-height: 100%; object-fit: contain; }
+      .proof-lightbox-toolbar button, .proof-lightbox-nav button { border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.08); color: #fff; border-radius: 6px; padding: .35rem .7rem; cursor: pointer; font-size: 1rem; }
+      .proof-lightbox-nav button:disabled { opacity: .35; cursor: default; }
+      .proof-lightbox-nav { position: absolute; top: 3.5rem; bottom: 0; left: 0; right: 0; z-index: 2; display: flex; align-items: center; justify-content: space-between; pointer-events: none; padding: 0 .75rem; }
+      .proof-lightbox-nav button { pointer-events: auto; font-size: 1.6rem; line-height: 1; min-width: 2.5rem; min-height: 2.5rem; }
+      .proof-lightbox-count { opacity: .85; font-size: .95rem; }
+    :javascript
+      document.addEventListener('DOMContentLoaded', function () {
+        var lightbox = document.querySelector('[data-proof-lightbox]');
+        var lightboxImg = lightbox.querySelector('[data-lightbox-img]');
+        var lightboxCount = lightbox.querySelector('[data-lightbox-count]');
+        var lightboxPrev = lightbox.querySelector('[data-lightbox-prev]');
+        var lightboxNext = lightbox.querySelector('[data-lightbox-next]');
+        var lightboxClose = lightbox.querySelector('[data-lightbox-close]');
+        var activeSources = [];
+        var activeIndex = 0;
+
+        function paintLightbox() {
+          if (!activeSources.length) return;
+          lightboxImg.src = activeSources[activeIndex];
+          lightboxImg.alt = activeSources[activeIndex].split('/').pop();
+          lightboxCount.textContent = (activeIndex + 1) + ' / ' + activeSources.length;
+          lightboxPrev.disabled = activeIndex === 0;
+          lightboxNext.disabled = activeIndex >= activeSources.length - 1;
+        }
+
+        function openLightbox(sources, index) {
+          activeSources = sources;
+          activeIndex = index;
+          paintLightbox();
+          lightbox.classList.add('is-open');
+          document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+          lightbox.classList.remove('is-open');
+          document.body.style.overflow = '';
+          activeSources = [];
+        }
+
+        lightboxPrev.addEventListener('click', function () {
+          activeIndex = Math.max(0, activeIndex - 1);
+          paintLightbox();
+        });
+        lightboxNext.addEventListener('click', function () {
+          activeIndex = Math.min(activeSources.length - 1, activeIndex + 1);
+          paintLightbox();
+        });
+        lightboxClose.addEventListener('click', closeLightbox);
+        lightbox.addEventListener('click', function (event) {
+          if (event.target === lightbox) closeLightbox();
+        });
+        document.addEventListener('keydown', function (event) {
+          if (!lightbox.classList.contains('is-open')) return;
+          if (event.key === 'Escape') closeLightbox();
+          if (event.key === 'ArrowLeft') { activeIndex = Math.max(0, activeIndex - 1); paintLightbox(); }
+          if (event.key === 'ArrowRight') { activeIndex = Math.min(activeSources.length - 1, activeIndex + 1); paintLightbox(); }
+        });
+
+        document.querySelectorAll('[data-proof-carousel]').forEach(function (root) {
+          var slides = Array.prototype.slice.call(root.querySelectorAll('[data-slide]'));
+          if (slides.length === 0) return;
+          var sources = slides.map(function (slide) { return slide.getAttribute('data-src'); });
+          var index = 0;
+          var prev = root.querySelector('[data-prev]');
+          var next = root.querySelector('[data-next]');
+          var count = root.querySelector('[data-count]');
+          function paint() {
+            slides.forEach(function (slide, i) { slide.classList.toggle('is-active', i === index); });
+            if (count) count.textContent = (index + 1) + ' / ' + slides.length;
+            if (prev) prev.disabled = index === 0;
+            if (next) next.disabled = index >= slides.length - 1;
+          }
+          if (prev) prev.addEventListener('click', function (event) { event.stopPropagation(); index = Math.max(0, index - 1); paint(); });
+          if (next) next.addEventListener('click', function (event) { event.stopPropagation(); index = Math.min(slides.length - 1, index + 1); paint(); });
+          slides.forEach(function (slide, i) {
+            slide.addEventListener('click', function () { openLightbox(sources, i); });
+          });
+          paint();
+        });
+      });
+  %body
+    %h1= @operation.name
+    .meta
+      - if @operation.ref.present?
+        %div= "#{t('operations.index.ref')} : #{@operation.ref}"
+      %div= "#{t('operations.index.date')} : #{l(@operation.date)}"
+      %div= "#{t('operations.index.status')} : #{t("operations.statuses.#{@operation.status}")}"
+      %div
+        = link_to 'stops.csv', 'stops.csv'
+
+    %p.stats-section-label= t('operations.export.operation_stats')
+    .stats
+      .stat
+        %strong= "#{board[:delivered] + board[:failed] + board[:exception]}/#{board[:total]}"
+        %span= t('operations.show.stops')
+      .stat{class: ('is-late' if board[:delay].to_i.positive?)}
+        %strong= board[:delay].nil? ? '—' : "#{board[:delay]} min"
+        %span= t('operations.show.cumulative_delay')
+      .stat.is-delivered
+        %strong= board[:delivered]
+        %span= t('operations.show.filter_delivered')
+      .stat.is-failed
+        %strong= board[:failed]
+        %span= t('operations.show.filter_failed')
+      .stat.is-exception
+        %strong= board[:exception]
+        %span= t('operations.show.filter_exception')
+      - if plan['distance'].to_f.positive?
+        .stat.is-metric
+          %strong= "#{(plan['distance'].to_f / 1000).round(1)} km"
+          %span= t('operations.export.distance')
+      - if plan['drive_time'].to_i.positive?
+        .stat.is-metric
+          %strong= format_hms.call(plan['drive_time'])
+          %span= t('operations.export.drive_time')
+      - Array(board[:units]).each do |unit|
+        - next unless unit[:delivery].to_f.positive? || unit[:pickup].to_f.positive?
+        .stat.is-metric
+          %strong= "#{unit[:delivered].to_f.round(2)} / #{unit[:delivery].to_f.round(2)}"
+          %span= unit[:label]
+
+    - @routes.each do |route|
+      - rboard = @route_boards[route]
+      - rsnap = route.route_snapshot || {}
+      - track = @track_paths[route.id]
+      %h2
+        = route.vehicle_name
+        - if route.ref.present?
+          = "(#{route.ref})"
+      %p.stats-section-label= t('operations.export.route_stats')
+      .stats
+        .stat
+          %strong= "#{rboard[:delivered] + rboard[:failed]}/#{rboard[:total]}"
+          %span= t('operations.show.stops')
+        .stat{class: ('is-late' if rboard[:delay].to_i.positive?)}
+          %strong= rboard[:delay].nil? ? '—' : "#{rboard[:delay]} min"
+          %span= t('operations.show.cumulative_delay')
+        - if rsnap['distance'].present?
+          .stat.is-metric
+            %strong= "#{(rsnap['distance'].to_f / 1000).round(1)} km"
+            %span= t('operations.export.distance')
+        - if rsnap['drive_time'].present?
+          .stat.is-metric
+            %strong= format_hms.call(rsnap['drive_time'])
+            %span= t('operations.export.drive_time')
+        - Array(rboard[:units]).each do |unit|
+          - next unless unit[:delivery].to_f.positive? || unit[:pickup].to_f.positive?
+          .stat.is-metric
+            %strong= "#{unit[:delivered].to_f.round(2)} / #{unit[:delivery].to_f.round(2)}"
+            %span= unit[:label]
+        - if track.present?
+          .stat.is-metric
+            %strong= link_to t('operations.export.track'), track
+            %span= t('operations.export.track_file')
+
+      %table
+        %thead
+          %tr
+            %th #
+            %th= t('operations.export.kind')
+            %th= t('operations.export.status')
+            %th= t('operations.export.address')
+            %th= t('operations.export.times')
+            %th= t('operations.export.quantities')
+            %th= t('operations.export.proofs')
+            %th= t('operations.export.delivery_note')
+        %tbody
+          - route.operation_stops.sort_by { |s| [s.index.to_i, s.id] }.each do |stop|
+            - paths = @media_paths[stop.id] || {}
+            - place = stop.list_fields
+            - proof_slides = Array(paths[:photos]) + Array(paths[:signature])
+            - snap = stop.stop_snapshot || {}
+            %tr
+              %td= stop.index
+              %td= stop.kind
+              %td
+                = stop.status_label.presence || stop.status
+                - if stop.delay_minutes
+                  .muted= "#{stop.delay_minutes.positive? ? '+' : ''}#{stop.delay_minutes} min"
+              %td
+                %div= place['name']
+                %div= [place['street'], place['postalcode'], place['city']].compact_blank.join(', ')
+                - if place['ref'].present? || place['visit_ref'].present?
+                  .muted= [place['ref'], place['visit_ref']].compact_blank.join(' · ')
+                - if place['comment'].present?
+                  .muted= place['comment']
+                - if place['phone_number'].present?
+                  .muted= place['phone_number']
+                - if snap['distance'].present? || snap['drive_time'].present?
+                  .muted
+                    - bits = []
+                    - bits << "#{(snap['distance'].to_f / 1000).round(2)} km" if snap['distance'].present?
+                    - bits << format_hms.call(snap['drive_time']) if snap['drive_time'].present?
+                    = bits.join(' · ')
+              %td
+                %div
+                  %span.muted= t('operations.show.arrival')
+                  = "#{stop.planned_arrival_clock.presence || '—'} / #{stop.actual_arrival_clock.presence || '—'}"
+                %div
+                  %span.muted= t('operations.show.departure')
+                  = "#{stop.planned_departure_clock.presence || '—'} / #{stop.actual_departure_clock.presence || '—'}"
+                - if stop.time_windows_label.present?
+                  .muted= stop.time_windows_label
+              %td
+                - lines = stop.quantity_lines
+                - if lines.any?
+                  - lines.each do |line|
+                    - reported = stop.actual_quantity(line[:kind], line[:unit_id])
+                    - actual = reported.nil? ? line[:value] : reported
+                    %div= "#{line[:label]} : #{actual} / #{line[:value]}"
+                - else
+                  = '—'
+              %td
+                - if proof_slides.any?
+                  .proof-carousel{data: { proof_carousel: true }}
+                    .proof-carousel-viewport
+                      - proof_slides.each_with_index do |src, i|
+                        %button.proof-slide{type: 'button', data: { slide: true, src: src }, class: (i.zero? ? 'is-active' : nil), aria: { label: t('operations.export.fullscreen') }}
+                          %img{src: src, alt: File.basename(src)}
+                    .proof-carousel-nav
+                      %button{type: 'button', data: { prev: true }, aria: { label: t('operations.export.prev') }} &lsaquo;
+                      %span.proof-carousel-count{data: { count: true }}
+                      %button{type: 'button', data: { next: true }, aria: { label: t('operations.export.next') }} &rsaquo;
+                - else
+                  .empty-proofs= '—'
+              %td
+                - if paths[:delivery_note].present?
+                  = link_to t('stops.delivery_note.title'), paths[:delivery_note]
+
+    .proof-lightbox{data: { proof_lightbox: true }, role: 'dialog', aria: { modal: true, label: t('operations.export.proofs') }}
+      .proof-lightbox-toolbar
+        %span.proof-lightbox-count{data: { lightbox_count: true }}
+        %button{type: 'button', data: { lightbox_close: true }, aria: { label: t('operations.export.close') }}= t('operations.export.close')
+      .proof-lightbox-nav
+        %button{type: 'button', data: { lightbox_prev: true }, aria: { label: t('operations.export.prev') }} &lsaquo;
+        %button{type: 'button', data: { lightbox_next: true }, aria: { label: t('operations.export.next') }} &rsaquo;
+      .proof-lightbox-stage{data: { lightbox_stage: true }}
+        %img{src: '', alt: '', data: { lightbox_img: true }}

@@ -74,7 +74,10 @@ ENV BUNDLE_WITHOUT="development:test"
 
 RUN apk add --no-cache \
     bash \
+    chromium \
+    freetype \
     geos \
+    harfbuzz \
     icu \
     imagemagick \
     imagemagick-heic \
@@ -82,12 +85,16 @@ RUN apk add --no-cache \
     imagemagick-webp \
     jemalloc \
     nodejs \
+    nss \
     postgresql-client \
     su-exec \
+    ttf-dejavu \
     tzdata \
     xz-libs \
     yarn \
     zlib
+
+ENV CHROMIUM_PATH=/usr/bin/chromium-browser
 
 WORKDIR /srv/app
 

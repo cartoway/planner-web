@@ -4012,8 +4012,30 @@ en:
       destroy_body: "To confirm, type the operation name: %{name}"
       destroy_confirm: Delete permanently
       destroy_input_label: Operation name
+    export:
+      kind: Type
+      status: Status
+      address: Address
+      times: Times (planned / actual)
+      quantities: Quantities
+      proofs: Proofs
+      delivery_note: Delivery note
+      note: 'Note:'
+      distance: Distance
+      drive_time: Drive time
+      track: Track
+      track_file: GeoJSON track
+      prev: Previous proof
+      next: Next proof
+      close: Close
+      fullscreen: View proof fullscreen
+      operation_stats: Operation summary
+      route_stats: Route summary
     show:
       planning: Source planning
+      export: Export
+      export_spreadsheet: Spreadsheet
+      export_archive: Archive (proofs)
       search_routes: Vehicle name or ref
       search_stops: Name, ref, street or city
       all_routes: All routes
