@@ -100,7 +100,7 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_select 'button[data-action="click->v2--plannings-index#compare"][data-min="2"]', 1
   end
 
-  test 'menu lists at most 10 recent plannings by updated_at' do
+  test 'menu lists at most 10 recent plannings by id' do
     enable_layout_v2!
     customer = @planning.customer
     customer.update_columns(max_plannings: 20)
@@ -113,17 +113,16 @@ class PlanningsControllerTest < ActionController::TestCase
         vehicle_usage_set: vehicle_usage_set
       )
     end
-    oldest = created.first
-    oldest.update_columns(updated_at: 1.year.ago)
-    newest = created.last
-    newest.update_columns(name: 'Newest Menu Plan', updated_at: Time.current)
+    expected_menu = customer.plannings.reorder(id: :desc).limit(10).reverse
+    expected_ids = expected_menu.map { |planning| ActionView::RecordIdentifier.dom_id(planning, :menu) }
+    dropped = customer.plannings.reorder(id: :desc).offset(10).first
 
     get :index
     assert_response :success
     assert_select '#planningsCollpase li[id^="menu_planning_"]', 10
     menu_ids = css_select('#planningsCollpase li[id^="menu_planning_"]').map { |li| li['id'] }
-    assert_equal ActionView::RecordIdentifier.dom_id(newest, :menu), menu_ids.first
-    refute_includes menu_ids, ActionView::RecordIdentifier.dom_id(oldest, :menu)
+    assert_equal expected_ids, menu_ids
+    refute_includes menu_ids, ActionView::RecordIdentifier.dom_id(dropped, :menu) if dropped
   ensure
     created&.each(&:destroy!)
     customer&.update_columns(max_plannings: 10)
