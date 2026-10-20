@@ -49,8 +49,8 @@ module OperationStops
       raise Error, 'same route' if @source_route.id == @target_route.id
       raise Error, 'different operation' if @source_route.operation_id != @target_route.operation_id
       raise Error, 'operation closed' unless @source_route.operation.open?
-      raise Error, 'target unassigned' if @target_route.unassigned? || @target_route.route_id.blank?
-      raise Error, 'source unassigned' if @source_route.unassigned? || @source_route.route_id.blank?
+      raise Error, 'target unassigned' if @target_route.route_id.blank?
+      raise Error, 'source unassigned' if @source_route.route_id.blank?
       raise Error, 'not a visit' unless @operation_stop.kind == 'visit'
     end
 

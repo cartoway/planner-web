@@ -201,7 +201,7 @@ class OperationRoutesController < ApplicationController
       return
     end
 
-    if @operation_route.unassigned || @operation_route.vehicle_id.blank?
+    if @operation_route.vehicle_id.blank?
       render plain: t('execution.mobile.unassigned'), status: :forbidden
       return
     end

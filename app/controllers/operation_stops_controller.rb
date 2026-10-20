@@ -127,7 +127,7 @@ class OperationStopsController < ApplicationController
   def set_driver_stop
     @operation_stop = OperationStop.find(params[:id])
     route = @operation_stop.operation_route
-    if route.unassigned || route.vehicle_id.blank?
+    if route.vehicle_id.blank?
       render plain: t('execution.mobile.unassigned'), status: :forbidden
       return
     end

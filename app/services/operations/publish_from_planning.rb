@@ -99,9 +99,9 @@ module Operations
       route_models = []
       stops_by_route = []
       selected.each_with_index do |route, index|
-        route_models << new_operation_route(operation, route, index, false, date, copy_cursor: false)
+        route_models << new_operation_route(operation, route, index)
         stops_by_route << route.stops.select(&:active?).map { |stop|
-          new_operation_stop(nil, stop, units_by_id, copy_cursor: false)
+          new_operation_stop(nil, stop, units_by_id)
         }
       end
 
@@ -121,30 +121,27 @@ module Operations
     end
 
     # Sync path: single-row create! (incremental adds).
-    def build_route(operation, route, index, unassigned, date, units_by_id, copy_cursor:, with_stops: true)
-      operation_route = new_operation_route(operation, route, index, unassigned, date, copy_cursor: copy_cursor)
+    def build_route(operation, route, index, units_by_id, with_stops: true)
+      operation_route = new_operation_route(operation, route, index)
       operation_route.save!
       return operation_route unless with_stops
 
       route.stops.each do |stop|
         next unless stop.active?
 
-        build_stop(operation_route, stop, units_by_id, copy_cursor: copy_cursor)
+        build_stop(operation_route, stop, units_by_id)
       end
       operation_route
     end
 
-    def build_stop(operation_route, stop, units_by_id, copy_cursor:)
+    def build_stop(operation_route, stop, units_by_id)
       return unless stop.active?
 
-      new_operation_stop(operation_route, stop, units_by_id, copy_cursor: copy_cursor).tap(&:save!)
+      new_operation_stop(operation_route, stop, units_by_id).tap(&:save!)
     end
 
-    def new_operation_route(operation, route, index, unassigned, date, copy_cursor:)
+    def new_operation_route(operation, route, index)
       vehicle = route.vehicle_usage&.vehicle
-      departure_status, departure_eta = leg(route.start_route_data, route.try(:departure_eta), date)
-      arrival_status, arrival_eta = leg(route.stop_route_data, route.try(:arrival_eta), date)
-      arrival_status ||= route.arrival_status
       OperationRoute.new(
         operation: operation,
         route: route,
@@ -154,22 +151,15 @@ module Operations
         ref: route.ref,
         color: route.color.presence || vehicle&.color,
         hidden: route.hidden || false,
-        unassigned: unassigned,
         sync_state: 'active',
         vehicle_snapshot: vehicle_snapshot_for(route, vehicle),
         vehicle_usage_snapshot: Snapshots.vehicle_usage(route.vehicle_usage),
         route_snapshot: Snapshots.route(route),
-        departure_status: copy_cursor ? departure_status : nil,
-        departure_eta: copy_cursor ? departure_eta : nil,
-        arrival_status: copy_cursor ? arrival_status : nil,
-        arrival_eta: copy_cursor ? arrival_eta : nil,
-        last_sent_at: copy_cursor ? route.last_sent_at : nil,
-        last_sent_to: copy_cursor ? route.last_sent_to : nil,
         custom_attributes: {}
       )
     end
 
-    def new_operation_stop(operation_route, stop, units_by_id, copy_cursor:)
+    def new_operation_stop(operation_route, stop, units_by_id)
       kind = Snapshots.kind_for(stop)
       visit = stop.visit
       destination = visit&.destination
@@ -190,15 +180,8 @@ module Operations
         visit_snapshot: kind == 'visit' ? Snapshots.visit(visit, units_by_id) : {},
         store_snapshot: Snapshots.store(store, stop.store_reload),
         stop_snapshot: Snapshots.stop(stop),
-        status: copy_cursor ? stop.status : nil,
-        eta: copy_cursor ? stop.eta : nil,
-        status_updated_at: copy_cursor ? stop.status_updated_at : nil,
         custom_attributes: stop.custom_attributes || {}
       )
-    end
-
-    def leg(route_data, fallback_eta, date)
-      [route_data&.status, Snapshots.timestamp_on(date, route_data&.eta || fallback_eta)]
     end
 
     def chosen_date

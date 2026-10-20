@@ -29,7 +29,6 @@ module Operations
 
       Operation.transaction do
         @units_by_id = @planning.customer.deliverable_units.index_by(&:id)
-        @date = @operation.date
         @available_route_ids = @operation.operation_routes.map(&:id)
         @available_stop_ids = @operation.operation_stops.map(&:id)
         @routes_by_route_id = index_routes(&:route_id)
@@ -150,18 +149,15 @@ module Operations
     end
 
     def create_route(route)
-      unassigned = route.vehicle_usage_id.nil?
-      PublishFromPlanning.new(@planning, false).send(:build_route, @operation, route, next_index(unassigned), unassigned, @date, @units_by_id, copy_cursor: false, with_stops: false)
+      PublishFromPlanning.new(@planning, false).send(:build_route, @operation, route, next_index, @units_by_id, with_stops: false)
     end
 
     def create_stop(operation_route, stop)
-      PublishFromPlanning.new(@planning, false).send(:build_stop, operation_route, stop, @units_by_id, copy_cursor: false)
+      PublishFromPlanning.new(@planning, false).send(:build_stop, operation_route, stop, @units_by_id)
     end
 
-    def next_index(unassigned)
-      return nil if unassigned
-
-      (@operation.operation_routes.where(unassigned: false).maximum(:index) || -1) + 1
+    def next_index
+      (@operation.operation_routes.maximum(:index) || -1) + 1
     end
 
     def refresh_route(operation_route, route)
@@ -175,7 +171,6 @@ module Operations
         ref: route.ref,
         color: route.color.presence || vehicle&.color,
         hidden: route.hidden || false,
-        unassigned: route.vehicle_usage_id.nil?,
         sync_state: 'active',
         vehicle_snapshot: Snapshots.vehicle(vehicle),
         vehicle_usage_snapshot: Snapshots.vehicle_usage(route.vehicle_usage),

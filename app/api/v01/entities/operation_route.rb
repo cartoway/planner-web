@@ -9,7 +9,6 @@ class V01::Entities::OperationRoute < Grape::Entity
   expose :index
   expose :ref
   expose :color
-  expose :unassigned
   expose :sync_state
   expose :route_id
   expose :vehicle_id

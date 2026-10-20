@@ -793,7 +793,6 @@ CREATE TABLE public.operation_routes (
     ref character varying(255),
     color character varying,
     hidden boolean DEFAULT false NOT NULL,
-    unassigned boolean DEFAULT false NOT NULL,
     sync_state character varying DEFAULT 'active'::character varying NOT NULL,
     vehicle_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
     vehicle_usage_snapshot jsonb DEFAULT '{}'::jsonb NOT NULL,
@@ -5094,6 +5093,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20261014120000'),
 ('20261014140000'),
 ('20261014150000'),
-('20261016140000');
+('20261016140000'),
+('20261020100000');
 
 

@@ -4269,7 +4269,6 @@ fr:
       pane_map: Carte
       started_group: Démarrées
       waiting_group: En attente
-      unassigned_badge: Non assigné
       refresh: Actualiser
       en_route: En route
       late: "Retard +%{count} min"
