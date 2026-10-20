@@ -3,19 +3,27 @@
 module Operations
   # Shared assigns for stops/delivery_note — used by UI print and export PDF.
   class DeliveryNoteDocument
-    def self.assigns(operation_stop, embed_logo: false, resize_images: true)
-      new(operation_stop, embed_logo: embed_logo, resize_images: resize_images).assigns
+    def self.assigns(operation_stop, embed_logo: false, resize_images: true, snapshots_only: false, include_proofs: true)
+      new(
+        operation_stop,
+        embed_logo: embed_logo,
+        resize_images: resize_images,
+        snapshots_only: snapshots_only,
+        include_proofs: include_proofs
+      ).assigns
     end
 
-    def initialize(operation_stop, embed_logo: false, resize_images: true)
+    def initialize(operation_stop, embed_logo: false, resize_images: true, snapshots_only: false, include_proofs: true)
       @operation_stop = operation_stop
       @embed_logo = embed_logo
       @resize_images = resize_images
+      @snapshots_only = snapshots_only
+      @include_proofs = include_proofs
       @customer = operation_stop.operation_route.operation.customer
     end
 
     def assigns
-      source = live_stop
+      source = @snapshots_only ? nil : live_stop
       payload = source ? assigns_from_live(source) : assigns_from_snapshots
       payload[:company_logo_url] = PrintImages.company_logo_data_uri(@customer) if @embed_logo
       payload
@@ -99,10 +107,13 @@ module Operations
     end
 
     def photos
+      return [] unless @include_proofs
+
       @operation_stop.photos.map { |photo| PrintImages.embedded(photo, resize: @resize_images) }
     end
 
     def signature
+      return unless @include_proofs
       return unless @operation_stop.signature.attached?
 
       PrintImages.embedded(@operation_stop.signature, resize: @resize_images)

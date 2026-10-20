@@ -25,7 +25,8 @@
     - quantity_label = number_with_precision(amount, precision: 2, delimiter: t('number.format.delimiter'), strip_insignificant_zeros: true)
     - order_lines << { unit: unit, quantity_label: quantity_label }
 - filled_cas = visit_stop_visit_custom_attributes(@visit).select { |ca| delivery_note_custom_attribute_displayable?(ca, @stop) }
-- visit_cas = @customer.custom_attributes.for_visit.select { |ca| delivery_note_custom_attribute_displayable?(ca, @visit) }
+- visit_attrs = @customer.custom_attributes
+- visit_cas = (visit_attrs.loaded? ? visit_attrs.select(&:visit?) : visit_attrs.for_visit).select { |ca| delivery_note_custom_attribute_displayable?(ca, @visit) }
 - attribute_sources = visit_cas.map { |ca| [ca, @visit] } + filled_cas.map { |ca| [ca, @stop] }
 - attribute_sources.sort_by! { |ca, _| [ca.object_type_before_type_cast, ca.name] }
 - attribute_lines = attribute_sources.map { |ca, object| { header: ca.name, value: delivery_note_custom_attribute_value(ca, object) } }

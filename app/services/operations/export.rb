@@ -46,6 +46,7 @@ module Operations
     def to_zip
       media_paths = {}
       track_paths = {}
+      pending_notes = []
       Zip::OutputStream.write_buffer do |zio|
         @routes.each do |route|
           rel = pack_route_track!(zio, route)
@@ -55,12 +56,18 @@ module Operations
         each_stop do |route, stop|
           paths = pack_stop_media!(zio, route, stop)
           if stop.delivery_note_exportable?
-            rel = "delivery_notes/stop_#{stop.id}.pdf"
-            zio.put_next_entry(rel)
-            zio.write DeliveryNotePdf.call(operation_stop: stop)
-            paths[:delivery_note] = rel
+            pending_notes << stop
+            paths[:delivery_note] = "delivery_notes/stop_#{stop.id}.pdf"
           end
           media_paths[stop.id] = paths
+        end
+
+        # One PDF file per delivery note; bounded WeasyPrint pool for export latency.
+        pdf_by_stop_id = render_delivery_note_pdfs(pending_notes)
+        pending_notes.each do |stop|
+          rel = media_paths[stop.id][:delivery_note]
+          zio.put_next_entry(rel)
+          zio.write pdf_by_stop_id.fetch(stop.id)
         end
 
         zio.put_next_entry('stops.csv')
@@ -87,6 +94,32 @@ module Operations
           yield route, stop
         end
       end
+    end
+
+    # ponytail: bounded WeasyPrint pool; raise EXPORT_PDF_POOL_SIZE if export hosts have spare CPU.
+    PDF_POOL_SIZE = (ENV['EXPORT_PDF_POOL_SIZE'].presence || 3).to_i
+
+    def render_delivery_note_pdfs(stops)
+      return {} if stops.empty?
+
+      size = [[PDF_POOL_SIZE, 1].max, stops.size].min
+      queue = Queue.new
+      stops.each_with_index { |stop, index| queue << [index, stop] }
+      size.times { queue << nil }
+
+      results = Array.new(stops.size)
+      workers = Array.new(size) {
+        Thread.new {
+          while (job = queue.pop)
+            index, stop = job
+            ActiveRecord::Base.connection_pool.with_connection do
+              results[index] = [stop.id, DeliveryNotePdf.call(operation_stop: stop)]
+            end
+          end
+        }
+      }
+      workers.each(&:join)
+      results.to_h
     end
 
     def route_board(route)
@@ -190,7 +223,7 @@ module Operations
 
       rel = "tracks/route_#{route.id}.geojson"
       zio.put_next_entry(rel)
-      zio.write JSON.pretty_generate(geojson)
+      zio.write JSON.generate(geojson)
       rel
     end
 

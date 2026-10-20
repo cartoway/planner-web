@@ -64,7 +64,8 @@ module VisitsHelper
   end
 
   def visit_stop_visit_custom_attributes(visit)
-    visit.destination.customer.custom_attributes.for_stop_visit.to_a
+    attrs = visit.destination.customer.custom_attributes
+    attrs.loaded? ? attrs.select(&:stop_visit?) : attrs.for_stop_visit.to_a
   end
 
   def visit_operation_stops(visit, include_past: false)

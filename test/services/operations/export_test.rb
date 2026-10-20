@@ -34,6 +34,22 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert queries.none? { |sql| sql.match?(/FROM ["`]?route_data["`]?/i) }, queries.join("\n")
   end
 
+  test 'export preload skips live planning graph' do
+    queries = []
+    counter = ->(*, payload) { queries << payload[:sql] unless payload[:name] == 'SCHEMA' }
+    ActiveSupport::Notifications.subscribed(counter, 'sql.active_record') do
+      Operations::DeliveryNotePdf.stubs(:call).returns("%PDF-1.4\n%%EOF\n")
+      Operations::Export.new(@operation).to_zip
+    end
+    joined = queries.join("\n")
+    assert queries.none? { |sql| sql.match?(/FROM ["`]?visits["`]?/i) }, joined
+    assert queries.none? { |sql| sql.match?(/FROM ["`]?destinations["`]?/i) }, joined
+    assert queries.none? { |sql| sql.match?(/FROM ["`]?stops["`]?/i) }, joined
+    assert queries.none? { |sql| sql.match?(/FROM ["`]?routes["`]?/i) }, joined
+    assert queries.none? { |sql| sql.match?(/FROM ["`]?route_data["`]?/i) }, joined
+    assert queries.none? { |sql| sql.match?(/FROM ["`]?plannings["`]?/i) }, joined
+  end
+
   test 'csv includes operation route and stop columns' do
     csv = Operations::Export.new(@operation).to_csv
     header, *rows = CSV.parse(csv)
@@ -78,6 +94,16 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes entries["tracks/route_#{route.id}.geojson"], 'LineString'
   end
 
+  test 'zip skips delivery notes when none exportable' do
+    @operation.operation_stops.update_all(status: 'pending')
+    Operations::DeliveryNotePdf.expects(:call).never
+
+    entries = zip_entries(Operations::Export.new(@operation.reload).to_zip)
+    assert_includes entries.keys, 'index.html'
+    assert_includes entries.keys, 'stops.csv'
+    assert entries.keys.none? { |name| name.start_with?('delivery_notes/') }
+  end
+
   test 'delivery note remains exportable without live stop_id' do
     @stop.update_columns(stop_id: nil)
     assert @stop.delivery_note_exportable?
@@ -88,6 +114,19 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes entries.keys, "delivery_notes/stop_#{@stop.id}.pdf"
   end
 
+  test 'zip writes one pdf file per delivery note' do
+    visits = @operation.operation_stops.select(&:visit?).first(2)
+    assert_operator visits.size, :>=, 2
+    visits.each { |stop| stop.update_columns(status: 'delivered') }
+
+    Operations::DeliveryNotePdf.stubs(:call).returns("%PDF-1.4\n%%EOF\n")
+    entries = zip_entries(Operations::Export.new(@operation.reload).to_zip)
+    visits.each do |stop|
+      assert_includes entries.keys, "delivery_notes/stop_#{stop.id}.pdf"
+    end
+    assert entries.keys.none? { |name| name == 'delivery_notes/delivery_notes.pdf' }
+  end
+
   test 'delivery note html uses the same template as operation stop print' do
     html = Operations::DeliveryNotePdf.new(@stop).html
     assert_includes html, 'delivery-note'
@@ -95,25 +134,30 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes html, 'delivery-note-signature'
     assert_includes html, 'btn-print'
     assert_includes html, I18n.t('stops.delivery_note.title')
-    assert_includes html, File.read(Rails.root.join('app/assets/stylesheets/v2/delivery_note.css')).lines.first.strip
+    assert_includes html, File.read(Rails.root.join('app/assets/stylesheets/v2/delivery_note_pdf.css')).lines.grep(/delivery-note-items thead/).first.to_s.strip
 
     ui = ApplicationController.render(
       template: 'stops/delivery_note',
       layout: 'operations/export_delivery_note',
-      assigns: Operations::DeliveryNoteDocument.assigns(@stop, embed_logo: true)
+      assigns: Operations::DeliveryNoteDocument.assigns(@stop, embed_logo: true, snapshots_only: true)
     )
     assert_equal ui, html
   end
 
-  test 'delivery note pdf is generated via chromium print stylesheet' do
-    skip 'Chromium not available' unless Operations::HtmlToPdf.available?
+  test 'export delivery note pdf uses snapshots only' do
+    pdf = Operations::DeliveryNoteDocument.assigns(@stop, embed_logo: true, snapshots_only: true)
+    assert_kind_of Operations::DeliveryNoteDocument::SnapshotRecord, pdf[:stop]
+    assert_kind_of Operations::DeliveryNoteDocument::SnapshotRecord, pdf[:destination]
+    assert_nil pdf[:route]
+    assert_nil pdf[:planning]
+    assert_operator pdf[:photos].size, :>=, 1
+    assert pdf[:signature]
+  end
 
-    WebMock.allow_net_connect!
-    pdf = Operations::DeliveryNotePdf.call(operation_stop: @stop)
-    assert_operator pdf, :start_with?, '%PDF'
-    assert_operator pdf.bytesize, :>, 1000
-  ensure
-    WebMock.disable_net_connect!
+  test 'export delivery note pdf embeds proofs when present' do
+    assigns = Operations::DeliveryNoteDocument.assigns(@stop, embed_logo: true, snapshots_only: true)
+    assert_operator assigns[:photos].size, :>=, 1
+    assert assigns[:signature]
   end
 
   private

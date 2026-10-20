@@ -15,7 +15,6 @@ ENV NODE_OPTIONS=--openssl-legacy-provider
 RUN apk add --no-cache \
     bash \
     build-base \
-    chromium \
     freetype \
     geos-dev \
     git \
@@ -30,18 +29,16 @@ RUN apk add --no-cache \
     libxml2-dev \
     libxslt-dev \
     nodejs \
-    nss \
     postgresql-dev \
     postgresql-client \
     ttf-dejavu \
     tzdata \
+    weasyprint \
     yarn \
     zlib-dev \
     vim \
     curl \
     wget
-
-ENV CHROMIUM_PATH=/usr/bin/chromium-browser
 
 WORKDIR /srv/app
 
