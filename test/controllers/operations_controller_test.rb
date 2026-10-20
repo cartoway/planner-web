@@ -378,6 +378,16 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes response.body, 'operation-send-drivers'
   end
 
+  test 'historized operation hides send to driver on routes' do
+    @operation.update_columns(status: 'historized', closed_at: Time.current)
+
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_not_includes response.body, I18n.t('plannings.edit.deliver_send.singular.transmit')
+    assert_not_includes response.body, I18n.t('operations.show.send_drivers')
+    assert_not_includes response.body, "data-channel='email'"
+  end
+
   test 'transmit emails the assigned drivers' do
     before = ActionMailer::Base.deliveries.size
     post :transmit, params: { id: @operation.id }
