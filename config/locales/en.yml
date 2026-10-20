@@ -3659,8 +3659,8 @@ en:
   notifications:
     sms:
       alert_plan: >-
-        Hello {NAME}. Your visit is planned {DATE} between {TIME-60} and
-        {TIME+60} in {CITY}. Track your delivery: {URL}
+        Hello {NAME}. Your visit is planned {DATE} between {TIME-5} and
+        {TIME+15} in {CITY}. Track your delivery: {URL}
       alert_driver: >-
         Hello, the {ROUTE_NAME} route has been assigned to you for {DATE} with {SIZE_ACTIVE} stops - {URL}
       alert_intransit: >-
@@ -3670,7 +3670,7 @@ en:
       alert_plan: |
         Hello {NAME},
 
-        Your delivery is planned on {DATE} between {TIME-60} and {TIME+60} in {CITY}.
+        Your delivery is planned on {DATE} between {TIME-5} and {TIME+15} in {CITY}.
   all:
     providers:
       entra_id: Microsoft Entra ID
