@@ -150,6 +150,13 @@ self.addEventListener('message', event => {
       });
       break;
     }
+    case 'CLEAR_CURRENT_POSITIONS': {
+      const url = event.data.payload && event.data.payload.url;
+      Array.from(pendingRequests.positions).forEach(position => {
+        if (!url || position.url === url) pendingRequests.positions.delete(position);
+      });
+      break;
+    }
     case 'STORE_STOP':
       pendingRequests.stops.add(event.data.payload);
       break;
@@ -312,8 +319,8 @@ function syncPositions() {
         notifyClients('POSITION_SYNCED', position);
         return;
       }
-      // Gone / wrong route: drop permanently (do not requeue — localStorage would loop forever).
-      if (response.status === 404 || response.status === 409) {
+      // Gone / closed / forbidden: drop permanently (do not requeue — localStorage would loop forever).
+      if (response.status === 404 || response.status === 409 || response.status === 403) {
         notifyClients('POSITION_DROPPED', position);
         return;
       }
@@ -328,9 +335,18 @@ function syncPositions() {
           notifyClients('STORE_POSITIONS', Array.from([position]));
           return;
         }
+        // 422 OperationNotOpen / validation: GPS will never succeed for this tour.
+        if (response.status === 422) {
+          notifyClients('POSITION_DROPPED', position);
+          return;
+        }
         throw new Error(`Failed to sync position: ${response.status}`);
-      }).catch(() => {
-        throw new Error(`Failed to sync position: ${response.status}`);
+      }).catch(error => {
+        if (response.status === 422) {
+          notifyClients('POSITION_DROPPED', position);
+          return;
+        }
+        throw error instanceof Error ? error : new Error(`Failed to sync position: ${response.status}`);
       });
     })
     .catch(error => {
