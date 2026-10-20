@@ -88,7 +88,8 @@ module OperationStops
           upcoming: board[:upcoming],
           current: board[:current],
           total: board[:total],
-          delay: board[:delay]
+          delay: board[:delay],
+          units: board[:units]
         }
       }
     end
