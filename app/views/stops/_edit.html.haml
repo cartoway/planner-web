@@ -107,19 +107,19 @@
             .col-xs-12
               %p.help-block
                 = custom_attribute.description
-      - if enable_driver_move && @transfer_routes.present?
-        %label#transfer-label
-          .col-xs-11.p-0
-            = t('stops.mobile.transfer')
-        .d-flex.align-items-center.justify-content-left.mb-1.row
-          .col-xs-12
-            .dropdown.route-select
-              %button.btn.btn-default.col-xs-12.dropdown-toggle{ type: 'button', data: { toggle: 'dropdown', title: t('plannings.edit.send_to_route_help') }, 'aria-expanded': 'false', 'aria-haspopup': 'true' }
-                = t('stops.mobile.back')
-              %ul.col-xs-12.dropdown-menu{ role: 'menu' }
-                - @transfer_routes.each do |other_route|
-                  %li
-                    %button.send_to_route.dropdown-item{ type: 'button', data: { stop_id: stop.id, url: transfer_stop_operation_operation_route_path(@operation_route.operation, @operation_route, stop_id: stop.id, target_operation_route_id: other_route.id, format: :json) } }
-                      %div.color_small{ style: "background: #{other_route.vehicle_color};" }
-                      = other_route.vehicle_name
   = render partial: 'stops/documents', locals: { stop: stop, customer: customer, confirm_photo_delete: local_assigns[:confirm_photo_delete] }
+  - if enable_driver_move && @transfer_routes.present?
+    %label#transfer-label
+      .col-xs-11.p-0
+        = t('stops.mobile.transfer')
+    .d-flex.align-items-center.justify-content-left.mb-1.row
+      .col-xs-12
+        .dropdown.route-select
+          %button.btn.btn-default.col-xs-12.dropdown-toggle{ type: 'button', data: { toggle: 'dropdown', title: t('plannings.edit.send_to_route_help') }, 'aria-expanded': 'false', 'aria-haspopup': 'true' }
+            = t('stops.mobile.back')
+          %ul.col-xs-12.dropdown-menu{ role: 'menu' }
+            - @transfer_routes.each do |other_route|
+              %li
+                %button.send_to_route.dropdown-item{ type: 'button', data: { stop_id: stop.id, url: transfer_stop_operation_operation_route_path(@operation_route.operation, @operation_route, stop_id: stop.id, target_operation_route_id: other_route.id, format: :json) } }
+                  %div.color_small{ style: "background: #{other_route.vehicle_color};" }
+                  = other_route.vehicle_name
