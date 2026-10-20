@@ -20,6 +20,8 @@ module TypedAttribute
             self.customer
           elsif self.is_a?(OperationStop)
             self.operation_route.operation.customer
+          elsif self.is_a?(OperationRoute)
+            self.operation.customer
           elsif self.is_a?(Stop)
             self.route.planning.customer
           elsif self.is_a?(Route)
@@ -32,11 +34,14 @@ module TypedAttribute
             when 'visit' then CustomAttribute.object_classes['stop_visit']
             when 'store' then CustomAttribute.object_classes['stop_store']
             end
+          elsif self.is_a?(OperationRoute)
+            CustomAttribute.object_classes['route']
           else
             CustomAttribute.object_classes[self.class.to_s.snakecase]
           end
         return {} if customer.nil? || current_type.nil?
 
+        route_like = self.is_a?(Route) || self.is_a?(OperationRoute)
         reference_attributes =
           if customer.association(current_attribute).loaded?
             customer.send(current_attribute).select do |custom_attribute|
@@ -44,7 +49,7 @@ module TypedAttribute
 
               if related_field.present?
                 custom_attribute.related_field == related_field.to_s
-              elsif related_field.nil? && self.is_a?(Route)
+              elsif related_field.nil? && route_like
                 custom_attribute.related_field.nil?
               else
                 true
@@ -54,8 +59,8 @@ module TypedAttribute
             scoped_attributes = customer.send(current_attribute).where(object_class: current_type)
             if related_field.present?
               scoped_attributes = scoped_attributes.where(related_field: related_field)
-            elsif related_field.nil? && self.is_a?(Route)
-              # For Route, if related_field is explicitly nil, only get attributes without related_field
+            elsif related_field.nil? && route_like
+              # For Route / OperationRoute, related_field nil means attributes without a related_field.
               scoped_attributes = scoped_attributes.where(related_field: nil)
             end
             scoped_attributes

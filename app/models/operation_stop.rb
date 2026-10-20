@@ -376,6 +376,54 @@ class OperationStop < ApplicationRecord
     [snap['name'], snap['ref'], snap['street'], snap['city']].compact_blank.join(' ').presence || address_label
   end
 
+  def name
+    place_snapshot['name'].presence || (kind == 'rest' ? I18n.t('stops.default.name_rest') : address_label)
+  end
+
+  def street
+    place_snapshot['street']
+  end
+
+  def postalcode
+    place_snapshot['postalcode']
+  end
+
+  def city
+    place_snapshot['city']
+  end
+
+  def detail
+    place_snapshot['detail']
+  end
+
+  def comment
+    place_snapshot['comment']
+  end
+
+  def phone_number
+    place_snapshot['phone_number']
+  end
+
+  def email
+    place_snapshot['email']
+  end
+
+  def position?
+    lat.present? && lng.present?
+  end
+
+  def mobile_icon
+    case kind
+    when 'store' then 'fa-warehouse'
+    when 'rest' then 'fa-mug-saucer'
+    else 'fa-map-marker'
+    end
+  end
+
+  def visit_custom_attributes_bag
+    (visit_snapshot || {})['custom_attributes'] || {}
+  end
+
   def lat
     raw = place_snapshot['lat']
     return if raw.blank?

@@ -10,6 +10,9 @@ class OperationRoute < ApplicationRecord
   has_many :operation_stops, dependent: :destroy
   has_many :vehicle_positions, dependent: :delete_all
 
+  include TypedAttribute
+  typed_attr :custom_attributes
+
   validates :sync_state, inclusion: { in: SYNC_STATES }
 
   scope :active_sync, -> { where(sync_state: 'active') }
@@ -237,8 +240,6 @@ class OperationRoute < ApplicationRecord
 
   def list_depot(store_key, time_key, status)
     place = (vehicle_usage_snapshot || {})[store_key]
-    # Snapshot may be empty when the depot comes from the usage set default.
-    place = Operations::Snapshots.place(vehicle_usage&.public_send("default_#{store_key}")) if place.blank?
     return if place.blank? || place['name'].blank?
 
     seconds = (route_snapshot || {})[time_key].presence

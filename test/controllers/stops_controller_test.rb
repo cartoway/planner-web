@@ -310,10 +310,24 @@ class StopsControllerTest < ActionController::TestCase
     assert_response :not_found
   end
 
-  # Tests for edit action
-  test 'should get edit page for driver' do
+  # Tests for edit action (planning mobile retired → redirect to operation mobile)
+  test 'edit redirects driver to operation route mobile' do
+    operation = Operations::PublishFromPlanning.call(planning: @planning)
+    operation_stop = operation.operation_stops.find_by!(stop_id: @stop.id)
+
     get :edit, params: { id: @stop, driver_token: @vehicle.driver_token }
-    assert_response :success
+    assert_redirected_to mobile_operation_operation_route_path(
+      operation,
+      operation_stop.operation_route,
+      driver_token: @vehicle.driver_token
+    )
+  ensure
+    Operation.where(customer_id: @planning.customer_id).delete_all
+  end
+
+  test 'edit returns gone when stop has no operation' do
+    get :edit, params: { id: @stop, driver_token: @vehicle.driver_token }
+    assert_response :gone
   end
 
   test 'should not get edit page without driver authentication' do

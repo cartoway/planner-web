@@ -102,8 +102,16 @@ class StopsController < ApplicationController
   end
 
   def edit
-    respond_to do |format|
-      format.html { render 'stops/edit', layout: 'v2/mobile' }
+    # Planning mobile is retired — send drivers to the operation route screen.
+    operation_stop = OperationStop.executable.find_by(stop_id: @stop.id)
+    if operation_stop
+      redirect_to mobile_operation_operation_route_path(
+        operation_stop.operation_route.operation,
+        operation_stop.operation_route,
+        driver_token: params[:driver_token]
+      )
+    else
+      head :gone
     end
   end
 

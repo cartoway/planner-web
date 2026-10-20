@@ -50,23 +50,35 @@ class OperationRoutesController < ApplicationController
   end
 
   def mobile
-    @route = Route.includes_vehicle_usages.find(@operation_route.route_id)
-    @stops = @route.stops.includes_destinations_and_stores.only_active
-    apply_operation_status(@stops)
+    customer = @operation_route.operation.customer
+    # TypedAttribute#custom_attributes_typed_hash hits customer.custom_attributes per stop unless loaded.
+    custom_attributes = customer.custom_attributes.to_a
+    @stops = @operation_route.operation_stops
+                             .executable
+                             .with_attached_photos
+                             .with_attached_signature
+                             .order(:index)
+                             .to_a
+    @stops.each { |stop| stop.association(:operation_route).target = @operation_route }
+    @transfer_routes = if ValueToBoolean.value_to_boolean(customer.devices.dig(:deliver, :driver_move))
+                         @operation_route.operation.operation_routes.planned.to_a.reject { |route|
+                           route.id == @operation_route.id
+                         }
+                       else
+                         []
+                       end
     @mobile_position_url = update_position_operation_operation_route_path(@operation_route.operation, @operation_route)
-    render 'routes/mobile', locals: {
-      route: @route,
-      enable_driver_move: ValueToBoolean.value_to_boolean(current_vehicle.customer.devices.dig(:deliver, :driver_move)),
-      date: @operation_route.operation.date,
+    render 'operation_routes/mobile', locals: {
+      enable_driver_move: @transfer_routes.any?,
       is_expired: @operation_route.expired? || !@operation_route.operation.open?,
-      visit_custom_attributes: current_vehicle.customer.custom_attributes.for_visit.visible_on_mobile,
-      vehicle_custom_attributes: current_vehicle.customer.custom_attributes.for_vehicle.visible_on_mobile,
-      route_custom_attributes: current_vehicle.customer.custom_attributes.for_route.without_related_field.visible_on_mobile,
-      stop_visit_custom_attributes: current_vehicle.customer.custom_attributes.for_stop_visit,
-      stop_store_custom_attributes: current_vehicle.customer.custom_attributes.for_stop_store,
-      start_route_data_custom_attributes: current_vehicle.customer.custom_attributes.for_route.for_related_field('start_route_data').visible_on_mobile,
-      stop_route_data_custom_attributes: current_vehicle.customer.custom_attributes.for_route.for_related_field('stop_route_data').visible_on_mobile,
-      customer: current_vehicle.customer,
+      visit_custom_attributes: custom_attributes.select { |a| a.object_class == 'visit' && a.mobile_visible },
+      vehicle_custom_attributes: custom_attributes.select { |a| a.object_class == 'vehicle' && a.mobile_visible },
+      route_custom_attributes: custom_attributes.select { |a| a.object_class == 'route' && a.related_field.nil? && a.mobile_visible },
+      stop_visit_custom_attributes: custom_attributes.select { |a| a.object_class == 'stop_visit' },
+      stop_store_custom_attributes: custom_attributes.select { |a| a.object_class == 'stop_store' },
+      start_route_data_custom_attributes: custom_attributes.select { |a| a.object_class == 'route' && a.related_field == 'start_route_data' && a.mobile_visible },
+      stop_route_data_custom_attributes: custom_attributes.select { |a| a.object_class == 'route' && a.related_field == 'stop_route_data' && a.mobile_visible },
+      customer: customer,
       vehicle: current_vehicle
     }, layout: 'v2/mobile'
   end
@@ -125,22 +137,6 @@ class OperationRoutesController < ApplicationController
   end
 
   private
-
-  def apply_operation_status(stops)
-    @operation_stops_by_stop_id = @operation_route.operation_stops.where.not(stop_id: nil).index_by(&:stop_id)
-    stops.each do |stop|
-      operation_stop = @operation_stops_by_stop_id[stop.id]
-      next unless operation_stop
-
-      stop.status = operation_stop.status
-      stop.status_updated_at = operation_stop.status_updated_at
-    end
-    if @operation_route.custom_attributes.present?
-      @route.custom_attributes = @operation_route.custom_attributes
-    end
-    @route.start_route_data.status = @operation_route.departure_status if @route.start_route_data
-    @route.stop_route_data.status = @operation_route.arrival_status if @route.stop_route_data
-  end
 
   def merge_custom_attributes(record, incoming)
     return if incoming.blank?

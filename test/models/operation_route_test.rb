@@ -7,25 +7,16 @@ class OperationRouteTest < ActiveSupport::TestCase
     Operation.where(customer_id: customers(:customer_one).id).delete_all
   end
 
-  test 'list_depots falls back to usage-set default stores when snapshot is empty' do
+  test 'list_depots ignores empty store snapshots without loading live usage' do
     operation = Operations::PublishFromPlanning.call(planning: plannings(:planning_one))
     route = operation.operation_routes.planned.first
-    usage = route.vehicle_usage
-    set_start = usage.vehicle_usage_set.store_start
-    set_stop = usage.vehicle_usage_set.store_stop
-    assert set_start
-    assert set_stop
-
-    usage.update_columns(store_start_id: nil, store_stop_id: nil)
     route.update_columns(
       vehicle_usage_snapshot: route.vehicle_usage_snapshot.merge('store_start' => {}, 'store_stop' => {})
     )
-    route.reload
-    usage.reload
 
-    departure, arrival = route.list_depots
-    assert_equal set_start.name, departure[:name]
-    assert_equal set_stop.name, arrival[:name]
+    departure, arrival = route.reload.list_depots
+    assert_nil departure
+    assert_nil arrival
   end
 
   test 'publish snapshots usage-set default stores on the operation route' do

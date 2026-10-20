@@ -102,6 +102,8 @@ module StopsHelper
   end
 
   def formatted_stop_inroute_sms(stop)
+    return formatted_operation_stop_inroute_sms(stop) if stop.is_a?(OperationStop)
+
     customer = stop.route.planning.customer
     repl = {
         time: Time.now.at_beginning_of_day + stop.time,
@@ -112,6 +114,47 @@ module StopsHelper
     content = service.content(template, replacements: repl, time_format: :hour_minute)
     phone_number = stop.visit.destination.phone_number && service.format_phone_number(stop.visit.destination.phone_number, stop.visit.destination.country || customer.default_country)
     { phone_number: phone_number, content: content }
+  end
+
+  def formatted_operation_stop_inroute_sms(operation_stop)
+    customer = operation_stop.operation_route.operation.customer
+    snap = operation_stop.destination_snapshot || {}
+    seconds = operation_stop.stop_snapshot&.[]('time').to_i
+    repl = {
+      time: Time.now.at_beginning_of_day + seconds,
+      customer_name: customer.name,
+      'name' => snap['name'],
+      'street' => snap['street'],
+      'city' => snap['city']
+    }
+    template = customer.sms_intransit_template || I18n.t('notifications.sms.alert_intransit')
+    service = MessagingService.new(customer.reseller)
+    content = service.content(template, replacements: repl, time_format: :hour_minute)
+    phone = snap['phone_number']
+    phone_number = phone.present? && service.format_phone_number(phone, snap['country'].presence || customer.default_country)
+    { phone_number: phone_number, content: content }
+  end
+
+  # Build pickup/delivery rows from operation route_snapshot hashes + deliverable units catalog.
+  def operation_route_quantities(operation_route)
+    catalog = operation_route.operation.quantity_catalog
+    pickups = operation_route.route_snapshot['pickups'] || {}
+    deliveries = operation_route.route_snapshot['deliveries'] || {}
+    (catalog.keys | pickups.keys.map(&:to_s) | deliveries.keys.map(&:to_s)).filter_map do |unit_id|
+      unit = catalog[unit_id] || {}
+      pickup = pickups[unit_id].to_f
+      pickup = pickups[unit_id.to_i].to_f if pickup.zero? && pickups.key?(unit_id.to_i)
+      delivery = deliveries[unit_id].to_f
+      delivery = deliveries[unit_id.to_i].to_f if delivery.zero? && deliveries.key?(unit_id.to_i)
+      next if pickup.zero? && delivery.zero?
+
+      {
+        pickup: number_with_precision(pickup, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
+        delivery: number_with_precision(delivery, precision: 2, delimiter: I18n.t('number.format.delimiter'), strip_insignificant_zeros: true),
+        label: unit['label'].presence || unit['ref'].presence || unit_id,
+        unit_icon: unit['icon'].presence || DeliverableUnit::ICON_DEFAULT
+      }
+    end
   end
 
   def sms_uri_body(content)

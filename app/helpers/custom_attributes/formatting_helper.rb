@@ -33,11 +33,20 @@ module CustomAttributes
 
     def mobile_custom_attribute_value(custom_attribute, object, related_field: nil)
       storage_key = CustomAttribute.storage_key_for(custom_attribute.name, related_field: related_field)
-      raw_custom_attributes = object.custom_attributes || {}
+      raw_custom_attributes =
+        if object.is_a?(Hash)
+          object
+        else
+          object.custom_attributes || {}
+        end
       has_value = raw_custom_attributes.key?(storage_key)
       value =
         if has_value
-          object.custom_attributes_typed_hash(related_field: related_field)[custom_attribute.name]
+          if object.is_a?(Hash)
+            object_type_cast(custom_attribute.object_type, raw_custom_attributes[storage_key])
+          else
+            object.custom_attributes_typed_hash(related_field: related_field)[custom_attribute.name]
+          end
         else
           custom_attribute.typed_default_value
         end
