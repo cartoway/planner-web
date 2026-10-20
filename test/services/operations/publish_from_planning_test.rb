@@ -180,17 +180,14 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     assert_nil operation.operation_stops.find_by(stop_id: stops(:stop_one_one).id)
   end
 
-  test 'sync orphans a stop removed from the planning route' do
+  test 'sync destroys a stop removed from the planning route' do
     operation = Operations::PublishFromPlanning.call(planning: @planning)
-    stop = operation.operation_stops.find_by!(stop_id: stops(:stop_one_one).id)
-    planning_stop = stops(:stop_one_one)
-    planning_stop.update_columns(route_id: routes(:route_zero_one).id)
+    stop_id = operation.operation_stops.find_by!(stop_id: stops(:stop_one_one).id).id
+    stops(:stop_one_one).update_columns(route_id: routes(:route_zero_one).id)
 
     Operations::SyncFromPlanning.call(planning: @planning.reload, operation: operation.reload)
 
-    stop.reload
-    assert_equal 'orphaned', stop.sync_state
-    assert_equal false, stop.active
+    assert_nil OperationStop.find_by(id: stop_id)
   end
 
   test 'board splits delivered quantities from quantities still to load' do
@@ -386,24 +383,49 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     assert_equal 'active', outside.operation_route.sync_state
   end
 
-  test 'sync with orphan_unselected marks deselected routes orphaned' do
+  test 'sync with selection omits routes without removing them' do
     route_a = routes(:route_one_one)
     route_b = routes(:route_three_one)
     operation = Operations::PublishFromPlanning.call(planning: @planning, route_ids: [route_a.id, route_b.id])
-    kept = operation.operation_routes.find_by!(route_id: route_a.id)
-    dropped = operation.operation_routes.find_by!(route_id: route_b.id)
+    kept_a = operation.operation_routes.find_by!(route_id: route_a.id)
+    kept_b = operation.operation_routes.find_by!(route_id: route_b.id)
+    snapshot_before = kept_b.route_snapshot.deep_dup
 
     Operations::SyncFromPlanning.call(
       planning: @planning.reload,
       operation: operation,
       route_ids: [route_a.id],
-      orphan_unselected: true
+      update_selection_meta: true
+    )
+
+    assert_equal 'active', kept_a.reload.sync_state
+    assert_equal 'active', kept_b.reload.sync_state
+    assert_equal snapshot_before, kept_b.route_snapshot
+    assert_equal [route_a.id, route_b.id].sort, operation.reload.custom_attributes['_route_ids'].map(&:to_i).sort
+  end
+
+  test 'sync with desync_route_ids destroys those routes and their stops' do
+    route_a = routes(:route_one_one)
+    route_b = routes(:route_three_one)
+    operation = Operations::PublishFromPlanning.call(planning: @planning, route_ids: [route_a.id, route_b.id])
+    kept = operation.operation_routes.find_by!(route_id: route_a.id)
+    dropped = operation.operation_routes.find_by!(route_id: route_b.id)
+    dropped_id = dropped.id
+    dropped_stop_ids = dropped.operation_stops.pluck(:id)
+    assert dropped_stop_ids.any?
+
+    Operations::SyncFromPlanning.call(
+      planning: @planning.reload,
+      operation: operation,
+      route_ids: [route_a.id],
+      desync_route_ids: [route_b.id],
+      update_selection_meta: true
     )
 
     assert_equal 'active', kept.reload.sync_state
-    assert_equal 'orphaned', dropped.reload.sync_state
-    assert dropped.operation_stops.reload.all? { |stop| stop.sync_state == 'orphaned' }
-    assert_equal [route_a.id], operation.reload.custom_attributes['_route_ids']
+    assert_nil OperationRoute.find_by(id: dropped_id)
+    assert_empty OperationStop.where(id: dropped_stop_ids)
+    assert_equal [route_a.id], operation.reload.custom_attributes['_route_ids'].map(&:to_i)
   end
 
   test 'sync targets the given operation among several open ones' do
@@ -419,18 +441,17 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     assert_equal 'in_progress', second.reload.status
   end
 
-  test 'sync marks a deleted stop orphaned and keeps its events' do
+  test 'sync destroys a stop deleted from the planning' do
     operation = Operations::PublishFromPlanning.call(planning: @planning)
     stop = operation.operation_stops.find_by!(visit_id: visits(:visit_one).id)
+    stop_id = stop.id
     OperationStops::RecordStatus.call(operation_stop: stop, status: 'started', recorded_at: Time.zone.parse('2026-09-25 09:00'), source: 'mobile')
-    planning_stop_id = stop.stop_id
-    Stop.where(id: planning_stop_id).delete_all
+    Stop.where(id: stop.stop_id).delete_all
 
     Operations::SyncFromPlanning.call(planning: @planning.reload, operation: operation.reload)
-    stop.reload
-    assert_equal 'orphaned', stop.sync_state
-    assert_equal 1, stop.operation_stop_status_events.count
-    assert_equal 'started', stop.status
+
+    assert_nil OperationStop.find_by(id: stop_id)
+    assert_empty OperationStopStatusEvent.where(operation_stop_id: stop_id)
   end
 
   test 'routes_for preloads destinations and vehicles for snapshots' do

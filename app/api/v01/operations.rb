@@ -193,7 +193,6 @@ class V01::Operations < Grape::API
       requires :id, type: Integer
       optional :route_ids, type: Array[Integer], coerce_with: CoerceArrayInteger
       optional :stop_ids, type: Array[Integer], coerce_with: CoerceArrayInteger
-      optional :orphan_policy, type: Symbol, values: %i[mark cancel], default: :mark
     end
     post ':id/sync' do
       operation = find_operation!
@@ -203,8 +202,7 @@ class V01::Operations < Grape::API
         planning: planning,
         operation: operation,
         route_ids: params[:route_ids],
-        stop_ids: params[:stop_ids],
-        orphan_policy: params[:orphan_policy]
+        stop_ids: params[:stop_ids]
       )
       status 200
       present operation.reload, with: V01::Entities::Operation, type: :full
