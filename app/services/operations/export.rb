@@ -18,6 +18,8 @@ module Operations
       stop_distance_m stop_drive_time_s stop_wait_time_s
       note quantities photos signature delivery_note track_file
     ].freeze
+    # ponytail: bounded WeasyPrint pool; raise EXPORT_PDF_POOL_SIZE if export hosts have spare CPU.
+    PDF_POOL_SIZE = (ENV['EXPORT_PDF_POOL_SIZE'].presence || 3).to_i
 
     def initialize(operation)
       @operation = operation
@@ -96,13 +98,10 @@ module Operations
       end
     end
 
-    # ponytail: bounded WeasyPrint pool; raise EXPORT_PDF_POOL_SIZE if export hosts have spare CPU.
-    PDF_POOL_SIZE = (ENV['EXPORT_PDF_POOL_SIZE'].presence || 3).to_i
-
     def render_delivery_note_pdfs(stops)
       return {} if stops.empty?
 
-      size = [[PDF_POOL_SIZE, 1].max, stops.size].min
+      size = PDF_POOL_SIZE.clamp(1, stops.size)
       queue = Queue.new
       stops.each_with_index { |stop, index| queue << [index, stop] }
       size.times { queue << nil }
