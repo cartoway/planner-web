@@ -47,6 +47,27 @@ class RouteMobileTest < ActiveSupport::TestCase
     assert_includes last_response.body, "data-controller='mobile'"
     assert_includes last_response.body, 'importmap'
     assert_includes last_response.body, "/operations/#{@operation.id}/routes/#{@operation_route.id}/update_position"
+    assert_includes last_response.body, 'mobile-sync-pending'
+    assert_includes last_response.body, 'mobile-sync-failed'
+    assert_includes last_response.body, 'mobile-sync-ok'
+    assert_includes last_response.body, I18n.t('routes.mobile.sync_ok')
+    assert_includes last_response.body, 'location-switch'
+  end
+
+  test 'expired mobile tour hides tracking and marks the page expired' do
+    vehicle = @route.vehicle_usage.vehicle
+    last_stop = @operation_route.operation_stops.executable.where(kind: 'visit').order(:index).last
+    last_stop.update!(stop_snapshot: last_stop.stop_snapshot.merge('time' => 1.hour.to_i))
+    @operation.allow_past_date = true
+    @operation.update!(date: Date.current - 2)
+
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
+
+    assert_equal 200, last_response.status
+    assert @operation_route.reload.expired?
+    assert_match(/data-mobile-expired-value=['"]true['"]/, last_response.body)
+    refute_includes last_response.body, 'location-switch'
+    assert_includes last_response.body, I18n.t('errors.routes.expired')
   end
 
   test 'should always show stop visit custom attributes on mobile' do

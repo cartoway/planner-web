@@ -68,9 +68,10 @@ class OperationRoutesController < ApplicationController
                          []
                        end
     @mobile_position_url = update_position_operation_operation_route_path(@operation_route.operation, @operation_route)
+    @mobile_expired = @operation_route.expired? || !@operation_route.operation.open?
     render 'operation_routes/mobile', locals: {
       enable_driver_move: @transfer_routes.any?,
-      is_expired: @operation_route.expired? || !@operation_route.operation.open?,
+      is_expired: @mobile_expired,
       visit_custom_attributes: custom_attributes.select { |a| a.object_class == 'visit' && a.mobile_visible },
       vehicle_custom_attributes: custom_attributes.select { |a| a.object_class == 'vehicle' && a.mobile_visible },
       route_custom_attributes: custom_attributes.select { |a| a.object_class == 'route' && a.related_field.nil? && a.mobile_visible },

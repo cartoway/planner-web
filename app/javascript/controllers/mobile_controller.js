@@ -20,7 +20,7 @@ function escapeAttr (value) {
 // Driver route screen: status, photos, signature and GPS.
 // Offline writes stay in localStorage / IndexedDB and flush through the service worker.
 export default class extends Controller {
-  static values = { positionUrl: String }
+  static values = { positionUrl: String, expired: Boolean }
 
   connect () {
     this._dead = false
@@ -43,7 +43,13 @@ export default class extends Controller {
     this.registerServiceWorker()
     // Drop GPS queued for another operation/route — otherwise SW replays the old URL forever.
     this.discardStalePositions()
-    if (sessionStorage.getItem('tracking_value') !== 'false') this.startTracking()
+    if (this.expiredValue) {
+      // Past / historized tour: status UI is locked — stop GPS retries that only fail.
+      this.discardCurrentPositions()
+      this.stopTracking()
+    } else if (sessionStorage.getItem('tracking_value') !== 'false') {
+      this.startTracking()
+    }
     this.flushPending()
   }
 
@@ -95,10 +101,11 @@ export default class extends Controller {
   }
 
   sendCurrentPosition () {
+    if (this.expiredValue) return
     if (sessionStorage.getItem('tracking_value') === 'false') return
     if (!navigator.geolocation || !this.positionUrlValue) return
     navigator.geolocation.getCurrentPosition((position) => {
-      if (this._dead) return
+      if (this._dead || this.expiredValue) return
       const { latitude, longitude, accuracy, altitude, heading, speed } = position.coords
       const body = {
         latitude,
@@ -115,8 +122,8 @@ export default class extends Controller {
         return
       }
       this.patchJson(this.positionUrlValue, body).catch((error) => {
-        // 404/409: route gone — never queue, would loop forever on a dead URL.
-        if (this._dead || this.isGoneError(error)) return
+        // 404/409/422: route gone or closed — never queue, would loop forever on a dead URL.
+        if (this._dead || this.expiredValue || this.isGoneError(error)) return
         this.queuePosition(body)
       })
     }, () => {}, { enableHighAccuracy: true, maximumAge: 30_000, timeout: 20_000 })
@@ -134,12 +141,28 @@ export default class extends Controller {
     this.postToWorker('CLEAR_STALE_POSITIONS', { url: current })
   }
 
+  // Drop GPS for this tour (expired / historized — server will keep rejecting).
+  discardCurrentPositions () {
+    const current = this.positionUrlValue
+    Object.keys(localStorage).forEach((key) => {
+      if (!key.startsWith('position_')) return
+      const item = this.readStored(key)
+      if (!item) {
+        localStorage.removeItem(key)
+        return
+      }
+      if (!current || item.url === current) localStorage.removeItem(key)
+    })
+    this.postToWorker('CLEAR_CURRENT_POSITIONS', { url: current })
+  }
+
   clearQueuedPosition (id) {
     if (id == null) return
     localStorage.removeItem(`position_${id}`)
   }
 
   queuePosition (body) {
+    if (this.expiredValue || !this.positionUrlValue) return
     const item = { id: Date.now(), url: this.positionUrlValue, coords: body }
     this.showPending()
     this.postToWorker('STORE_POSITION', item)
@@ -836,12 +859,16 @@ export default class extends Controller {
   onServiceMessage (event) {
     const type = event.data && event.data.type
     const payload = event.data && event.data.data
-    if (type === 'POSITION_SYNCED' || type === 'POSITION_DROPPED') {
+    if (type === 'POSITION_SYNCED') {
+      this.clearQueuedPosition(payload && payload.id)
+      this.showSynced()
+    }
+    if (type === 'POSITION_DROPPED') {
       this.clearQueuedPosition(payload && payload.id)
       this.hidePending()
     }
     if (type === 'STOP_SYNCED' || type === 'ROUTE_SYNCED') {
-      this.hidePending()
+      this.showSynced()
     }
     if (type === 'PHOTO_SYNCED') {
       this.deleteQueuedPhoto(payload && payload.id)
@@ -849,7 +876,7 @@ export default class extends Controller {
         const panel = this.findPhotoPanel(payload.panelUrl || payload.url)
         if (panel) this.renderPhotos(panel, payload.photos)
       }
-      this.hidePending()
+      this.showSynced()
     }
     if (type === 'PHOTO_REJECTED') {
       this.deleteQueuedPhoto(payload && payload.id)
@@ -873,18 +900,23 @@ export default class extends Controller {
 
   flushPending () {
     if (!navigator.onLine) return
-    this.registerSync('sync-positions')
+    if (!this.expiredValue) this.registerSync('sync-positions')
     this.registerSync('sync-stops')
     this.registerSync('sync-photos')
     Object.keys(localStorage).forEach((key) => {
       const item = this.readStored(key)
       if (!item) return
+      if (key.startsWith('position_') && this.expiredValue) {
+        localStorage.removeItem(key)
+        return
+      }
+      this._syncAwaiting = true
       const request = key.startsWith('position_')
         ? this.patchJson(item.url, item.coords)
         : this.sendStoredForm(item)
       request
         .then(() => localStorage.removeItem(key))
-        .then(() => this.hidePending())
+        .then(() => this.showSynced())
         .catch((error) => {
           // Drop dead GPS URLs from the queue; keep stops/routes for retry.
           if (key.startsWith('position_') && this.isGoneError(error)) {
@@ -935,7 +967,8 @@ export default class extends Controller {
   // Permanent failures: do not keep retrying GPS to a missing operation route.
   isGoneError (error) {
     const status = String(error && error.message)
-    return status === '404' || status === '409'
+    // 422 = operation closed / route no longer accepts GPS (or validation).
+    return status === '404' || status === '409' || status === '422' || status === '403'
   }
 
   sendForm (url, formData) {
@@ -978,6 +1011,9 @@ export default class extends Controller {
   }
 
   showPending () {
+    this._syncAwaiting = true
+    this.hideSynced()
+    document.getElementById('mobile-sync-failed')?.classList.add('d-none')
     document.getElementById('mobile-sync-pending')?.classList.remove('d-none')
   }
 
@@ -985,9 +1021,31 @@ export default class extends Controller {
     document.getElementById('mobile-sync-pending')?.classList.add('d-none')
   }
 
+  hideSynced () {
+    document.getElementById('mobile-sync-ok')?.classList.add('d-none')
+    window.clearTimeout(this._syncedTimer)
+  }
+
+  // After pending/failed queue drains, briefly confirm that sync is back.
+  showSynced () {
+    if (!this._syncAwaiting) {
+      this.hidePending()
+      return
+    }
+    this._syncAwaiting = false
+    this.hidePending()
+    document.getElementById('mobile-sync-failed')?.classList.add('d-none')
+    const node = document.getElementById('mobile-sync-ok')
+    if (!node) return
+    node.classList.remove('d-none')
+    window.clearTimeout(this._syncedTimer)
+    this._syncedTimer = window.setTimeout(() => this.hideSynced(), 3000)
+  }
+
   showFailed (message) {
     const node = document.getElementById('mobile-sync-failed')
     if (!node) return
+    this._syncAwaiting = true
     const span = node.querySelector('span')
     if (span) {
       if (!span.dataset.defaultText) span.dataset.defaultText = span.textContent
@@ -995,6 +1053,7 @@ export default class extends Controller {
       span.style.whiteSpace = message && String(message).includes('\n') ? 'pre-line' : ''
     }
     this.hidePending()
+    this.hideSynced()
     node.classList.remove('d-none')
     window.clearTimeout(this._failedTimer)
     this._failedTimer = window.setTimeout(() => {
