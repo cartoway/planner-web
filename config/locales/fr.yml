@@ -4077,14 +4077,14 @@ fr:
     sync_confirm: Voulez-vous vraiment mettre à jour les tournées en cours d’exécution ?
     sync_modal:
       title: Synchroniser l’opération
-      help: Les tournées non sélectionnées seront marquées comme désynchronisées.
+      help: Le sélecteur choisit les tournées à mettre à jour. Désactivez une tournée dans la liste pour la retirer de l’opération.
       change_add: ajout de la tournée à l'opération
       change_update: mise à jour de la tournée dans l'opération
       change_desync: suppression de la tournée de l'opération
-      change_unchanged: conservation de la tournée dans l'opération
       change_unchanged: tournée à jour
       stops_delta: '%{delta} arrêts'
       summary: '%{sync} à synchroniser · %{desync} à désynchroniser'
+      desync_confirm: Des tournées seront retirées de l’opération. Tout status ou document associé sera perdu. Continuer ?
     show: Voir
     open_tracking: Ouvrir l'opération
     routes_count:

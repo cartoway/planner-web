@@ -201,6 +201,7 @@ var initPlanningExecution = function(planningId) {
   });
 
   // Sync modal: same selector↔list wiring as create modal, plus dirty/desync hints.
+  // Selector = which routes to update. List toggle off + in_operation = desync (remove).
   var syncModal = function() { return $('#planning-sync-modal'); };
   var syncSelector = function() { return $('#sync-route-selector'); };
   var syncLabels = {};
@@ -209,6 +210,7 @@ var initPlanningExecution = function(planningId) {
   } catch (_e) { syncLabels = {}; }
   var syncChanges = {};
   var syncOpenSelectedIds = [];
+  var syncLastDesyncCount = 0;
   var syncingSync = false;
   var syncRouteChecklist = null;
   var syncFlagTrue = function(value) {
@@ -256,6 +258,23 @@ var initPlanningExecution = function(planningId) {
     if (!parts.length) return '';
     return String(syncLabels.stops_delta || '%{delta}').replace('%{delta}', parts.join(' '));
   };
+  var syncFormatStopsCount = function(stops) {
+    var $m = syncModal();
+    var tpl = stops === 1 ? ($m.data('stops-count-one') || '') : ($m.data('stops-count-other') || '');
+    return String(tpl).replace('%{count}', stops);
+  };
+  var collectDesyncRouteIds = function() {
+    var ids = [];
+    syncRows().each(function() {
+      var $row = $(this);
+      if ($row.hasClass('hidden')) return;
+      var routeId = syncRouteId($row);
+      var $box = $row.find('.sync-route-checkbox');
+      if ($box.prop('disabled')) return;
+      if (!$box.prop('checked') && syncInOperation(routeId)) ids.push(routeId);
+    });
+    return ids;
+  };
   var refreshSyncChanges = function() {
     var syncCount = 0;
     var desyncCount = 0;
@@ -267,7 +286,8 @@ var initPlanningExecution = function(planningId) {
         return;
       }
       var routeId = syncRouteId($row);
-      var checked = $row.find('.sync-route-checkbox').prop('checked');
+      var $box = $row.find('.sync-route-checkbox');
+      var checked = $box.prop('checked') && !$box.prop('disabled');
       var inOperation = syncInOperation(routeId);
       var dirty = syncIsDirty(routeId);
       var text = '';
@@ -289,24 +309,28 @@ var initPlanningExecution = function(planningId) {
       $row.toggleClass('is-sync-change', !!(checked && (dirty || !inOperation)));
       $row.toggleClass('is-sync-desync', !!(!checked && inOperation));
     });
+    syncLastDesyncCount = desyncCount;
     var $summary = syncModal().find('#sync-change-summary');
     if ($summary.length) {
       $summary.text(String(syncLabels.summary || '').replace('%{sync}', syncCount).replace('%{desync}', desyncCount))
         .toggle(syncCount > 0 || desyncCount > 0);
     }
+    var $submit = syncModal().find('#sync-submit');
+    $submit.toggleClass('btn-danger', desyncCount > 0).toggleClass('btn-primary', desyncCount === 0);
   };
   var refreshSyncCount = function() {
     var $countEl = syncModal().find('#sync-route-count');
     var template = $countEl.data('template');
     var n = syncEnabledBoxes().filter(':checked').length;
     if ($countEl.length && template) $countEl.text(String(template).replace('%{count}', n));
-    syncModal().find('#sync-submit').prop('disabled', n === 0);
     refreshSyncChanges();
+    // Allow submit when updating checked routes or when desyncing via toggle.
+    syncModal().find('#sync-submit').prop('disabled', n === 0 && syncLastDesyncCount === 0);
   };
   // Unique names: create modal later redeclares syncListFromSelector in this same
   // function scope (var hoisting) and would overwrite these if named the same.
-  // Selector = which routes appear in the list. List toggle = submitted route_ids[].
-  // Unchecking a toggle must not uncheck the selector (different behaviours).
+  // Selector = which routes appear / are updated. Unchecking selector must NOT desync:
+  // disable the list checkbox so it is omitted from route_ids[] without orphaning.
   var applySyncListFromSelector = function(checkedIds) {
     var selected = {};
     (checkedIds || []).forEach(function(id) { selected[String(id)] = true; });
@@ -317,15 +341,65 @@ var initPlanningExecution = function(planningId) {
       var $box = $row.find('.sync-route-checkbox');
       var wasHidden = $row.hasClass('hidden');
       $row.toggleClass('hidden', !inSelector);
-      if ($box.prop('disabled')) return;
       if (!inSelector) {
-        $box.prop('checked', false).removeData('user-touched');
-      } else if (wasHidden || !$box.data('user-touched')) {
+        // Exclude from update submit; keep checked so re-select restores membership intent.
+        $box.prop('disabled', true);
+        return;
+      }
+      $box.prop('disabled', false);
+      if (wasHidden || !$box.data('user-touched')) {
         $box.prop('checked', true);
       }
     });
     syncOpenSelectedIds = (checkedIds || []).map(String);
     refreshSyncCount();
+  };
+  var setSyncRouteLabel = function(routeId, name) {
+    if (!name) return;
+    var id = String(routeId);
+    syncRows().filter(function() {
+      return syncRouteId($(this)) === id;
+    }).find('.sync-route-name').text(name);
+    var $option = syncSelector().find('.searchable-checklist-dropdown-option').filter(function() {
+      return String($(this).data('item-id')) === id;
+    });
+    if (!$option.length) return;
+    $option.find('.searchable-checklist-dropdown-label').text(name);
+    var filterLabel = String(name).toLowerCase();
+    $option.attr('data-filter-label', filterLabel).data('filter-label', filterLabel);
+  };
+  var setSyncRouteMeta = function($row, hidden, locked, stops) {
+    var $box = $row.find('.sync-route-checkbox');
+    var routeId = syncRouteId($row);
+    var empty = stops <= 0;
+    var hiddenStr = hidden ? 'true' : 'false';
+    var lockedStr = locked ? 'true' : 'false';
+    $row.attr('data-hidden', hiddenStr).data('hidden', hiddenStr);
+    $row.attr('data-locked', lockedStr).data('locked', lockedStr);
+    $row.attr('data-stops', stops).data('stops', stops);
+    $box.attr('data-hidden', hiddenStr).data('hidden', hiddenStr);
+    $box.attr('data-locked', lockedStr).data('locked', lockedStr);
+    $box.attr('data-stops', stops).data('stops', stops);
+    $row.find('.sync-route-stops').text(syncFormatStopsCount(stops));
+    if (syncRouteChecklist) {
+      syncRouteChecklist.setItemData(routeId, { stops: stops, hidden: hiddenStr, locked: lockedStr });
+      syncRouteChecklist.setItemVisible(routeId, !empty);
+    }
+  };
+  var applySyncRoutesFromSummary = function(summary) {
+    var byId = {};
+    ((summary && summary.routes) || []).forEach(function(route) {
+      byId[String(route.route_id)] = route;
+    });
+    syncRows().each(function() {
+      var $row = $(this);
+      var routeId = syncRouteId($row);
+      var route = byId[routeId];
+      if (!route) return;
+      var stops = parseInt((route.data || {}).size_active, 10) || 0;
+      setSyncRouteMeta($row, syncFlagTrue(route.hidden), syncFlagTrue(route.locked), stops);
+      setSyncRouteLabel(routeId, route.name);
+    });
   };
   var ensureSyncChecklist = function() {
     var $selector = syncSelector();
@@ -348,9 +422,12 @@ var initPlanningExecution = function(planningId) {
       });
     return syncRouteChecklist;
   };
-  var openSyncModal = function(operationId, data) {
+  var openSyncModal = function(operationId, data, summary) {
     var $syncModal = syncModal();
     if (!$syncModal.length) return;
+
+    ensureSyncChecklist();
+    if (summary) applySyncRoutesFromSummary(summary);
 
     syncChanges = data && data.route_changes;
     if (!syncChanges || typeof syncChanges !== 'object' || Array.isArray(syncChanges)) syncChanges = {};
@@ -392,8 +469,26 @@ var initPlanningExecution = function(planningId) {
       applySyncListFromSelector(syncOpenSelectedIds);
     });
 
+  $(document).off('submit.planningSync', '#planning-sync-form')
+    .on('submit.planningSync', '#planning-sync-form', function(event) {
+      var $form = $(this);
+      $form.find('input[name="desync_route_ids[]"]').remove();
+      var desyncIds = collectDesyncRouteIds();
+      if (desyncIds.length) {
+        if (!confirm(syncLabels.desync_confirm || '')) {
+          event.preventDefault();
+          return false;
+        }
+        desyncIds.forEach(function(id) {
+          $('<input type="hidden">').attr({ name: 'desync_route_ids[]', value: id }).appendTo($form);
+        });
+      }
+      // Re-enable hidden boxes briefly? No — they must stay out of route_ids[].
+      return true;
+    });
+
   // Document-level: survives #planning-execution morph/replace.
-  // SyncPreview is fetched on click (not embedded in the card) so planning mutations stay cheap.
+  // SyncPreview + planning summary on click so the selector matches live planning state.
   $(document).off('click.planningSync', '.planning-execution-sync')
     .on('click.planningSync', '.planning-execution-sync', function(event) {
       event.preventDefault();
@@ -403,19 +498,22 @@ var initPlanningExecution = function(planningId) {
       if (!operationId || !planningId) return;
 
       $btn.prop('disabled', true);
-      $.ajax({
+      var previewReq = $.ajax({
         type: 'GET',
         url: '/plannings/' + planningId + '/operation_sync_preview.json',
-        data: { operation_id: operationId },
-        beforeSend: beforeSendWaiting,
-        success: function(data) {
-          openSyncModal(operationId, data);
-        },
-        complete: function() {
-          $btn.prop('disabled', false);
-          completeAjaxMap();
-        },
-        error: ajaxError
+        data: { operation_id: operationId }
+      });
+      var summaryReq = $.ajax({
+        type: 'GET',
+        url: '/plannings/' + planningId + '/summary.json',
+        dataType: 'json'
+      });
+      beforeSendWaiting();
+      $.when(previewReq, summaryReq).done(function(previewRes, summaryRes) {
+        openSyncModal(operationId, previewRes[0], summaryRes[0]);
+      }).fail(ajaxError).always(function() {
+        $btn.prop('disabled', false);
+        completeAjaxMap();
       });
     });
 

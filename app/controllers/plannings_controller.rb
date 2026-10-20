@@ -838,13 +838,14 @@ class PlanningsController < ApplicationController
     route_ids = if selection || params.key?(:route_ids)
                   Array(params[:route_ids])
                 end
+    desync_route_ids = params.key?(:desync_route_ids) ? Array(params[:desync_route_ids]) : nil
     Operations::SyncFromPlanning.call(
       planning: @planning,
       operation: operation,
       route_ids: route_ids,
       stop_ids: params[:stop_ids],
-      orphan_policy: params[:orphan_policy].presence || :mark,
-      orphan_unselected: selection
+      desync_route_ids: desync_route_ids,
+      update_selection_meta: selection
     )
     redirect_to edit_planning_path(@planning), notice: t('execution.synced')
   rescue Operations::EmptyRoutes
