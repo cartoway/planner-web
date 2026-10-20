@@ -18,7 +18,10 @@ class ServiceWorkerPhotosTest < ActiveSupport::TestCase
     assert_includes mobile, 'clearQueuedPosition'
     assert_includes mobile, "this.postToWorker('CLEAR_STALE_POSITIONS'"
     assert_includes mobile, 'isGoneError'
-    assert_includes mobile, "key.startsWith('position_') && this.isGoneError(error)"
+    assert_includes mobile, "this.isGoneError(error) && (key.startsWith('position_') || key.startsWith('stop_update_') || key.startsWith('route_update_'))"
+    assert_includes sw, "dropEvent: 'STOP_DROPPED'"
+    assert_includes mobile, "type === 'STOP_DROPPED'"
+    assert_includes mobile, 'clearQueuedForm'
     assert_includes stops, 'queuePhotoUpload'
     assert_includes stops, 'planner-mobile-photos'
     assert_includes stops, 'xhr.status === 404'

@@ -34,7 +34,10 @@ function isGoneError (error) {
 }
 
 function dropOnGone (storage, key, error) {
-  if (key.startsWith('position_') && isGoneError(error)) delete storage[key]
+  if (!isGoneError(error)) return
+  if (key.startsWith('position_') || key.startsWith('stop_update_') || key.startsWith('route_update_')) {
+    delete storage[key]
+  }
 }
 
 function discardCurrentPositions (storage, currentUrl) {
@@ -66,6 +69,12 @@ const closed = {
 }
 dropOnGone(closed, 'position_4', new Error('422'))
 if (closed.position_4) throw new Error('expected 422 (closed/expired) to drop queued position')
+
+const missingStop = {
+  stop_update_7: JSON.stringify({ id: 7, url: '/operation_stops/4602' })
+}
+dropOnGone(missingStop, 'stop_update_7', new Error('404'))
+if (missingStop.stop_update_7) throw new Error('expected 404 to drop queued stop update')
 
 const expiredTour = {
   position_5: JSON.stringify({ id: 5, url: '/operations/1/routes/10/update_position', coords: {} }),
