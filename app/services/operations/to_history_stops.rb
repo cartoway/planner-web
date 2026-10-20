@@ -27,7 +27,6 @@ module Operations
 
     def rows
       routes = @operation.operation_routes.to_a
-      routes = routes.reject(&:unassigned)
       routes.filter_map { |operation_route| row_for(operation_route) }
     end
 

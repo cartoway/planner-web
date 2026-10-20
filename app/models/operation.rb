@@ -80,15 +80,14 @@ class Operation < ApplicationRecord
     keys = %i[delivered failed exception late upcoming current total]
     summed = keys.index_with { |key| parts.sum { |part| part[key].to_i } }
     delays = parts.filter_map { |part| part[:delay] }
-    sendable = routes.reject(&:unassigned)
     summed.merge(
       delay: (delays.sum if delays.any?),
       distance: parts.sum { |part| part[:distance].to_f },
       units: merged_units(parts.flat_map { |part| part[:units] }),
       rest: summed[:total] - summed[:delivered] - summed[:failed] - summed[:exception],
-      sent: sendable.count { |route| route.last_sent_at.present? },
-      routes: sendable.size,
-      plan: plan_totals(sendable)
+      sent: routes.count { |route| route.last_sent_at.present? },
+      routes: routes.size,
+      plan: plan_totals(routes)
     )
   end
 

@@ -13,7 +13,7 @@ class OperationRoute < ApplicationRecord
   validates :sync_state, inclusion: { in: SYNC_STATES }
 
   scope :active_sync, -> { where(sync_state: 'active') }
-  scope :planned, -> { active_sync.where(unassigned: false) }
+  scope :planned, -> { active_sync }
   scope :includes_for_show, -> {
     includes(:operation, :vehicle, :operation_stops)
   }
@@ -137,8 +137,6 @@ class OperationRoute < ApplicationRecord
   end
 
   def started?
-    return false if unassigned || vehicle_id.nil?
-
     departure_status.present? || operation_stops.any? { |stop| stop.status.present? }
   end
 

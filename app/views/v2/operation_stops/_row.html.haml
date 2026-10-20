@@ -9,7 +9,7 @@
         - if operation.date
           %span.text-muted= l(operation.date)
       .related-item-meta.small
-        %span.related-item-index{class: ('is-unassigned' if stop.operation_route.unassigned), style: "background: #{stop.operation_route.vehicle_color}"}
+        %span.related-item-index{style: "background: #{stop.operation_route.vehicle_color}"}
           = stop.index
         %span.text-muted= stop.operation_route.vehicle_name
         - if status_code
