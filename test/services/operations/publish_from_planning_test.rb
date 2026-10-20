@@ -38,7 +38,7 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     assert_equal routes.sum { |route| route.board[:distance] }, board[:distance]
     assert_operator board[:delivered], :>, routes.first.board[:delivered]
     assert_equal 0, board[:sent]
-    assert_equal routes.count { |route| !route.unassigned }, board[:routes]
+    assert_equal routes.size, board[:routes]
 
     routes.first.update_columns(last_sent_at: Time.current, last_sent_to: 'email')
     assert_equal 1, operation.board[:sent]
@@ -160,7 +160,6 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     operation = Operations::PublishFromPlanning.call(planning: @planning)
 
     assert_nil operation.operation_routes.find_by(route_id: routes(:route_zero_one).id)
-    assert operation.operation_routes.where(unassigned: true).none?
     assert_nil operation.operation_stops.find_by(stop_id: inactive.id)
     assert operation.operation_stops.where(stop_id: stops(:stop_one_one).id).exists?
 

@@ -40,7 +40,6 @@ class CreateOperations < ActiveRecord::Migration[6.1]
       t.string :ref, limit: 255
       t.string :color
       t.boolean :hidden, null: false, default: false
-      t.boolean :unassigned, null: false, default: false
       t.string :sync_state, null: false, default: 'active'
       t.jsonb :vehicle_snapshot, null: false, default: {}
       t.jsonb :vehicle_usage_snapshot, null: false, default: {}
