@@ -1,22 +1,20 @@
 # frozen_string_literal: true
 
-require 'csv'
 require 'zip'
 require 'json'
 
 module Operations
-  # Spreadsheet + ZIP archive (HTML report, CSV, proofs, delivery notes, tracks) for one operation.
+  # Spreadsheet + ZIP archive (HTML report, XLSX, proofs, delivery notes, tracks) for one operation.
   class Export
     CSV_HEADERS = %w[
       operation_date operation_ref operation_name operation_status
-      operation_delivered operation_failed operation_exception operation_total operation_delay_min
       route_index route_ref vehicle_name driver_email driver_phone
-      route_delivered route_failed route_exception route_total route_distance_m route_drive_time_s route_duration_s
+      route_distance_m route_drive_time_s route_duration_s
       stop_index stop_kind stop_status destination_ref visit_ref name street postalcode city country phone email detail comment
       lat lng
       planned_arrival planned_departure actual_arrival actual_departure delay_minutes time_windows
       stop_distance_m stop_drive_time_s stop_wait_time_s
-      note quantities photos signature delivery_note track_file
+      quantities photos signature delivery_note
     ].freeze
     # ponytail: bounded WeasyPrint pool; raise EXPORT_PDF_POOL_SIZE if export hosts have spare CPU.
     PDF_POOL_SIZE = (ENV['EXPORT_PDF_POOL_SIZE'].presence || 3).to_i
@@ -25,6 +23,7 @@ module Operations
       @operation = operation
       @routes = preload_routes
       @operation_board = @operation.board(routes: @routes)
+      @stop_custom_attributes = stop_custom_attribute_definitions
     end
 
     def basename
@@ -32,17 +31,12 @@ module Operations
       parts.compact.join('_').tr('/', '-').delete('"')
     end
 
-    def to_csv(excel: false, media_paths: {}, track_paths: {})
-      options = excel ? { col_sep: ';', row_sep: "\r\n" } : {}
-      body = CSV.generate(**options) do |csv|
-        csv << CSV_HEADERS
-        each_stop do |route, stop|
-          csv << row_for(route, stop, media_paths[stop.id] || {}, track_paths[route.id])
-        end
+    def to_xlsx
+      rows = [header_labels]
+      each_stop do |route, stop|
+        rows << row_for(route, stop)
       end
-      return body unless excel
-
-      body.encode(I18n.t('encoding'), invalid: :replace, undef: :replace, replace: '')
+      build_xlsx(rows)
     end
 
     def to_zip
@@ -72,8 +66,8 @@ module Operations
           zio.write pdf_by_stop_id.fetch(stop.id)
         end
 
-        zio.put_next_entry('stops.csv')
-        zio.write to_csv(excel: true, media_paths: media_paths, track_paths: track_paths)
+        zio.put_next_entry('stops.xlsx')
+        zio.write to_xlsx
 
         zio.put_next_entry('index.html')
         zio.write render_index(media_paths, track_paths)
@@ -81,6 +75,105 @@ module Operations
     end
 
     private
+
+    def header_labels
+      CSV_HEADERS.map { |key| I18n.t("operations.export.columns.#{key}") } +
+        @stop_custom_attributes.map(&:name)
+    end
+
+    def stop_custom_attribute_definitions
+      attrs = @operation.customer.custom_attributes
+      list = if attrs.loaded?
+               attrs.select { |attribute| attribute.stop_visit? || attribute.stop_store? }
+             else
+               attrs.where(object_class: %i[stop_visit stop_store]).to_a
+             end
+      list.sort_by(&:name).uniq(&:name)
+    end
+
+    # Minimal OOXML workbook (no extra gem): one sheet, inline strings + numbers.
+    def build_xlsx(rows)
+      Zip::OutputStream.write_buffer do |zio|
+        zio.put_next_entry('[Content_Types].xml')
+        zio.write <<~XML
+          <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+            <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+            <Default Extension="xml" ContentType="application/xml"/>
+            <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+            <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+          </Types>
+        XML
+
+        zio.put_next_entry('_rels/.rels')
+        zio.write <<~XML
+          <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+            <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+          </Relationships>
+        XML
+
+        zio.put_next_entry('xl/workbook.xml')
+        zio.write <<~XML
+          <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+            <sheets>
+              <sheet name="Stops" sheetId="1" r:id="rId1"/>
+            </sheets>
+          </workbook>
+        XML
+
+        zio.put_next_entry('xl/_rels/workbook.xml.rels')
+        zio.write <<~XML
+          <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+          <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+            <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+          </Relationships>
+        XML
+
+        zio.put_next_entry('xl/worksheets/sheet1.xml')
+        zio.write xlsx_sheet_xml(rows)
+      end.string
+    end
+
+    def xlsx_sheet_xml(rows)
+      xml = +%Q(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n)
+      xml << %Q(<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>)
+      rows.each_with_index do |row, row_index|
+        r = row_index + 1
+        xml << %Q(<row r="#{r}">)
+        row.each_with_index do |value, col_index|
+          ref = "#{xlsx_col_name(col_index)}#{r}"
+          if value.nil?
+            next
+          elsif value.is_a?(Numeric)
+            xml << %Q(<c r="#{ref}"><v>#{value}</v></c>)
+          else
+            xml << %Q(<c r="#{ref}" t="inlineStr"><is><t>#{xlsx_escape(value)}</t></is></c>)
+          end
+        end
+        xml << '</row>'
+      end
+      xml << '</sheetData></worksheet>'
+    end
+
+    def xlsx_col_name(index)
+      name = +''
+      n = index + 1
+      while n.positive?
+        n, rem = (n - 1).divmod(26)
+        name.prepend(('A'.ord + rem).chr)
+      end
+      name
+    end
+
+    def xlsx_escape(value)
+      value.to_s
+           .gsub(/[\x00-\x08\x0B\x0C\x0E-\x1F]/, '')
+           .gsub('&', '&amp;')
+           .gsub('<', '&lt;')
+           .gsub('>', '&gt;')
+    end
 
     def preload_routes
       ActiveRecord::Associations::Preloader.new.preload(@operation, customer: :custom_attributes)
@@ -126,32 +219,21 @@ module Operations
       @route_boards[route.id] ||= route.board
     end
 
-    def row_for(route, stop, paths, track_file)
+    def row_for(route, stop)
       place = stop.list_fields
       dest = stop.destination_snapshot.presence || stop.store_snapshot || {}
       snap = stop.stop_snapshot || {}
-      board = @operation_board
-      rboard = route_board(route)
       rsnap = route.route_snapshot || {}
       [
         @operation.date,
         @operation.ref,
         @operation.name,
         @operation.status,
-        board[:delivered],
-        board[:failed],
-        board[:exception],
-        board[:total],
-        board[:delay],
         route.index,
         route.ref,
         route.vehicle_name,
         route.driver_email,
         route.driver_phone,
-        rboard[:delivered],
-        rboard[:failed],
-        rboard[:exception],
-        rboard[:total],
         rsnap['distance'],
         rsnap['drive_time'],
         rsnap['duration'],
@@ -180,13 +262,45 @@ module Operations
         snap['distance'],
         snap['drive_time'],
         snap['wait_time'],
-        stop.custom_attributes.is_a?(Hash) ? stop.custom_attributes['_note'] : nil,
         quantities_label(stop),
-        Array(paths[:photos]).join(' | '),
-        paths[:signature],
-        paths[:delivery_note],
-        track_file
+        stop.photos.size,
+        export_yes_no(stop.signature.attached?),
+        export_yes_no(stop.delivery_note_exportable?),
+        *@stop_custom_attributes.map { |attribute| stop_custom_attribute_value(stop, attribute) }
       ]
+    end
+
+    def export_yes_no(present)
+      present ? I18n.t('all.value._yes') : I18n.t('all.value._no')
+    end
+
+    def stop_custom_attribute_value(stop, definition)
+      return unless stop_custom_attribute_applies?(stop, definition)
+
+      bag = (stop.stop_snapshot&.[]('custom_attributes') || {}).merge(stop.custom_attributes || {})
+      key = CustomAttribute.storage_key_for(definition.name)
+      return unless bag.key?(key)
+
+      format_stop_custom_attribute(definition, bag[key])
+    end
+
+    def stop_custom_attribute_applies?(stop, definition)
+      (definition.stop_visit? && stop.kind == 'visit') || (definition.stop_store? && stop.kind == 'store')
+    end
+
+    def format_stop_custom_attribute(definition, value)
+      case definition.object_type
+      when 'boolean'
+        ActiveRecord::Type::Boolean.new.cast(value) ? I18n.t('all.value._yes') : I18n.t('all.value._no')
+      when 'integer'
+        value.nil? ? nil : value.to_i
+      when 'float'
+        value.nil? ? nil : value.to_f
+      when 'array'
+        Array(value).reject(&:blank?).join(' / ').presence
+      else
+        value
+      end
     end
 
     def quantities_label(stop)

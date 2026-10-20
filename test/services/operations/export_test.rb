@@ -50,24 +50,43 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert queries.none? { |sql| sql.match?(/FROM ["`]?plannings["`]?/i) }, joined
   end
 
-  test 'csv includes operation route and stop columns' do
-    csv = Operations::Export.new(@operation).to_csv
-    header, *rows = CSV.parse(csv)
-    status_idx = header.index('stop_status')
-    row = rows.find { |cells| cells[status_idx] == 'delivered' }
+  test 'xlsx includes translated operation route and stop columns' do
+    xlsx = Operations::Export.new(@operation).to_xlsx
+    assert_equal 'PK', xlsx.byteslice(0, 2)
 
-    assert_includes header, 'operation_name'
-    assert_includes header, 'vehicle_name'
-    assert_includes header, 'stop_status'
-    assert_includes header, 'operation_delivered'
-    assert_includes header, 'planned_arrival'
-    assert_includes header, 'delay_minutes'
-    assert row, 'expected a CSV row for the delivered stop'
-    assert_equal @operation.name, row[header.index('operation_name')]
-    assert_equal @stop.index.to_s, row[header.index('stop_index')]
+    sheet = xlsx_sheet_xml(xlsx)
+    assert_includes sheet, I18n.t('operations.export.columns.operation_name')
+    assert_includes sheet, I18n.t('operations.export.columns.vehicle_name')
+    assert_includes sheet, I18n.t('operations.export.columns.stop_status')
+    assert_includes sheet, I18n.t('operations.export.columns.planned_arrival')
+    assert_includes sheet, I18n.t('operations.export.columns.delay_minutes')
+    assert_includes sheet, @operation.name
+    assert_includes sheet, 'delivered'
+    assert_includes sheet, @stop.index.to_s
   end
 
-  test 'zip includes html csv media delivery note pdf tracks and carousel' do
+  test 'xlsx includes stop custom attribute columns and filled values' do
+    @stop.update_columns(custom_attributes: (@stop.custom_attributes || {}).merge('stop_custom_field' => 'note chauffeur'))
+
+    sheet = xlsx_sheet_xml(Operations::Export.new(@operation.reload).to_xlsx)
+    assert_includes sheet, 'stop_custom_field'
+    assert_includes sheet, 'stop_priority'
+    assert_includes sheet, 'stop_urgent'
+    assert_includes sheet, 'note chauffeur'
+    refute_includes sheet, 'visit_info_visible'
+  end
+
+  test 'xlsx proof columns use photo count and yes no flags' do
+    sheet = xlsx_sheet_xml(Operations::Export.new(@operation).to_xlsx)
+    assert_includes sheet, I18n.t('operations.export.columns.photos')
+    assert_includes sheet, I18n.t('operations.export.columns.signature')
+    assert_includes sheet, I18n.t('operations.export.columns.delivery_note')
+    assert_includes sheet, ">#{@stop.photos.size}<"
+    assert_includes sheet, I18n.t('all.value._yes')
+    refute_includes sheet, 'media/route_'
+  end
+
+  test 'zip includes html xlsx media delivery note pdf tracks and carousel' do
     route = @stop.operation_route
     route.update_columns(
       route_snapshot: (route.route_snapshot || {}).merge(
@@ -80,7 +99,7 @@ class OperationsExportTest < ActiveSupport::TestCase
     entries = zip_entries(zip_io)
 
     assert_includes entries.keys, 'index.html'
-    assert_includes entries.keys, 'stops.csv'
+    assert_includes entries.keys, 'stops.xlsx'
     assert entries.keys.any? { |name| name.start_with?("media/route_#{route.id}/stop_#{@stop.id}/photos/") }
     assert entries.keys.any? { |name| name.start_with?("media/route_#{route.id}/stop_#{@stop.id}/signature") }
     assert_includes entries.keys, "delivery_notes/stop_#{@stop.id}.pdf"
@@ -90,6 +109,7 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes html, 'data-proof-carousel'
     assert_includes html, 'data-proof-lightbox'
     assert_includes html, I18n.t('operations.show.cumulative_delay')
+    assert_includes html, 'stops.xlsx'
     assert_operator entries["delivery_notes/stop_#{@stop.id}.pdf"], :start_with?, '%PDF'
     assert_includes entries["tracks/route_#{route.id}.geojson"], 'LineString'
   end
@@ -100,7 +120,7 @@ class OperationsExportTest < ActiveSupport::TestCase
 
     entries = zip_entries(Operations::Export.new(@operation.reload).to_zip)
     assert_includes entries.keys, 'index.html'
-    assert_includes entries.keys, 'stops.csv'
+    assert_includes entries.keys, 'stops.xlsx'
     assert entries.keys.none? { |name| name.start_with?('delivery_notes/') }
   end
 
@@ -170,5 +190,14 @@ class OperationsExportTest < ActiveSupport::TestCase
       end
     end
     entries
+  end
+
+  def xlsx_sheet_xml(binary)
+    Zip::InputStream.open(StringIO.new(binary)) do |io|
+      while (entry = io.get_next_entry)
+        return io.read.force_encoding('UTF-8') if entry.name == 'xl/worksheets/sheet1.xml'
+      end
+    end
+    flunk 'missing xl/worksheets/sheet1.xml in xlsx'
   end
 end
