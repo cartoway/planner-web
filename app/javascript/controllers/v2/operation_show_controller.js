@@ -1342,6 +1342,10 @@ export default class extends Controller {
     ;['delivered', 'failed', 'exception', 'late', 'upcoming', 'current', 'total', 'delay'].forEach((key) => {
       if (board[key] != null) tour.dataset[key] = board[key]
     })
+    if (board.units) {
+      tour.dataset.units = JSON.stringify(board.units)
+      this._paintQuantityStats(tour.querySelector('.operation-tour-stats'), board.units)
+    }
     const progress = tour.querySelector('[data-tour-progress]')
     if (progress) {
       const treated = Number(board.delivered || 0) + Number(board.failed || 0)
@@ -1376,9 +1380,21 @@ export default class extends Controller {
 
   _rollUpBoard () {
     const totals = { delivered: 0, failed: 0, exception: 0, late: 0, upcoming: 0, current: 0, total: 0, delay: 0 }
+    const unitTotals = {}
     this.element.querySelectorAll('details.operation-tour').forEach((tour) => {
       Object.keys(totals).forEach((key) => {
         totals[key] += Number(tour.dataset[key] || 0)
+      })
+      let units = []
+      try { units = JSON.parse(tour.dataset.units || '[]') } catch (_) { units = [] }
+      ;(Array.isArray(units) ? units : []).forEach((unit) => {
+        const id = String(unit.id)
+        const bucket = unitTotals[id] || { id, delivery: 0, pickup: 0, delivered: 0, collected: 0 }
+        bucket.delivery += Number(unit.delivery) || 0
+        bucket.pickup += Number(unit.pickup) || 0
+        bucket.delivered += Number(unit.delivered) || 0
+        bucket.collected += Number(unit.collected) || 0
+        unitTotals[id] = bucket
       })
     })
     const label = this.element.querySelector('[data-board-progress]')
@@ -1393,12 +1409,29 @@ export default class extends Controller {
       delayStat.textContent = totals.delay ? `${totals.delay} min` : '—'
       delayStat.closest('.operation-stat')?.classList.toggle('is-late', totals.delay > 0)
     }
+    this._paintQuantityStats(this.element.querySelector('.operation-stats'), Object.values(unitTotals))
     this.element.querySelectorAll('.operation-chip[data-phase]').forEach((chip) => {
       const phase = chip.dataset.phase
       const count = phase === 'all' ? totals.total : totals[phase]
       chip.textContent = chip.textContent.replace(/\d+\s*$/, String(count == null ? 0 : count))
     })
     this._paintSegments(this.element.querySelector('.operation-header-progress .operation-segments'), totals)
+  }
+
+  _paintQuantityStats (root, units) {
+    if (!root || !units) return
+    units.forEach((unit) => {
+      const id = String(unit.id)
+      const delivery = root.querySelector(`[data-quantity-unit="${CSS.escape(id)}"][data-quantity-kind="delivery"] [data-quantity-value]`)
+      if (delivery) delivery.textContent = `${this._formatQuantity(unit.delivered)} / ${this._formatQuantity(unit.delivery)}`
+      const pickup = root.querySelector(`[data-quantity-unit="${CSS.escape(id)}"][data-quantity-kind="pickup"] [data-quantity-value]`)
+      if (pickup) pickup.textContent = `${this._formatQuantity(unit.collected)} / ${this._formatQuantity(unit.pickup)}`
+    })
+  }
+
+  _formatQuantity (value) {
+    const number = Number(value) || 0
+    return Number.isInteger(number) ? String(number) : String(Math.round(number * 100) / 100)
   }
 
   _paintStopPhase (stopId, phase) {

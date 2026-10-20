@@ -111,6 +111,26 @@ class RecordStatusTest < ActiveSupport::TestCase
     refute_includes json, I18n.t('operations.show.stops', locale: :en)
   end
 
+  test 'stop patch includes served quantities on the route board' do
+    content = nil
+    Turbo::StreamsChannel.stubs(:broadcast_refresh_to)
+    Turbo::StreamsChannel.stubs(:broadcast_stream_to).with { |_stream, kwargs|
+      content = kwargs[:content].to_s
+      true
+    }
+    OperationStops::RecordStatus.call(operation_stop: @stop, status: 'delivered', recorded_at: Time.zone.parse('2026-09-25 11:00'), source: 'mobile')
+    json = CGI.unescapeHTML(content[%r{<template>(.*)</template>}m, 1].to_s)
+    payload = JSON.parse(json)
+    units = payload.dig('route', 'units')
+    assert units.is_a?(Array)
+    assert units.any? { |unit| unit['delivered'].to_f.positive? || unit['delivery'].to_f.positive? }
+    board_unit = @stop.operation_route.board[:units].find { |unit| unit[:delivery].to_f.positive? }
+    assert board_unit
+    patch_unit = units.find { |unit| unit['id'].to_s == board_unit[:id].to_s }
+    assert_in_delta board_unit[:delivered], patch_unit['delivered'].to_f, 0.001
+    assert_in_delta board_unit[:delivery], patch_unit['delivery'].to_f, 0.001
+  end
+
   test 'board sums late minutes and ignores early arrivals' do
     route = @operation.operation_routes.includes(:operation_stops).detect { |candidate|
       candidate.operation_stops.count { |stop| stop.kind == 'visit' && stop.stop_snapshot['time'].present? } >= 2
