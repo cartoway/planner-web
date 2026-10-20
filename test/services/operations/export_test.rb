@@ -108,6 +108,9 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes html, @operation.name
     assert_includes html, 'data-proof-carousel'
     assert_includes html, 'data-proof-lightbox'
+    assert_includes html, %Q(href="media/route_#{route.id}/stop_#{@stop.id}")
+    assert_includes html, 'media-folder'
+    assert_includes html, I18n.t('operations.export.open_media')
     assert_includes html, I18n.t('operations.show.cumulative_delay')
     assert_includes html, 'stops.xlsx'
     assert_operator entries["delivery_notes/stop_#{@stop.id}.pdf"], :start_with?, '%PDF'

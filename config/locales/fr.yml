@@ -4187,6 +4187,7 @@ fr:
       next: Preuve suivante
       close: Fermer
       fullscreen: Afficher la preuve en plein écran
+      open_media: Ouvrir le dossier des médias
       operation_stats: Synthèse opération
       route_stats: Synthèse tournée
       columns:

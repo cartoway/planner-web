@@ -4042,6 +4042,7 @@ en:
       next: Next proof
       close: Close
       fullscreen: View proof fullscreen
+      open_media: Open media folder
       operation_stats: Operation summary
       route_stats: Route summary
       columns:
