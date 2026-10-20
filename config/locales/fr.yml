@@ -2819,6 +2819,7 @@ fr:
       empty_route: Tournée vide
       sync_pending: Hors connexion, Synchro en attente
       sync_failed: Synchro échouée
+      sync_ok: Synchro rétablie
       start_depot: Dépôt de départ
       stop_depot: Dépôt d'arrivée
       prepare_time: Préparation
