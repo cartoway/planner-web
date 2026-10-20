@@ -85,6 +85,47 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
     refute_includes last_response.body, I18n.t('operations.show.save_quantities')
   end
 
+  test 'mobile preloads proof attachments and avoids planning graph queries' do
+    visit_stops = @operation_route.operation_stops.executable.where(kind: 'visit').order(:index).to_a
+    assert_operator visit_stops.size, :>=, 2
+    visit_stops.first(2).each_with_index do |stop, index|
+      stop.photos.attach(
+        io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')),
+        filename: "mobile_scope_#{index}.jpg",
+        content_type: 'image/jpeg'
+      )
+    end
+
+    attachment_queries = 0
+    custom_attribute_queries = 0
+    planning_graph_queries = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql].to_s
+      next if sql.start_with?('SCHEMA') || payload[:cached]
+
+      attachment_queries += 1 if sql.include?('active_storage_attachments')
+      custom_attribute_queries += 1 if sql.include?('FROM "custom_attributes"') || sql.include?('FROM custom_attributes')
+      if sql.match?(/FROM ["`]?(vehicle_usages|vehicle_usage_sets|stores|tag_vehicles|tag_vehicle_usages|stops)["`]?/i)
+        planning_graph_queries += 1
+      end
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{@vehicle.driver_token}"
+    end
+
+    assert_equal 200, last_response.status
+    assert_includes last_response.body, 'stop-photo-open'
+    assert_operator attachment_queries, :<=, 4,
+                    "expected at most 4 active_storage_attachments queries, got #{attachment_queries}"
+    assert_operator custom_attribute_queries, :<=, 2,
+                    "expected at most 2 custom_attributes queries, got #{custom_attribute_queries}"
+    assert_equal 0, planning_graph_queries,
+                 "expected no planning graph queries, got #{planning_graph_queries}"
+  ensure
+    visit_stops&.each { |stop| stop.photos.purge if stop.photos.attached? }
+  end
+
   test 'depot status is stored on the operation route' do
     patch "/operations/#{@operation.id}/routes/#{@operation_route.id}/update_status?driver_token=#{@vehicle.driver_token}",
           { leg: 'departure', status: 'atstore', status_updated_at: Time.current.iso8601 },

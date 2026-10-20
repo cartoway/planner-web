@@ -1,50 +1,52 @@
+-# Mobile stop body for an OperationStop (visit). Locals: stop, customer, custom_attributes,
+-# visit_custom_attributes, enable_driver_move, sms_content, phone_number, confirm_photo_delete
 .container.mt-1
-  - if destination.detail
+  - if stop.detail.present?
     .d-flex.align-items-center.justify-items-center.mb-1
       .label.label-default.p-3.mr-2
         %i.fa.fa-circle-info
-      = destination.detail
-  - if destination.comment
+      = stop.detail
+  - if stop.comment.present?
     .d-flex.align-items-start.justify-items-center.mb-1
       .label.label-default.p-3.mr-2
         %i.fa.fa-comment-dots
-      .wrapped-text= destination.comment
-  - if destination.phone_number
+      .wrapped-text= stop.comment
+  - if stop.phone_number.present?
     .d-flex.align-items-center.justify-items-center.mb-1
       .label.label-default.p-3.mr-2
         %i.fa.fa-phone
-      %a{ href: "tel:#{destination.phone_number}" }
-        = destination.phone_number
-  - if destination.email.present?
+      %a{ href: "tel:#{stop.phone_number}" }
+        = stop.phone_number
+  - if stop.email.present?
     .d-flex.align-items-center.justify-items-center.mb-1
       .label.label-default.p-3.mr-2
         %i.fa.fa-envelope
-      %a{ href: "mailto:#{destination.email}" }
-        = destination.email
+      %a{ href: "mailto:#{stop.email}" }
+        = stop.email
 
-  - if visit&.time_window_start_1
+  - visit = stop.visit_snapshot || {}
+  - if visit['time_window_start_1'].present? || visit['time_window_end_1'].present?
     .d-flex.align-items-center.justify-items-center.mb-1
       .label.label-default.p-3.mr-2
         %i.fa.fa-clock.fa-fw
-      = visit.time_window_start_1_time
+      = stop.clock_label(visit['time_window_start_1'])
       \-
-      = visit.time_window_end_1_time
-  - if visit&.time_window_start_2
+      = stop.clock_label(visit['time_window_end_1'])
+  - if visit['time_window_start_2'].present? || visit['time_window_end_2'].present?
     .d-flex.align-items-center.justify-items-center.mb-1
       .label.label-default.p-3.mr-2
         %i.fa.fa-clock.fa-fw
-      = visit.time_window_start_2_time
+      = stop.clock_label(visit['time_window_start_2'])
       \-
-      = visit.time_window_end_2_time
+      = stop.clock_label(visit['time_window_end_2'])
 
-  - operation_stop = @operation_stops_by_stop_id&.[](stop.id)
-  - quantity_lines = operation_stop&.quantity_lines || []
+  - quantity_lines = stop.quantity_lines
   - if quantity_lines.any?
     .d-flex.align-items-center.mb-1.actual_quantities
       .actual_quantities-list.flex-grow-1
-        = form_with url: operation_stop_path(operation_stop), method: :patch, local: true, html: { class: 'operation-stop-quantities-form' } do
+        = form_with url: operation_stop_path(stop), method: :patch, local: true, html: { class: 'operation-stop-quantities-form' } do
           - quantity_lines.each do |line|
-            - reported = operation_stop.actual_quantity(line[:kind], line[:unit_id])
+            - reported = stop.actual_quantity(line[:kind], line[:unit_id])
             - amount = reported.nil? ? line[:value] : reported
             - planned = number_with_precision(line[:value], precision: 2, strip_insignificant_zeros: true, delimiter: t('number.format.delimiter'))
             - formatted = number_with_precision(amount, precision: 2, strip_insignificant_zeros: true, delimiter: t('number.format.delimiter'))
@@ -64,60 +66,48 @@
                     = line[:label]
       %button.btn.btn-default.actual_quantities-edit.ml-2{ type: 'button', title: t('operations.show.quantities') }
         %i.fa.fa-pencil
-  - elsif visit.default_quantities?
-    - visit_quantities(stop.visit, @route.vehicle_usage.vehicle).each do |unit|
-      .d-flex.align-items-center.justify-items-center.mb-1
-        .label.label-default.p-3.mr-2
-          %i.fa.fa-fw{ class: unit[:unit_icon] }
-        .quantity
-          = unit[:quantity]
-          = unit[:label]
-  = render partial: 'custom_attributes/mobile_readonly', locals: { custom_attributes: visit_custom_attributes, object: visit }
-  - if operation_stop
-    = form_with url: operation_stop_path(operation_stop), method: :patch, local: true, html: { class: 'operation-stop-status-form' } do
-      .form-group.mb-1
-        %label{ for: 'active_status' }
-          = t('stops.mobile.status')
-        .input-group.col-xs-12
-          .radiobtn
-            .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
-              .col-xs-6.d-flex.justify-content-center
-                - if customer.enable_sms_intransit && phone_number.present?
-                  = link_to "sms:#{phone_number}?body=#{sms_uri_body(sms_content)}", class: "btn btn-primary#{' active' if stop.status == 'intransit'}", data: { toggle: 'active_status', title: 'intransit' } do
-                    = t('plannings.edit.stop_status.intransit')
-                - else
-                  %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'intransit' }, class: ('active' if stop.status == 'intransit') }
-                    = t('plannings.edit.stop_status.intransit')
-              .col-xs-6.d-flex.justify-content-center
-                %a.btn.btn-success{ data: { toggle: 'active_status', title: 'delivered' }, class: ('active' if stop.status == 'delivered') }
-                  = t('plannings.edit.stop_status.delivered')
-            .d-flex.align-items-center.justify-content-between
-              .col-xs-6.d-flex.justify-content-center
-                %a.btn.btn-warning{ data: { toggle: 'active_status', title: 'exception' }, class: ('active' if stop.status == 'exception') }
-                  = t('plannings.edit.stop_status.exception')
-              .col-xs-6.d-flex.justify-content-center
-                %a.btn.btn-danger{ data: { toggle: 'active_status', title: 'undelivered' }, class: ('active' if stop.status == 'undelivered') }
-                  = t('plannings.edit.stop_status.undelivered')
-          = hidden_field_tag 'operation_stop[status]', stop.status, id: 'active_status'
-          = hidden_field_tag 'operation_stop[status_updated_at]', ''
+  = render partial: 'custom_attributes/mobile_readonly', locals: { custom_attributes: visit_custom_attributes, object: stop.visit_custom_attributes_bag }
+  = form_with url: operation_stop_path(stop), method: :patch, local: true, html: { class: 'operation-stop-status-form' } do
+    .form-group.mb-1
+      %label{ for: 'active_status' }
+        = t('stops.mobile.status')
+      .input-group.col-xs-12
+        .radiobtn
+          .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
+            .col-xs-6.d-flex.justify-content-center
+              - if customer.enable_sms_intransit && phone_number.present?
+                = link_to "sms:#{phone_number}?body=#{sms_uri_body(sms_content)}", class: "btn btn-primary#{' active' if stop.status == 'intransit'}", data: { toggle: 'active_status', title: 'intransit' } do
+                  = t('plannings.edit.stop_status.intransit')
+              - else
+                %a.btn.btn-primary{ data: { toggle: 'active_status', title: 'intransit' }, class: ('active' if stop.status == 'intransit') }
+                  = t('plannings.edit.stop_status.intransit')
+            .col-xs-6.d-flex.justify-content-center
+              %a.btn.btn-success{ data: { toggle: 'active_status', title: 'delivered' }, class: ('active' if stop.status == 'delivered') }
+                = t('plannings.edit.stop_status.delivered')
+          .d-flex.align-items-center.justify-content-between
+            .col-xs-6.d-flex.justify-content-center
+              %a.btn.btn-warning{ data: { toggle: 'active_status', title: 'exception' }, class: ('active' if stop.status == 'exception') }
+                = t('plannings.edit.stop_status.exception')
+            .col-xs-6.d-flex.justify-content-center
+              %a.btn.btn-danger{ data: { toggle: 'active_status', title: 'undelivered' }, class: ('active' if stop.status == 'undelivered') }
+                = t('plannings.edit.stop_status.undelivered')
+        = hidden_field_tag 'operation_stop[status]', stop.status, id: 'active_status'
+        = hidden_field_tag 'operation_stop[status_updated_at]', ''
   .form-group.mb-1
-    =  bootstrap_form_for stop, url: (operation_stop ? operation_stop_path(operation_stop) : stop_path(stop)), method: :patch, remote: true do |f|
+    = bootstrap_form_for stop, url: operation_stop_path(stop), method: :patch, remote: true, as: :operation_stop do |f|
       - if custom_attributes.any?
-
         %label
           = t('stops.mobile.form')
-      - ca_record = operation_stop || stop
-      - ca_prefix = operation_stop ? 'operation_stop' : 'stop'
-      - custom_attributes.each do |custom_attribute|
-        .custom_field.d-flex.align-items-center.justify-content-left.mb-1.row
-          %label{class: custom_attribute.object_type == 'boolean' ? 'col-xs-8' : 'col-xs-12' }
-            = custom_attribute.name
-          .field.mb-0{class: custom_attribute.object_type == 'boolean' ? 'col-xs-4' : 'col-xs-12' }
-            = custom_attribute_form_field(f, ca_record, custom_attribute, ca_prefix)
-          .col-xs-12
-            %p.help-block
-              = custom_attribute.description
-      - if enable_driver_move
+        - custom_attributes.each do |custom_attribute|
+          .custom_field.d-flex.align-items-center.justify-content-left.mb-1.row
+            %label{class: custom_attribute.object_type == 'boolean' ? 'col-xs-8' : 'col-xs-12' }
+              = custom_attribute.name
+            .field.mb-0{class: custom_attribute.object_type == 'boolean' ? 'col-xs-4' : 'col-xs-12' }
+              = custom_attribute_form_field(f, stop, custom_attribute, 'operation_stop')
+            .col-xs-12
+              %p.help-block
+                = custom_attribute.description
+      - if enable_driver_move && @transfer_routes.present?
         %label#transfer-label
           .col-xs-11.p-0
             = t('stops.mobile.transfer')
@@ -127,19 +117,9 @@
               %button.btn.btn-default.col-xs-12.dropdown-toggle{ type: 'button', data: { toggle: 'dropdown', title: t('plannings.edit.send_to_route_help') }, 'aria-expanded': 'false', 'aria-haspopup': 'true' }
                 = t('stops.mobile.back')
               %ul.col-xs-12.dropdown-menu{ role: 'menu' }
-                - if operation_stop && @operation_route
-                  - @operation_route.operation.operation_routes.planned.includes(:vehicle).each do |other_route|
-                    - next if other_route.id == @operation_route.id || other_route.route_id.blank?
-                    %li
-                      %button.send_to_route.dropdown-item{ type: 'button', data: { stop_id: stop.id, url: transfer_stop_operation_operation_route_path(@operation_route.operation, @operation_route, stop_id: operation_stop.id, target_operation_route_id: other_route.id, format: :json) } }
-                        %div.color_small{ style: "background: #{other_route.vehicle_color};" }
-                        = other_route.vehicle_name
-                - else
-                  - planning_summary(@route.planning)[:routes].each do |route_data|
-                    - next if route_data[:route_id] == @route.id || route_data[:vehicle_usage_id].nil?
-                    %li
-                      %button.send_to_route.dropdown-item{ type: 'button', data: { stop_id: stop.id, url: "/plannings/#{@route.planning_id}/#{route_data[:route_id]}/#{stop.id}/driver_move.json" } }
-                        %div.color_small{ style: "background: #{route_data[:color]};" }
-                        = route_data[:name]
-  - if operation_stop
-    = render partial: 'stops/documents', locals: { stop: operation_stop, confirm_photo_delete: local_assigns[:confirm_photo_delete] }
+                - @transfer_routes.each do |other_route|
+                  %li
+                    %button.send_to_route.dropdown-item{ type: 'button', data: { stop_id: stop.id, url: transfer_stop_operation_operation_route_path(@operation_route.operation, @operation_route, stop_id: stop.id, target_operation_route_id: other_route.id, format: :json) } }
+                      %div.color_small{ style: "background: #{other_route.vehicle_color};" }
+                      = other_route.vehicle_name
+  = render partial: 'stops/documents', locals: { stop: stop, customer: customer, confirm_photo_delete: local_assigns[:confirm_photo_delete] }

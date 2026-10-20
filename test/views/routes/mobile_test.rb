@@ -67,7 +67,7 @@ class RouteMobileTest < ActiveSupport::TestCase
       'custom_attribute_one' => 42,
       'vehicle_info_hidden' => 'secret vehicle info'
     })
-    @route.reload.update!(custom_attributes: {
+    @operation_route.update!(custom_attributes: {
       'route_info_visible' => 'shown route info',
       'route_info_hidden' => 'secret route info'
     })
@@ -86,11 +86,14 @@ class RouteMobileTest < ActiveSupport::TestCase
   end
 
   test 'should hide visit custom attributes not visible on mobile' do
-    visit = visits(:visit_one)
-    visit.update!(custom_attributes: {
-      'visit_info_visible' => 'shown value',
-      'visit_info_hidden' => 'secret value'
-    })
+    operation_stop = @operation_route.operation_stops.find_by!(visit_id: visits(:visit_one).id)
+    snap = operation_stop.visit_snapshot.merge(
+      'custom_attributes' => {
+        'visit_info_visible' => 'shown value',
+        'visit_info_hidden' => 'secret value'
+      }
+    )
+    operation_stop.update!(visit_snapshot: snap)
 
     vehicle = @route.vehicle_usage.vehicle
     get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
@@ -103,10 +106,9 @@ class RouteMobileTest < ActiveSupport::TestCase
   end
 
   test 'should show reset status button for stops on operations mobile' do
-    stop = @route.stops.find { |s| s.is_a?(StopVisit) }
-    stop.update!(status: 'delivered')
-    @route.start_route_data.update!(status: 'atstore')
-    @route.stop_route_data.update!(status: 'finished')
+    operation_stop = @operation_route.operation_stops.executable.find_by!(kind: 'visit')
+    operation_stop.update!(status: 'delivered')
+    @operation_route.update!(departure_status: 'atstore', arrival_status: 'finished')
     vehicle = @route.vehicle_usage.vehicle
     get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
@@ -228,8 +230,10 @@ class RouteMobileTest < ActiveSupport::TestCase
   end
 
   test 'should preserve multiline destination comment on mobile' do
-    destination = destinations(:destination_one)
-    destination.update!(comment: "Line 1\nLine 2")
+    operation_stop = @operation_route.operation_stops.find_by!(destination_id: destinations(:destination_one).id)
+    operation_stop.update!(
+      destination_snapshot: operation_stop.destination_snapshot.merge('comment' => "Line 1\nLine 2")
+    )
 
     vehicle = @route.vehicle_usage.vehicle
     get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
@@ -241,8 +245,8 @@ class RouteMobileTest < ActiveSupport::TestCase
   end
 
   test 'should display rests with started and finished statuses' do
-    rest = @route.stops.find { |stop| stop.is_a?(StopRest) }
-    assert rest, 'route_one_one fixture should include a rest'
+    rest = @operation_route.operation_stops.find_by(kind: 'rest')
+    assert rest, 'operation route should include a rest stop'
 
     vehicle = @route.vehicle_usage.vehicle
     get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"

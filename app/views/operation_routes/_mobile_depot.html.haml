@@ -1,0 +1,43 @@
+.container.mt-1
+  = form_with url: update_status_operation_operation_route_path(@operation_route.operation, @operation_route), method: :patch, local: true, html: { class: 'route-status-form' } do
+    - leg = status_context == 'start_route_data' ? 'departure' : 'arrival'
+    = hidden_field_tag :leg, leg
+    = hidden_field_tag :status_updated_at, ''
+    .form-group.mb-1
+      %label{ for: "route_#{status_context}_status" }
+        = t('stops.mobile.status')
+      .input-group.col-xs-12
+        .radiobtn
+          .d-flex.align-items-center.justify-content-between{ style: 'width: 100%'}
+            - if status_context == 'stop_route_data'
+              .col-xs-6.d-flex.justify-content-center
+                %a.btn.btn-primary{ data: { toggle: "route_#{status_context}_status", title: 'intransit' }, class: ('active' if status == 'intransit') }
+                  = t('plannings.edit.stop_store_status.intransit')
+            .col-xs-6.d-flex.justify-content-center
+              %a.btn.btn-info{ data: { toggle: "route_#{status_context}_status", title: 'atstore' }, class: ('active' if status == 'atstore') }
+                = t('plannings.edit.stop_store_status.atstore')
+            - if status_context == 'start_route_data'
+              .col-xs-6.d-flex.justify-content-center
+                %a.btn.btn-success{ data: { toggle: "route_#{status_context}_status", title: 'finished' }, class: ('active' if status == 'finished') }
+                  = t('plannings.edit.stop_store_status.finished')
+          - if status_context == 'stop_route_data'
+            .d-flex.align-items-center.justify-content-between
+              .col-xs-6.d-flex.justify-content-center
+              .col-xs-6.d-flex.justify-content-center
+                %a.btn.btn-success{ data: { toggle: "route_#{status_context}_status", title: 'finished' }, class: ('active' if status == 'finished') }
+                  = t('plannings.edit.stop_store_status.finished')
+        = hidden_field_tag :status, status, id: "route_#{status_context}_status"
+  - if custom_attributes.any?
+    = bootstrap_form_for @operation_route, as: :route, url: update_status_operation_operation_route_path(@operation_route.operation, @operation_route), method: :patch, remote: true, html: { class: 'route-status-form' } do |f|
+      .form-group.mb-1
+        %label
+          = t('routes.mobile.form')
+        - custom_attributes.each do |custom_attribute|
+          .custom_field.d-flex.align-items-center.justify-content-left.mb-1.row
+            %label{class: custom_attribute.object_type == 'boolean' ? 'col-xs-8' : 'col-xs-12' }
+              = custom_attribute.name
+            .field.mb-0{class: custom_attribute.object_type == 'boolean' ? 'col-xs-4' : 'col-xs-12' }
+              = custom_attribute_form_field(f, @operation_route, custom_attribute, 'route', related_field: related_field)
+            .col-xs-12
+              %p.help-block
+                = custom_attribute.description
