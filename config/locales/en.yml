@@ -2710,6 +2710,7 @@ en:
       empty_route: Empty tour
       sync_pending: Sync pending
       sync_failed: Sync failed
+      sync_ok: Sync restored
       start_depot: Start depot
       stop_depot: End depot
       prepare_time: Preparation time
