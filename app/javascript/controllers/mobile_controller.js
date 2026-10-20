@@ -439,7 +439,10 @@ export default class extends Controller {
       this.queueStop(url, payload)
       return
     }
-    this.sendForm(url, formData).catch(() => this.queueStop(url, payload))
+    this.sendForm(url, formData).catch((error) => {
+      if (this.isGoneError(error)) return
+      this.queueStop(url, payload)
+    })
   }
 
   queueStop (url, formData) {
@@ -448,6 +451,12 @@ export default class extends Controller {
     this.postToWorker('STORE_STOP', item)
     this.localSet(`stop_update_${item.id}`, item)
     this.registerSync('sync-stops')
+  }
+
+  clearQueuedForm (item) {
+    if (!item || item.id == null) return
+    localStorage.removeItem(`stop_update_${item.id}`)
+    localStorage.removeItem(`route_update_${item.id}`)
   }
 
   uploadPhotos (input) {
@@ -868,7 +877,12 @@ export default class extends Controller {
       this.hidePending()
     }
     if (type === 'STOP_SYNCED' || type === 'ROUTE_SYNCED') {
+      this.clearQueuedForm(payload)
       this.showSynced()
+    }
+    if (type === 'STOP_DROPPED' || type === 'ROUTE_DROPPED') {
+      this.clearQueuedForm(payload)
+      this.hidePending()
     }
     if (type === 'PHOTO_SYNCED') {
       this.deleteQueuedPhoto(payload && payload.id)
@@ -918,8 +932,8 @@ export default class extends Controller {
         .then(() => localStorage.removeItem(key))
         .then(() => this.showSynced())
         .catch((error) => {
-          // Drop dead GPS URLs from the queue; keep stops/routes for retry.
-          if (key.startsWith('position_') && this.isGoneError(error)) {
+          // Drop dead GPS / missing stop URLs; keep other stops/routes for retry.
+          if (this.isGoneError(error) && (key.startsWith('position_') || key.startsWith('stop_update_') || key.startsWith('route_update_'))) {
             localStorage.removeItem(key)
             this.hidePending()
           }

@@ -209,7 +209,7 @@ self.addEventListener('activate', event => {
 
 // Generic helper to sync collections sent as FormData (stops, routes)
 function syncFormDataCollection(options) {
-  const { collectionKey, successEvent, storeEvent, syncErrorType } = options;
+  const { collectionKey, successEvent, storeEvent, dropEvent, syncErrorType } = options;
 
   if (!csrfToken) {
     // No CSRF token available, keep items and ask client to persist them
@@ -251,19 +251,24 @@ function syncFormDataCollection(options) {
         notifyClients(successEvent, item);
         return;
       }
+      // Gone: drop permanently (stop deleted / wrong id) — localStorage would loop forever.
+      if (response.status === 404) {
+        notifyClients(dropEvent, item);
+        return;
+      }
+      if (response.status === 409) {
+        return;
+      }
 
       return response.json().then(data => {
         const errorType = (data && data.type) || '';
 
         switch (response.status) {
-          case 404:
           case 408:
           case 502:
           case 503:
           case 504:
             notifyClients(storeEvent, Array.from([item]));
-            break;
-          case 409:
             break;
           case 422:
             if (errorType.includes('deadlock')) {
@@ -363,6 +368,7 @@ function syncStops() {
     collectionKey: 'stops',
     successEvent: 'STOP_SYNCED',
     storeEvent: 'STORE_STOPS',
+    dropEvent: 'STOP_DROPPED',
     syncErrorType: 'stop'
   });
 }
@@ -372,6 +378,7 @@ function syncRoutes() {
     collectionKey: 'routes',
     successEvent: 'ROUTE_SYNCED',
     storeEvent: 'STORE_ROUTES',
+    dropEvent: 'ROUTE_DROPPED',
     syncErrorType: 'route'
   });
 }
