@@ -303,11 +303,6 @@ GEM
     faraday-net_http (3.1.0)
       net-http
     fast-polylines (2.2.2)
-    ferrum (0.19.1)
-      addressable (~> 2.5)
-      base64 (~> 0.2)
-      concurrent-ruby (~> 1.1)
-      websocket-driver (~> 0.7)
     ffi (1.17.0)
     ffi (1.17.0-x86_64-linux-gnu)
     figaro (1.2.0)
@@ -967,7 +962,6 @@ DEPENDENCIES
   devise-i18n-views
   erb_lint
   fast-polylines
-  ferrum
   figaro
   font-awesome-sass (~> 6.4.2)
   get_process_mem

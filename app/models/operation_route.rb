@@ -20,15 +20,12 @@ class OperationRoute < ApplicationRecord
   scope :includes_for_show, -> {
     includes(:operation, :vehicle, :operation_stops)
   }
-  # Export ZIP/CSV: vehicles, tracks, proofs, and live BL graph (stop→visit→destination / route→planning).
+  # Export ZIP/CSV: vehicles, tracks, proofs. Delivery notes use snapshots (no live planning graph).
   scope :includes_for_export, -> {
     includes(
       :vehicle,
       :vehicle_positions,
       operation_stops: [
-        :visit,
-        :destination,
-        { stop: [{ visit: :destination }, { route: :planning }] },
         { photos_attachments: :blob },
         { signature_attachment: :blob }
       ]
