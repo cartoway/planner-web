@@ -1,5 +1,5 @@
 - return unless stop.is_a?(OperationStop)
-- customer = stop.operation_route.operation.customer
+- customer = local_assigns[:customer] || stop.operation_route.operation.customer
 - proofs_enabled = customer.enable_proofs?
 - photos = stop.serialized_photos
 - signature = stop.serialized_signature
