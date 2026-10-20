@@ -50,6 +50,14 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert queries.none? { |sql| sql.match?(/FROM ["`]?plannings["`]?/i) }, joined
   end
 
+  test 'basename prefers operation name and ref with the date' do
+    @operation.update_columns(name: 'Tournées Nord', ref: 'OP-42')
+    assert_equal "operation_Tournées_Nord_OP-42_#{@operation.date}", Operations::Export.new(@operation).basename
+
+    @operation.update_columns(ref: nil)
+    assert_equal "operation_Tournées_Nord_#{@operation.date}", Operations::Export.new(@operation).basename
+  end
+
   test 'xlsx includes translated operation route and stop columns' do
     xlsx = Operations::Export.new(@operation).to_xlsx
     assert_equal 'PK', xlsx.byteslice(0, 2)
