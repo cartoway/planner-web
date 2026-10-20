@@ -84,16 +84,10 @@ class OperationsController < ApplicationController
   def export
     exporter = Operations::Export.new(@operation)
     respond_to do |format|
-      format.csv do
-        send_data exporter.to_csv,
-                  type: 'text/csv; charset=utf-8',
-                  filename: "#{exporter.basename}.csv",
-                  disposition: 'attachment'
-      end
-      format.excel do
-        send_data exporter.to_csv(excel: true),
-                  type: 'text/csv',
-                  filename: "#{exporter.basename}.csv",
+      format.xlsx do
+        send_data exporter.to_xlsx,
+                  type: Mime[:xlsx],
+                  filename: "#{exporter.basename}.xlsx",
                   disposition: 'attachment'
       end
       format.zip do

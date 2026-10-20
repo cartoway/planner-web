@@ -49,8 +49,8 @@
                 = t('operations.show.export')
               %ul.dropdown-menu
                 %li
-                  = link_to export_operation_path(operation, format: :excel), class: 'dropdown-item', data: { turbo: false } do
-                    %i.fa.fa-file-csv.fa-fw
+                  = link_to export_operation_path(operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
+                    %i.fa.fa-file-excel.fa-fw
                     = t('operations.show.export_spreadsheet')
                 %li
                   = link_to export_operation_path(operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do

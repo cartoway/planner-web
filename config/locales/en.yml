@@ -4044,10 +4044,52 @@ en:
       fullscreen: View proof fullscreen
       operation_stats: Operation summary
       route_stats: Route summary
+      columns:
+        operation_date: Operation date
+        operation_ref: Operation ref
+        operation_name: Operation name
+        operation_status: Operation status
+        route_index: Route index
+        route_ref: Route ref
+        vehicle_name: Vehicle
+        driver_email: Driver email
+        driver_phone: Driver phone
+        route_distance_m: Route distance (m)
+        route_drive_time_s: Route drive time (s)
+        route_duration_s: Route duration (s)
+        stop_index: Stop index
+        stop_kind: Stop kind
+        stop_status: Stop status
+        destination_ref: Destination ref
+        visit_ref: Visit ref
+        name: Name
+        street: Street
+        postalcode: Postal code
+        city: City
+        country: Country
+        phone: Phone
+        email: Email
+        detail: Detail
+        comment: Comment
+        lat: Latitude
+        lng: Longitude
+        planned_arrival: Planned arrival
+        planned_departure: Planned departure
+        actual_arrival: Actual arrival
+        actual_departure: Actual departure
+        delay_minutes: Delay (min)
+        time_windows: Time windows
+        stop_distance_m: Stop distance (m)
+        stop_drive_time_s: Stop drive time (s)
+        stop_wait_time_s: Stop wait time (s)
+        quantities: Quantities
+        photos: Photos
+        signature: Signature
+        delivery_note: Delivery note
     show:
       planning: Source planning
       export: Export
-      export_spreadsheet: Spreadsheet
+      export_spreadsheet: Excel
       export_archive: Archive (proofs)
       search_routes: Vehicle name or ref
       search_stops: Name, ref, street or city
