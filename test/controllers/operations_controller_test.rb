@@ -42,7 +42,7 @@ class OperationsControllerTest < ActionController::TestCase
     assert_not_includes response.body, %(<a href="#{operation_path(@operation)}">#{@operation.ref.presence || @operation.name}</a>)
     # Card CTA only — menu-left also links the same operation with turbo-frame=main.
     assert_select %(a.btn[href="#{operation_path(@operation)}"][data-turbo-frame="main"][data-turbo-action="advance"]), 1
-    assert_select %(a[href="#{export_operation_path(@operation, format: :excel)}"]), minimum: 1
+    assert_select %(a[href="#{export_operation_path(@operation, format: :xlsx)}"]), minimum: 1
     assert_select %(a[href="#{export_operation_path(@operation, format: :zip)}"]), minimum: 1
   end
 
@@ -96,19 +96,31 @@ class OperationsControllerTest < ActionController::TestCase
   test 'show exposes export spreadsheet and archive links' do
     get :show, params: { id: @operation.id }
     assert_response :success
-    assert_select %(a[href="#{export_operation_path(@operation, format: :excel)}"]), minimum: 1
+    assert_select %(a[href="#{export_operation_path(@operation, format: :xlsx)}"]), minimum: 1
     assert_select %(a[href="#{export_operation_path(@operation, format: :zip)}"]), minimum: 1
   end
 
-  test 'export csv downloads spreadsheet rows' do
-    get :export, params: { id: @operation.id, format: :csv }
+  test 'export xlsx downloads spreadsheet rows with translated headers' do
+    get :export, params: { id: @operation.id, format: :xlsx }
     assert_response :success
-    assert_equal 'text/csv', response.media_type
-    assert_includes response.body, 'operation_name'
-    assert_includes response.body, @operation.name
+    assert_equal Mime[:xlsx].to_s, response.media_type
+    assert_equal 'PK', response.body.byteslice(0, 2)
+
+    sheet = nil
+    Zip::InputStream.open(StringIO.new(response.body)) do |io|
+      while (entry = io.get_next_entry)
+        if entry.name == 'xl/worksheets/sheet1.xml'
+          sheet = io.read.force_encoding('UTF-8')
+          break
+        end
+      end
+    end
+    assert sheet, 'expected worksheet in xlsx'
+    assert_includes sheet, I18n.t('operations.export.columns.operation_name')
+    assert_includes sheet, @operation.name
   end
 
-  test 'export zip downloads archive with index and csv' do
+  test 'export zip downloads archive with index and xlsx' do
     get :export, params: { id: @operation.id, format: :zip }
     assert_response :success
     assert_equal 'application/zip', response.media_type
@@ -120,7 +132,7 @@ class OperationsControllerTest < ActionController::TestCase
       end
     end
     assert_includes names, 'index.html'
-    assert_includes names, 'stops.csv'
+    assert_includes names, 'stops.xlsx'
   end
 
   test 'show exposes mobile panes and detail sheet chrome' do

@@ -4189,10 +4189,52 @@ fr:
       fullscreen: Afficher la preuve en plein écran
       operation_stats: Synthèse opération
       route_stats: Synthèse tournée
+      columns:
+        operation_date: Date d’opération
+        operation_ref: Référence opération
+        operation_name: Nom opération
+        operation_status: Statut opération
+        route_index: Index tournée
+        route_ref: Réf. tournée
+        vehicle_name: Véhicule
+        driver_email: E-mail chauffeur
+        driver_phone: Tél. chauffeur
+        route_distance_m: Distance tournée (m)
+        route_drive_time_s: Temps de conduite tournée (s)
+        route_duration_s: Durée tournée (s)
+        stop_index: Index arrêt
+        stop_kind: Type d’arrêt
+        stop_status: Statut arrêt
+        destination_ref: Réf. destination
+        visit_ref: Réf. visite
+        name: Nom
+        street: Rue
+        postalcode: Code postal
+        city: Ville
+        country: Pays
+        phone: Téléphone
+        email: E-mail
+        detail: Complément
+        comment: Commentaire
+        lat: Latitude
+        lng: Longitude
+        planned_arrival: Arrivée prévue
+        planned_departure: Départ prévu
+        actual_arrival: Arrivée réelle
+        actual_departure: Départ réel
+        delay_minutes: Retard (min)
+        time_windows: Fenêtres horaires
+        stop_distance_m: Distance arrêt (m)
+        stop_drive_time_s: Temps de conduite arrêt (s)
+        stop_wait_time_s: Attente arrêt (s)
+        quantities: Quantités
+        photos: Photos
+        signature: Signature
+        delivery_note: Bon de livraison
     show:
       planning: Plan
       export: Exporter
-      export_spreadsheet: Tableur
+      export_spreadsheet: Excel
       export_archive: Archive (preuves)
       search_routes: Nom du véhicule ou référence
       search_stops: Nom, référence, rue ou ville
