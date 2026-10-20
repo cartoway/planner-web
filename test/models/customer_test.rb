@@ -546,6 +546,39 @@ class CustomerTest < ActiveSupport::TestCase
     duplicated_customer.destroy!
   end
 
+  test 'duplicate includes operations with remapped links' do
+    operation = Operations::PublishFromPlanning.call(planning: plannings(:planning_one))
+    customer = Customer.for_duplication.find(@customer.id)
+    route_count = operation.operation_routes.count
+    stop_count = operation.operation_stops.count
+    tracking_count = operation.operation_delivery_trackings.count
+
+    duplicate = nil
+    assert_difference('Operation.count', customer.operations.size) do
+      assert_difference('OperationRoute.count', route_count) do
+        assert_difference('OperationStop.count', stop_count) do
+          duplicate = customer.duplicate
+        end
+      end
+    end
+
+    dup_op = duplicate.operations.find_by!(name: operation.name, date: operation.date)
+    assert_equal duplicate.id, dup_op.customer_id
+    assert_includes duplicate.planning_ids, dup_op.planning_id
+    assert_not_equal operation.planning_id, dup_op.planning_id
+    assert_equal route_count, dup_op.operation_routes.count
+    assert_equal stop_count, dup_op.operation_stops.count
+    assert_equal tracking_count, dup_op.operation_delivery_trackings.count
+    assert_empty operation.operation_routes.map(&:route_id).compact & dup_op.operation_routes.map(&:route_id).compact
+    assert_empty(
+      operation.operation_delivery_trackings.map(&:token) &
+        dup_op.operation_delivery_trackings.map(&:token)
+    )
+  ensure
+    duplicate&.destroy!
+    Operation.where(customer_id: @customer.id).delete_all
+  end
+
   test 'should cascade delete destination, visits, stops' do
     without_loading Stop do
       without_loading Visit do
