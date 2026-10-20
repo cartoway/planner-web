@@ -11,7 +11,7 @@ class OperationRouteMediaTest < ActionController::TestCase
     sign_in users(:user_one)
     @planning = plannings(:planning_one)
     @operation = Operations::PublishFromPlanning.call(planning: @planning)
-    @operation_route = @operation.operation_routes.where(unassigned: false).first
+    @operation_route = @operation.operation_routes.planned.first
     @stop = @operation_route.operation_stops.where(kind: 'visit').first
     @stop.photos.attach(
       io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')),

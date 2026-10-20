@@ -7,7 +7,7 @@ class VehiclePositionsRecordTest < ActiveSupport::TestCase
     @planning = plannings(:planning_one)
     @customer = @planning.customer
     @operation = Operations::PublishFromPlanning.call(planning: @planning)
-    @route = @operation.operation_routes.where(unassigned: false).first
+    @route = @operation.operation_routes.planned.first
   end
 
   teardown do
