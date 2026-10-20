@@ -40,10 +40,22 @@ module OperationStops
           }
         )
       end
+      # Stop changed routes: stop patch alone is not enough for the operation board.
+      broadcast_operation_refresh!
       @operation_stop
     end
 
     private
+
+    def broadcast_operation_refresh!
+      operation = @source_route.operation
+      Turbo::StreamsChannel.broadcast_refresh_to(operation)
+      OperationDeliveryTracking.where(operation_id: operation.id).find_each do |tracking|
+        Turbo::StreamsChannel.broadcast_refresh_to(tracking.turbo_stream_name)
+      end
+    rescue StandardError => e
+      Rails.logger.warn("operation turbo refresh failed: #{e.class}: #{e.message}")
+    end
 
     def validate!
       raise Error, 'same route' if @source_route.id == @target_route.id
