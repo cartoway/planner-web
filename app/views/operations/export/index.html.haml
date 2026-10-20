@@ -42,6 +42,9 @@
       .proof-carousel-nav button:disabled { opacity: .4; cursor: default; }
       .proof-carousel-count { font-size: .75rem; color: #555; }
       .empty-proofs { color: #999; font-size: .8rem; }
+      .media-folder { display: inline-flex; align-items: center; justify-content: center; width: 2rem; height: 2rem; border: 1px solid #c9d4ea; border-radius: .4rem; background: #f3f6fc; color: #25417c; text-decoration: none; margin-bottom: .35rem; }
+      .media-folder:hover { background: #e7eef9; }
+      .media-folder svg { display: block; }
       .proof-lightbox { display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(0, 0, 0, .92); color: #fff; }
       .proof-lightbox.is-open { display: flex; flex-direction: column; }
       .proof-lightbox-toolbar { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: .75rem 1rem; gap: 1rem; }
@@ -261,6 +264,10 @@
                   = '—'
               %td
                 - if proof_slides.any?
+                  - media_dir = "media/route_#{route.id}/stop_#{stop.id}"
+                  = link_to media_dir, class: 'media-folder', title: t('operations.export.open_media'), aria: { label: t('operations.export.open_media') } do
+                    %svg{xmlns: 'http://www.w3.org/2000/svg', viewBox: '0 0 24 24', width: 18, height: 18, 'aria-hidden': true}
+                      %path{fill: 'currentColor', d: 'M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z'}
                   .proof-carousel{data: { proof_carousel: true }}
                     .proof-carousel-viewport
                       - proof_slides.each_with_index do |src, i|
