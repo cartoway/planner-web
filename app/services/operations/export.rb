@@ -27,8 +27,13 @@ module Operations
     end
 
     def basename
-      parts = ['operation', @operation.ref.presence || @operation.id, @operation.date]
-      parts.compact.join('_').tr('/', '-').delete('"')
+      parts = [
+        'operation',
+        sanitize_basename(@operation.name),
+        sanitize_basename(@operation.ref),
+        @operation.date
+      ]
+      parts.compact.join('_')
     end
 
     def to_xlsx
@@ -384,6 +389,10 @@ module Operations
       return [] if track['polylines'].blank?
 
       FastPolylines.decode(track['polylines'], 6).map { |lat, lng| [lng.to_f, lat.to_f] }
+    end
+
+    def sanitize_basename(value)
+      value.to_s.tr('/', '-').gsub(/[^\p{L}\p{N}.\-]+/u, '_').gsub(/_+\z/, '').presence
     end
 
     def safe_filename(name, fallback)
