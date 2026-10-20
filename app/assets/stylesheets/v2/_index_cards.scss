@@ -120,10 +120,10 @@
   white-space: nowrap;
 }
 
-// Operations-style fixed action slots: primary | secondary link | destroy
+// Operations-style fixed action slots: primary | export | secondary link | destroy
 .v2-index-card-actions--slots {
   display: grid;
-  grid-template-columns: max-content 10rem max-content;
+  grid-template-columns: max-content max-content 10rem max-content;
   gap: .4rem;
   align-items: center;
   justify-items: stretch;
@@ -136,7 +136,8 @@
   .v2-index-card-secondary {
     display: contents;
 
-    > .btn {
+    > .btn,
+    > .dropdown > .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -145,13 +146,18 @@
       overflow: hidden;
     }
 
-    > a.btn {
+    > .dropdown {
       grid-column: 2;
+      white-space: nowrap;
+    }
+
+    > a.btn {
+      grid-column: 3;
       width: 100%;
     }
 
     .btn-danger {
-      grid-column: 3;
+      grid-column: 4;
       white-space: nowrap;
     }
   }
@@ -223,18 +229,23 @@
     width: 100%;
     gap: .4rem;
 
-    > .btn {
+    > .btn,
+    > .dropdown {
       grid-column: auto;
       width: auto;
     }
 
+    > .dropdown > .btn {
+      width: 100%;
+    }
+
     > a.btn {
-      grid-column: 1;
+      grid-column: auto;
       width: auto;
     }
 
     .btn-danger {
-      grid-column: 2;
+      grid-column: auto;
     }
   }
 

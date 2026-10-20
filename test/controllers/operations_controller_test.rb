@@ -42,6 +42,8 @@ class OperationsControllerTest < ActionController::TestCase
     assert_not_includes response.body, %(<a href="#{operation_path(@operation)}">#{@operation.ref.presence || @operation.name}</a>)
     # Card CTA only — menu-left also links the same operation with turbo-frame=main.
     assert_select %(a.btn[href="#{operation_path(@operation)}"][data-turbo-frame="main"][data-turbo-action="advance"]), 1
+    assert_select %(a[href="#{export_operation_path(@operation, format: :excel)}"]), minimum: 1
+    assert_select %(a[href="#{export_operation_path(@operation, format: :zip)}"]), minimum: 1
   end
 
   test 'menu exposes operations as its own accordion section above plans' do
