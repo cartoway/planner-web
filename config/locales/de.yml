@@ -2611,7 +2611,7 @@ de:
   notifications:
     sms:
       alert_plan: >-
-        Hallo {NAME}. Ihr Besuch ist am {DATE} zwischen {TIME-60} und {TIME+60}
+        Hallo {NAME}. Ihr Besuch ist am {DATE} zwischen {TIME-5} und {TIME+15}
         in {CITY} geplant.
   all:
     datepicker: mm-dd-yyyy

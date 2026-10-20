@@ -2819,7 +2819,6 @@ fr:
       empty_route: Tournée vide
       sync_pending: Hors connexion, Synchro en attente
       sync_failed: Synchro échouée
-      sync_ok: Synchro rétablie
       start_depot: Dépôt de départ
       stop_depot: Dépôt d'arrivée
       prepare_time: Préparation
@@ -3802,8 +3801,8 @@ fr:
   notifications:
     sms:
       alert_plan: >-
-        Bonjour {NAME}. Votre visite est planifiée le {DATE} entre {TIME-60} et
-        {TIME+60} à {CITY}. Suivez votre livraison : {URL}
+        Bonjour {NAME}. Votre visite est planifiée le {DATE} entre {TIME-5} et
+        {TIME+15} à {CITY}. Suivez votre livraison : {URL}
       alert_driver: >-
         Bonjour, La tournée {ROUTE_NAME} vous a été attribuée pour le {DATE} avec
         {SIZE_ACTIVE} arrêts - {URL}
@@ -3814,7 +3813,7 @@ fr:
       alert_plan: |
         Bonjour {NAME},
 
-        Votre livraison est prévue le {DATE} entre {TIME-60} et {TIME+60} à {CITY}.
+        Votre livraison est prévue le {DATE} entre {TIME-5} et {TIME+15} à {CITY}.
   all:
     providers:
       entra_id: Microsoft Entra ID
