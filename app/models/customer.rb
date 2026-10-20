@@ -191,6 +191,17 @@ class Customer < ApplicationRecord
             ]
           }
         ]
+      },
+      {
+        operations: [
+          :operation_delivery_trackings,
+          {
+            operation_routes: [
+              :vehicle_positions,
+              { operation_stops: :operation_stop_status_events }
+            ]
+          }
+        ]
       }
     )
   }
@@ -592,6 +603,73 @@ class Customer < ApplicationRecord
         }.compact
       }
       StoreReloadVehicleUsage.import_in_batches(new_store_reload_vehicle_usage_attributes, validate: false) if new_store_reload_vehicle_usage_attributes.any?
+
+      old_operations = self.operations.to_a
+      new_operation_attributes = old_operations.map { |operation|
+        attrs = operation.import_attributes.except('id', 'demo_job_id')
+        attrs['customer_id'] = customer_id
+        attrs['planning_id'] = planning_ids_map[attrs['planning_id']]
+        attrs
+      }
+      operation_ids = Operation.import_in_batches(new_operation_attributes, validate: false)
+      operation_ids_map = Hash[old_operations.map(&:id).zip(operation_ids)]
+
+      old_operation_routes = old_operations.flat_map { |operation| operation.operation_routes.to_a }
+      new_operation_route_attributes = old_operation_routes.map { |operation_route|
+        attrs = operation_route.import_attributes.except('id')
+        attrs['operation_id'] = operation_ids_map[attrs['operation_id']]
+        attrs['route_id'] = route_ids_map[attrs['route_id']]
+        attrs['vehicle_usage_id'] = vehicle_usage_ids_map[attrs['vehicle_usage_id']]
+        attrs['vehicle_id'] = vehicle_ids_map[attrs['vehicle_id']]
+        attrs
+      }
+      operation_route_ids = OperationRoute.import_in_batches(new_operation_route_attributes, validate: false)
+      operation_route_ids_map = Hash[old_operation_routes.map(&:id).zip(operation_route_ids)]
+
+      old_operation_stops = old_operation_routes.flat_map { |operation_route| operation_route.operation_stops.to_a }
+      new_operation_stop_attributes = old_operation_stops.map { |operation_stop|
+        attrs = operation_stop.import_attributes.except('id')
+        attrs['operation_route_id'] = operation_route_ids_map[attrs['operation_route_id']]
+        attrs['stop_id'] = stop_ids_map[attrs['stop_id']]
+        attrs['visit_id'] = visit_ids_map[attrs['visit_id']]
+        attrs['destination_id'] = destination_ids_map[attrs['destination_id']]
+        attrs['store_id'] = store_ids_map[attrs['store_id']]
+        attrs['store_reload_id'] = store_reload_ids_map[attrs['store_reload_id']]
+        attrs
+      }
+      operation_stop_ids = OperationStop.import_in_batches(new_operation_stop_attributes, validate: false)
+      operation_stop_ids_map = Hash[old_operation_stops.map(&:id).zip(operation_stop_ids)]
+
+      new_operation_stop_status_event_attributes = old_operation_stops.flat_map { |operation_stop|
+        operation_stop.operation_stop_status_events.map { |event|
+          attrs = event.import_attributes.except('id')
+          attrs['operation_stop_id'] = operation_stop_ids_map[operation_stop.id]
+          attrs
+        }
+      }
+      OperationStopStatusEvent.import_in_batches(new_operation_stop_status_event_attributes, validate: false) if new_operation_stop_status_event_attributes.any?
+
+      old_vehicle_positions = old_operation_routes.flat_map { |operation_route| operation_route.vehicle_positions.to_a }
+      new_vehicle_position_attributes = old_vehicle_positions.map { |position|
+        attrs = position.import_attributes.except('id')
+        attrs['customer_id'] = customer_id
+        attrs['vehicle_id'] = vehicle_ids_map[attrs['vehicle_id']]
+        attrs['operation_id'] = operation_ids_map[attrs['operation_id']]
+        attrs['operation_route_id'] = operation_route_ids_map[attrs['operation_route_id']]
+        attrs
+      }
+      VehiclePosition.import_in_batches(new_vehicle_position_attributes, validate: false) if new_vehicle_position_attributes.any?
+
+      new_operation_delivery_tracking_attributes = old_operations.flat_map { |operation|
+        operation.operation_delivery_trackings.map { |tracking|
+          attrs = tracking.import_attributes.except('id')
+          attrs['operation_id'] = operation_ids_map[operation.id]
+          attrs['destination_id'] = destination_ids_map[attrs['destination_id']] || attrs['destination_id']
+          attrs['token'] = SecureRandom.urlsafe_base64(24)
+          attrs
+        }
+      }
+      OperationDeliveryTracking.import_in_batches(new_operation_delivery_tracking_attributes, validate: false) if new_operation_delivery_tracking_attributes.any?
 
       customer_id
     end
