@@ -197,12 +197,12 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_equal 'in_progress', second.reload.status
   end
 
-  test 'sync_operation with selection orphans deselected routes' do
+  test 'sync_operation with selection does not orphan omitted routes' do
     route_a = routes(:route_one_one)
     route_b = routes(:route_three_one)
     operation = Operations::PublishFromPlanning.call(planning: @planning, route_ids: [route_a.id, route_b.id])
-    kept = operation.operation_routes.find_by!(route_id: route_a.id)
-    dropped = operation.operation_routes.find_by!(route_id: route_b.id)
+    kept_a = operation.operation_routes.find_by!(route_id: route_a.id)
+    kept_b = operation.operation_routes.find_by!(route_id: route_b.id)
 
     post :sync_operation, params: {
       id: @planning.id,
@@ -213,10 +213,31 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
 
     assert_redirected_to edit_planning_path(@planning)
     assert_equal I18n.t('execution.synced'), flash[:notice]
+    assert_equal 'active', kept_a.reload.sync_state
+    assert_equal 'active', kept_b.reload.sync_state
+    assert_equal [route_a.id, route_b.id].sort, operation.reload.custom_attributes['_route_ids'].map(&:to_i).sort
+  end
+
+  test 'sync_operation with desync_route_ids destroys those routes' do
+    route_a = routes(:route_one_one)
+    route_b = routes(:route_three_one)
+    operation = Operations::PublishFromPlanning.call(planning: @planning, route_ids: [route_a.id, route_b.id])
+    kept = operation.operation_routes.find_by!(route_id: route_a.id)
+    dropped_id = operation.operation_routes.find_by!(route_id: route_b.id).id
+
+    post :sync_operation, params: {
+      id: @planning.id,
+      operation_id: operation.id,
+      selection: '1',
+      route_ids: [route_a.id],
+      desync_route_ids: [route_b.id]
+    }
+
+    assert_redirected_to edit_planning_path(@planning)
+    assert_equal I18n.t('execution.synced'), flash[:notice]
     assert_equal 'active', kept.reload.sync_state
-    assert_equal 'orphaned', dropped.reload.sync_state
-    assert dropped.operation_stops.all? { |stop| stop.sync_state == 'orphaned' }
-    assert_equal [route_a.id], operation.reload.custom_attributes['_route_ids']
+    assert_nil OperationRoute.find_by(id: dropped_id)
+    assert_equal [route_a.id], operation.reload.custom_attributes['_route_ids'].map(&:to_i)
   end
 
   test 'sync_operation with empty selection is rejected' do

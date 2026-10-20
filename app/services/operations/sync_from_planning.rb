@@ -9,23 +9,23 @@ module Operations
       last_sent_at last_sent_to
     ].freeze
 
-    def self.call(planning:, operation:, route_ids: nil, stop_ids: nil, refresh_snapshots: true, orphan_policy: :mark, orphan_unselected: false)
-      new(planning, operation, route_ids, stop_ids, refresh_snapshots, orphan_policy, orphan_unselected).call
+    def self.call(planning:, operation:, route_ids: nil, stop_ids: nil, refresh_snapshots: true, desync_route_ids: nil, update_selection_meta: false)
+      new(planning, operation, route_ids, stop_ids, refresh_snapshots, desync_route_ids, update_selection_meta).call
     end
 
-    def initialize(planning, operation, route_ids, stop_ids, refresh_snapshots, orphan_policy, orphan_unselected)
+    def initialize(planning, operation, route_ids, stop_ids, refresh_snapshots, desync_route_ids, update_selection_meta)
       @planning = planning
       @operation = operation
       @route_ids = route_ids&.map(&:to_i)
       @stop_ids = stop_ids&.map(&:to_i)
       @refresh_snapshots = refresh_snapshots
-      @orphan_policy = orphan_policy.to_sym
-      @orphan_unselected = orphan_unselected
+      @desync_route_ids = Array(desync_route_ids).map(&:to_i)
+      @update_selection_meta = update_selection_meta
     end
 
     def call
       raise ArgumentError, 'operation is not linked to this planning' if @operation.planning_id != @planning.id
-      raise EmptyRoutes if @route_ids&.empty?
+      raise EmptyRoutes if @route_ids&.empty? && @desync_route_ids.empty?
 
       Operation.transaction do
         @units_by_id = @planning.customer.deliverable_units.index_by(&:id)
@@ -40,6 +40,7 @@ module Operations
         @matched_route_ids = []
         @matched_stop_ids = []
         @scoped_operation_route_ids = []
+        membership_before = current_membership_route_ids
 
         scoped_planning_routes.each do |route|
           operation_route = take_route(route) || create_route(route)
@@ -53,15 +54,17 @@ module Operations
           end
         end
 
-        orphan_missing! if @orphan_policy == :mark
-        orphan_unselected_routes! if @orphan_unselected && @route_ids
+        # Within the sync scope, anything no longer on the planning is removed (no orphan zombies).
+        remove_missing!
+        remove_desync_routes!
         attrs = {
           synced_at: Time.current,
           planning_snapshot: Snapshots.planning(@planning)
         }
         if update_selection_meta?
-          attrs[:structure_fingerprint] = Snapshots.fingerprint(@planning, visible_routes_only: false, route_ids: @route_ids)
-          attrs[:custom_attributes] = @operation.custom_attributes.merge('_route_ids' => @route_ids)
+          membership = membership_route_ids_after(membership_before)
+          attrs[:structure_fingerprint] = Snapshots.fingerprint(@planning, visible_routes_only: false, route_ids: membership)
+          attrs[:custom_attributes] = @operation.custom_attributes.merge('_route_ids' => membership)
         elsif full_sync?
           attrs[:structure_fingerprint] = Snapshots.fingerprint(@planning, visible_routes_only: visible_routes_only?, route_ids: scoped_route_ids_for_fingerprint)
         end
@@ -78,7 +81,18 @@ module Operations
     end
 
     def update_selection_meta?
-      @orphan_unselected && @route_ids
+      @update_selection_meta && (@route_ids || @desync_route_ids.any?)
+    end
+
+    def current_membership_route_ids
+      ids = @operation.custom_attributes['_route_ids']
+      return ids.map(&:to_i) if ids.present?
+
+      @operation.operation_routes.active_sync.where.not(route_id: nil).pluck(:route_id)
+    end
+
+    def membership_route_ids_after(before)
+      ((before - @desync_route_ids) | Array(@route_ids)).uniq
     end
 
     def visible_routes_only?
@@ -205,45 +219,26 @@ module Operations
       )
     end
 
-    def orphan_missing!
+    def remove_missing!
       scope_route_ids = if @route_ids
                           @operation.operation_routes.where(route_id: @route_ids).pluck(:id)
                         else
                           @operation.operation_routes.pluck(:id)
                         end
       (@operation.operation_routes.where(id: scope_route_ids).pluck(:id) - @matched_route_ids).each do |id|
-        mark_orphaned(OperationRoute.find(id))
+        OperationRoute.find(id).destroy!
       end
 
       stop_scope = OperationStop.where(operation_route_id: @scoped_operation_route_ids + scope_route_ids)
       stop_scope = stop_scope.where(stop_id: @stop_ids) if @stop_ids
-      stop_scope.where.not(id: @matched_stop_ids).find_each { |stop| drop_unmatched_stop(stop) }
+      stop_scope.where.not(id: @matched_stop_ids).find_each(&:destroy!)
     end
 
-    def orphan_unselected_routes!
-      unselected = @operation.operation_routes.where.not(id: @matched_route_ids)
-      unselected.find_each do |operation_route|
-        mark_orphaned(operation_route)
-        operation_route.operation_stops.find_each { |stop| mark_orphaned(stop) }
-      end
-    end
+    # Explicit desync from the sync modal: drop the route (and stops/proofs) from the operation.
+    def remove_desync_routes!
+      return if @desync_route_ids.empty?
 
-    # Inactive planning stops leave the execution graph; anything else stays orphaned for audit.
-    def drop_unmatched_stop(operation_stop)
-      planning_stop = operation_stop.stop
-      if planning_stop && !planning_stop.active?
-        operation_stop.destroy!
-      else
-        mark_orphaned(operation_stop)
-      end
-    end
-
-    def mark_orphaned(record)
-      return unless record.sync_state == 'active'
-
-      attrs = { sync_state: 'orphaned', updated_at: Time.current }
-      attrs[:active] = false if record.is_a?(OperationStop)
-      record.update_columns(attrs)
+      @operation.operation_routes.where(route_id: @desync_route_ids).find_each(&:destroy!)
     end
   end
 end
