@@ -42,4 +42,22 @@ class OperationStopsTransferTest < ActiveSupport::TestCase
     planning_stop.reload
     assert_equal planning_route_id, planning_stop.route_id
   end
+
+  test 'broadcasts a full operation refresh so the board moves the stop' do
+    refreshed = []
+    Turbo::StreamsChannel.stubs(:broadcast_stream_to)
+    Turbo::StreamsChannel.stubs(:broadcast_refresh_to).with { |stream|
+      refreshed << stream
+      true
+    }
+
+    OperationStops::Transfer.call(
+      operation_stop: @stop,
+      target_operation_route: @target_route,
+      recorded_at: Time.zone.parse('2026-09-25 12:00'),
+      source: 'mobile'
+    )
+
+    assert_includes refreshed, @operation
+  end
 end
