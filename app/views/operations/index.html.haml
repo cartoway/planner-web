@@ -43,6 +43,19 @@
             %i.fa.fa-tower-broadcast.fa-fw
             = t('execution.open_tracking')
           .v2-index-card-secondary
+            .dropdown
+              %button.btn.btn-secondary.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
+                %i.fa.fa-download.fa-fw
+                = t('operations.show.export')
+              %ul.dropdown-menu
+                %li
+                  = link_to export_operation_path(operation, format: :excel), class: 'dropdown-item', data: { turbo: false } do
+                    %i.fa.fa-file-csv.fa-fw
+                    = t('operations.show.export_spreadsheet')
+                %li
+                  = link_to export_operation_path(operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
+                    %i.fa.fa-file-zipper.fa-fw
+                    = t('operations.show.export_archive')
             - if operation.planning
               = link_to edit_planning_path(operation.planning), class: 'btn btn-secondary', target: '_blank', rel: 'noopener', data: { turbo: false }, title: (operation.planning.ref.presence || operation.planning.name) do
                 %i.fa.fa-map-location.fa-fw
