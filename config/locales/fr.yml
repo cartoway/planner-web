@@ -1424,7 +1424,7 @@ fr:
       sms_intransit_template_help: >-
         Modèle de SMS envoyé aux clients lorsque le chauffeur est en route.
         {CUSTOMER_NAME} sera remplacé par le nom du compte. {NAME} sera remplacé par le nom de la destination.
-        {DATE} sera remplacé par la date de la tournée. Votre texte ne doit pas comporter de caractères non standards
+        {URL} sera remplacé par le lien de suivi. Votre texte ne doit pas comporter de caractères non standards
         (GSM 03.38) et ne devrait pas dépasser 160 caractères.
       sms_template_help: >-
         Modèle de SMS envoyé à vos clients. {NAME} sera remplacé par le nom de
@@ -1437,7 +1437,7 @@ fr:
       sms_driver_keys_help: >-
         Chaînes de remplacements disponibles : {ROUTE_NAME} {DATE} {SIZE_ACTIVE} {URL}.
       sms_intransit_keys_help: >-
-        Chaînes de remplacements disponibles : {NAME} {CUSTOMER_NAME} {TIME} {STREET} {CITY}.
+        Chaînes de remplacements disponibles : {NAME} {CUSTOMER_NAME} {TIME} {STREET} {CITY} {URL}.
       sms_keys_help: >-
         Chaînes de remplacements disponibles : {NAME} {REF} {VISIT_REF} {DATE}
         {TIME} {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME}
