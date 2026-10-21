@@ -7,6 +7,22 @@ require 'rails/test_help'
 require 'webmock/minitest'
 require 'mocha/minitest'
 
+# Backend CI skips yarn/webpack (SKIP_WEBPACK=1). Layouts still call pack tags —
+# stub them so missing public/packs does not raise MissingEntryError.
+if ENV['SKIP_WEBPACK'] == '1'
+  module Webpacker
+    module Helper
+      def javascript_pack_tag(*)
+        ''.html_safe
+      end
+
+      def stylesheet_pack_tag(*)
+        ''.html_safe
+      end
+    end
+  end
+end
+
 # lib/sopac is not required at boot (only lib/devices/sopac.rb is); load it for tests.
 Dir[Rails.root.join('lib/sopac/**/*.rb')].each do |file|
   absolute = File.expand_path(file)
