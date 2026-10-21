@@ -44,9 +44,8 @@ class LookbookVisualRegressionControllerTest < ActionController::TestCase
   test 'accept copies baseline and returns success' do
     expected_bytes = File.binread(@actual_path)
 
-    Lookbook::VisualRegression::AcceptSnapshot.stub(:refresh_report!, true) do
-      post :accept, params: { name: @name }, as: :json
-    end
+    Lookbook::VisualRegression::AcceptSnapshot.stubs(:refresh_report!).returns(true)
+    post :accept, params: { name: @name }, as: :json
 
     assert_response :success
     body = JSON.parse(response.body)
