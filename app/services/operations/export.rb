@@ -176,11 +176,11 @@ module Operations
     end
 
     def xlsx_sheet_xml(rows)
-      xml = +%Q(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n)
-      xml << %Q(<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>)
+      xml = +%(<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n)
+      xml << %(<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>)
       rows.each_with_index do |row, row_index|
         r = row_index + 1
-        xml << %Q(<row r="#{r}">)
+        xml << %(<row r="#{r}">)
         row.each_with_index do |value, col_index|
           cell_xml = xlsx_cell_xml("#{xlsx_col_name(col_index)}#{r}", value)
           xml << cell_xml if cell_xml
@@ -197,11 +197,11 @@ module Operations
       if xlsx_styled?(value)
         return if value[:v].nil?
 
-        %Q(<c r="#{ref}" s="#{value[:s]}"><v>#{value[:v]}</v></c>)
+        %(<c r="#{ref}" s="#{value[:s]}"><v>#{value[:v]}</v></c>)
       elsif value.is_a?(Numeric)
-        %Q(<c r="#{ref}"><v>#{value}</v></c>)
+        %(<c r="#{ref}"><v>#{value}</v></c>)
       else
-        %Q(<c r="#{ref}" t="inlineStr"><is><t>#{xlsx_escape(value)}</t></is></c>)
+        %(<c r="#{ref}" t="inlineStr"><is><t>#{xlsx_escape(value)}</t></is></c>)
       end
     end
 
