@@ -1,7 +1,15 @@
--# locals: optional size / total_count (defaults to controller assigns)
+-# locals: optional size / total_count / page_visits_count / total_visits_count (defaults to controller assigns)
 - size = local_assigns.fetch(:size) { @destinations.size }
 - total = local_assigns.fetch(:total_count) { @total_count }
-#count.primary.data-info{title: t('destinations.index.destinations_count_help')}
-  %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
-  %span.destinations-list-count-numbers= "#{size} / #{total}"
-  %span.destinations-toolbar-label= t('activerecord.models.destinations', count: total)
+- page_visits = local_assigns.fetch(:page_visits_count) { @page_visits_count }
+- total_visits = local_assigns.fetch(:total_visits_count) { @total_visits_count }
+.destinations-sidebar-counts
+  #count.primary.data-info{title: t('destinations.index.destinations_count_help')}
+    %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+    %span.destinations-list-count-numbers= "#{size} / #{total}"
+    %span.destinations-toolbar-label= t('activerecord.models.destinations', count: total)
+  - if !page_visits.nil? && !total_visits.nil?
+    #count-visits.primary.data-info{title: t('destinations.index.visits_count_help')}
+      %i.fa.fa-map-marker.fa-fw{"aria-hidden": "true"}
+      %span.destinations-list-count-numbers= "#{page_visits} / #{total_visits}"
+      %span.destinations-toolbar-label= t('activerecord.models.visits', count: total_visits)

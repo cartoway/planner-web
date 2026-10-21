@@ -1660,6 +1660,7 @@ fr:
       delivery: Livraison
       remove_filter: Retirer ce filtre
       destinations_count_help: Nombre de destinations
+      visits_count_help: Nombre de visites des destinations
       center_view_help: Centre la carte sur l'adresse
       search_keys:
         ref: ref
