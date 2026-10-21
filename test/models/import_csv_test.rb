@@ -199,4 +199,24 @@ class ImportCsvTest < ActiveSupport::TestCase
   ensure
     I18n.locale = I18n.default_locale
   end
+
+  test 'should reject double-at destination email on import' do
+    I18n.locale = :en
+    Tempfile.create(['import_destination_double_at_email', '.csv']) do |file|
+      file.write(<<~CSV)
+        reference,name,street,postalcode,city,lat,lng,email
+        bad-email-2,Bad Email,1 Street,75001,Paris,48.85,2.35,rgw@gmail@gmail.com
+      CSV
+      file.rewind
+      upload = Rack::Test::UploadedFile.new(file.path, 'text/csv')
+      import_csv = ImportCsv.new(file: upload, importer: @importer, content_code: :html, replace: false, delete_plannings: false)
+
+      assert_difference('Destination.count', 0) do
+        assert_not import_csv.import
+      end
+      assert import_csv.errors[:base].join.match?(/email|invalid/i)
+    end
+  ensure
+    I18n.locale = I18n.default_locale
+  end
 end
