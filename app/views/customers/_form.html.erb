@@ -561,6 +561,15 @@
     </div>
     <div id="collapseNotifications" class="panel-collapse collapse">
       <div class="panel-body">
+        <div class="row">
+          <div class="col-md-offset-2 col-md-8">
+            <h4 class="h5"><%= t '.notifications.tracking_eta_title' %></h4>
+            <p class="help-block"><%= t('.notifications.tracking_eta_help') %></p>
+          </div>
+        </div>
+        <%= f.number_field :delivery_tracking_eta_gap_before, min: 0, max: 180, help: t('.notifications.tracking_eta_gap_before_help') %>
+        <%= f.number_field :delivery_tracking_eta_gap_after, min: 0, max: 180, help: t('.notifications.tracking_eta_gap_after_help') %>
+
         <div class="panel panel-default accordion col-md-12 p0" id="customer_notifications_email_panel">
           <div class="panel-heading">
             <h3 class="panel-title">
@@ -593,15 +602,6 @@
                   </div>
                 </div>
               </div>
-
-              <div class="row">
-                <div class="col-md-offset-2 col-md-8">
-                  <h4 class="h5"><%= t '.company.tracking_eta_title' %></h4>
-                  <p class="help-block"><%= t('.company.tracking_eta_help') %></p>
-                </div>
-              </div>
-              <%= f.number_field :delivery_tracking_eta_gap_before, min: 0, max: 180, help: t('.company.tracking_eta_gap_before_help') %>
-              <%= f.number_field :delivery_tracking_eta_gap_after, min: 0, max: 180, help: t('.company.tracking_eta_gap_after_help') %>
             </div>
           </div>
         </div>
