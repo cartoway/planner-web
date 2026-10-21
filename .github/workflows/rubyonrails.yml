@@ -69,7 +69,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-backend
-          path: coverage/backend/
+          # Dotfiles are skipped by default — SimpleCov writes .resultset.json.
+          path: coverage/backend/.resultset.json
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 1
 
   test_frontend:
@@ -131,7 +134,10 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: coverage-frontend
-          path: coverage/frontend/
+          # Dotfiles are skipped by default — SimpleCov writes .resultset.json.
+          path: coverage/frontend/.resultset.json
+          include-hidden-files: true
+          if-no-files-found: error
           retention-days: 1
       - name: Set Node.js 20.x (JS self-checks)
         uses: actions/setup-node@v4
@@ -175,7 +181,9 @@ jobs:
           path: coverage/frontend
       - name: Collate SimpleCov and enforce 84% minimum
         # Avoid full Rails boot (no DB needed) — only SimpleCov gem.
-        run: bundle exec ruby -Itest -e 'require "./test/simplecov_setup"; SimplecovSetup.collate!'
+        run: |
+          ls -la coverage/backend coverage/frontend
+          bundle exec ruby -Itest -e 'require "./test/simplecov_setup"; SimplecovSetup.collate!'
 
   lookbook_visual:
     runs-on: ubuntu-latest
