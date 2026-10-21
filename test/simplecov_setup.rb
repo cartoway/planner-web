@@ -53,7 +53,10 @@ module SimplecovSetup
     require 'simplecov'
 
     files = Dir[File.join(ROOT, 'coverage', '*', '.resultset.json')]
-    abort 'coverage:collate: no resultsets under coverage/*/' if files.empty?
+    if files.empty?
+      found = Dir[File.join(ROOT, 'coverage', '**', '*')].reject { |p| File.directory?(p) }
+      abort "coverage:collate: no resultsets under coverage/*/ (found: #{found.inspect})"
+    end
 
     SimpleCov.collate(files, 'rails') do
       SimplecovSetup.apply_common!(self)
