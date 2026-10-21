@@ -177,6 +177,7 @@ class RoutesController < ApplicationController
       :lng,
       :comment,
       :phone_number,
+      :email,
       :tags,
 
       :ref_visit,
