@@ -111,7 +111,7 @@ module StopsHelper
     }.merge(stop.visit.destination.attributes.slice('name', 'street', 'city'))
     template = customer.sms_intransit_template || I18n.t('notifications.sms.alert_intransit')
     service = MessagingService.new(customer.reseller)
-    content = service.content(template, replacements: repl, time_format: :hour_minute)
+    content = service.content(template, replacements: repl, time_format: :hour_minute).gsub('{URL}', '')
     phone_number = stop.visit.destination.phone_number && service.format_phone_number(stop.visit.destination.phone_number, stop.visit.destination.country || customer.default_country)
     { phone_number: phone_number, content: content }
   end
@@ -123,6 +123,7 @@ module StopsHelper
     repl = {
       time: Time.now.at_beginning_of_day + seconds,
       customer_name: customer.name,
+      url: Operations::TrackingUrl.long_for(operation_stop.active_delivery_tracking),
       'name' => snap['name'],
       'street' => snap['street'],
       'city' => snap['city']
