@@ -52,7 +52,7 @@ class SmsPartnerServiceTest < ActiveSupport::TestCase
     assert @service.send_message(
       '0612345678',
       'Test message',
-      sender: 'SENDER',
+      from: 'SENDER',
       country: 'France'
     )
   end
