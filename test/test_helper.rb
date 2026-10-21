@@ -62,10 +62,9 @@ Minitest::Reporters.use! [
 class ActiveSupport::TestCase
   ActiveRecord::Migration.check_pending!
 
-  # Backend: reload fixtures each test (legacy isolation).
-  # Frontend suite (FRONTEND_TEST_SUITE=1 via rake test:frontend): wrap each test in a
-  # transaction and rollback — much faster, same isolation for read/write within one test.
-  self.use_transactional_tests = ENV['FRONTEND_TEST_SUITE'] == '1'
+  # Wrap each test in a transaction and rollback (fast). Opt out per class when a test must
+  # commit and be visible on another DB connection (see NonTransactionalFixtures).
+  self.use_transactional_tests = true
 
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   #
@@ -222,6 +221,28 @@ def suppress_output
     $stderr.reopen(original_stderr)
   end
   retval
+end
+
+# Opt out of transactional fixtures when a test must COMMIT and be visible on another
+# connection (e.g. Thread.new + FIND). Rails reloads fixtures between tests of this
+# class; teardown also reloads so the next transactional class does not inherit commits.
+module NonTransactionalFixtures
+  extend ActiveSupport::Concern
+
+  included do
+    self.use_transactional_tests = false
+
+    teardown do
+      ActiveRecord::FixtureSet.reset_cache
+      if ActiveRecord::TestFixtures.class_variable_defined?(:@@already_loaded_fixtures)
+        ActiveRecord::TestFixtures.class_variable_set(:@@already_loaded_fixtures, {})
+      end
+      ActiveRecord::FixtureSet.create_fixtures(
+        self.class.fixture_path,
+        self.class.fixture_table_names
+      )
+    end
+  end
 end
 
 def clear_jobs

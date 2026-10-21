@@ -59,6 +59,11 @@ x-web: &web
     - ../app/javascript/controllers/lookbook_visual_regression_controller.js:/srv/app/app/javascript/controllers/lookbook_visual_regression_controller.js:ro
     # test/ is .dockerignored (prod image). Mount for planner-dev-test + Lookbook previews.
     - ../test:/srv/app/test:ro
+    # Hotfixes for transactional tests (rebuild image to bake in).
+    - ../app/jobs/job.rb:/srv/app/app/jobs/job.rb:ro
+    - ../app/api/api_request_transaction.rb:/srv/app/app/api/api_request_transaction.rb:ro
+    - ../app/api/v01/api.rb:/srv/app/app/api/v01/api.rb:ro
+    - ../app/api/v100/api.rb:/srv/app/app/api/v100/api.rb:ro
     # test:frontend / test:backend (also .dockerignored until image rebuild)
     - ../lib/test_split.rb:/srv/app/lib/test_split.rb:ro
     - ../lib/tasks/test_split.rake:/srv/app/lib/tasks/test_split.rake:ro

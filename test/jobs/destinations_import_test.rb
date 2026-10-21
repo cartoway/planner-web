@@ -98,7 +98,8 @@ class DestinationsImportTest < ActiveSupport::TestCase
     before = Destination.count
 
     # Mimic Delayed::Worker#run: rescue failure inside the outer transaction (would commit otherwise).
-    Customer.transaction(isolation: :read_committed) do
+    # No isolation: — nested under use_transactional_tests (production worker still sets read_committed).
+    Customer.transaction do
       begin
         job.perform
         flunk 'expected ImportBaseError'

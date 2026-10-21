@@ -24,15 +24,14 @@ class Job < Struct
   end
 
   def job_progress_save(progress)
-    # Job is executed inside a transaction (for instance to be sure data are all updated in database when job is deleted)
-    # New thread will use a new connection outside this transaction to update job progress
-    if @job
-      Thread.new do
-        @job.progress ||= {}
-        @job.progress = JSON.parse(@job.progress) if @job.progress.is_a?(String)
-        @job.progress = @job.progress.merge!(progress).to_json
-        @job.save
-      end.join
+    # Job runs inside Delayed::Worker's transaction; progress must be visible before that commits.
+    return unless @job
+
+    commit_outside_worker_transaction do
+      @job.progress ||= {}
+      @job.progress = JSON.parse(@job.progress) if @job.progress.is_a?(String)
+      @job.progress = @job.progress.merge!(progress).to_json
+      @job.save
     end
   end
 
@@ -79,12 +78,23 @@ class Job < Struct
     # working must be visible while the worker transaction is still open.
     # queued uses this connection: Thread.new deadlocks if customers is already locked.
     if status == 'working'
-      Thread.new { ActiveRecord::Base.connection_pool.with_connection { record.call } }.join
+      commit_outside_worker_transaction(&record)
     else
       record.call
       if %w[succeeded failed killed].include?(status) && delayed_job.respond_to?(:async_outcome_remembered=)
         delayed_job.async_outcome_remembered = true
       end
+    end
+  end
+
+  # Production: Thread + new connection commits outside Delayed::Worker's open transaction.
+  # Test: inline — escaping the test transaction would poison later classes under
+  # use_transactional_tests (same rationale as Planning#precompute_traces).
+  def commit_outside_worker_transaction(&block)
+    if Rails.env.test?
+      block.call
+    else
+      Thread.new { ActiveRecord::Base.connection_pool.with_connection { block.call } }.join
     end
   end
 

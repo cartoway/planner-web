@@ -34,13 +34,11 @@ end
 namespace :test do
   desc 'Run frontend minitests (views/helpers/components + assert_select files)'
   task frontend: 'test:prepare' do
-    ENV['FRONTEND_TEST_SUITE'] = '1'
     TestSplitRake.run_partition(TestSplit.frontend_test_files, suite: 'frontend')
   end
 
   desc 'Run backend minitests (everything except frontend partition)'
   task backend: 'test:prepare' do
-    ENV.delete('FRONTEND_TEST_SUITE')
     TestSplitRake.run_partition(TestSplit.backend_test_files, suite: 'backend')
   end
 end
