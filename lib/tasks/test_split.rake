@@ -16,7 +16,7 @@ module TestSplitRake
     abort "test:#{suite}: overlap with other partition: #{overlap.first(5).join(', ')}" if overlap.any?
 
     test_dir = Rails.root.join('test').to_s
-    $LOAD_PATH.unshift(test_dir) unless $LOAD_PATH.include?(test_dir)
+    $:.unshift(test_dir) unless $:.include?(test_dir)
 
     # Require only this partition. Do not use Rails::TestUnit::Runner.rake_run:
     # an empty/misparsed pattern list falls back to test/**/*_test.rb (full suite).
@@ -29,7 +29,6 @@ module TestSplitRake
     require 'active_support/testing/autorun'
   end
 end
-
 
 namespace :test do
   desc 'Run frontend minitests (views/helpers/components + assert_select files)'
