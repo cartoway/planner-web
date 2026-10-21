@@ -23,7 +23,7 @@ class StopSignaturesControllerTest < ActionController::TestCase
       post :create, params: {
         operation_stop_id: @operation_stop.id,
         driver_token: @vehicle.driver_token,
-        signature: fixture_file_upload('files/stop_photo.jpg', 'image/jpeg')
+        signature: fixture_file_upload('stop_photo.jpg', 'image/jpeg')
       }, format: :json
     end
 
@@ -48,7 +48,7 @@ class StopSignaturesControllerTest < ActionController::TestCase
     post :create, params: {
       operation_stop_id: @operation_stop.id,
       driver_token: @vehicle.driver_token,
-      signature: fixture_file_upload('files/stop_photo.jpg', 'image/jpeg')
+      signature: fixture_file_upload('stop_photo.jpg', 'image/jpeg')
     }, format: :json
     assert_response :created
     first_blob_id = @operation_stop.reload.signature.blob.id
@@ -57,7 +57,7 @@ class StopSignaturesControllerTest < ActionController::TestCase
       post :create, params: {
         operation_stop_id: @operation_stop.id,
         driver_token: @vehicle.driver_token,
-        signature: fixture_file_upload('files/stop_photo.jpg', 'image/jpeg')
+        signature: fixture_file_upload('stop_photo.jpg', 'image/jpeg')
       }, format: :json
     end
 
@@ -73,7 +73,7 @@ class StopSignaturesControllerTest < ActionController::TestCase
     post :create, params: {
       operation_stop_id: @operation_stop.id,
       driver_token: other.driver_token,
-      signature: fixture_file_upload('files/stop_photo.jpg', 'image/jpeg')
+      signature: fixture_file_upload('stop_photo.jpg', 'image/jpeg')
     }, format: :json
     assert_response :not_found
     assert_not @operation_stop.reload.signature.attached?

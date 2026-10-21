@@ -23,7 +23,7 @@ class StopPhotosControllerTest < ActionController::TestCase
       post :create, params: {
         operation_stop_id: @operation_stop.id,
         driver_token: @vehicle.driver_token,
-        photos: [fixture_file_upload('files/stop_photo.jpg', 'image/jpeg')]
+        photos: [fixture_file_upload('stop_photo.jpg', 'image/jpeg')]
       }, format: :json
     end
 
@@ -57,7 +57,7 @@ class StopPhotosControllerTest < ActionController::TestCase
     post :create, params: {
       operation_stop_id: @operation_stop.id,
       driver_token: @vehicle.driver_token,
-      photos: [fixture_file_upload('files/stop_photo.jpg', 'image/jpeg')]
+      photos: [fixture_file_upload('stop_photo.jpg', 'image/jpeg')]
     }, format: :json
     photo_id = JSON.parse(response.body)['photos'].first['id']
 
@@ -100,7 +100,7 @@ class StopPhotosControllerTest < ActionController::TestCase
     post :create, params: {
       operation_stop_id: @operation_stop.id,
       driver_token: vehicles(:vehicle_three).driver_token,
-      photos: [fixture_file_upload('files/stop_photo.jpg', 'image/jpeg')]
+      photos: [fixture_file_upload('stop_photo.jpg', 'image/jpeg')]
     }, format: :json
 
     assert_response :not_found
@@ -113,7 +113,7 @@ class StopPhotosControllerTest < ActionController::TestCase
         post :create, params: {
           operation_stop_id: @operation_stop.id,
           driver_token: @vehicle.driver_token,
-          photos: [fixture_file_upload('files/stop_photo.jpg', 'image/jpeg')]
+          photos: [fixture_file_upload('stop_photo.jpg', 'image/jpeg')]
         }, format: :json
         assert_response :created
       end
@@ -121,7 +121,7 @@ class StopPhotosControllerTest < ActionController::TestCase
       post :create, params: {
         operation_stop_id: @operation_stop.id,
         driver_token: @vehicle.driver_token,
-        photos: [fixture_file_upload('files/stop_photo.jpg', 'image/jpeg')]
+        photos: [fixture_file_upload('stop_photo.jpg', 'image/jpeg')]
       }, format: :json
     end
 

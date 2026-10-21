@@ -35,11 +35,19 @@ planner-dev-test-prepare() {
 }
 
 planner-dev-test() {
-  _planner_web_devcontainer exec \
-    -e RAILS_ENV=test \
-    -e COV=false \
-    -e COVERAGE=false \
-    web bundle exec rails test "$@"
+  local env=(
+    -e RAILS_ENV=test
+    -e COV=false
+    -e COVERAGE=false
+  )
+  case "${1:-}" in
+    frontend|backend)
+      _planner_web_devcontainer exec "${env[@]}" web bundle exec rake "test:$1"
+      ;;
+    *)
+      _planner_web_devcontainer exec "${env[@]}" web bundle exec rails test "$@"
+      ;;
+  esac
 }
 
 alias planner-dev-test-prepare='planner-dev-test-prepare'

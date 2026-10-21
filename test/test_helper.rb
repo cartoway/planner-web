@@ -1,45 +1,27 @@
-if (!ENV.key?('COV') && !ENV.key?('COVERAGE')) || (ENV['COV'] != 'false' && ENV['COVERAGE'] != 'false')
-  require 'fileutils'
-  require 'simplecov'
-
-  # Preserve argv before rake/webpack mutate it; rake test otherwise falls back to "RSpec".
-  SimpleCov::CommandGuesser.original_run_command ||= [$0, *ARGV].join(' ')
-
-  coverage_dir = File.expand_path('../../coverage', __FILE__)
-  FileUtils.rm_f(File.join(coverage_dir, '.resultset.json'))
-  FileUtils.rm_f(File.join(coverage_dir, '.resultset.json.lock'))
-
-  command = SimpleCov::CommandGuesser.guess
-  command = 'rails test' if ['RSpec', 'Unknown Test Framework'].include?(command)
-  SimpleCov.command_name(command)
-
-  SimpleCov.minimum_coverage 84
-  SimpleCov.start 'rails' do
-    root File.expand_path('../..', __FILE__)
-
-    # Rails profile scans all lib/**/*.rb on disk (track_files), which inflates the
-    # denominator with 0%-lines that never merge with runtime hits on boot-loaded files.
-    track_files 'app/**/*.rb'
-
-    # Lookbook / design-system tooling — not part of planner runtime coverage.
-    # Match both absolute CI paths and SimpleCov project_filename (no leading slash).
-    add_filter do |source_file|
-      path = "#{source_file.filename} #{source_file.project_filename}"
-      path.match?(%r{app/services/lookbook/}) ||
-        path.match?(%r{app/controllers/lookbook/}) ||
-        path.match?(%r{lib/lookbook_haml_to_erb}) ||
-        path.match?(%r{config/initializers/lookbook\.rb}) ||
-        path.match?(%r{app/services/lookbook_dual_format_template_resolver\.rb}) ||
-        path.match?(%r{script/.+lookbook}i)
-    end
-  end
-end
+require_relative 'simplecov_setup'
+SimplecovSetup.start!
 
 ENV['RAILS_ENV'] ||= 'test'
 require File.expand_path('../../config/environment', __FILE__)
 require 'rails/test_help'
 require 'webmock/minitest'
 require 'mocha/minitest'
+
+# Backend CI skips yarn/webpack (SKIP_WEBPACK=1). Layouts still call pack tags —
+# stub them so missing public/packs does not raise MissingEntryError.
+if ENV['SKIP_WEBPACK'] == '1'
+  module Webpacker
+    module Helper
+      def javascript_pack_tag(*)
+        ''.html_safe
+      end
+
+      def stylesheet_pack_tag(*)
+        ''.html_safe
+      end
+    end
+  end
+end
 
 # lib/sopac is not required at boot (only lib/devices/sopac.rb is); load it for tests.
 Dir[Rails.root.join('lib/sopac/**/*.rb')].each do |file|
@@ -62,8 +44,9 @@ Minitest::Reporters.use! [
 class ActiveSupport::TestCase
   ActiveRecord::Migration.check_pending!
 
-  # Make tests independants from others fixtures edition
-  self.use_transactional_tests = false
+  # Wrap each test in a transaction and rollback (fast). Opt out per class when a test must
+  # commit and be visible on another DB connection (see NonTransactionalFixtures).
+  self.use_transactional_tests = true
 
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   #
@@ -220,6 +203,29 @@ def suppress_output
     $stderr.reopen(original_stderr)
   end
   retval
+end
+
+# Opt out of transactional fixtures when a test must COMMIT and be visible on another
+# connection (e.g. Thread.new + FIND). Rails reloads fixtures between tests of this
+# class; teardown also reloads so the next transactional class does not inherit commits.
+module NonTransactionalFixtures
+  extend ActiveSupport::Concern
+
+  included do
+    self.use_transactional_tests = false
+
+    teardown do
+      ActiveRecord::FixtureSet.reset_cache
+      # Rails stores loaded fixtures in a class var; clear so the next class reloads.
+      if ActiveRecord::TestFixtures.class_variable_defined?(:@@already_loaded_fixtures)
+        ActiveRecord::TestFixtures.class_variable_set(:@@already_loaded_fixtures, {}) # rubocop:disable Style/ClassVars
+      end
+      ActiveRecord::FixtureSet.create_fixtures(
+        self.class.fixture_path,
+        self.class.fixture_table_names
+      )
+    end
+  end
 end
 
 def clear_jobs

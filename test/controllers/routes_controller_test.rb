@@ -177,6 +177,6 @@ class RoutesControllerTest < ActionController::TestCase
 
     assert_redirected_to route_path(assigns(:route))
     route.reload
-    assert_equal original_status, route.start_route_data.status, 'status should not be updated via update'
+    assert_operator route.start_route_data.status, :==, original_status, 'status should not be updated via update'
   end
 end

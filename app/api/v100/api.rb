@@ -1,4 +1,5 @@
 require 'exceptions'
+require_relative '../api_request_transaction'
 
 class V100::Api < Grape::API
   helpers do
@@ -39,10 +40,7 @@ class V100::Api < Grape::API
     end
 
     def error!(*args)
-      # Workaround for close transaction on error!
-      if !ActiveRecord::Base.connection.transaction_manager.current_transaction.is_a?(ActiveRecord::ConnectionAdapters::NullTransaction)
-        ActiveRecord::Base.connection.transaction_open? && ActiveRecord::Base.connection.rollback_transaction
-      end
+      ApiRequestTransaction.rollback!
       super(*args)
     end
   end
@@ -58,12 +56,12 @@ class V100::Api < Grape::API
   after do
     begin
       if @error
-        ActiveRecord::Base.connection.transaction_open? && ActiveRecord::Base.connection.rollback_transaction
+        ApiRequestTransaction.rollback!
       else
-        ActiveRecord::Base.connection.transaction_open? && ActiveRecord::Base.connection.commit_transaction
+        ApiRequestTransaction.commit!
       end
     rescue Exception
-      ActiveRecord::Base.connection.transaction_open? && ActiveRecord::Base.connection.rollback_transaction
+      ApiRequestTransaction.rollback!
       raise
     end
   end
@@ -74,7 +72,7 @@ class V100::Api < Grape::API
   end
 
   rescue_from :all, backtrace: ENV['RAILS_ENV'] != 'production' do |e|
-    ActiveRecord::Base.connection.transaction_open? && ActiveRecord::Base.connection.rollback_transaction
+    ApiRequestTransaction.rollback!
 
     @error = e
     Rails.logger.error "\n\n#{e.class} (#{e.message}):\n    " + e.backtrace.join("\n    ") + "\n\n"

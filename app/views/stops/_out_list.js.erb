@@ -1,2 +1,2 @@
-$('#list_box').append("<%= j(render 'stops/out_list.html.haml', local_assigns)%>");
-$('#div_out_list_next_link').html("<%= j(render 'stops/out_list_next_link.html.haml', local_assigns) %>");
+$('#list_box').append("<%= j(render partial: 'stops/out_list', formats: [:html], locals: local_assigns)%>");
+$('#div_out_list_next_link').html("<%= j(render partial: 'stops/out_list_next_link', formats: [:html], locals: local_assigns) %>");

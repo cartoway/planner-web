@@ -1,6 +1,6 @@
 - outdated = local_assigns.fetch(:outdated, nil)
 .global_info
-  = render partial: 'edit_head.html.haml', locals: local_assigns
+  = render partial: 'edit_head', formats: [:html], locals: local_assigns
 - refresh_visible = @manage_planning && @manage_planning[:manage_refresh]
 - refresh_disabled = @manage_planning && @manage_planning[:disable_refresh]
 - if outdated && refresh_visible
@@ -9,8 +9,8 @@
       %i.fa.fa-refresh.fa-fw
       = t("plannings.edit.refresh")
 %ol.routes
-  = render partial: 'routes/edit.html.haml', locals: { routes: routes, summary: summary }
+  = render partial: 'routes/edit', formats: [:html], locals: { routes: routes, summary: summary }
 - out_of_route = routes.find { |route| route[:vehicle_id].nil? }
 - if out_of_route
   %ol.routes.out_routes
-    = render partial: 'routes/out_of_route.html.haml', locals: { routes: routes, summary: summary, route: out_of_route }
+    = render partial: 'routes/out_of_route', formats: [:html], locals: { routes: routes, summary: summary, route: out_of_route }
