@@ -36,7 +36,7 @@ class SmsPartnerService < MessagingService
 
     fitlered_options = {
       apiKey: config['api_key'],
-      sender: options[:sender] || @reseller.name,
+      sender: options[:from] || @reseller.name.gsub(/[^0-9a-z]+/i, '')[0..10],
       gamme: 1,
       isStopSms: false,
       tag: options[:tag] || @options[:customer] && "c#{@options[:customer].id}"
