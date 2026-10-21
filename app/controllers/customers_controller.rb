@@ -330,11 +330,6 @@ class CustomersController < ApplicationController
       allowed_params = [
         :enable_optimization_soft_upper_bound,
         :enable_strict_within_timewindows,
-        :enable_email_driver,
-        :enable_sms_driver,
-        :enable_email_destination,
-        :enable_sms_destination,
-        :enable_sms_intransit,
         :stop_max_upper_bound,
         :vehicle_max_upper_bound,
         :destination_duration,
