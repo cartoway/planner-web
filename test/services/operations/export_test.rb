@@ -69,8 +69,31 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes sheet, I18n.t('operations.export.columns.planned_arrival')
     assert_includes sheet, I18n.t('operations.export.columns.delay_minutes')
     assert_includes sheet, @operation.name
-    assert_includes sheet, 'delivered'
+    assert_includes sheet, I18n.t('operations.export.columns.stop_index')
+    assert_includes sheet, I18n.t('destinations.import_file.stop_type_visit')
+    assert_includes sheet, I18n.t('plannings.edit.stop_status.delivered')
+    refute_includes Operations::Export::CSV_HEADERS, 'operation_status'
+    refute_includes Operations::Export::CSV_HEADERS, 'route_index'
+    refute_includes sheet, '>delivered<'
     assert_includes sheet, @stop.index.to_s
+  end
+
+  test 'xlsx and html include route start and end depots' do
+    route = @stop.operation_route
+    start_depot, end_depot = route.list_depots
+    assert start_depot, 'expected a start depot on the fixture route'
+    assert end_depot, 'expected an end depot on the fixture route'
+
+    sheet = xlsx_sheet_xml(Operations::Export.new(@operation).to_xlsx)
+    assert_includes sheet, I18n.t('destinations.import_file.stop_type_store')
+    assert_includes sheet, start_depot[:name]
+    assert_includes sheet, end_depot[:name]
+
+    Operations::DeliveryNotePdf.stubs(:call).returns("%PDF-1.4\n%%EOF\n")
+    html = zip_entries(Operations::Export.new(@operation).to_zip)['index.html'].force_encoding('UTF-8')
+    assert_includes html, I18n.t('destinations.import_file.stop_type_store')
+    assert_includes html, start_depot[:name]
+    assert_includes html, end_depot[:name]
   end
 
   test 'xlsx includes stop custom attribute columns and filled values' do
@@ -92,6 +115,33 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes sheet, ">#{@stop.photos.size}<"
     assert_includes sheet, I18n.t('all.value._yes')
     refute_includes sheet, 'media/route_'
+  end
+
+  test 'xlsx writes clocks dates and durations with excel number formats' do
+    xlsx = Operations::Export.new(@operation).to_xlsx
+    styles = xlsx_entry_xml(xlsx, 'xl/styles.xml')
+    sheet = xlsx_sheet_xml(xlsx)
+
+    assert_includes styles, 'hh:mm'
+    assert_includes styles, 'dd-mm-yyyy'
+    assert_includes styles, '[hh]:mm:ss'
+    assert_match(/s="1"><v>0\.\d+<\/v>/, sheet)
+    assert_match(/s="2"><v>\d+<\/v>/, sheet)
+    refute_match(%r{t="inlineStr"><is><t>\d{2}:\d{2}</t></is></c>}, sheet)
+  end
+
+  test 'xlsx distances are in km without units in headers' do
+    route = @stop.operation_route
+    route.update_columns(route_snapshot: (route.route_snapshot || {}).merge('distance' => 12_500, 'drive_time' => 3661))
+    @stop.update_columns(stop_snapshot: (@stop.stop_snapshot || {}).merge('distance' => 2500))
+
+    sheet = xlsx_sheet_xml(Operations::Export.new(@operation.reload).to_xlsx)
+    assert_includes sheet, I18n.t('operations.export.columns.route_distance')
+    assert_includes sheet, I18n.t('operations.export.columns.stop_distance')
+    refute_includes sheet, '(m)'
+    refute_includes sheet, '(s)'
+    assert_includes sheet, '>12.5<'
+    assert_includes sheet, '>2.5<'
   end
 
   test 'zip includes html xlsx media delivery note pdf tracks and carousel' do
@@ -204,11 +254,15 @@ class OperationsExportTest < ActiveSupport::TestCase
   end
 
   def xlsx_sheet_xml(binary)
+    xlsx_entry_xml(binary, 'xl/worksheets/sheet1.xml')
+  end
+
+  def xlsx_entry_xml(binary, name)
     Zip::InputStream.open(StringIO.new(binary)) do |io|
       while (entry = io.get_next_entry)
-        return io.read.force_encoding('UTF-8') if entry.name == 'xl/worksheets/sheet1.xml'
+        return io.read.force_encoding('UTF-8') if entry.name == name
       end
     end
-    flunk 'missing xl/worksheets/sheet1.xml in xlsx'
+    flunk "missing #{name} in xlsx"
   end
 end
