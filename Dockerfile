@@ -10,7 +10,8 @@ ENV NODE_OPTIONS=--openssl-legacy-provider \
     YARN_PRODUCTION=false \
     SKIP_JS_COMPRESSOR=1 \
     BUNDLE_WITHOUT="development:test" \
-    API_DOC_MODE=true
+    API_DOC_MODE=true \
+    LD_PRELOAD=/usr/lib/libjemalloc.so.2
 
 # Install build dependencies
 RUN apk add --no-cache \
@@ -51,13 +52,14 @@ COPY public/ public/
 
 RUN bundle exec rake i18n:js:export
 
-# Webpack is the slowest step; keep it separate from sprockets and swagger generation.
-RUN bundle exec rails webpacker:compile
+# Webpack is the slowest / hungriest step; keep it separate from sprockets and swagger.
+RUN WEBPACK_LOW_MEMORY=1 NODE_OPTIONS="$NODE_OPTIONS --max-old-space-size=1536" \
+    bundle exec rails webpacker:compile
 
 # rswag:specs:swaggerize (hooked to assets:precompile) reads spec/ only.
 COPY spec/ spec/
 
-RUN bundle exec rake assets:precompile
+RUN WEBPACKER_PRECOMPILE=false bundle exec rake assets:precompile
 
 # Runtime source not required to compile assets (keeps db/script changes off webpack layers).
 COPY db/ db/
