@@ -2,7 +2,7 @@
   "info": {
     "_postman_id": "7c8e9f01-2a3b-4c5d-8e9f-0a1b2c3d4e5f",
     "name": "Planner REST API 0.1",
-    "description": "Curated requests for the integration happy path (not a dump of every endpoint).\n\n1. Import this collection **and** `Planner-API-0.1.environment.json`.\n2. Set `api_key` (user form in the web UI). `base` matches `swagger_docs_base_path` without the trailing slash (default `http://localhost:8080`). Change it if your instance is published elsewhere.\n3. Run the **Happy path** folder in order.\n\nInsomnia: Import → From File → this collection, then set `base` and `api_key` on the environment.\n\nFull catalog: import `GET {{base}}/api/0.1/swagger_doc` (Swagger 2.0).\nGuide: `/api/0.1/getting-started.md`\n\nPitfall: polling `GET /jobs/:id` until `status` is **succeeded**. `status` failed / `failed_at` means failure. HTTP 404 means this id was never a job of this customer.",
+    "description": "Curated requests for the integration happy path (not a dump of every endpoint).\n\n1. Import this collection **and** `Planner-API-0.1.environment.json`.\n2. Set `api_key` (user form in the web UI). `base` matches `swagger_docs_base_path` without the trailing slash (default `http://localhost:8080`). Change it if your instance is published elsewhere.\n3. Run the **Happy path** folder in order.\n4. **Embed tokens**: mint a short-lived token then open an API-web view (iframe / LLM) without putting `api_key` in the URL.\n\nInsomnia: Import → From File → this collection, then set `base` and `api_key` on the environment.\n\nFull catalog: import `GET {{base}}/api/0.1/swagger_doc` (Swagger 2.0).\nGuide: `/api/0.1/getting-started.md`\n\nPitfall: polling `GET /jobs/:id` until `status` is **succeeded**. `status` failed / `failed_at` means failure. HTTP 404 means this id was never a job of this customer.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -234,6 +234,75 @@
             "header": [{ "key": "Accept", "value": "application/json" }],
             "url": "{{base}}/api/0.1/plannings/{{planning_id}}/apply_zonings.json?zoning_ids={{zoning_id}}",
             "description": "Assigns stops to the zone vehicles."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Embed tokens",
+      "description": "Mint a short-lived token for API-web iframe / LLM views. Run **Create embed token** first, then any planning edit request. Set `embed_origin` (optional CSP parent) and a real `planning_id`.",
+      "item": [
+        {
+          "name": "1. Create embed token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const j = pm.response.json();",
+                  "  if (j && j.token) pm.environment.set('embed_token', j.token);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Accept", "value": "application/json" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"expires_in\": 3600,\n  \"origin\": \"{{embed_origin}}\"\n}"
+            },
+            "url": "{{base}}/api/0.1/embed_tokens.json",
+            "description": "Uses collection `Api-Key` auth. Saves `embed_token`. Lifetime 60–86400s (default 3600). Optional `origin` locks CSP frame-ancestors."
+          }
+        },
+        {
+          "name": "2. Planning edit (query embed_token)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [],
+            "url": "{{base}}/api-web/0.1/plannings/{{planning_id}}/edit?embed_token={{embed_token}}",
+            "description": "Iframe-style auth via query string. Do not put the user api_key in the iframe URL."
+          }
+        },
+        {
+          "name": "3. Planning edit (Embed-Token header)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [
+              { "key": "Embed-Token", "value": "{{embed_token}}" }
+            ],
+            "url": "{{base}}/api-web/0.1/plannings/{{planning_id}}/edit"
+          }
+        },
+        {
+          "name": "4. Planning edit (Bearer)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{embed_token}}" }
+            ],
+            "url": "{{base}}/api-web/0.1/plannings/{{planning_id}}/edit",
+            "description": "LLM / server-side fetch style (`Authorization: Bearer`)."
           }
         }
       ]
