@@ -76,7 +76,7 @@ module Operations
       }
     end
 
-    # Same net quantity format as PlanningsHelperApi#send_sms_route (VisitQuantities :quantity).
+    # Net quantity + unit label, same idea as PlanningsHelperApi#send_sms_route.
     def self.quantities_text(stop)
       return '' unless stop
 
@@ -85,7 +85,9 @@ module Operations
         delivery = lines.find { |line| line[:kind] == 'deliveries' }&.fetch(:value, 0).to_f
         next if pickup.zero? && delivery.zero?
 
-        delivery - pickup
+        net = delivery - pickup
+        label = lines.map { |line| line[:label] }.find { |l| l.present? && !%w[deliveries pickups].include?(l) }
+        label ? "#{net} #{label}" : net.to_s
       }.join(' ')
     end
     private_class_method :quantities_text
