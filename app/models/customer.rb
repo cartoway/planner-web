@@ -142,7 +142,11 @@ class Customer < ApplicationRecord
               less_than_or_equal_to: OperationProofs::Purge::MAX_RETENTION_DAYS
             }
   validates :stops_preload_limit, numericality: { greater_than: 0, less_than_or_equal_to: Planner::Application.config.max_destinations }
-  validates :sms_sender_name, length: { in: 3..11 }, allow_blank: true
+  # SMS alphanumeric sender ID (GSM): 3–11 chars, letters/digits only (no spaces/specials).
+  validates :sms_sender_name,
+            length: { in: 3..11 },
+            format: { with: /\A[A-Za-z0-9]+\z/, message: :invalid_sms_format },
+            allow_blank: true
 
   after_initialize :assign_defaults, :update_max_vehicles, if: :new_record?
   after_initialize :assign_device

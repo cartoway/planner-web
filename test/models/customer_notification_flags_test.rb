@@ -34,4 +34,19 @@ class CustomerNotificationFlagsTest < ActiveSupport::TestCase
     @customer.sms_sender_name = 'ValidName'
     assert @customer.valid?
   end
+
+  test 'sms_sender_name must be alphanumeric per SMS standard' do
+    @customer.sms_sender_name = 'Mon Sender'
+    assert_not @customer.valid?
+    assert @customer.errors[:sms_sender_name].any?
+
+    @customer.sms_sender_name = 'Café'
+    assert_not @customer.valid?
+
+    @customer.sms_sender_name = 'Shop@1'
+    assert_not @customer.valid?
+
+    @customer.sms_sender_name = 'MonSMS01'
+    assert @customer.valid?
+  end
 end
