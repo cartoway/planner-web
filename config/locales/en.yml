@@ -1390,7 +1390,7 @@ en:
       sms_intransit_template_help: >-
         SMS template sent to the customers when the driver is in route.
         {CUSTOMER_NAME} will be replaced by the account name. {NAME} will be replaced by the destination name.
-        {DATE} will be replaced by the date of the route. Your text should not contain non
+        {URL} will be replaced by the tracking link. Your text should not contain non
         standard characters (GSM 03.38) and not exceed 160 characters.
       sms_template_help: >-
         SMS template sent for your visits. {NAME} will be replaced by
@@ -1403,7 +1403,7 @@ en:
       sms_driver_keys_help: >-
         Available replacement strings: {ROUTE_NAME} {DATE} {SIZE_ACTIVE} {URL}.
       sms_intransit_keys_help: >-
-        Available replacement strings: {NAME} {CUSTOMER_NAME} {TIME} {STREET} {CITY}.
+        Available replacement strings: {NAME} {CUSTOMER_NAME} {TIME} {STREET} {CITY} {URL}.
       sms_keys_help: >-
         Available replacement strings: {NAME} {REF} {VISIT_REF} {DATE} {TIME}
         {STREET} {CITY} {QUANTITIES} {COMMENT} {VEHICLE_NAME} {PHONE_NUMBER} {URL}.
