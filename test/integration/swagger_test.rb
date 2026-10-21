@@ -94,7 +94,7 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     assert_equal 'apikey', collection.dig('auth', 'type')
 
     urls = flatten_postman_urls(collection['item'])
-    %w[/deliverable_units.json /vehicles.json /destinations.json /plannings.json /optimize.json /jobs/ /routes.json].each do |fragment|
+    %w[/deliverable_units.json /vehicles.json /destinations.json /plannings.json /optimize.json /jobs/ /routes.json /embed_tokens.json /api-web/0.1/plannings/].each do |fragment|
       assert urls.any? { |u| u.include?(fragment) }, "Postman collection missing #{fragment}"
     end
 
@@ -102,6 +102,8 @@ class SwaggerTest < ActionDispatch::IntegrationTest
     keys = env['values'].map { |v| v['key'] }
     assert_includes keys, 'base'
     assert_includes keys, 'api_key'
+    assert_includes keys, 'embed_token'
+    assert_includes keys, 'embed_origin'
     base = env['values'].find { |v| v['key'] == 'base' }['value']
     %w[development production].each do |env_name|
       config = Rails.root.join("config/environments/#{env_name}.rb").read

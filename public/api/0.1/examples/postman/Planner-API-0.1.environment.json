@@ -49,6 +49,18 @@
       "value": "5",
       "type": "default",
       "enabled": true
+    },
+    {
+      "key": "embed_token",
+      "value": "",
+      "type": "default",
+      "enabled": true
+    },
+    {
+      "key": "embed_origin",
+      "value": "https://erp.example.com",
+      "type": "default",
+      "enabled": true
     }
   ],
   "_postman_variable_scope": "environment"
