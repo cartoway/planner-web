@@ -800,6 +800,8 @@ fr:
           attributes:
             optimization_dicho_minimum_service_size:
               must_be_less_than_max_split_size: doit être inférieur à la taille de découpage maximale
+            sms_sender_name:
+              invalid_sms_format: ne doit contenir que des lettres et chiffres (norme SMS)
             plannings:
               over_max_limit: dépassement du nombre maximal de plans
             zonings:
@@ -1391,8 +1393,9 @@ fr:
         approach: Approche
         sms_options: Options SMS
       sms_sender_name_help: >-
-        Nom affiché comme expéditeur des SMS (3 à 11 caractères).
+        Nom affiché comme expéditeur des SMS (3 à 11 caractères, lettres et chiffres uniquement).
         Par défaut : nom de société, sinon nom du compte (tronqué).
+      sms_sender_name_pattern_title: Lettres et chiffres uniquement (3 à 11 caractères)
       stop_max_upper_bound: Dépassement max créneaux horaires visites
       stop_max_upper_bound_help: Autoriser les dépassements horaires sur les arrêts
       vehicle_max_upper_bound: Dépassement max amplitude chauffeur
