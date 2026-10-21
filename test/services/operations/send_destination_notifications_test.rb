@@ -178,7 +178,7 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     )
 
     repl = Operations::SendDestinationSms.replacements(stop.reload, Date.current, 'http://track.test')
-    assert_equal '3.0', repl[:quantities]
+    assert_equal '3.0 kg', repl[:quantities]
     assert_equal 'Camion A', repl[:vehicle_name]
     assert_equal '0607080910', repl[:phone_number]
   end
