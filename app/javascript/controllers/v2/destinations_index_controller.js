@@ -747,16 +747,33 @@ export default class extends Controller {
     if (next) perInput.value = next
   }
 
-  // Count lives in the sidebar title row (outside turbo-frame#destinations_list).
+  // Counts live in the sidebar title row (outside turbo-frame#destinations_list).
+  // Turbo FrameRenderer only swaps frame children, so read counts from the inner meta node
+  // (updated on each list refresh), not from the frame's stale data-* attributes.
   _syncCountFromListFrame () {
     const frame = document.getElementById('destinations_list')
-    const numbers = this.element.querySelector('#count .destinations-list-count-numbers')
-    if (!frame || !numbers) return
+    if (!frame) return
 
-    const shown = frame.getAttribute('data-shown-count')
-    const total = frame.getAttribute('data-total-count')
-    if (shown == null || total == null) return
-    numbers.textContent = `${shown} / ${total}`
+    const meta = frame.querySelector('[data-destinations-list-counts]')
+    this._syncCountBlock('#count', {
+      shown: meta?.getAttribute('data-shown-count') ?? frame.getAttribute('data-shown-count'),
+      total: meta?.getAttribute('data-total-count') ?? frame.getAttribute('data-total-count'),
+      label: meta?.getAttribute('data-count-label')
+    })
+    this._syncCountBlock('#count-visits', {
+      shown: meta?.getAttribute('data-page-visits-count'),
+      total: meta?.getAttribute('data-total-visits-count'),
+      label: meta?.getAttribute('data-visits-count-label')
+    })
+  }
+
+  _syncCountBlock (rootSelector, { shown, total, label }) {
+    const root = this.element.querySelector(rootSelector)
+    if (!root) return
+    const numbers = root.querySelector('.destinations-list-count-numbers')
+    if (numbers && shown != null && total != null) numbers.textContent = `${shown} / ${total}`
+    const labelEl = root.querySelector('.destinations-toolbar-label')
+    if (labelEl && label != null) labelEl.textContent = label
   }
 
   _refreshListAfterSidebarSave (destinationId) {
