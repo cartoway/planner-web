@@ -125,8 +125,8 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes styles, 'hh:mm'
     assert_includes styles, 'dd-mm-yyyy'
     assert_includes styles, '[hh]:mm:ss'
-    assert_match(/s="1"><v>0\.\d+<\/v>/, sheet)
-    assert_match(/s="2"><v>\d+<\/v>/, sheet)
+    assert_match(%r{s="1"><v>0\.\d+</v>}, sheet)
+    assert_match(%r{s="2"><v>\d+</v>}, sheet)
     refute_match(%r{t="inlineStr"><is><t>\d{2}:\d{2}</t></is></c>}, sheet)
   end
 
@@ -166,7 +166,7 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes html, @operation.name
     assert_includes html, 'data-proof-carousel'
     assert_includes html, 'data-proof-lightbox'
-    assert_includes html, %Q(href="media/route_#{route.id}/stop_#{@stop.id}")
+    assert_includes html, %(href="media/route_#{route.id}/stop_#{@stop.id}")
     assert_includes html, 'media-folder'
     assert_includes html, I18n.t('operations.export.open_media')
     assert_includes html, I18n.t('operations.show.cumulative_delay')
