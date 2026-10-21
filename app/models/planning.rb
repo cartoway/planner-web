@@ -654,42 +654,50 @@ class Planning < ApplicationRecord
   end
 
   def precompute_traces(all_segments, options = {})
-    if all_segments.any?
-      in_optimizer_context = optimizer_context
-      threads = []
-      all_segments.each_slice(5) do |batch|
-        batch.each do |route_data|
-          threads << Thread.new do
-            Planning.optimizer_context = in_optimizer_context
-            route = route_data[:route]
-            begin
-              ActiveRecord::Base.connection_pool.with_connection do
-                segments = route_data[:segments]
-                router = route.vehicle_usage.vehicle.default_router
-                router_options = route.vehicle_usage.vehicle.default_router_options.symbolize_keys
-                router_options[:geometry] = false if options[:no_geojson]
-                router_options[:speed_multiplier] = route.vehicle_usage.vehicle.default_speed_multiplier
-                router_options[:speed_multiplier_areas] = Zoning.speed_multiplier_areas(self.zonings)
-                router_options[:departure] = Time.zone.parse((self.date || Date.today).to_s) + route.start if route.start
-                ts = router.trace_batch(segments.reject(&:nil?), route.vehicle_usage.vehicle.default_router_dimension, router_options)
-                traces = segments.map{ |segment|
-                  next [nil, nil, nil] if segment.nil?
+    return if all_segments.empty?
 
-                  (ts && !ts.empty? && ts.shift) || [nil, nil, nil]
-                }
-                route.store_precomputed_traces(traces, options)
-              end
-            rescue ActiveRecord::ConnectionTimeoutError
-              Rails.logger.warn("Traces precompute failed for route #{route.id} because of connection timeout")
-              # Do nothing, the compute will be performed by the route compute
-            rescue RouterError
-              raise unless options[:ignore_errors]
+    in_optimizer_context = optimizer_context
+    # Threads + with_connection deadlock under use_transactional_tests (test holds the connection).
+    run_sync = Rails.env.test?
+
+    all_segments.each_slice(5) do |batch|
+      threads = []
+      batch.each do |route_data|
+        work = lambda do
+          Planning.optimizer_context = in_optimizer_context
+          route = route_data[:route]
+          begin
+            ActiveRecord::Base.connection_pool.with_connection do
+              segments = route_data[:segments]
+              router = route.vehicle_usage.vehicle.default_router
+              router_options = route.vehicle_usage.vehicle.default_router_options.symbolize_keys
+              router_options[:geometry] = false if options[:no_geojson]
+              router_options[:speed_multiplier] = route.vehicle_usage.vehicle.default_speed_multiplier
+              router_options[:speed_multiplier_areas] = Zoning.speed_multiplier_areas(self.zonings)
+              router_options[:departure] = Time.zone.parse((self.date || Date.today).to_s) + route.start if route.start
+              ts = router.trace_batch(segments.reject(&:nil?), route.vehicle_usage.vehicle.default_router_dimension, router_options)
+              traces = segments.map{ |segment|
+                next [nil, nil, nil] if segment.nil?
+
+                (ts && !ts.empty? && ts.shift) || [nil, nil, nil]
+              }
+              route.store_precomputed_traces(traces, options)
             end
+          rescue ActiveRecord::ConnectionTimeoutError
+            Rails.logger.warn("Traces precompute failed for route #{route.id} because of connection timeout")
+            # Do nothing, the compute will be performed by the route compute
+          rescue RouterError
+            raise unless options[:ignore_errors]
           end
         end
-        threads.each(&:join)
-        threads.clear
+
+        if run_sync
+          work.call
+        else
+          threads << Thread.new(&work)
+        end
       end
+      threads.each(&:join)
     end
   end
 
