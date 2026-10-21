@@ -245,7 +245,7 @@ module Operations
     end
 
     def excel_date(date)
-      date.to_date - EXCEL_EPOCH
+      (date.to_date - EXCEL_EPOCH).to_i # Date#- is Rational on Ruby 3.1
     end
 
     def excel_datetime(time)
