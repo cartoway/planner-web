@@ -57,8 +57,11 @@ x-web: &web
     - ../app/services/lookbook/visual_regression:/srv/app/app/services/lookbook/visual_regression:ro
     - ../app/javascript/controllers/confirm_click_controller.js:/srv/app/app/javascript/controllers/confirm_click_controller.js:ro
     - ../app/javascript/controllers/lookbook_visual_regression_controller.js:/srv/app/app/javascript/controllers/lookbook_visual_regression_controller.js:ro
-    # Lookbook preview classes live under test/components/previews (excluded from dev image via .dockerignore).
-    - ../test/components/previews:/srv/app/test/components/previews:ro
+    # test/ is .dockerignored (prod image). Mount for planner-dev-test + Lookbook previews.
+    - ../test:/srv/app/test:ro
+    # test:frontend / test:backend (also .dockerignored until image rebuild)
+    - ../lib/test_split.rb:/srv/app/lib/test_split.rb:ro
+    - ../lib/tasks/test_split.rake:/srv/app/lib/tasks/test_split.rake:ro
   depends_on:
     db:
       condition: service_healthy

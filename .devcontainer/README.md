@@ -125,13 +125,14 @@ git diff visual-regression/tests/lookbook.vrt.spec.ts-snapshots/
 
 **Non** à chaque changement. **Oui** seulement si tu modifies volontairement le rendu d’un preview couvert (SCSS, HAML, fixtures Lookbook, nouveau preview dans `LOOKBOOK_PREVIEWS`, etc.).
 
-La CI exécute le job `lookbook_visual` après `test` et `lint` (voir `.github/workflows/rubyonrails.yml`).
+La CI exécute `test_backend`, `test_frontend`, `lint` et `lookbook_visual` en parallèle (voir `.github/workflows/rubyonrails.yml`).
 
 ## Commandes utiles
 
 | Commande | Description |
 |----------|-------------|
 | `planner-dev-up` | Build + démarrage stack |
+| `planner-dev-test backend` / `frontend` | Minitest partitionné (DB `planner-test` dans `db`) |
 | `planner-dev-vrt test` | Comparaison + export rapport Lookbook |
 | `planner-dev-vrt export` | Ré-exporte le manifeste sans relancer Playwright |
 | `planner-dev-vrt report` | Rapport HTML Playwright |
