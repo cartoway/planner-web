@@ -82,13 +82,13 @@ class StopsController < ApplicationController
         end
         if load_planning_with_scope && @planning.compute_saved && load_planning_with_scope
           @planning.capture_state!(trigger: 'update_stop')
-          planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
+          planning_data = JSON.parse(render_to_string(template: 'plannings/show', formats: [:json]), symbolize_names: true)
           route_data = planning_data[:routes].select{ |route| route[:route_id] == @route.id }
-          format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: route_data, summary: planning_summary(@planning) } }
+          format.js { render partial: 'routes/update', formats: [:js], locals: { updated_routes: route_data, summary: planning_summary(@planning) } }
         else
           errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
           flash[:error] = errors
-          format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
+          format.js { render partial: 'shared/error_messages', formats: [:js], status: :unprocessable_entity }
         end
       end
     end

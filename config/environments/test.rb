@@ -199,8 +199,6 @@ module Vonage
     def initialize(options); end
     class SMS
       def send(options)
-        puts 'local override Vonage::Client...'
-        puts options
         OpenStruct.new(messages: [OpenStruct.new(status: '0')])
       end
     end

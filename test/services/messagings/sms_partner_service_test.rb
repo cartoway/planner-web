@@ -46,7 +46,8 @@ class SmsPartnerServiceTest < ActiveSupport::TestCase
         isStopSms: false,
         tag: "c#{@customer.id}"
       }.to_json,
-      { content_type: :json, accept: :json }
+      content_type: :json,
+      accept: :json
     ).returns(response)
 
     assert @service.send_message(

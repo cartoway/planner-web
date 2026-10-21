@@ -234,7 +234,7 @@ class ApplicationController < ActionController::Base
       # JSON before JS: XHR Accept often lists both; avoid stickyError for API 404s.
       format.json { render json: { type: 'not_found', error: I18n.t('errors.management.status.title.404') }, status: 404 }
       flash.now[:error] = [I18n.t('errors.management.status.title.404')]
-      format.js { render partial: 'shared/error_messages.js.erb', status: :not_found }
+      format.js { render partial: 'shared/error_messages', formats: [:js], status: :not_found }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 404 }, status: 404 }
       format.all { render body: nil, status: :not_found }
     end
@@ -245,7 +245,7 @@ class ApplicationController < ActionController::Base
 
     respond_to do |format|
       flash[:error] = [I18n.t('errors.management.status.title.409')]
-      format.js { render partial: 'shared/error_messages.js.erb', status: :conflict }
+      format.js { render partial: 'shared/error_messages', formats: [:js], status: :conflict }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 409 }, status: 409 }
       format.json { render json: { type: 'conflict', error: I18n.t('errors.management.status.title.409') }, status: 409 }
       format.all { render body: nil, status: :conflict }
@@ -267,7 +267,7 @@ class ApplicationController < ActionController::Base
 
     respond_to do |format|
       flash[:error] = [I18n.t('errors.management.description')]
-      format.js { render partial: 'shared/error_messages.js.erb', status: :internal_server_error }
+      format.js { render partial: 'shared/error_messages', formats: [:js], status: :internal_server_error }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 500 }, status: 500 }
       format.json { render json: { type: 'server', error: I18n.t('errors.management.description') }, status: 500 }
       format.all { render body: nil, status: :internal_server_error }
@@ -290,7 +290,7 @@ class ApplicationController < ActionController::Base
 
     respond_to do |format|
       flash[:error] = errors
-      format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
+      format.js { render partial: 'shared/error_messages', formats: [:js], status: :unprocessable_entity }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 422 }, status: 422 }
       format.json { render json: { type: types.join('/'), error: errors.join(' ') }, status: :unprocessable_entity }
     end
@@ -301,7 +301,7 @@ class ApplicationController < ActionController::Base
 
     respond_to do |format|
       flash[:error] = [I18n.t('errors.planning.job_in_progress')]
-      format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
+      format.js { render partial: 'shared/error_messages', formats: [:js], status: :unprocessable_entity }
       format.json { render json: { type: 'job_in_progress', error: I18n.t('errors.planning.job_in_progress') }, status: :unprocessable_entity }
     end
   end
@@ -310,7 +310,7 @@ class ApplicationController < ActionController::Base
     log_error(exception)
     respond_to do |format|
       flash[:error] = [exception.to_s]
-      format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
+      format.js { render partial: 'shared/error_messages', formats: [:js], status: :unprocessable_entity }
       format.html { render 'errors/show', layout: 'full_page', locals: { status: 422 }, status: 422 }
       format.json { render json: { type: 'stop_index', error: exception.to_s }, status: :unprocessable_entity }
     end

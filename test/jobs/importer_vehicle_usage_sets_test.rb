@@ -20,7 +20,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
     assert_difference('VehicleUsageSet.count', 0) do
       assert_difference('VehicleUsage.count', 0) do
         assert_no_difference('Vehicle.count') do
-          imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_one.csv', 'text.csv')).import
+          imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_one.csv', 'text.csv')).import
 
           assert imported_data
           assert_equal imported_data.count, 2
@@ -35,7 +35,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
     assert_difference('VehicleUsageSet.count', 1) do
       assert_difference('VehicleUsage.count', 2) do
         assert_no_difference('Vehicle.count') do
-          imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_one.csv', 'text.csv')).import
+          imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_one.csv', 'text.csv')).import
 
           assert imported_data
           assert_equal imported_data.count, 2
@@ -48,7 +48,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
     assert_difference('VehicleUsageSet.count', 0) do
       assert_difference('VehicleUsage.count', 0) do
         assert_no_difference('Vehicle.count') do
-          imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_with_identical_data.csv', 'text.csv')).import
+          imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_with_identical_data.csv', 'text.csv')).import
 
           assert imported_data
 
@@ -82,7 +82,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
   test 'should import vehicle usage set and replace or not vehicles properties' do
     assert_difference('VehicleUsageSet.count', 0) do
       assert_no_difference('Vehicle.count') do
-        imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: false, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_one.csv', 'text.csv')).import
+        imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: false, file: tempfile('import_vehicle_usage_sets_one.csv', 'text.csv')).import
 
         assert imported_data
         assert_nil imported_data.first.contact_email
@@ -95,7 +95,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
 
     assert_difference('VehicleUsageSet.count', 0) do
       assert_no_difference('Vehicle.count') do
-        imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_one.csv', 'text.csv')).import
+        imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_one.csv', 'text.csv')).import
 
         assert imported_data
         assert_equal imported_data.first.contact_email, 'vehicle1@example.com'
@@ -110,7 +110,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
   test 'should import vehicles with the same reference' do
     assert_difference('VehicleUsageSet.count', 0) do
       assert_no_difference('Vehicle.count') do
-        imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_with_ref.csv', 'text.csv')).import
+        imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_with_ref.csv', 'text.csv')).import
 
         assert imported_data
         assert_equal @customer.vehicles.first.ref, '001'
@@ -126,7 +126,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
   test 'should import vehicle usage set with new capacities' do
     assert_difference('VehicleUsageSet.count', 0) do
       assert_difference('DeliverableUnit.count', 2) do
-        imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_with_capacities.csv', 'text.csv')).import
+        imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_with_capacities.csv', 'text.csv')).import
 
         assert imported_data
         assert @customer.deliverable_units.map(&:label).include?('ton')
@@ -145,7 +145,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
 
   test 'should import vehicle usage set with custom router options' do
     assert_difference('VehicleUsageSet.count', 0) do
-      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_with_router_options.csv', 'text.csv')).import
+      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_with_router_options.csv', 'text.csv')).import
 
       assert imported_data
       assert_equal imported_data.first.toll, true
@@ -184,7 +184,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
 
   test 'should import vehicle usage set with tags' do
     assert_difference('VehicleUsageSet.count', 0) do
-      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_with_tags.csv', 'text.csv')).import
+      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_with_tags.csv', 'text.csv')).import
 
       assert imported_data.first.tags.size, 1
       assert imported_data.second.vehicle_usages.first.tags.size, 1
@@ -193,7 +193,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
 
   test 'should import vehicle usage set with store reloads' do
     assert_difference('VehicleUsageSet.count', 0) do
-      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_with_store_reloads.csv', 'text.csv')).import
+      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_with_store_reloads.csv', 'text.csv')).import
 
       assert_equal imported_data.first.vehicle_usages.first.store_reloads.first.ref, 'cc'
       assert_equal imported_data.first.vehicle_usages.first.store_reloads.size, 1
@@ -203,7 +203,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
 
   test 'should import vehicle usage set only once tag if twice have the same label' do
     assert_difference('VehicleUsageSet.count', 0) do
-      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_with_duplicated_tags.csv', 'text.csv')).import
+      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_with_duplicated_tags.csv', 'text.csv')).import
 
       assert imported_data.first.tags.size, 1
       assert imported_data.second.vehicle_usages.first.tags.size, 1
@@ -212,7 +212,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
 
   test 'should import vehicle usage set with custom devices' do
     assert_difference('VehicleUsageSet.count', 0) do
-      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_with_devices.csv', 'text.csv')).import
+      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_with_devices.csv', 'text.csv')).import
 
       assert imported_data
       assert_equal imported_data.first.trimble_ref, 'test'
@@ -224,7 +224,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
 
   test 'should not import vehicle usage set without too many vehicles' do
     assert_difference('VehicleUsageSet.count', 0) do
-      importer = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_over_max_vehicles.csv', 'text.csv'))
+      importer = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_over_max_vehicles.csv', 'text.csv'))
 
       assert !importer.import
       assert_equal importer.errors[:file][0], I18n.t('destinations.import_file.too_many_lines', n: @customer.max_vehicles)
@@ -233,7 +233,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
 
   test 'should import vehicle usages order from csv row order' do
     assert_difference('VehicleUsageSet.count', 0) do
-      ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('test/fixtures/files/import_vehicle_usage_sets_one.csv', 'text.csv')).import
+      ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: tempfile('import_vehicle_usage_sets_one.csv', 'text.csv')).import
     end
 
     vehicle_usage_set = @customer.vehicle_usage_sets.last
@@ -247,7 +247,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
     ImportCsv.new(
       importer: ImporterVehicleUsageSets.new(@customer),
       replace_vehicles: true,
-      file: tempfile('test/fixtures/files/import_vehicle_usage_sets_explicit_index.csv', 'text.csv')
+      file: tempfile('import_vehicle_usage_sets_explicit_index.csv', 'text.csv')
     ).import
 
     vehicle_usage_set = @customer.vehicle_usage_sets.last
@@ -261,7 +261,7 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
     ImportCsv.new(
       importer: ImporterVehicleUsageSets.new(@customer),
       replace_vehicles: true,
-      file: tempfile('test/fixtures/files/import_vehicle_usage_sets_mixed_index.csv', 'text.csv')
+      file: tempfile('import_vehicle_usage_sets_mixed_index.csv', 'text.csv')
     ).import
 
     vehicle_usage_set = @customer.vehicle_usage_sets.last
