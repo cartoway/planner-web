@@ -854,10 +854,38 @@ class DestinationsControllerTest < ActionController::TestCase
     get :index
     assert_response :success
     assert_select '.destinations-sidebar-title-row #count .destinations-list-count-numbers', 1
+    assert_select '.destinations-sidebar-title-row #count-visits .destinations-list-count-numbers', 1
     assert_select 'turbo-frame#destinations_list #count', 0
+    assert_select 'turbo-frame#destinations_list #destinations-list-counts[data-shown-count][data-total-count][data-total-visits-count]', 1
     assert_select 'turbo-frame#destinations_list .destinations-list-toolbar-meta .destinations-list-sort-selector', 1
     assert_select 'turbo-frame#destinations_list .destinations-list-toolbar-meta .destinations-list-column-selector', 1
     assert_select 'turbo-frame#destinations_list .destinations-list-toolbar-actions .btn-primary', 1
+  end
+
+  test 'v2 list frame refresh includes updated count meta for sidebar sync' do
+    @request.headers['Turbo-Frame'] = 'destinations_list'
+    get :index
+    assert_response :success
+    total = assigns(:total_count)
+    shown = assigns(:destinations).size
+    total_visits = assigns(:total_visits_count)
+    page_visits = assigns(:page_visits_count)
+    assert_operator total_visits, :>=, page_visits
+    assert_select 'turbo-frame#destinations_list #destinations-list-counts' do |elements|
+      meta = elements.first
+      assert_equal shown.to_s, meta['data-shown-count']
+      assert_equal total.to_s, meta['data-total-count']
+      assert_equal page_visits.to_s, meta['data-page-visits-count']
+      assert_equal total_visits.to_s, meta['data-total-visits-count']
+    end
+  end
+
+  test 'v2 index visits count totals visits for filtered destinations' do
+    get :index
+    assert_response :success
+    expected = Visit.joins(:destination).where(destinations: { customer_id: @destination.customer_id }).count
+    assert_equal expected, assigns(:total_visits_count)
+    assert_equal assigns(:destinations).sum { |d| d.visits.size }, assigns(:page_visits_count)
   end
 
   test 'should filter destinations by key value search' do

@@ -100,7 +100,17 @@
           min-width: 0;
         }
 
-        #count {
+        .destinations-sidebar-counts {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: flex-end;
+          gap: .35rem .75rem;
+          flex-shrink: 0;
+        }
+
+        #count,
+        #count-visits {
           flex-shrink: 0;
           margin: 0;
           white-space: nowrap;

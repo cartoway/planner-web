@@ -397,10 +397,13 @@ class DestinationsController < ApplicationController
   def load_destinations_index_page
     per_page = destinations_index_per_page
     page = [params[:page].to_i, 1].max
-    scope = destinations_filtered_scope.includes([:tags, { visits: :tags }, { customer: :deliverable_units }])
+    filtered = destinations_filtered_scope
+    scope = filtered.includes([:tags, { visits: :tags }, { customer: :deliverable_units }])
 
     @total_count = scope.count
     @destinations = scope.offset((page - 1) * per_page).limit(per_page)
+    @total_visits_count = Visit.where(destination_id: filtered.unscope(:order).select(:id)).count
+    @page_visits_count = @destinations.sum { |destination| destination.visits.size }
     @tags = current_user.customer.tags
     @pagination = { page: page, per_page: per_page, total: @total_count }
     @active_filters = destinations_index_active_filters
