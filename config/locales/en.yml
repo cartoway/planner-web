@@ -790,6 +790,8 @@ en:
           attributes:
             optimization_dicho_minimum_service_size:
               must_be_less_than_max_split_size: must be less than maximum split size
+            sms_sender_name:
+              invalid_sms_format: may only contain letters and digits (SMS standard)
             plannings:
               over_max_limit: Maximum number of plans reached
             zonings:
@@ -1357,8 +1359,9 @@ en:
         approach: Approach
         sms_options: SMS options
       sms_sender_name_help: >-
-        Name shown as the SMS sender (3 to 11 characters).
+        Name shown as the SMS sender (3 to 11 characters, letters and digits only).
         Default: company name, otherwise account name (truncated).
+      sms_sender_name_pattern_title: Letters and digits only (3 to 11 characters)
       stop_max_upper_bound: Visit overtime
       stop_max_upper_bound_help: Allow to visit a stop within an overtime
       vehicle_max_upper_bound: Driver shift overtime

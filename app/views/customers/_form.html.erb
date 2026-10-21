@@ -616,7 +616,12 @@
           </div>
           <div id="collapseNotificationsSms" class="panel-collapse collapse">
             <div class="panel-body">
-              <%= f.text_field :sms_sender_name, maxlength: 11, placeholder: @customer.default_sms_sender_name, help: t('.sms_sender_name_help') %>
+              <%= f.text_field :sms_sender_name,
+                    maxlength: 11,
+                    pattern: '[A-Za-z0-9]{3,11}',
+                    title: t('.sms_sender_name_pattern_title'),
+                    placeholder: @customer.default_sms_sender_name,
+                    help: t('.sms_sender_name_help') %>
 
               <div class="row">
                 <div class="col-md-offset-2 col-md-8">
