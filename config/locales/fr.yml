@@ -1392,6 +1392,10 @@ fr:
         destination: Destinataire
         approach: Approche
         sms_options: Options SMS
+        tracking_eta_title: Fenêtre d’arrivée estimée (suivi destinataire)
+        tracking_eta_help: Écarts affichés autour de l’horaire estimé sur la page de suivi publique, arrondis au quart d’heure.
+        tracking_eta_gap_before_help: Minutes soustraites à l’estimation (ex. 5 → borne basse)
+        tracking_eta_gap_after_help: Minutes ajoutées à l’estimation (ex. 15 → borne haute)
       sms_sender_name_help: >-
         Nom affiché comme expéditeur des SMS (3 à 11 caractères, lettres et chiffres uniquement).
         Par défaut : nom de société, sinon nom du compte (tronqué).
@@ -1410,10 +1414,6 @@ fr:
         title: Société
         help: Coordonnées de la société
         logo_help: Logo de la société (PNG ou SVG)
-        tracking_eta_title: Fenêtre d’arrivée estimée (suivi destinataire)
-        tracking_eta_help: Écarts affichés autour de l’horaire estimé sur la page de suivi publique, arrondis au quart d’heure.
-        tracking_eta_gap_before_help: Minutes soustraites à l’estimation (ex. 5 → borne basse)
-        tracking_eta_gap_after_help: Minutes ajoutées à l’estimation (ex. 15 → borne haute)
       sms:
         title: SMS
       sms_character_count: 'Votre message comporte %{c} caractères'

@@ -1358,6 +1358,10 @@ en:
         destination: Recipient
         approach: Approach
         sms_options: SMS options
+        tracking_eta_title: Estimated arrival window (recipient tracking)
+        tracking_eta_help: Gaps shown around the estimated time on the public tracking page, rounded to the nearest quarter hour.
+        tracking_eta_gap_before_help: Minutes subtracted from the estimate (e.g. 5 → lower bound)
+        tracking_eta_gap_after_help: Minutes added to the estimate (e.g. 15 → upper bound)
       sms_sender_name_help: >-
         Name shown as the SMS sender (3 to 11 characters, letters and digits only).
         Default: company name, otherwise account name (truncated).
@@ -1376,10 +1380,6 @@ en:
         title: Company
         help: Details of the company
         logo_help: Logo of the company (PNG or SVG)
-        tracking_eta_title: Estimated arrival window (recipient tracking)
-        tracking_eta_help: Gaps shown around the estimated time on the public tracking page, rounded to the nearest quarter hour.
-        tracking_eta_gap_before_help: Minutes subtracted from the estimate (e.g. 5 → lower bound)
-        tracking_eta_gap_after_help: Minutes added to the estimate (e.g. 15 → upper bound)
       sms:
         title: SMS
       sms_character_count: 'Your message contains %{c} characters'
