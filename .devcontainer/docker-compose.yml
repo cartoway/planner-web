@@ -65,9 +65,10 @@ x-web: &web
     - ../app/api/v01/api.rb:/srv/app/app/api/v01/api.rb:ro
     - ../app/api/v100/api.rb:/srv/app/app/api/v100/api.rb:ro
     - ../app/views/layouts/_unsupported_browser.erb:/srv/app/app/views/layouts/_unsupported_browser.erb:ro
-    # test:frontend / test:backend (also .dockerignored until image rebuild)
+    # test:frontend / test:backend / coverage:collate (also .dockerignored until image rebuild)
     - ../lib/test_split.rb:/srv/app/lib/test_split.rb:ro
     - ../lib/tasks/test_split.rake:/srv/app/lib/tasks/test_split.rake:ro
+    - ../lib/tasks/coverage.rake:/srv/app/lib/tasks/coverage.rake:ro
   depends_on:
     db:
       condition: service_healthy
