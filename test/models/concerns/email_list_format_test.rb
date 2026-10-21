@@ -23,6 +23,7 @@ class EmailListFormatTest < ActiveSupport::TestCase
   test 'valid_list rejects invalid addresses' do
     assert_not EmailListFormat.valid_list?('not-an-email')
     assert_not EmailListFormat.valid_list?('a@b')
+    assert_not EmailListFormat.valid_list?('rgw@gmail@gmail.com')
   end
 
   test 'valid_list rejects consecutive dots in local or domain' do

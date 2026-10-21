@@ -60,6 +60,7 @@ if route.vehicle_usage_id && export_includes_stop_category?('store')
     lng: route.vehicle_usage.default_store_start && route.vehicle_usage.default_store_start.lng&.round(6),
     comment: nil,
     phone_number: nil,
+    email: nil,
     tags: nil,
 
     ref_visit: nil,
@@ -152,6 +153,7 @@ route.stops.sort_by(&:index).each { |stop|
     lng: stop.lng&.round(6),
     comment: stop.comment,
     phone_number: stop.phone_number,
+    email: stop.email,
     tags: (stop.visit.destination.tags.collect(&:label).join(',') if stop.is_a?(StopVisit)),
 
     ref_visit: stop.ref_visit,
@@ -253,6 +255,7 @@ if route.vehicle_usage_id && export_includes_stop_category?('store')
     lng: route.vehicle_usage.default_store_stop && route.vehicle_usage.default_store_stop.lng&.round(6),
     comment: nil,
     phone_number: nil,
+    email: nil,
     tags: nil,
 
     ref_visit: nil,
