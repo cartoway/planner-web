@@ -29,7 +29,9 @@ module PlanningsHelperApi
         date: I18n.l(date, format: :weekday),
         time: date.beginning_of_day + s.time,
         visit_ref: s.visit.ref,
-        quantities: VisitQuantities.normalize(s.visit, nil).map{ |q| q[:quantity] }.join(' ').tr("\u202F", ' '),
+        quantities: VisitQuantities.normalize(s.visit, nil).map{ |q|
+          [q[:quantity], q[:label]].compact.join("\u202F")
+        }.join(' ').tr("\u202F", ' '),
         vehicle_name: route.vehicle_usage.vehicle.name,
         phone_number: route.vehicle_usage.vehicle.phone_number
       }.merge(s.visit.destination.attributes.slice('name', 'ref', 'street', 'city', 'comment'))
