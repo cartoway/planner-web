@@ -24,4 +24,16 @@ class TestSplitTest < ActiveSupport::TestCase
     missing = assert_files - frontend
     assert_empty missing, "assert_select files missing from frontend: #{missing.join(', ')}"
   end
+
+  test 'frontend partition is a proper subset of all tests' do
+    all = TestSplit.all_test_files
+    frontend = TestSplit.frontend_test_files
+    backend = TestSplit.backend_test_files
+
+    assert_operator frontend.size, :<, all.size
+    assert_operator backend.size, :<, all.size
+    assert_operator frontend.size, :>, 0
+    # Rough guard: frontend should stay clearly smaller than backend.
+    assert_operator frontend.size, :<, backend.size
+  end
 end

@@ -62,8 +62,10 @@ Minitest::Reporters.use! [
 class ActiveSupport::TestCase
   ActiveRecord::Migration.check_pending!
 
-  # Make tests independants from others fixtures edition
-  self.use_transactional_tests = false
+  # Backend: reload fixtures each test (legacy isolation).
+  # Frontend suite (FRONTEND_TEST_SUITE=1 via rake test:frontend): wrap each test in a
+  # transaction and rollback — much faster, same isolation for read/write within one test.
+  self.use_transactional_tests = ENV['FRONTEND_TEST_SUITE'] == '1'
 
   # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
   #
