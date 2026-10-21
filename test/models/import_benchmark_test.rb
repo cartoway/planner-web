@@ -32,7 +32,7 @@ if ENV['BENCHMARK'] == 'true'
 
     focus
     test 'should upload 900 destinations in less than 5 minutes (CSV - BENCHMARK)' do
-      file = fixture_file_upload('test/fixtures/files/import_destinations_benchmark_900.csv')
+      file = fixture_file_upload('import_destinations_benchmark_900.csv')
 
       time_ref = (5.minutes * BENCHMARK_CPU_RATE).round
       time_elapsed = Benchmark.realtime do
@@ -48,7 +48,7 @@ if ENV['BENCHMARK'] == 'true'
 
     focus
     test 'should upload 900 destinations in less than 5 minutes (JSON - BENCHMARK)' do
-      file = fixture_file_upload('test/fixtures/files/import_destinations_benchmark_900.json')
+      file = fixture_file_upload('import_destinations_benchmark_900.json')
 
       time_ref = (5.minutes * BENCHMARK_CPU_RATE).round
       time_elapsed = Benchmark.realtime do
@@ -66,7 +66,7 @@ if ENV['BENCHMARK'] == 'true'
 
     focus
     test 'should upload 4000 destinations in less than 12 minutes (CSV - BENCHMARK)' do
-      file = fixture_file_upload('test/fixtures/files/import_destinations_benchmark_4000.csv')
+      file = fixture_file_upload('import_destinations_benchmark_4000.csv')
 
       time_ref = (12.minutes * BENCHMARK_CPU_RATE).round
       time_elapsed = Benchmark.realtime do
@@ -82,7 +82,7 @@ if ENV['BENCHMARK'] == 'true'
 
     focus
     test 'should upload 4000 destinations in less than 5 minutes (JSON - BENCHMARK)' do
-      file = fixture_file_upload('test/fixtures/files/import_destinations_benchmark_4000.json')
+      file = fixture_file_upload('import_destinations_benchmark_4000.json')
 
       time_ref = (5.minutes * BENCHMARK_CPU_RATE).round
       time_elapsed = Benchmark.realtime do
@@ -101,7 +101,7 @@ if ENV['BENCHMARK'] == 'true'
     if ENV['BIGDATA'] == 'true'
       focus
       test 'should upload 28 100 destinations in less than 60 minutes (CSV - BENCHMARK)' do
-        file = fixture_file_upload('test/fixtures/files/import_destinations_benchmark_28100.csv')
+        file = fixture_file_upload('import_destinations_benchmark_28100.csv')
 
         time_ref = (60.minutes * BENCHMARK_CPU_RATE).round
         time_elapsed = Benchmark.realtime do
@@ -119,7 +119,7 @@ if ENV['BENCHMARK'] == 'true'
     if ENV['BIGDATA'] == 'true'
       focus
       test 'should upload 28 100 destinations in less than 60 minutes (JSON - BENCHMARK)' do
-        file = fixture_file_upload('test/fixtures/files/import_destinations_benchmark_28100.json')
+        file = fixture_file_upload('import_destinations_benchmark_28100.json')
 
         time_ref = (60.minutes * BENCHMARK_CPU_RATE).round
         time_elapsed = Benchmark.realtime do

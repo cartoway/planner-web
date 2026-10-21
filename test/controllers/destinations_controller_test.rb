@@ -1322,7 +1322,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'should upload' do
     clear_blocking_jobs!
-    file = fixture_file_upload('test/fixtures/files/import_destinations_one.csv')
+    file = fixture_file_upload('import_destinations_one.csv')
     destinations_count = @destination.customer.destinations.count
     plannings_count = @destination.customer.plannings.select{ |planning| planning.tags_compatible? [tags(:tag_one)] }.count
     import_count = 1
@@ -1355,7 +1355,7 @@ class DestinationsControllerTest < ActionController::TestCase
     Planning.all.each(&:destroy)
     customer.delete_all_destinations
     customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| vu.update!(active: true) } }
-    file = fixture_file_upload('test/fixtures/files/import_destinations_single_plan_two_routes.csv')
+    file = fixture_file_upload('import_destinations_single_plan_two_routes.csv')
 
     assert_difference('Planning.count', 1) do
       post :upload_csv, params: {
@@ -1376,7 +1376,7 @@ class DestinationsControllerTest < ActionController::TestCase
     Planning.all.each(&:destroy)
     customer.delete_all_destinations
     customer.vehicle_usage_sets.each{ |vus| vus.vehicle_usages.each{ |vu| vu.update!(active: true) } }
-    file = fixture_file_upload('test/fixtures/files/import_destinations_single_plan_two_routes.csv')
+    file = fixture_file_upload('import_destinations_single_plan_two_routes.csv')
 
     assert_difference('Planning.count', 1) do
       post :upload_csv, params: {
@@ -1397,7 +1397,7 @@ class DestinationsControllerTest < ActionController::TestCase
     original_vus_id = planning.vehicle_usage_set_id
     assert_not_equal original_vus_id, vehicle_usage_sets(:vehicle_usage_set_three).id
 
-    file = fixture_file_upload('test/fixtures/files/import_destinations_update_planning_keep_vus.csv')
+    file = fixture_file_upload('import_destinations_update_planning_keep_vus.csv')
 
     post :upload_csv, params: {
       import_csv: {
@@ -1417,7 +1417,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_not_equal planning.vehicle_usage_set_id, other_vus.id
     other_vus.vehicle_usages.each{ |vu| vu.update!(active: true) }
 
-    file = fixture_file_upload('test/fixtures/files/import_destinations_update_planning_keep_vus.csv')
+    file = fixture_file_upload('import_destinations_update_planning_keep_vus.csv')
 
     post :upload_csv, params: {
       import_csv: {
@@ -1432,7 +1432,7 @@ class DestinationsControllerTest < ActionController::TestCase
 
   test 'should not upload' do
     clear_blocking_jobs!
-    file = fixture_file_upload('test/fixtures/files/import_invalid.csv')
+    file = fixture_file_upload('import_invalid.csv')
     assert_difference('Destination.count', 0) do
       post :upload_csv, params: { import_csv: { replace: false, file: file } }
     end
@@ -1460,7 +1460,7 @@ class DestinationsControllerTest < ActionController::TestCase
       { file: 'import_destinations_update.csv', column_def: nil },
       { file: 'import_destinations_several_plans.csv', column_def: nil }
     ].each do |test|
-      file = fixture_file_upload("test/fixtures/files/#{test[:file]}")
+      file = fixture_file_upload(test[:file])
       post :upload_csv, params: { import_csv: { replace: false, file: file, column_def: test[:column_def] ? test[:column_def] : nil } }
 
       assert_redirected_to destinations_url
@@ -1474,7 +1474,7 @@ class DestinationsControllerTest < ActionController::TestCase
       { redirect: 'destinations', file: 'import_destinations_update.csv', column_def: nil },
       { redirect: 'destinations', file: 'import_destinations_several_plans.csv', column_def: nil }
     ].each do |test|
-      file = fixture_file_upload("test/fixtures/files/#{test[:file]}")
+      file = fixture_file_upload(test[:file])
       post :upload_csv, params: { import_csv: { replace: false, file: file, column_def: test[:column_def] ? test[:column_def] : nil } }
 
       assert_redirected_to destinations_url
@@ -1580,7 +1580,7 @@ class DestinationsControllerTest < ActionController::TestCase
     user.update!(role_id: role.id)
     sign_in user
 
-    file = fixture_file_upload('test/fixtures/files/import_destinations_one.csv', 'text/csv')
+    file = fixture_file_upload('import_destinations_one.csv', 'text/csv')
     post :upload_csv, params: { import_csv: { replace: false, file: file } }
     assert_response :forbidden
   ensure
