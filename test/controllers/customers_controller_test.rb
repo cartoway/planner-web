@@ -45,6 +45,11 @@ class CustomersControllerTest < ActionController::TestCase
     assert_select '#customer_enable_email_destination'
     assert_select '#customer_enable_sms_destination'
     assert_select '#customer_enable_sms_intransit'
+    # ETA gaps are shared by email/SMS — at Notifications level, not inside Email.
+    assert_select '#collapseNotifications #customer_delivery_tracking_eta_gap_before', 1
+    assert_select '#collapseNotifications #customer_delivery_tracking_eta_gap_after', 1
+    assert_select '#collapseNotificationsEmail #customer_delivery_tracking_eta_gap_before', 0
+    assert_select '#collapseNotificationsSms #customer_delivery_tracking_eta_gap_before', 0
     assert_select "label[for='customer_enable_proofs']", text: I18n.t('activerecord.attributes.customer.enable_proofs')
   end
 
