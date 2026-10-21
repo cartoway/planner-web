@@ -217,6 +217,9 @@
             %th= t('operations.export.proofs')
             %th= t('operations.export.delivery_note')
         %tbody
+          - departure, arrival = route.list_depots
+          - if departure
+            = render 'operations/export/depot_row', route: route, depot: departure, role: 'start'
           - route.operation_stops.sort_by { |s| [s.index.to_i, s.id] }.each do |stop|
             - paths = @media_paths[stop.id] || {}
             - place = stop.list_fields
@@ -224,7 +227,16 @@
             - snap = stop.stop_snapshot || {}
             %tr
               %td= stop.index
-              %td= stop.kind
+              %td
+                - case stop.kind
+                - when 'visit'
+                  = t('destinations.import_file.stop_type_visit')
+                - when 'store'
+                  = t('destinations.import_file.stop_type_store')
+                - when 'rest'
+                  = t('destinations.import_file.stop_type_rest')
+                - else
+                  = stop.kind
               %td
                 = stop.status_label.presence || stop.status
                 - if stop.delay_minutes
@@ -282,6 +294,8 @@
               %td
                 - if paths[:delivery_note].present?
                   = link_to t('stops.delivery_note.title'), paths[:delivery_note]
+          - if arrival
+            = render 'operations/export/depot_row', route: route, depot: arrival, role: 'end'
 
     .proof-lightbox{data: { proof_lightbox: true }, role: 'dialog', aria: { modal: true, label: t('operations.export.proofs') }}
       .proof-lightbox-toolbar
