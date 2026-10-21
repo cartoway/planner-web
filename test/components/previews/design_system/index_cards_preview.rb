@@ -3,12 +3,12 @@
 module DesignSystem
   # Shared v2 index card list pattern (see v2/_index_cards.scss).
   class IndexCardsPreview < ApplicationPreview
-    # Plain index list (plannings, deliverable units, operations-style).
+    # Plain index list: operations (real chrome) + deliverable units cards.
     def index_with_cards
       render_with_template
     end
 
-    # Same plain indexes in a phone-width frame (forced mobile card stack).
+    # Same indexes in a phone-width frame (forced mobile card stack).
     def index_with_cards_mobile
       render_with_template
     end
