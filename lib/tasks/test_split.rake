@@ -15,6 +15,9 @@ module TestSplitRake
     overlap = files & other
     abort "test:#{suite}: overlap with other partition: #{overlap.first(5).join(', ')}" if overlap.any?
 
+    # Unique SimpleCov command_name + coverage/#{suite}/ (threshold checked by coverage:collate).
+    ENV['TEST_SUITE'] = suite
+
     test_dir = Rails.root.join('test').to_s
     $:.unshift(test_dir) unless $:.include?(test_dir)
 
