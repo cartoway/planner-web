@@ -96,4 +96,25 @@ class PlanningsHelperApiTest < ActionController::TestCase
     SmsPartnerService.stubs(:configured?).returns(false)
     assert_raises(ArgumentError) { get_messaging_service(@customer) }
   end
+
+  test 'sms route quantities include unit labels' do
+    captured = {}
+    messaging_service = Object.new
+    messaging_service.define_singleton_method(:service_name) { 'vonage' }
+    messaging_service.define_singleton_method(:content) { |_template, replacements:, **_kwargs|
+      captured[:quantities] = replacements[:quantities]
+      'Message content'
+    }
+    messaging_service.define_singleton_method(:send_message) { |*_args, **_kwargs| true }
+    self.stubs(:get_messaging_service).returns(messaging_service)
+
+    @route.stops.each{ |stop| stop&.visit&.destination&.update(phone_number: nil) }
+    @destination.update!(phone_number: '+33600000000')
+    @stop.update!(active: true)
+    @visit.update!(deliveries: { 1 => 3 }, pickups: {})
+    @route.reload
+
+    assert_equal 1, send_sms_route(@route)
+    assert_equal '3.0 L', captured[:quantities]
+  end
 end
