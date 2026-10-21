@@ -40,9 +40,9 @@ class CustomersControllerTest < ActionController::TestCase
     assert_select '#customer_notifications_panel'
     assert_select '#customer_notifications_email_panel'
     assert_select '#customer_notifications_sms_panel'
-    assert_select '#customer_enable_email_driver'
+    assert_select '#customer_enable_email_driver:not([disabled])'
+    assert_select '#customer_enable_email_destination:not([disabled])'
     assert_select '#customer_enable_sms_driver'
-    assert_select '#customer_enable_email_destination'
     assert_select '#customer_enable_sms_destination'
     assert_select '#customer_enable_sms_intransit'
     # ETA gaps are shared by email/SMS — at Notifications level, not inside Email.
@@ -51,6 +51,73 @@ class CustomersControllerTest < ActionController::TestCase
     assert_select '#collapseNotificationsEmail #customer_delivery_tracking_eta_gap_before', 0
     assert_select '#collapseNotificationsSms #customer_delivery_tracking_eta_gap_before', 0
     assert_select "label[for='customer_enable_proofs']", text: I18n.t('activerecord.attributes.customer.enable_proofs')
+  end
+
+  test 'non admin cannot toggle email or sms notification enables' do
+    @customer.update!(
+      enable_email_destination: true,
+      enable_sms_destination: true,
+      enable_email_driver: false,
+      enable_sms_driver: false,
+      enable_sms_intransit: false
+    )
+    sign_in users(:user_one)
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select '#customer_enable_email_driver', 0
+    assert_select '#customer_enable_email_destination', 0
+    assert_select '#customer_enable_sms_driver', 0
+    assert_select '#customer_enable_sms_destination', 0
+    assert_select '#customer_enable_sms_intransit', 0
+    assert_select '#customer_destination_email_template_wrap:not(.d-none)', 1
+    assert_select '#customer_sms_template_wrap:not(.d-none)', 1
+    assert_select 'textarea#customer_recipient_template', 1
+    assert_select 'textarea#customer_sms_template', 1
+
+    patch :update, params: {
+      id: @customer.id,
+      customer: {
+        enable_email_destination: false,
+        enable_sms_destination: false,
+        enable_email_driver: true,
+        enable_sms_driver: true,
+        enable_sms_intransit: true
+      }
+    }
+    @customer.reload
+    assert @customer.enable_email_destination
+    assert @customer.enable_sms_destination
+    assert_not @customer.enable_email_driver
+    assert_not @customer.enable_sms_driver
+    assert_not @customer.enable_sms_intransit
+  end
+
+  test 'non admin hides inactive notification sections' do
+    @customer.update!(
+      enable_email_destination: false,
+      enable_email_driver: false,
+      enable_sms_destination: false,
+      enable_sms_driver: false,
+      enable_sms_intransit: false
+    )
+    sign_in users(:user_one)
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select '#customer_notifications_panel', 0
+
+    @customer.update!(enable_email_destination: true)
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select '#customer_notifications_panel', 1
+    assert_select '#customer_notifications_email_panel', 1
+    assert_select '#customer_notifications_sms_panel', 0
+
+    @customer.update!(enable_email_destination: false, enable_sms_intransit: true)
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select '#customer_notifications_panel', 1
+    assert_select '#customer_notifications_email_panel', 0
+    assert_select '#customer_notifications_sms_panel', 1
   end
 
   test 'admin edit hides suivi section without operations device' do
