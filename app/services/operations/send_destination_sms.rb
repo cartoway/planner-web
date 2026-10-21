@@ -59,6 +59,7 @@ module Operations
     def self.replacements(stop, date, url)
       snap = stop&.destination_snapshot || {}
       visit = stop&.visit_snapshot || {}
+      route = stop&.operation_route
       {
         name: snap['name'],
         ref: snap['ref'],
@@ -66,10 +67,27 @@ module Operations
         street: snap['street'],
         city: snap['city'],
         comment: snap['comment'],
+        quantities: quantities_text(stop),
+        vehicle_name: route&.vehicle_name,
+        phone_number: route&.driver_phone,
         date: I18n.l(date, format: :weekday),
         time: stop&.planned_at || date.beginning_of_day,
         url: url
       }
     end
+
+    # Same net quantity format as PlanningsHelperApi#send_sms_route (VisitQuantities :quantity).
+    def self.quantities_text(stop)
+      return '' unless stop
+
+      stop.quantity_lines.group_by { |line| line[:unit_id].to_s }.filter_map { |_unit_id, lines|
+        pickup = lines.find { |line| line[:kind] == 'pickups' }&.fetch(:value, 0).to_f
+        delivery = lines.find { |line| line[:kind] == 'deliveries' }&.fetch(:value, 0).to_f
+        next if pickup.zero? && delivery.zero?
+
+        delivery - pickup
+      }.join(' ')
+    end
+    private_class_method :quantities_text
   end
 end

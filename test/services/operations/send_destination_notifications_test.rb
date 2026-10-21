@@ -161,6 +161,28 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     end
   end
 
+  test 'destination sms replacements include quantities vehicle name and phone' do
+    stop = @tracking.visit_stops.first
+    stop.update!(
+      visit_snapshot: (stop.visit_snapshot || {}).merge(
+        'deliveries' => { '1' => { 'value' => 3.0, 'label' => 'kg' } },
+        'pickups' => {}
+      )
+    )
+    route = stop.operation_route
+    route.update!(
+      vehicle_snapshot: (route.vehicle_snapshot || {}).merge(
+        'name' => 'Camion A',
+        'phone_number' => '0607080910'
+      )
+    )
+
+    repl = Operations::SendDestinationSms.replacements(stop.reload, Date.current, 'http://track.test')
+    assert_equal '3.0', repl[:quantities]
+    assert_equal 'Camion A', repl[:vehicle_name]
+    assert_equal '0607080910', repl[:phone_number]
+  end
+
   test 'destination sms from uses sms_sender_name or company default' do
     captured = {}
     messaging = Object.new
