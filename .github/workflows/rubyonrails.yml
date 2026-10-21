@@ -125,8 +125,6 @@ jobs:
       - name: Set up database schema
         run: bin/rails db:setup
       - name: Run frontend minitests
-        env:
-          FRONTEND_TEST_SUITE: '1'
         run: bin/rake test:frontend
       - name: Set Node.js 20.x (JS self-checks)
         uses: actions/setup-node@v4
