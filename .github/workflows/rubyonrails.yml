@@ -31,6 +31,8 @@ jobs:
     env:
       RAILS_ENV: test
       DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
+      # Backend partition does not assert on packs — skip yarn/webpack (~20–40s).
+      SKIP_WEBPACK: "1"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -58,15 +60,6 @@ jobs:
           bundle install --jobs 4 --retry 3
       - name: Rebuild rgeo gem
         run: bundle pristine rgeo
-      - name: Set Node.js 14.x
-        uses: actions/setup-node@v4
-        with:
-          node-version: 14.x
-          cache: yarn
-      - name: Install project dependencies
-        run: yarn
-      - name: Webpack compilation
-        run: NODE_ENV=test bin/rails webpacker:compile
       - name: Set up database schema
         run: bin/rails db:setup
       - name: Run backend tests
