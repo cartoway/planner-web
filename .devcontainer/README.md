@@ -1,161 +1,161 @@
-# Devcontainer — régression visuelle Lookbook
+# Devcontainer — Lookbook visual regression
 
-Guide pour valider les changements UI dans le stack Docker local. Référence technique complète : [`visual-regression/README.md`](../visual-regression/README.md).
+Guide for validating UI changes in the local Docker stack. Full technical reference: [`visual-regression/README.md`](../visual-regression/README.md).
 
-## Prérequis
+## Prerequisites
 
-1. Copier la config d’environnement :
+1. Copy the environment config:
    ```bash
    cp .devcontainer/.env.template .env
    ```
-2. (Optionnel) Activer les alias shell :
+2. (Optional) Enable shell aliases:
    ```bash
    source .devcontainer/aliases.sh
    ```
-3. Démarrer la stack :
+3. Start the stack:
    ```bash
    planner-dev-up
-   # ou : .devcontainer/compose.sh up --build -d
+   # or: .devcontainer/compose.sh up --build -d
    ```
 
-## Deux serveurs, deux rôles
+## Two servers, two roles
 
-| Port | Service | Rôle |
+| Port | Service | Role |
 |------|---------|------|
-| **8080** | Puma (`RAILS_ENV=production`) | App + Lookbook au quotidien, assets précompilés |
-| **3001** | Rails test (`RAILS_ENV=test`) | Cible Playwright — **même env que la CI** |
+| **8080** | Puma (`RAILS_ENV=production`) | Day-to-day app + Lookbook, precompiled assets |
+| **3001** | Rails test (`RAILS_ENV=test`) | Playwright target — **same env as CI** |
 
-Le port 8080 sert à parcourir Lookbook à l’œil. La **validation VRT** passe obligatoirement par Playwright sur **3001** (Webpacker test, pipeline différent de 8080).
+Port 8080 is for browsing Lookbook by eye. **VRT validation** must go through Playwright on **3001** (test Webpacker, different pipeline from 8080).
 
-## Activer la VRT
+## Enable VRT
 
-Dans `.env` à la racine du projet :
+In `.env` at the project root:
 
 ```bash
 LOOKBOOK_VRT=1
 ```
 
-Puis redémarrer la stack (`planner-dev-up`).
+Then restart the stack (`planner-dev-up`).
 
-Quand `LOOKBOOK_VRT=1` :
+When `LOOKBOOK_VRT=1`:
 
-- `web` démarre aussi Rails test sur **3001** (voir `start-web.sh`)
-- au `compose up`, les services **`lookbook-vrt`** (Playwright) puis **`lookbook-vrt-export`** (export du rapport) s’exécutent une fois
+- `web` also starts Rails test on **3001** (see `start-web.sh`)
+- on `compose up`, the **`lookbook-vrt`** (Playwright) then **`lookbook-vrt-export`** (report export) services run once
 
-Avec `LOOKBOOK_VRT=0` (défaut), ces services sortent immédiatement sans lancer Playwright.
+With `LOOKBOOK_VRT=0` (default), those services exit immediately without running Playwright.
 
-## Voir le rapport
+## View the report
 
-Après un run (auto ou manuel) :
+After a run (automatic or manual):
 
 **http://localhost:8080/lookbook/preview/design_system/visual_regression/report**
 
-Le rapport lit `public/lookbook-visual-regression/manifest.json` et les PNG copiés depuis Playwright. Ces fichiers sont montés depuis l’hôte :
+The report reads `public/lookbook-visual-regression/manifest.json` and PNGs copied from Playwright. Those files are mounted from the host:
 
 - `visual-regression/` → snapshots (`*-linux.png`) + `test-results/`
-- `public/lookbook-visual-regression/` → rapport Lookbook
+- `public/lookbook-visual-regression/` → Lookbook report
 
-## Workflow de validation
+## Validation workflow
 
-### 1. Lancer la comparaison
+### 1. Run the comparison
 
-**Automatique** (si `LOOKBOOK_VRT=1` au démarrage) :
+**Automatic** (if `LOOKBOOK_VRT=1` at startup):
 
 ```bash
 planner-dev-up
-docker compose -f .devcontainer/docker-compose.yml ps -a   # attendre lookbook-vrt-export "exited"
+docker compose -f .devcontainer/docker-compose.yml ps -a   # wait until lookbook-vrt-export is "exited"
 ```
 
-**Manuel** (stack déjà up) :
+**Manual** (stack already up):
 
 ```bash
 planner-dev-vrt test
-# ou : .devcontainer/visual-regression.sh test
+# or: .devcontainer/visual-regression.sh test
 ```
 
-`test` prépare Rails sur 3001, lance Playwright dans l’image Ubuntu (Chromium ne tourne pas dans l’image Alpine `web`), puis exporte le rapport Lookbook.
+`test` prepares Rails on 3001, runs Playwright in the Ubuntu image (Chromium does not run in the Alpine `web` image), then exports the Lookbook report.
 
-### 2. Examiner les diffs
+### 2. Review diffs
 
-Dans le rapport Lookbook : colonnes **Expected** / **Actual** / **Diff** pour chaque preview en échec.
+In the Lookbook report: **Expected** / **Actual** / **Diff** columns for each failing preview.
 
-Alternative Playwright (rapport HTML détaillé) :
+Playwright alternative (detailed HTML report):
 
 ```bash
 planner-dev-vrt report   # http://127.0.0.1:9323
 ```
 
-### 3. Décider
+### 3. Decide
 
 | Situation | Action |
 |-----------|--------|
-| Régression involontaire | Corriger le CSS/composant, relancer `planner-dev-vrt test` |
-| Changement visuel voulu | Accepter la nouvelle baseline (étape 4) |
+| Unintentional regression | Fix the CSS/component, re-run `planner-dev-vrt test` |
+| Intentional visual change | Accept the new baseline (step 4) |
 
-### 4. Accepter une baseline (dev uniquement)
+### 4. Accept a baseline (dev only)
 
-Sur le rapport Lookbook, boutons **Accepter la baseline** / **Accepter tous les changements** (si `LOOKBOOK_VRT=1`).
+On the Lookbook report, **Accept baseline** / **Accept all changes** buttons (if `LOOKBOOK_VRT=1`).
 
-Confirmation en **deux clics** avec délai (même UX que la suppression sur la liste destinations V2).
+Confirmation is **two clicks** with a delay (same UX as delete on the V2 destinations list).
 
-Cela :
+This:
 
-1. copie `actual.png` vers `visual-regression/tests/lookbook.vrt.spec.ts-snapshots/*-linux.png` sur l’hôte
-2. nettoie les artefacts Playwright du preview
-3. ré-exporte le manifeste (la ligne passe en **passed**)
+1. copies `actual.png` to `visual-regression/tests/lookbook.vrt.spec.ts-snapshots/*-linux.png` on the host
+2. cleans Playwright artefacts for that preview
+3. re-exports the manifest (the row becomes **passed**)
 
-**Commiter** les PNG modifiés dans le même PR que le changement UI.
+**Commit** the changed PNGs in the same PR as the UI change.
 
-### 5. Mise à jour en masse (ligne de commande)
+### 5. Bulk update (command line)
 
-Équivalent à « update snapshots » Playwright :
+Equivalent to Playwright “update snapshots”:
 
 ```bash
-planner-dev-vrt update                              # tous les previews
-planner-dev-vrt update -g 'lookbook: buttons-variants'   # un seul
+planner-dev-vrt update                              # all previews
+planner-dev-vrt update -g 'lookbook: buttons-variants'   # one preview
 ```
 
-Puis vérifier le diff git :
+Then check the git diff:
 
 ```bash
 git diff visual-regression/tests/lookbook.vrt.spec.ts-snapshots/
 ```
 
-## Quand mettre à jour les snapshots ?
+## When to update snapshots?
 
-**Non** à chaque changement. **Oui** seulement si tu modifies volontairement le rendu d’un preview couvert (SCSS, HAML, fixtures Lookbook, nouveau preview dans `LOOKBOOK_PREVIEWS`, etc.).
+**No** on every change. **Yes** only when you intentionally change how a covered preview looks (SCSS, HAML, Lookbook fixtures, a new preview in `LOOKBOOK_PREVIEWS`, etc.).
 
-La CI exécute `test_backend`, `test_frontend` et `lint` en parallèle, puis `lookbook_visual` si ceux-ci passent (voir `.github/workflows/rubyonrails.yml`).
+CI runs `test_backend`, `test_frontend`, and `lint` in parallel, then `lookbook_visual` if those pass (see `.github/workflows/rubyonrails.yml`).
 
-## Commandes utiles
+## Useful commands
 
-| Commande | Description |
-|----------|-------------|
-| `planner-dev-up` | Build + démarrage stack |
-| `planner-dev-test backend` / `frontend` | Minitest partitionné (DB `planner-test` dans `db`) |
-| `planner-dev-vrt test` | Comparaison + export rapport Lookbook |
-| `planner-dev-vrt export` | Ré-exporte le manifeste sans relancer Playwright |
-| `planner-dev-vrt report` | Rapport HTML Playwright |
-| `planner-dev-vrt update` | Régénère les baselines `*-linux.png` |
-| `planner-dev-vrt prepare` | Rails test :3001 seulement |
+| Command | Description |
+|---------|-------------|
+| `planner-dev-up` | Build + start the stack |
+| `planner-dev-test backend` / `frontend` | Partitioned Minitest (DB `planner-test` in `db`) |
+| `planner-dev-vrt test` | Comparison + Lookbook report export |
+| `planner-dev-vrt export` | Re-export the manifest without re-running Playwright |
+| `planner-dev-vrt report` | Playwright HTML report |
+| `planner-dev-vrt update` | Regenerate `*-linux.png` baselines |
+| `planner-dev-vrt prepare` | Rails test :3001 only |
 
-## Dépannage
+## Troubleshooting
 
-**« No report yet »** — le manifeste n’existe pas. Lancer `planner-dev-vrt test` ou vérifier que `lookbook-vrt-export` a terminé sans erreur (`docker logs devcontainer-lookbook-vrt-export-1`).
+**“No report yet”** — the manifest is missing. Run `planner-dev-vrt test` or check that `lookbook-vrt-export` finished without error (`docker logs devcontainer-lookbook-vrt-export-1`).
 
-**Bouton Accepter inactif** — vérifier `LOOKBOOK_VRT=1` dans `.env` et redémarrer `web`.
+**Accept button inactive** — check `LOOKBOOK_VRT=1` in `.env` and restart `web`.
 
-**Code JS / template rapport pas à jour** — l’image `web` embarque le code au build ; certains chemins VRT sont montés en volume. En cas de doute : `planner-dev-up --build`, ou utiliser `planner-dev-vrt` (montage workspace complet pour Playwright).
+**JS / report template not updated** — the `web` image embeds code at build time; some VRT paths are volume-mounted. When in doubt: `planner-dev-up --build`, or use `planner-dev-vrt` (full workspace mount for Playwright).
 
-**Snapshots acceptés sur l’hôte mais rapport inchangé** — relancer `planner-dev-vrt export` ; l’accept déclenche normalement un ré-export automatique.
+**Snapshots accepted on the host but report unchanged** — re-run `planner-dev-vrt export`; accept normally triggers an automatic re-export.
 
-## Architecture (services Docker)
+## Architecture (Docker services)
 
 ```
 web:8080          → Puma production (Lookbook navigation)
-web:3001          → Rails test (cible Playwright, si LOOKBOOK_VRT=1)
-lookbook-vrt      → Playwright (image Ubuntu), one-shot au up
+web:3001          → Rails test (Playwright target, if LOOKBOOK_VRT=1)
+lookbook-vrt      → Playwright (Ubuntu image), one-shot on up
 lookbook-vrt-export → ruby script/export_lookbook_visual_regression_report.rb
 ```
 
-Playwright **ne s’exécute pas** dans `docker exec web` (Alpine / Chromium absent). Toujours passer par `planner-dev-vrt` ou le service `lookbook-vrt`.
+Playwright **does not run** under `docker exec web` (Alpine / no Chromium). Always use `planner-dev-vrt` or the `lookbook-vrt` service.
