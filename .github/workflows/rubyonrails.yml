@@ -136,6 +136,7 @@ jobs:
   lookbook_visual:
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    needs: [test_backend, test_frontend, lint]
     services:
       postgres:
         image: postgis/postgis:15-3.5
