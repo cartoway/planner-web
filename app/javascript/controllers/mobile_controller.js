@@ -188,7 +188,8 @@ export default class extends Controller {
 
     const statusButton = target.closest('.radiobtn a, #quick-status')
     if (statusButton) {
-      event.preventDefault()
+      const href = statusButton.getAttribute('href') || ''
+      if (!/^sms(to)?:/i.test(href)) event.preventDefault()
       event.stopPropagation()
       const panel = statusButton.closest('.panel')
       if (panel) this.changeStatus(panel, statusButton.dataset.title || '', statusButton.dataset.toggle)
