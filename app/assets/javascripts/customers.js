@@ -334,11 +334,17 @@ const customers_edit = function (params) {
   $('#customer_enable_proofs').on('change', syncProofRetentionFields);
   syncProofRetentionFields();
 
+  // Admin-only toggles drive wrap visibility. Without toggles (customer form), wraps stay as rendered.
+  var syncNotificationTemplateWrap = function(toggleSelector, wrapSelector) {
+    var $toggle = $(toggleSelector);
+    if (!$toggle.length) return;
+    $(wrapSelector).toggleClass('d-none', !$toggle.is(':checked'));
+  };
   var syncNotificationTemplateWraps = function() {
-    $('#customer_sms_driver_template_wrap').toggleClass('d-none', !$('#customer_enable_sms_driver').is(':checked'));
-    $('#customer_destination_email_template_wrap').toggleClass('d-none', !$('#customer_enable_email_destination').is(':checked'));
-    $('#customer_sms_template_wrap').toggleClass('d-none', !$('#customer_enable_sms_destination').is(':checked'));
-    $('#customer_sms_intransit_template_wrap').toggleClass('d-none', !$('#customer_enable_sms_intransit').is(':checked'));
+    syncNotificationTemplateWrap('#customer_enable_sms_driver', '#customer_sms_driver_template_wrap');
+    syncNotificationTemplateWrap('#customer_enable_email_destination', '#customer_destination_email_template_wrap');
+    syncNotificationTemplateWrap('#customer_enable_sms_destination', '#customer_sms_template_wrap');
+    syncNotificationTemplateWrap('#customer_enable_sms_intransit', '#customer_sms_intransit_template_wrap');
   };
   $('#customer_enable_sms_driver, #customer_enable_email_destination, #customer_enable_sms_destination, #customer_enable_sms_intransit')
     .on('change', syncNotificationTemplateWraps);
