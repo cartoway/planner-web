@@ -234,8 +234,9 @@ module NonTransactionalFixtures
 
     teardown do
       ActiveRecord::FixtureSet.reset_cache
+      # Rails stores loaded fixtures in a class var; clear so the next class reloads.
       if ActiveRecord::TestFixtures.class_variable_defined?(:@@already_loaded_fixtures)
-        ActiveRecord::TestFixtures.class_variable_set(:@@already_loaded_fixtures, {})
+        ActiveRecord::TestFixtures.class_variable_set(:@@already_loaded_fixtures, {}) # rubocop:disable Style/ClassVars
       end
       ActiveRecord::FixtureSet.create_fixtures(
         self.class.fixture_path,

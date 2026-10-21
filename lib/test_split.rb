@@ -18,7 +18,7 @@ module TestSplit
     test/service_worker_photos_test.rb
   ].freeze
 
-  ASSERT_SELECT_RE = /\bassert_(select|dom)\b/.freeze
+  ASSERT_SELECT_RE = /\bassert_(select|dom)\b/
 
   module_function
 
