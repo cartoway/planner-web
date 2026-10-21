@@ -125,7 +125,7 @@ git diff visual-regression/tests/lookbook.vrt.spec.ts-snapshots/
 
 **Non** à chaque changement. **Oui** seulement si tu modifies volontairement le rendu d’un preview couvert (SCSS, HAML, fixtures Lookbook, nouveau preview dans `LOOKBOOK_PREVIEWS`, etc.).
 
-La CI exécute `test_backend`, `test_frontend`, `lint` et `lookbook_visual` en parallèle (voir `.github/workflows/rubyonrails.yml`).
+La CI exécute `test_backend`, `test_frontend` et `lint` en parallèle, puis `lookbook_visual` si ceux-ci passent (voir `.github/workflows/rubyonrails.yml`).
 
 ## Commandes utiles
 
