@@ -385,36 +385,44 @@
       }
     }
 
-    .v2-index-card-actions--slots {
-      display: flex;
-      flex-direction: column;
-      grid-template-columns: none;
-
-      > .btn {
-        width: 100%;
-        flex: none;
-      }
-
-      .v2-index-card-secondary {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        width: 100%;
-        gap: 0.4rem;
+      // Keep in sync with @media (max-width: 991.98px) in _index_cards.scss
+      // (export dropdown + optional plan link + destroy).
+      .v2-index-card-actions--slots {
+        display: flex;
+        flex-direction: column;
+        grid-template-columns: none;
 
         > .btn {
+          width: 100%;
+          flex: none;
           grid-column: auto;
-          width: auto;
         }
 
-        > a.btn {
-          grid-column: 1;
-          width: auto;
-        }
+        .v2-index-card-secondary {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          width: 100%;
+          gap: 0.4rem;
 
-        .btn-danger {
-          grid-column: 2;
+          > .btn,
+          > .dropdown {
+            grid-column: auto;
+            width: auto;
+          }
+
+          > .dropdown > .btn {
+            width: 100%;
+          }
+
+          > a.btn {
+            grid-column: auto;
+            width: auto;
+          }
+
+          .btn-danger {
+            grid-column: auto;
+          }
         }
       }
-    }
   }
 }
