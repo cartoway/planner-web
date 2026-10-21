@@ -1610,6 +1610,7 @@ en:
       delivery: Delivery
       remove_filter: Remove this filter
       destinations_count_help: Number of destinations
+      visits_count_help: Number of visits for the destinations
       center_view_help: Center the map on the destination
       search_keys:
         ref: ref

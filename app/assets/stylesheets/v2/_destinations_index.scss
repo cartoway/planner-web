@@ -647,8 +647,6 @@ body:has(#operation-map-layout) {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: .75rem;
-        // Room for the absolute collapse toggle on the right.
         padding-right: 2.5rem;
         margin-bottom: .5rem;
 
@@ -657,7 +655,17 @@ body:has(#operation-map-layout) {
           min-width: 0;
         }
 
-        #count {
+        .destinations-sidebar-counts {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: flex-end;
+          gap: .35rem .75rem;
+          flex-shrink: 0;
+        }
+
+        #count,
+        #count-visits {
           flex-shrink: 0;
           margin: 0;
           white-space: nowrap;
@@ -1028,9 +1036,19 @@ body:has(#operation-map-layout) {
       display: none !important;
     }
 
-    // No collapse toggle on mobile — push primary data-info flush right.
+    // No collapse toggle on mobile; stack title then counters to avoid overlap.
     .destinations-sidebar-title-row {
+      flex-wrap: wrap;
       padding-right: 0 !important;
+
+      h1 {
+        flex: 1 1 100%;
+      }
+
+      .destinations-sidebar-counts {
+        flex: 1 1 100%;
+        justify-content: flex-start;
+      }
     }
 
     // Beat shared .v2-index-card-actions column stack — keep icon actions in one row.

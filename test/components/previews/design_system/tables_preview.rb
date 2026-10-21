@@ -25,6 +25,8 @@ module DesignSystem
 
       @destinations = Lookbook::DestinationsListSample.destinations_for(@customer)
       @total_count = 42
+      @page_visits_count = @destinations.sum { |destination| Array(destination.visits).size }
+      @total_visits_count = 58
       @pagination = { page: 5, per_page: 25, total: 250 }
     end
 
@@ -36,6 +38,8 @@ module DesignSystem
           destinations: @destinations,
           destinations_list_columns: @destinations_list_columns,
           total_count: @total_count,
+          page_visits_count: @page_visits_count,
+          total_visits_count: @total_visits_count,
           pagination: @pagination
         }
       }
