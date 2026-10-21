@@ -128,9 +128,11 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
 
     assert_response :success
     assert_select '.lookbook-index-cards-host', 1
+    assert_select '.operations-index', 1
     assert_select '.v2-index-cards', minimum: 2
     assert_select '.v2-index-card', minimum: 2
-    assert_select '.v2-index-card-title', text: 'Morning round'
+    assert_select '.v2-index-card-title', text: 'Tournée du matin'
+    assert_select '.operations-index .fa-download', minimum: 1
     assert_select '.lookbook-deliverable-units-cards .v2-index-card-meta-label', minimum: 1
   end
 
@@ -140,10 +142,12 @@ class LookbookMountTest < ActionDispatch::IntegrationTest
     assert_response :success
     assert_select '.lookbook-index-cards-mobile', 2
     assert_select '.lookbook-index-cards-mobile-frame', 2
-    assert_select '.lookbook-index-cards-mobile-toolbar .fa-check-square', minimum: 2
+    assert_select '.lookbook-index-cards-mobile .operations-index', 1
+    assert_select '.lookbook-index-cards-mobile-toolbar .fa-check-square', minimum: 1
     assert_select '.lookbook-index-cards-mobile .v2-index-card-actions--slots', minimum: 1
     assert_select '.lookbook-index-cards-mobile .lookbook-deliverable-units-cards .v2-index-card-actions', minimum: 1
-    assert_select '.lookbook-index-cards-mobile .v2-index-card-title', text: 'Morning round'
+    assert_select '.lookbook-index-cards-mobile .v2-index-card-title', text: 'Tournée du matin'
+    assert_select '.lookbook-index-cards-mobile .operations-index .fa-download', minimum: 1
   end
 
   test 'index cards with_selection preview renders' do

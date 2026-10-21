@@ -57,55 +57,86 @@
           %i.fa.fa-trash.fa-fw
           = t('all.verb.destroy')
 - else
-  .v2-index-cards.v2-index-cards--with-mid.px-2.pb-2
-    .v2-index-card
-      .v2-index-card-main
-        .v2-index-card-body
-          .v2-index-card-header
-            %h2.v2-index-card-title Morning round
-            .v2-index-card-badges
-              %span.badge.text-bg-primary In progress
-              %span.badge.text-bg-success Fresh
-          .v2-index-card-meta.text-muted
-            %span REF-42
-            %span ·
-            %span 15/10/2026
-      .v2-index-card-mid
-        .status-segments{style: 'display:flex;height:.5rem;border-radius:.25rem;overflow:hidden;background:var(--bs-secondary-bg)'}
-          %span{style: 'flex:12;background:var(--status-delivered,#198754)'}
-          %span{style: 'flex:2;background:var(--status-failed,#dc3545)'}
-          %span{style: 'flex:1;background:var(--status-exception,#fd7e14)'}
-          %span{style: 'flex:5;background:transparent'}
-        %span.text-muted.small 15 / 20 stops
-      .v2-index-card-actions.v2-index-card-actions--slots
-        %button.btn.btn-primary{type: 'button'}
-          %i.fa.fa-tower-broadcast.fa-fw
-          Open
-        .v2-index-card-secondary
+  -# Mirrors app/views/operations/index.html.haml (static demo data).
+  - filter_chips = [{ value: '', label: t('operations.index.chip_all') }, { value: 'in_progress', label: t('operations.statuses.in_progress') }, { value: 'historized', label: t('operations.statuses.historized') }]
+  - open_counts = { delivered: 12, failed: 2, exception: 1, rest: 5, total: 20 }
+  - done_counts = { delivered: 20, failed: 0, exception: 0, rest: 0, total: 20 }
+  .operations-index.pt-3
+    .px-3
+      .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
+        %h1.h3.mb-0= t('operations.index.title')
+        = render 'v2/shared/index_count', count: 2, help: t('operations.index.operations_count_help'), model_key: 'activerecord.models.operations', filterable: false
+      = render 'v2/shared/list_filters', url: '#', q: nil, date: nil, status: '', search_placeholder: t('operations.index.search_placeholder'), chips: filter_chips
+    .v2-index-cards.v2-index-cards--with-mid.px-3.pb-3
+      .v2-index-card
+        .v2-index-card-main
+          .v2-index-card-body
+            .v2-index-card-header
+              %h2.v2-index-card-title Tournée du matin
+              .v2-index-card-badges
+                %span.badge.text-bg-primary= t('operations.statuses.in_progress')
+                %span.badge.text-bg-success= t('execution.badge_fresh')
+            .v2-index-card-meta.text-muted
+              %span REF-42
+              %span ·
+              %span 15/10/2026
+        .v2-index-card-mid
+          = render 'v2/shared/status_segments', counts: open_counts
+          %span.operations-index-progress-label.text-muted= t('operations.index.stops_count', treated: 15, total: 20)
+        .v2-index-card-actions.v2-index-card-actions--slots
+          %a.btn.btn-primary{href: '#'}
+            %i.fa.fa-tower-broadcast.fa-fw
+            = t('execution.open_tracking')
+          .v2-index-card-secondary
+            .dropdown
+              %button.btn.btn-secondary.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
+                %i.fa.fa-download.fa-fw
+                = t('operations.show.export')
+              %ul.dropdown-menu
+                %li
+                  %a.dropdown-item{href: '#'}
+                    %i.fa.fa-file-excel.fa-fw
+                    = t('operations.show.export_spreadsheet')
+                %li
+                  %a.dropdown-item{href: '#'}
+                    %i.fa.fa-file-zipper.fa-fw
+                    = t('operations.show.export_archive')
+            %a.btn.btn-secondary{href: '#', title: 'Plan A'}
+              %i.fa.fa-map-location.fa-fw
+              %span.v2-index-card-secondary-label Plan A
+            %button.btn.btn-danger{type: 'button'}
+              %i.fa.fa-trash.fa-fw
+              = t('all.verb.destroy')
+      .v2-index-card
+        .v2-index-card-main
+          .v2-index-card-body
+            .v2-index-card-header
+              %h2.v2-index-card-title Livraison archivée
+              .v2-index-card-badges
+                %span.badge.text-bg-secondary= t('operations.statuses.historized')
+            .v2-index-card-meta.text-muted
+              %span 01/09/2026
+        .v2-index-card-mid
+          = render 'v2/shared/status_segments', counts: done_counts
+          %span.operations-index-progress-label.text-muted= t('operations.index.stops_count', treated: 20, total: 20)
+        .v2-index-card-actions.v2-index-card-actions--slots
           %a.btn.btn-secondary{href: '#'}
-            %i.fa.fa-map-location.fa-fw
-            %span.v2-index-card-secondary-label Plan A
-          %button.btn.btn-danger{type: 'button'}
-            %i.fa.fa-trash.fa-fw
-            Destroy
-    .v2-index-card
-      .v2-index-card-main
-        .v2-index-card-body
-          .v2-index-card-header
-            %h2.v2-index-card-title Archived delivery
-            .v2-index-card-badges
-              %span.badge.text-bg-secondary Historized
-          .v2-index-card-meta.text-muted
-            %span 01/09/2026
-      .v2-index-card-mid
-        .status-segments{style: 'display:flex;height:.5rem;border-radius:.25rem;overflow:hidden;background:var(--bs-secondary-bg)'}
-          %span{style: 'flex:20;background:var(--status-delivered,#198754)'}
-        %span.text-muted.small 20 / 20 stops
-      .v2-index-card-actions.v2-index-card-actions--slots
-        %button.btn.btn-secondary{type: 'button'}
-          %i.fa.fa-tower-broadcast.fa-fw
-          Open
-        .v2-index-card-secondary
-          %button.btn.btn-danger{type: 'button'}
-            %i.fa.fa-trash.fa-fw
-            Destroy
+            %i.fa.fa-tower-broadcast.fa-fw
+            = t('execution.open_tracking')
+          .v2-index-card-secondary
+            .dropdown
+              %button.btn.btn-secondary.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
+                %i.fa.fa-download.fa-fw
+                = t('operations.show.export')
+              %ul.dropdown-menu
+                %li
+                  %a.dropdown-item{href: '#'}
+                    %i.fa.fa-file-excel.fa-fw
+                    = t('operations.show.export_spreadsheet')
+                %li
+                  %a.dropdown-item{href: '#'}
+                    %i.fa.fa-file-zipper.fa-fw
+                    = t('operations.show.export_archive')
+            %button.btn.btn-danger{type: 'button'}
+              %i.fa.fa-trash.fa-fw
+              = t('all.verb.destroy')
