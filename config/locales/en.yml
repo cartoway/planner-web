@@ -4035,7 +4035,7 @@ en:
       delivery_note: Delivery note
       note: 'Note:'
       distance: Distance
-      drive_time: Drive time
+      drive_time: Drive duration
       track: Track
       track_file: GeoJSON track
       prev: Previous proof
@@ -4043,27 +4043,27 @@ en:
       close: Close
       fullscreen: View proof fullscreen
       open_media: Open media folder
+      depot_start: Start site
+      depot_end: End site
       operation_stats: Operation summary
       route_stats: Route summary
       columns:
-        operation_date: Operation date
-        operation_ref: Operation ref
-        operation_name: Operation name
-        operation_status: Operation status
-        route_index: Route index
-        route_ref: Route ref
+        operation_date: Date
+        operation_ref: Reference
+        operation_name: Name
+        route_ref: Route reference
         vehicle_name: Vehicle
         driver_email: Driver email
         driver_phone: Driver phone
-        route_distance_m: Route distance (m)
-        route_drive_time_s: Route drive time (s)
-        route_duration_s: Route duration (s)
-        stop_index: Stop index
-        stop_kind: Stop kind
+        route_distance: Route distance
+        route_drive_time: Route drive duration
+        route_duration: Route duration
+        stop_index: Order
+        stop_kind: Type
         stop_status: Stop status
-        destination_ref: Destination ref
-        visit_ref: Visit ref
-        name: Name
+        destination_ref: Destination reference
+        visit_ref: Visit reference
+        name: Stop name
         street: Street
         postalcode: Postal code
         city: City
@@ -4078,11 +4078,11 @@ en:
         planned_departure: Planned departure
         actual_arrival: Actual arrival
         actual_departure: Actual departure
-        delay_minutes: Delay (min)
+        delay_minutes: Delay
         time_windows: Time windows
-        stop_distance_m: Stop distance (m)
-        stop_drive_time_s: Stop drive time (s)
-        stop_wait_time_s: Stop wait time (s)
+        stop_distance: Distance
+        stop_drive_time: Drive duration
+        stop_wait_time: Wait duration
         quantities: Quantities
         photos: Photos
         signature: Signature

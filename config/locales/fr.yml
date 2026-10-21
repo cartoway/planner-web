@@ -4180,7 +4180,7 @@ fr:
       delivery_note: Bon de livraison
       note: 'Note :'
       distance: Distance
-      drive_time: Temps de conduite
+      drive_time: Durée de conduite
       track: Tracé
       track_file: Tracé GeoJSON
       prev: Preuve précédente
@@ -4188,27 +4188,27 @@ fr:
       close: Fermer
       fullscreen: Afficher la preuve en plein écran
       open_media: Ouvrir le dossier des médias
+      depot_start: Site départ
+      depot_end: Site arrivée
       operation_stats: Synthèse opération
       route_stats: Synthèse tournée
       columns:
-        operation_date: Date d’opération
-        operation_ref: Référence opération
-        operation_name: Nom opération
-        operation_status: Statut opération
-        route_index: Index tournée
-        route_ref: Réf. tournée
+        operation_date: Date
+        operation_ref: Référence
+        operation_name: Nom
+        route_ref: Référence tournée
         vehicle_name: Véhicule
         driver_email: E-mail chauffeur
         driver_phone: Tél. chauffeur
-        route_distance_m: Distance tournée (m)
-        route_drive_time_s: Temps de conduite tournée (s)
-        route_duration_s: Durée tournée (s)
-        stop_index: Index arrêt
-        stop_kind: Type d’arrêt
+        route_distance: Distance tournée
+        route_drive_time: Durée de conduite tournée
+        route_duration: Durée tournée
+        stop_index: Ordre
+        stop_kind: Type
         stop_status: Statut arrêt
-        destination_ref: Réf. destination
-        visit_ref: Réf. visite
-        name: Nom
+        destination_ref: Référence destination
+        visit_ref: Référence visite
+        name: Nom arrêt
         street: Rue
         postalcode: Code postal
         city: Ville
@@ -4223,11 +4223,11 @@ fr:
         planned_departure: Départ prévu
         actual_arrival: Arrivée réelle
         actual_departure: Départ réel
-        delay_minutes: Retard (min)
-        time_windows: Fenêtres horaires
-        stop_distance_m: Distance arrêt (m)
-        stop_drive_time_s: Temps de conduite arrêt (s)
-        stop_wait_time_s: Attente arrêt (s)
+        delay_minutes: Retard
+        time_windows: Créneaux horaires
+        stop_distance: Distance
+        stop_drive_time: Durée de conduite
+        stop_wait_time: Durée d’attente
         quantities: Quantités
         photos: Photos
         signature: Signature

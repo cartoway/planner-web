@@ -1,0 +1,29 @@
+- status_label = depot[:status].present? ? route.depot_status_label(depot[:status]) : nil
+- kind_label = t('destinations.import_file.stop_type_store')
+- actual_at = route.depot_status_updated_at(role)
+- actual_clock = actual_at && route.clock_on_operation_day(actual_at)
+%tr
+  %td
+  %td= kind_label
+  %td= status_label.presence || depot[:status].presence || '—'
+  %td
+    %div= depot[:name]
+    - if depot[:address].present?
+      %div= depot[:address]
+    - if depot[:ref].present?
+      .muted= depot[:ref]
+    - if depot[:phone].present?
+      .muted= depot[:phone]
+  %td
+    - if role == 'start'
+      %div
+        %span.muted= t('operations.show.departure')
+        = "#{depot[:time].presence || '—'} / #{actual_clock.presence || '—'}"
+    - else
+      %div
+        %span.muted= t('operations.show.arrival')
+        = "#{depot[:time].presence || '—'} / #{actual_clock.presence || '—'}"
+  %td= '—'
+  %td
+    .empty-proofs= '—'
+  %td
