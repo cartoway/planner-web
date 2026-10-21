@@ -102,11 +102,6 @@ class V01::Customers < Grape::API
         p.permit(
           :visit_duration,
           :default_country,
-          :enable_email_driver,
-          :enable_sms_driver,
-          :enable_email_destination,
-          :enable_sms_destination,
-          :enable_sms_intransit,
           :optimization_dicho_minimum_service_size,
           :optimization_max_split_size,
           :optimization_cluster_size,
