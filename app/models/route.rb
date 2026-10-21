@@ -606,7 +606,9 @@ class Route < ApplicationRecord
       # Assign route-only attributes to self
       self.assign_attributes(route_only_attributes)
 
-      route_data.assign_attributes(route_data_attributes.compact)
+      # compact drops nils; keep cost_* so clearing a rate wipes previous route stats
+      costs = route_data_attributes.slice(:cost_distance, :cost_fixed, :cost_time)
+      route_data.assign_attributes(route_data_attributes.compact.merge(costs))
 
       previous_route_data = self.route_data
       adjust_unpositioned_stop_rest_times!(previous_route_data, stops_sort, stops_drive_time)

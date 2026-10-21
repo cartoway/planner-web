@@ -233,6 +233,26 @@ class RouteTest < ActiveSupport::TestCase
     assert_equal billable_seconds, route.drive_time.to_i + route.wait_time.to_i + route.visits_duration.to_i + 1800 + 900
   end
 
+  test 'compute clears route costs when vehicle usage rates are removed' do
+    route = routes(:route_one_one)
+    vu = route.vehicle_usage
+    route.outdated = true
+    route.compute_saved!
+    assert route.cost_fixed
+    assert route.cost_distance
+    assert route.cost_time
+
+    vu.update_columns(cost_fixed: nil, cost_distance: nil, cost_time: nil)
+    vu.vehicle_usage_set.update_columns(cost_fixed: nil, cost_distance: nil, cost_time: nil)
+    route.outdated = true
+    route.compute_saved!
+    route.reload
+
+    assert_nil route.cost_fixed
+    assert_nil route.cost_distance
+    assert_nil route.cost_time
+  end
+
   test 'compute applies vehicle duration coefficients to visits_duration' do
     route = routes(:route_one_one)
     vehicle_usage = route.vehicle_usage
