@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# Pre-push: run Lookbook VRT when UI-related paths are in the push range.
+# Uses the Docker stack (web + db/planner-test) via .devcontainer/visual-regression.sh.
+set -euo pipefail
+
+if [[ "${SKIP_VRT:-}" == "1" ]]; then
+  echo "pre-push: SKIP_VRT=1 — skipping Lookbook visual regression"
+  exit 0
+fi
+
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+VRT_SCRIPT="$ROOT_DIR/.devcontainer/visual-regression.sh"
+COMPOSE="$ROOT_DIR/.devcontainer/compose.sh"
+
+UI_PATH_RE='^(app/assets/stylesheets/|app/components/|app/views/|test/components/previews/|visual-regression/|app/javascript/controllers/lookbook)'
+
+zero=0000000000000000000000000000000000000000
+needs_vrt=0
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [[ -z "${local_sha:-}" ]] && continue
+  if [[ "$local_sha" == "$zero" ]]; then
+    continue
+  fi
+
+  if [[ "$remote_sha" == "$zero" ]]; then
+    # New branch: all commits reachable from local tip (cap via merge-base with main/master if present).
+    if git rev-parse --verify origin/dev >/dev/null 2>&1; then
+      range="$(git merge-base origin/dev "$local_sha")..$local_sha"
+    elif git rev-parse --verify origin/master >/dev/null 2>&1; then
+      range="$(git merge-base origin/master "$local_sha")..$local_sha"
+    else
+      range="$local_sha"
+    fi
+  else
+    range="$remote_sha..$local_sha"
+  fi
+
+  if git diff --name-only "$range" 2>/dev/null | grep -E -q "$UI_PATH_RE"; then
+    needs_vrt=1
+    break
+  fi
+done
+
+if [[ "$needs_vrt" -ne 1 ]]; then
+  echo "pre-push: no UI paths in push range — skipping Lookbook VRT"
+  exit 0
+fi
+
+echo "pre-push: UI paths detected — running Lookbook VRT (Docker web + db)"
+
+running_services="$(bash "$COMPOSE" ps --status running --services 2>/dev/null || true)"
+if ! grep -qx web <<<"$running_services"; then
+  echo "pre-push: container 'web' is not running." >&2
+  echo "Start the stack with: planner-dev-up  (or .devcontainer/compose.sh up -d)" >&2
+  echo "Or bypass with: SKIP_VRT=1 git push" >&2
+  exit 1
+fi
+
+if ! grep -qx db <<<"$running_services"; then
+  echo "pre-push: container 'db' is not running (test DB lives there: planner-test)." >&2
+  echo "Start the stack with: planner-dev-up" >&2
+  echo "Or bypass with: SKIP_VRT=1 git push" >&2
+  exit 1
+fi
+
+exec bash "$VRT_SCRIPT" test

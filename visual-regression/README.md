@@ -4,7 +4,7 @@ Screenshots of each Lookbook preview in **headless Chromium**, compared to refer
 
 ## When to update snapshots
 
-**No** — you do not need to touch `visual-regression/` on every merged change. CI only runs these tests when the `lookbook_visual` job runs (see `.github/workflows/rubyonrails.yml`).
+**No** — you do not need to touch `visual-regression/` on every merged change. CI runs these tests in the parallel `lookbook_visual` job (see `.github/workflows/rubyonrails.yml`). Locally, a git **pre-push** hook also runs VRT when UI paths change (see [Pre-push hook](#pre-push-hook) below).
 
 Update reference PNGs **only** when you **intentionally** change something that affects how a covered Lookbook preview renders in Chromium:
 
@@ -253,9 +253,35 @@ If Montserrat from Google Fonts is not loaded before the screenshot, Chromium us
 
 Tests call `waitForLookbookFonts()` after stylesheets load to force Montserrat before `toHaveScreenshot`. If that throws locally, fix network access to `fonts.googleapis.com` or regenerate baselines on CI.
 
+## Pre-push hook
+
+When UI-related paths are in the commits being pushed, `.githooks/pre-push` runs `.devcontainer/visual-regression.sh test` (Rails on `web:3001`, DB `planner-test` in the `db` container). Do **not** use host-only Playwright (`:5433`) for this hook.
+
+Enable once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Bypass when the stack is down or you intentionally skip VRT:
+
+```bash
+SKIP_VRT=1 git push
+```
+
+UI path patterns: `app/assets/stylesheets/`, `app/components/`, `app/views/`, `test/components/previews/`, `visual-regression/`, `app/javascript/controllers/lookbook*`.
+
 ## CI
 
-The `lookbook_visual` job in `.github/workflows/rubyonrails.yml` runs `npx playwright test`. On failure, the HTML report is published as the `lookbook-playwright-report` artifact.
+Jobs `test_backend`, `test_frontend`, `lint`, and `lookbook_visual` run in parallel (see `.github/workflows/rubyonrails.yml`). `lookbook_visual` runs `npx playwright test`. On failure, the HTML report is published as the `lookbook-playwright-report` artifact.
+
+Minitest split (local via Docker):
+
+```bash
+planner-dev-test-prepare
+planner-dev-test frontend   # views/helpers/assert_select + Node self-checks on CI
+planner-dev-test backend
+```
 
 ## Adding a preview
 
