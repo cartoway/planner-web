@@ -54,11 +54,11 @@ x-web: &web
 
 services:
   db:
-    image: postgis/postgis:15-3.5
+    image: postgis/postgis:18-3.6
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql
     healthcheck:
       test: pg_isready
       start_interval: 1s
