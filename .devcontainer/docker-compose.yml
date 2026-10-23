@@ -73,7 +73,7 @@ services:
     # Place a dump file in the docker/dumps directory to load the database from it if no database is found
     # Devcontainer might display that the container is not running, but the database might be loading the dump
     # Or the web container might be running the migrations. Wait until the database is ready.
-    image: postgis/postgis:15-3.5
+    image: postgis/postgis:18-3.6
 
     environment:
       - POSTGRES_HOST_AUTH_METHOD=trust
@@ -81,7 +81,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB:-planner}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-planner}
     volumes:
-      - pg_data:/var/lib/postgresql/data
+      - pg_data:/var/lib/postgresql
       - ../docker/dumps:/docker-entrypoint-initdb.d:ro
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-planner} -d ${POSTGRES_DB:-planner} && psql -U ${POSTGRES_USER:-planner} -d ${POSTGRES_DB:-planner} -c '\\dt' | grep -q public"]
