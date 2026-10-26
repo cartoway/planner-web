@@ -44,7 +44,14 @@
   border-bottom: 1px solid var(--status-line);
 }
 
-.operation-header-title { font-weight: 700; }
+.operation-header-title {
+  font-weight: 700;
+
+  &.is-placeholder {
+    font-weight: 500;
+    font-style: italic;
+  }
+}
 
 .operation-name {
   font-weight: 700;
