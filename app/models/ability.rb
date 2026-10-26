@@ -58,11 +58,12 @@ class Ability
         if !user.customer.end_subscription || user.customer.end_subscription > Time.now
           can :manage, Planning, customer_id: user.customer.id
           can [:new, :create], Planning
-          # Operations access is gated by Role.spaces (SpaceAbilityMap), not by device/Cartoway Deliver.
-          can :manage, Operation, customer_id: user.customer.id
-          can [:new, :create], Operation
-          can :manage, OperationRoute, operation: { customer_id: user.customer.id }
-          can :manage, OperationStop, operation_route: { operation: { customer_id: user.customer.id } }
+          if user.customer.device.operations_enabled?
+            can :manage, Operation, customer_id: user.customer.id
+            can [:new, :create], Operation
+            can :manage, OperationRoute, operation: { customer_id: user.customer.id }
+            can :manage, OperationStop, operation_route: { operation: { customer_id: user.customer.id } }
+          end
         end
         can :manage, Route, planning: {customer_id: user.customer.id}
         can :show, Vehicle, customer_id: user.customer.id
