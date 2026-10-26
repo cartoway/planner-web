@@ -68,7 +68,7 @@ class V01::Operations < Grape::API
 
   resource :operations do # rubocop:disable Metrics/BlockLength
     desc 'List operations.',
-      detail: 'Lists operations for the customer. Filter with status, date, q. Default limit 100.',
+      detail: 'Lists operations for the customer. Filter with status, date, q. Default limit 100. List items omit operation_routes; use GET /operations/:id for the full snapshot.',
       nickname: 'getOperations',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Operation),

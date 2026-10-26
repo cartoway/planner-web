@@ -235,8 +235,8 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :city, type: String
     optional :state, type: String
     optional :country, type: String, documentation: { desc: 'Country. Falls back to customer default_country when omitted.' }
-    optional :lat, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Latitude. Omit (or send empty with a new address) to trigger geocoding.' }
-    optional :lng, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Longitude. Omit (or send empty with a new address) to trigger geocoding.' }
+    optional :lat, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Latitude. Omit (or send empty with a new address) to trigger geocoding. When set with lng, coordinates are stored as-is (no geocoder call); geocoding_level/geocoded_at stay null.' }
+    optional :lng, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Longitude. Omit (or send empty with a new address) to trigger geocoding. When set with lat, coordinates are stored as-is (no geocoder call); geocoding_level/geocoded_at stay null.' }
     optional :color, type: String, documentation: { desc: "Color code with #. Default: #{Planner::Application.config.store_color_default}." }
     optional :icon, type: String, documentation: { desc: "Icon name from font-awesome. Default: #{Planner::Application.config.store_icon_default}." }
     optional :icon_size, type: String, values: MapIconSize::SIZES, documentation: { desc: "Icon size. Default depends on entity type (destination, store)." }

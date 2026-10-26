@@ -26,7 +26,7 @@ class V01::Entities::Route < V01::Entities::RouteProperties
   expose(:vehicle_ref, documentation: { type: String, desc: 'Ref of the vehicle assigned to this route. Null on the unassigned route.' }) { |m|
     m.vehicle_usage&.vehicle&.ref
   }
-  expose(:distance, documentation: { type: Float, desc: 'Total route distance in meters.' })
+  expose(:distance, documentation: { type: Float, desc: 'Total route distance in meters. Null when the route has no computed path.' })
   expose(:emission, documentation: { type: Float, desc: 'Estimated CO2 emission for the route.' })
   expose(:vehicle_usage_id, documentation: { type: Integer, desc: 'Vehicle usage driving this route. Null on the unassigned (out-of-route) route.' })
   expose(:force_start, documentation: { type: 'Boolean', desc: 'DEPRECATED. To be configured on vehicle_usage_set.' })
@@ -46,7 +46,7 @@ class V01::Entities::Route < V01::Entities::RouteProperties
   expose(:stop_out_of_work_time, documentation: { type: 'Boolean', desc: 'True when the last stop exceeds the vehicle work time.' })
   expose(:stop_out_of_max_distance, documentation: { type: 'Boolean', desc: 'True when the last stop exceeds the vehicle max distance.' })
   expose(:stop_distance, documentation: { type: Float, desc: 'Distance in meters between the vehicle store_stop and last stop.' })
-  expose(:stop_drive_time, documentation: { type: Integer, desc: 'Time in seconds between the vehicle store_stop and last stop.' })
+  expose(:stop_drive_time, documentation: { type: Integer, desc: 'Drive time in seconds between the vehicle store_stop and last stop. Null when that leg has no path.' })
   expose(:updated_at, documentation: { type: DateTime, desc: 'Last Updated At.'})
   expose(:last_sent_to, documentation: { type: String, desc: 'Type GPS Device of Last Sent.'})
   expose(:last_sent_at, documentation: { type: DateTime, desc: 'Last Time Sent To External GPS Device.'})
