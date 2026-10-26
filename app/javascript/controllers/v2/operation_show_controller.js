@@ -163,7 +163,10 @@ export default class extends Controller {
   saveRef (event) {
     this._saveField(event.currentTarget, 'ref', (data) => {
       if (!data || !('ref' in data)) return
-      this.refLabelTarget.textContent = data.ref || ''
+      const value = (data.ref || '').trim()
+      const placeholder = this.refInputTarget.getAttribute('placeholder') || ''
+      this.refLabelTarget.textContent = value || placeholder
+      this.refLabelTarget.classList.toggle('is-placeholder', !value)
       this.refLabelTarget.classList.remove('d-none')
       this.refInputTarget.classList.add('d-none')
       this.refInputTarget.previousElementSibling.classList.remove('d-none')
