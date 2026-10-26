@@ -5,6 +5,8 @@ require 'test_helper'
 class BackfillPastPlanningsTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
+    # use_transactional_tests is false — a leftover open op makes candidate_sql skip this planning.
+    Operation.where(customer_id: @planning.customer_id).delete_all
     @planning.update_columns(date: Date.new(2015, 10, 10))
     @stop = stops(:stop_one_one)
     @stop.update_columns(status: 'delivered', status_updated_at: Time.zone.parse('2015-10-10 10:00'))
@@ -30,9 +32,9 @@ class BackfillPastPlanningsTest < ActiveSupport::TestCase
   test 'a past planning with stop status becomes one historized operation' do
     Operations::BackfillFromPastPlannings.call
 
-    operation = Operation.find_by!(planning_id: @planning.id)
+    operation = Operation.find_by!(planning_id: @planning.id, date: Date.new(2015, 10, 10))
     assert_equal 'historized', operation.status
-    assert_equal Date.new(2015, 10, 10), operation.date
+    assert operation.custom_attributes['_backfill']
     operation_stop = operation.operation_stops.find_by!(stop_id: @stop.id)
     assert_equal 'delivered', operation_stop.status
     assert operation_stop.destination_snapshot.key?('email')

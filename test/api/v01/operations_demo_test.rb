@@ -14,7 +14,7 @@ class V01::OperationsDemoTest < ActiveSupport::TestCase
     @customer = @planning.customer
     Operation.where(customer_id: @customer.id).delete_all
     Delayed::Job.delete_all
-    @operation = Operations::PublishFromPlanning.call(
+    @operation = publish_operation!(
       planning: @planning,
       route_ids: [routes(:route_one_one).id]
     )

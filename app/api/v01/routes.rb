@@ -164,7 +164,7 @@ class V01::Routes < Grape::API
           optional :all_stops, type: Boolean, desc: 'Deprecated (Use active_only instead)'
           optional :active_only, type: Boolean, desc: 'If true only active stops are taken into account by optimization, else inactive stops are also taken into account but are not activated in result route.', default: true
           optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
-          optional :ignore_overload_multipliers, type: String, desc: "Deliverable Unit id and whether or not it should be ignored : {'0'=>{'unit_id'=>'7', 'ignore'=>'true'}}"
+          optional :ignore_overload_multipliers, type: String, desc: 'JSON object of deliverable units to ignore for capacity, keyed by index. Example: ignore_overload_multipliers[0][unit_id]=7&ignore_overload_multipliers[0][ignore]=true.'
         end
         patch ':id/optimize' do
           begin

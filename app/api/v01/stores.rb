@@ -106,17 +106,18 @@ class V01::Stores < Grape::API
     end
 
     desc 'Import stores by upload a CSV file or by JSON.',
-      detail: 'Bulk create/update stores. Use ref as upsert key. CSV headers follow Accept-Language. JSON body uses stores[].',
+      detail: 'Bulk create/update stores. Use ref as upsert key. CSV headers follow Accept-Language. JSON body uses stores[]. Nested store_reloads in the JSON schema are not applied by this import (create/update stores one-by-one to manage reloads). replace deletes stores absent from the payload when true.',
       nickname: 'importStores',
       is_array: true,
       success: V01::Status.success(:code_200, V01::Entities::Store),
       failure: V01::Status.failures(is_array: true, add: [:code_422])
     params do
+      optional :replace, type: Boolean, desc: 'When true, stores absent from the import are deleted before upsert.', documentation: { param_type: 'form' }
       optional :stores, type: Array, documentation: { param_type: 'body' } do
         optional :id, type: String, desc: SharedParams::ID_DESC
         use :request_store
       end
-      optional :file, type: CSVFile, documentation: { desc: 'CSV file' }
+      optional :file, type: CSVFile, documentation: { desc: 'CSV file upload (multipart / binary).', param_type: 'form' }
       mutually_exclusive :stores, :file
     end
     put do

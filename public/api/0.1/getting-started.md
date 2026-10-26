@@ -205,7 +205,7 @@ Response excerpt:
 
 The unassigned route has `vehicle_usage_id: null`. Check stop flags (`out_of_window`, `out_of_capacity`, …) after optimize.
 
-`global=true` lets the solver move visits between unlocked routes. To keep the current vehicle assignment and only reorder, omit `global` or pass `global=false`. Per-route optimize, locks, and cancel: [Optimizer](#optimizer). Sector assignment before optimize: [Zoning](#zoning). Send to Cartoway Deliver and poll driver statuses: [Field execution](#field-execution).
+`global=true` lets the solver move visits between unlocked routes. To keep the current vehicle assignment and only reorder, omit `global` or pass `global=false`. Per-route optimize, locks, and cancel: [Optimizer](#optimizer). Sector assignment before optimize: [Zoning](#zoning). Publish an Operation, transmit to drivers, and poll statuses: [Field execution](#field-execution).
 
 Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python/example.py), [Ruby](./examples/ruby/example.rb), [PHP](./examples/php/example.php), [Postman / Insomnia](./examples/postman/Planner-API-0.1.collection.json).
 
@@ -230,8 +230,8 @@ Runnable samples: [cURL](./examples/curl/example.sh), [Python](./examples/python
 - **No weekly calendar.** A visit has at most two windows for **that** day (`time_window_*_1` and `time_window_*_2`). If the source system has “Mon–Fri 8–12 / 14–18”, extract the slots for the delivery day before import.
 - **Visit upsert key is `destination.ref` + `visit.ref`.** Same destination can have several visits (several orders, several days). Omit `visit.ref` only when a destination never has more than one visit.
 - **`DELETE …/by_tags` keeps objects that miss any of the tags.** The destination or visit must have **all** provided tags. Empty result is HTTP **304**.
-- **Without `send_multiple`, the driver never receives the route** and no status comes back. `POST /devices/deliver/send_multiple` requires a numeric `planning_id` (not `ref:…`).
-- **No REST 0.1 webhook for stop status.** Poll `GET /plannings/:id/routes.json`. `?with_geojson=true` is the **planned** geometry, not the truck's real trace. `GET /vehicles/current_position.json` is a live snapshot; REST 0.1 does not keep GPS history.
+- **Drivers are notified from an Operation**, not from planning routes. Publish with `POST /plannings/:id/operations`, then `POST /operations/:id/transmit` (or `POST /devices/deliver/send_multiple` with `operation_id`).
+- **No REST 0.1 webhook for stop status.** Poll `GET /operations/:id.json`. `GET /plannings/:id.json?with_geojson=true` is the **planned** geometry, not the truck's real trace. `GET /vehicles/current_position.json` is a live snapshot; REST 0.1 does not keep GPS history.
 
 ---
 
@@ -431,7 +431,17 @@ curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
   -d '{"name": "Morning", "date": "2026-10-05"}'
 ```
 
-4. Drivers work the operation (mobile link / Deliver). There is no REST webhook: poll the operation (about every 60 s):
+4. Notify drivers (email and/or SMS):
+
+```sh
+curl -X POST -H "Api-Key: YOUR_API_KEY" -H "Content-Type: application/json" \
+  "{base}/api/0.1/operations/OPERATION_ID/transmit.json" \
+  -d '{"channel": "email"}'
+```
+
+Same effect via `POST /devices/deliver/send_multiple` with `operation_id` (or `POST /devices/deliver/send` with `operation_route_id`). Omit `channel` to use both channels when enabled. Optional `route_ids` = OperationRoute ids.
+
+5. Drivers work the operation (mobile link / Deliver). There is no REST webhook: poll the operation (about every 60 s), or pull telematics into stops with `POST /operations/OPERATION_ID/fetch_device_status.json`:
 
 ```sh
 curl -H "Api-Key: YOUR_API_KEY" \
@@ -607,7 +617,7 @@ Do not pass `global=true` here unless you want the solver to undo the sectors.
 | **Zonings / Zones** | Polygons linked to vehicles; apply to a planning to assign stops. | `/zonings`, `.../automatic/:planning_id`, `/plannings/:id/apply_zonings` |
 | **Jobs** | Async optimizer / geocoding. Poll until `status` is `succeeded` or `failed`. | `GET /jobs`, `GET/DELETE /jobs/:id` |
 | **Geocoder** | Address search (not persisted). | `GET /geocoder/search?q=` |
-| **Devices / Deliver** | Send a planning to Cartoway Deliver; live GPS via `GET /vehicles/current_position`. | `POST /devices/deliver/send_multiple`, `GET /vehicles/current_position` |
+| **Devices / Deliver** | Field execution via Operations; live GPS via `GET /vehicles/current_position`. | `POST /plannings/:id/operations`, `POST /operations/:id/transmit`, `GET /vehicles/current_position` |
 
 ## Code samples
 

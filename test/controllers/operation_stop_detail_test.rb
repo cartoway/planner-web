@@ -10,7 +10,7 @@ class OperationStopDetailTest < ActionController::TestCase
     request.host = @reseller.host
     sign_in users(:user_one)
     @planning = plannings(:planning_one)
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @stop = @operation.operation_stops.where(kind: 'visit').order(:index).first
     OperationStops::RecordStatus.call(operation_stop: @stop, status: 'delivered', recorded_at: Time.zone.parse('2026-09-25 11:00'), source: 'mobile')
   end

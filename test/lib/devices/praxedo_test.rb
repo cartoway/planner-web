@@ -58,8 +58,7 @@ class PraxedoTest < ActionController::TestCase
     # 0 => 30kg / 1 => 10kg / 2 => 5kg
     with_stubs [:search_events_wsdl, :search_events] do
       planning = plannings(:planning_one)
-      Operation.where(customer_id: @customer.id).delete_all
-      operation = Operations::PublishFromPlanning.call(planning: planning, route_ids: [routes(:route_one_one).id])
+      operation = publish_operation!(planning: planning, route_ids: [routes(:route_one_one).id])
 
       Operations::FetchDeviceStopsStatus.call(operation: operation)
 

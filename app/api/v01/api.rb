@@ -96,12 +96,21 @@ class V01::Api < Grape::API
     ActiveRecord::Base.connection.transaction_open? && ActiveRecord::Base.connection.rollback_transaction
 
     @error = e
-    Rails.logger.error "\n\n#{e.class} (#{e.message}):\n    " + e.backtrace.join("\n    ") + "\n\n"
-    puts Rails.backtrace_cleaner.clean(e.backtrace).join("\n    ") if ENV['RAILS_ENV'] == 'development'
+    # Expected client/API errors: one-line warn. Unexpected/DB: keep stack in logs.
+    expected = e.is_a?(ActiveRecord::RecordNotFound) || e.is_a?(ArgumentError) ||
+               e.is_a?(ActiveRecord::RecordInvalid) || e.is_a?(RangeError) || e.is_a?(Grape::Exceptions::ValidationErrors) ||
+               e.is_a?(Exceptions::StopIndexError) || e.is_a?(Exceptions::OverMaxLimitError) ||
+               e.is_a?(Grape::Exceptions::MethodNotAllowed) || e.is_a?(Exceptions::JobInProgressError)
+    if expected
+      Rails.logger.warn "#{e.class} (#{e.message})"
+    else
+      Rails.logger.error "\n\n#{e.class} (#{e.message}):\n    " + e.backtrace.join("\n    ") + "\n\n"
+      puts Rails.backtrace_cleaner.clean(e.backtrace).join("\n    ") if ENV['RAILS_ENV'] == 'development'
+    end
 
     response = {message: e.message}
     if e.is_a?(ActiveRecord::RecordNotFound) || e.is_a?(ArgumentError)
-      error!(V01::Status.code_response(:code_404), 404)
+      error!(V01::Status.code_response(:code_404, message: e.message.presence), 404)
     elsif e.is_a?(ActiveRecord::RecordInvalid) || e.is_a?(RangeError) || e.is_a?(Grape::Exceptions::ValidationErrors) || e.is_a?(Exceptions::StopIndexError)
       error!(response.merge(status: 400), 400, e.backtrace)
     elsif e.is_a?(Exceptions::OverMaxLimitError)
@@ -156,12 +165,12 @@ class V01::Api < Grape::API
   mount V01::VisitsGet
   mount V01::Zonings
 
-  # Devices
+  # Devices — Deliver before DevicesApi so /devices/deliver/send is not caught by /:device/send
+  mount V01::Devices::Deliver
   mount V01::Devices::DevicesApi
   mount V01::Devices::Alyacom
   mount V01::Devices::Masternaut
   mount V01::Devices::Notico
-  mount V01::Devices::Deliver
   mount V01::Devices::Praxedo
   mount V01::Devices::Orange
   mount V01::Devices::Sopac

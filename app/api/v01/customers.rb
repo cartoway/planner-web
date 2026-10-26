@@ -141,7 +141,7 @@ class V01::Customers < Grape::API
 
   resource :customers do
     desc 'Fetch customer accounts (admin).',
-      detail: 'Retrieve all customer accounts. Only available with an admin api_key.',
+      detail: 'Retrieve all customer accounts for the reseller. Admin api_key only; user keys receive HTTP 403. A normal user reads their own account via GET /customers/:id.',
       is_array: true,
       nickname: 'getCustomers',
       success: V01::Status.success(:code_200, V01::Entities::CustomerAdmin),
@@ -155,7 +155,7 @@ class V01::Customers < Grape::API
     end
 
     desc 'Fetch customer account.',
-      detail: 'Get informations and details, for example customer account associated to the current api_key.',
+      detail: 'Admin can fetch any reseller customer (CustomerAdmin schema). A user key can only fetch their own customer id (Customer schema). visit_duration null means no default service duration for visits.',
       nickname: 'getCustomer',
       success: V01::Status.success(:code_200, V01::Entities::CustomerAdmin),
       failure: V01::Status.failures

@@ -12,8 +12,7 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
   setup do
     @route = routes(:route_one_one)
     @planning = @route.planning
-    Operation.where(customer_id: @planning.customer_id).delete_all
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @operation_route = @operation.operation_routes.find_by!(route_id: @route.id)
     @vehicle = @route.vehicle_usage.vehicle
   end
@@ -233,8 +232,9 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
   end
 
   test 'mobile position update rejects an id outside the operation' do
-    other = Operations::PublishFromPlanning.call(
+    other = publish_operation!(
       planning: plannings(:planning_one),
+      clear: false,
       date: @operation.date + 1.day,
       route_ids: [@route.id]
     )
@@ -310,8 +310,7 @@ class OperationRouteMobileUrlTest < ActionController::TestCase
     request.host = @reseller.host
     sign_in users(:user_one)
     @planning = plannings(:planning_one)
-    Operation.where(customer_id: @planning.customer_id).delete_all
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @operation_route = @operation.operation_routes.planned.first
   end
 

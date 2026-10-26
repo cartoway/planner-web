@@ -38,7 +38,6 @@ class PlanningsController < ApplicationController
   before_action :set_planning_without_stops, only: [:data_header, :operation_sync_preview, :summary, :filter_routes, :modal, :sidebar, :refresh_route, :refresh_routes, :move_stops_modal, :extract_inactive_stops_modal, :move, :update_stop]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :refresh_routes, :reverse_order, :sidebar, :update_stop]
-  before_action :set_device_definitions, only: [:edit, :update]
   before_action :check_no_existing_job, only: [:optimize, :optimize_route]
   around_action :over_max_limit, only: [:create, :duplicate]
 
@@ -1085,25 +1084,6 @@ class PlanningsController < ApplicationController
           }
         }
       }.compact
-  end
-
-  def set_device_definitions
-    @device_definitions = @planning.customer.device.configured_definitions.each_with_object({}) do |(key, definition), hash|
-      routes_with_configured_devices =
-        if key == :deliver
-          @planning.routes.select do |route|
-            route.vehicle_usage_id && route.vehicle_usage.vehicle.contact_email.present?
-          end
-        else
-          @planning.routes.select do |route|
-            route.vehicle_usage_id && route.vehicle_usage.vehicle.devices.key?(definition[:device])
-          end
-        end
-      hash[key] = {
-        definition: definition,
-        routes_with_configured_devices: routes_with_configured_devices
-      }
-    end
   end
 
   def set_planning_without_stops

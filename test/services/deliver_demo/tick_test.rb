@@ -8,7 +8,7 @@ class DeliverDemoTickTest < ActiveSupport::TestCase
     @customer = @planning.customer
     @customer.update!(devices: { deliver: { enable: true, demo: true } })
     @customer.users.order(:id).first.update_columns(time_zone: 'Paris')
-    @operation = Operations::PublishFromPlanning.call(
+    @operation = publish_operation!(
       planning: @planning,
       route_ids: [routes(:route_one_one).id]
     )

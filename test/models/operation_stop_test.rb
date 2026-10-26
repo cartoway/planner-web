@@ -7,8 +7,7 @@ class OperationStopTest < ActiveSupport::TestCase
 
   setup do
     @planning = plannings(:planning_one)
-    Operation.where(customer_id: @planning.customer_id).delete_all
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @stop = @operation.operation_stops.find_by!(stop_id: stops(:stop_one_one).id)
   end
 

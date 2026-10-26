@@ -8,8 +8,7 @@ class OperationStopRowPartialTest < ActionView::TestCase
   setup do
     @planning = plannings(:planning_one)
     @customer = @planning.customer
-    Operation.where(customer_id: @customer.id).delete_all
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @stop = OperationStop.where(visit_id: visits(:visit_one).id).first
     assert @stop
   end

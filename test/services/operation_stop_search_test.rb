@@ -6,8 +6,7 @@ class OperationStopSearchTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
     @customer = @planning.customer
-    Operation.where(customer_id: @customer.id).delete_all
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
   end
 
   teardown do

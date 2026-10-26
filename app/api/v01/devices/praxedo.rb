@@ -16,6 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class V01::Devices::Praxedo < Grape::API
+  helpers V01::Devices::DeviceHelpers
   namespace :devices do
     namespace :praxedo do
 
@@ -33,13 +34,13 @@ class V01::Devices::Praxedo < Grape::API
         error! V01::Status.code_response(:code_408, before: e.message), 408
       end
 
-      desc 'Send Planning Routes.',
+      desc 'Send Operation Routes.',
         detail: 'On Praxedo.',
         nickname: 'devicePraxedoSendMultiple',
         success: V01::Status.success(:code_201),
         failure: V01::Status.failures
       params do
-        requires :planning_id, type: Integer, desc: 'Planning ID'
+        requires :operation_id, type: Integer, desc: 'Operation ID'
       end
       post '/send_multiple' do
         device_send_routes device_id: :praxedo_agent_id
@@ -51,7 +52,7 @@ class V01::Devices::Praxedo < Grape::API
         success: V01::Status.success(:code_204),
         failure: V01::Status.failures
       params do
-        requires :route_id, type: Integer, desc: 'Planning ID'
+        requires :operation_route_id, type: Integer, desc: 'OperationRoute ID'
       end
       delete '/clear' do
         device_clear_route
@@ -63,7 +64,7 @@ class V01::Devices::Praxedo < Grape::API
         success: V01::Status.success(:code_204),
         failure: V01::Status.failures
       params do
-        requires :planning_id, type: Integer, desc: 'Planning ID'
+        requires :operation_id, type: Integer, desc: 'Operation ID'
       end
       delete '/clear_multiple' do
         device_clear_routes device_id: :praxedo_agent_id

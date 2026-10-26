@@ -185,14 +185,43 @@ class V01::Operations < Grape::API
       present operation.reload, with: V01::Entities::Operation, type: :full
     end
 
+    desc 'Transmit operation routes to drivers (email and/or SMS).',
+      detail: 'Emails/SMS drivers for open operations (respects enable_email_driver / enable_sms_driver). Sets operation_routes last_sent_to/at. Same effect as POST /devices/deliver/send_multiple with operation_id. Does not push GPS devices (TomTom, …). Body may be empty.',
+      nickname: 'transmitOperation',
+      success: V01::Status.success(:code_200),
+      failure: V01::Status.failures(add: [:code_422])
+    params do
+      requires :id, type: Integer
+      optional :channel, type: String, values: %w[email sms], documentation: { desc: 'Limit to one channel. Omit to send both when enabled on the customer.' }
+      optional :route_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { desc: 'OperationRoute ids to transmit. Omit for all planned routes with a vehicle.' }
+    end
+    post ':id/transmit' do
+      operation = find_operation!
+      authorize!(:update, operation)
+      error!({ message: 'Operation is not open.', status: 422 }, 422) unless operation.open?
+
+      routes = operation.operation_routes.planned.where.not(vehicle_id: nil)
+      routes = routes.where(id: params[:route_ids]) if params[:route_ids].present?
+      result = Operations::TransmitRoutes.call(operation: operation, routes: routes.to_a, channel: params[:channel])
+      status 200
+      {
+        emailed: result[:emailed],
+        sms: result[:sms],
+        operation: V01::Entities::Operation.represent(operation.reload, type: :full)
+      }
+    rescue ArgumentError => e
+      present_operation_error(e)
+    end
+
     desc 'Resync operation snapshots from its planning.',
+      detail: 'Refreshes operation_routes/operation_stops snapshots from the linked planning. With no route_ids/stop_ids, syncs the selection stored on the operation (respecting visible_routes_only from publish). With route_ids, adds/updates those planning routes in the snapshot (does not notify drivers). Body may be empty. Returns the full Operation (type=full).',
       nickname: 'syncOperation',
       success: V01::Status.success(:code_200, V01::Entities::Operation),
       failure: V01::Status.failures
     params do
       requires :id, type: Integer
-      optional :route_ids, type: Array[Integer], coerce_with: CoerceArrayInteger
-      optional :stop_ids, type: Array[Integer], coerce_with: CoerceArrayInteger
+      optional :route_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { desc: 'Planning route ids to add/update in the operation snapshot. Omit to sync the existing selection.' }
+      optional :stop_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, documentation: { desc: 'Optional planning stop ids to scope the sync.' }
     end
     post ':id/sync' do
       operation = find_operation!

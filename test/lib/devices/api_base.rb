@@ -8,6 +8,24 @@ module ApiBase
     Addressable::Template.new("/api/0.1/#{path}.json{?query*}").expand(query: params.merge(api_key: 'testkey1')).to_s
   end
 
+  # Publish planning routes into an Operation for device send/clear API tests.
+  def publish_operation_for!(route)
+    planning = route.planning
+    route_ids = planning.routes.select(&:vehicle_usage_id).map(&:id)
+    operation = publish_operation!(planning, route_ids: route_ids)
+    operation_route = operation.operation_routes.find_by!(route_id: route.id)
+    [operation, operation_route]
+  end
+
+  def last_sent_payload(operation_route)
+    {
+      'id' => operation_route.id,
+      'last_sent_to' => operation_route.last_sent_to,
+      'last_sent_at' => operation_route.last_sent_at&.iso8601(3),
+      'last_sent_at_formatted' => operation_route.last_sent_at && I18n.l(operation_route.last_sent_at)
+    }
+  end
+
   def params_for(device, customer)
     device.to_sym unless device.is_a? Symbol
     case device
