@@ -62,7 +62,7 @@
                       .hidden-menu
                         = t 'admin.profiles.menu.profiles'
             - if user_signed_in? && current_user.customer
-              - if !@unsubscribed && current_user_space_visible?(:operations)
+              - if !@unsubscribed && current_user.customer.device.operations_enabled? && current_user_space_visible?(:operations)
                 %li#menu-operation.menu-list-item
                   %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#operationsCollpase'}
                     .d-flex.align-items-center.justify-content-center

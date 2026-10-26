@@ -5,9 +5,13 @@ require 'test_helper'
 class PreferencesSpaceAbilityMapTest < ActiveSupport::TestCase
   setup do
     @user = users(:user_one)
+    @customer = @user.customer
+    @previous_devices = @customer.devices
+    @customer.update!(devices: { deliver: { enable: true } })
   end
 
   teardown do
+    @customer.update!(devices: @previous_devices)
     u = users(:user_one)
     u.update!(role_id: nil) if u.reload.role_id.present?
   end
