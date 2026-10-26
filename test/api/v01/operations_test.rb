@@ -29,11 +29,13 @@ class V01::OperationsTest < ActiveSupport::TestCase
     get '/api/0.1/operations.json?api_key=testkey1'
     assert last_response.ok?, last_response.body
     body = JSON.parse(last_response.body)
-    assert body.any? { |row| row['id'] == @operation.id }
+    row = body.find { |r| r['id'] == @operation.id }
+    assert row
+    refute row.key?('operation_routes')
 
     get "/api/0.1/operations.json?api_key=testkey1&status=in_progress&date=#{@operation.date}"
     assert last_response.ok?, last_response.body
-    assert JSON.parse(last_response.body).any? { |row| row['id'] == @operation.id }
+    assert JSON.parse(last_response.body).any? { |r| r['id'] == @operation.id }
   end
 
   test 'returns the operation from snapshots' do
