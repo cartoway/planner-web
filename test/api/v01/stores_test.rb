@@ -66,6 +66,19 @@ class V01::StoresTest < ActiveSupport::TestCase
     end
   end
 
+  test 'manual lat lng skips geocoder metadata' do
+    assert_difference('Store.count', 1) do
+      post api(), name: 'Manual coords', street: '1 rue X', city: 'Bordeaux', country: 'fra', lat: 44.84, lng: -0.58
+      assert last_response.created?, last_response.body
+    end
+    body = JSON.parse(last_response.body)
+    assert_nil body['geocoding_level']
+    assert_nil body['geocoded_at']
+    assert_nil body['geocoder_version']
+    assert_in_delta 44.84, body['lat']
+    assert_in_delta(-0.58, body['lng'])
+  end
+
   test 'should create bulk from csv' do
     assert_difference('Store.count', 1) do
       put api(), replace: false, file: fixture_file_upload('import_stores_one.csv', 'text/csv')

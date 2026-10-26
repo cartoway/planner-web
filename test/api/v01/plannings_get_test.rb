@@ -109,8 +109,9 @@ class V01::PlanningsGetTest < ActiveSupport::TestCase
   test 'planning json includes route_data metrics aggregated at root from main route_data' do
     r1 = routes(:route_one_one)
     r3 = routes(:route_three_one)
-    r1.route_data.update!(size_active: 2, out_of_window: true)
-    r3.route_data.update!(size_active: 3, out_of_window: false)
+    @planning.routes.each { |r| r.route_data&.update!(size_active: 0, stops_size: 0, out_of_window: false) }
+    r1.route_data.update!(size_active: 2, stops_size: 4, out_of_window: true)
+    r3.route_data.update!(size_active: 3, stops_size: 7, out_of_window: false)
 
     get api("/plannings/#{@planning.id}.json", api_key: @user.api_key)
     assert last_response.ok?, last_response.body
@@ -118,6 +119,7 @@ class V01::PlanningsGetTest < ActiveSupport::TestCase
     refute body.key?('route_data_alerts')
     refute body.key?('max_loads')
     assert_equal 5, body['size_active']
+    assert_equal 11, body['stops_size']
     assert_equal true, body['out_of_window']
   end
 end

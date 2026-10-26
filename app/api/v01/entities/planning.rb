@@ -18,7 +18,9 @@
 
 # Aggregate each route's primary route_data (sizes, alert flags) for planning API payloads.
 class V01::Entities::PlanningRouteDataAlerts
-  INTEGER_FIELDS = Route::ROUTE_DATA_METRICS_FIELDS.first(4).freeze
+  INTEGER_FIELDS = %i[
+    size_active size_destinations size_active_destinations size_store_reloads stops_size
+  ].freeze
   BOOLEAN_FIELDS = (Route::ROUTE_DATA_METRICS_FIELDS - INTEGER_FIELDS).freeze
 
   # Returns a string-keyed hash; recomputed at most once per planning instance per serialization pass.
