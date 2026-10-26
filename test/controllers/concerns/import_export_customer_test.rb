@@ -1,6 +1,11 @@
 require 'test_helper'
 
 class ImportExportCustomerTest < ActionController::TestCase
+  setup do
+    # Leftover open operations from other tests make import/duplicate hit UniqueViolation
+    # on index_operations_on_customer_id_lower_ref_date (use_transactional_tests = false).
+    Operation.where(customer_id: customers(:customer_one).id).delete_all
+  end
 
   test 'should export customer with all its relations' do
     customer = customers(:customer_one)
