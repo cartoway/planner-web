@@ -1,5 +1,5 @@
 -# Cards + pagination — updated by search/pagination/columns without replacing the toolbar.
-- can_destroy_destinations = current_user_form_destroy_enabled?(:destination)
+- can_destroy_destinations = current_user_space_action_usable?(:destination, :edit)
 - list_columns = @destinations_list_columns || []
 = turbo_frame_tag 'destinations_list_body' do
   #destination_box.destinations-list-scroll

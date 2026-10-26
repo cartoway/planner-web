@@ -24,8 +24,8 @@ class DeliverableUnitsController < ApplicationController
 
   include PreferencesAuthorization
   include V2Layout
-  before_action -> { deny_unless_form_create!(:deliverable_units) }, only: [:create]
-  before_action -> { deny_unless_form_update!(:deliverable_units) }, only: [:update, :destroy, :destroy_multiple]
+  before_action -> { deny_unless_space_action_usable!(:deliverable_units, :edit) }, only: [:create]
+  before_action -> { deny_unless_space_action_usable!(:deliverable_units, :edit) }, only: [:update, :destroy, :destroy_multiple]
 
   load_and_authorize_resource
 
@@ -123,7 +123,7 @@ class DeliverableUnitsController < ApplicationController
   def deliverable_unit_row_locals
     {
       deliverable_unit: @deliverable_unit,
-      can_destroy: helpers.current_user_form_destroy_enabled?(:deliverable_units)
+      can_destroy: helpers.current_user_space_action_usable?(:deliverable_units, :edit)
     }
   end
 

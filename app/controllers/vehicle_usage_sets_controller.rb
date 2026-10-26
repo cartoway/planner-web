@@ -19,7 +19,7 @@ class VehicleUsageSetsController < ApplicationController
   before_action :authenticate_user!
   before_action :set_vehicle_usage_set, only: [:show, :edit, :update, :destroy, :duplicate, :reorder_vehicle_usages]
   around_action :over_max_limit, only: [:create, :duplicate]
-  before_action -> { deny_unless_form_update!(:vehicle_usages) }, only: [:create, :update, :destroy, :destroy_multiple, :duplicate, :upload_csv, :reorder_vehicle_usages]
+  before_action -> { deny_unless_space_action_usable!(:vehicle_usages, :edit) }, only: [:create, :update, :destroy, :destroy_multiple, :duplicate, :upload_csv, :reorder_vehicle_usages]
 
   load_and_authorize_resource
 
@@ -268,9 +268,9 @@ class VehicleUsageSetsController < ApplicationController
       expanded: expanded,
       show_set_checkbox: show_set_checkbox,
       invisible_class: sets.size > 1 ? '' : 'invisible',
-      can_destroy_vehicle_config: helpers.current_user_form_destroy_enabled?(:vehicle_usages),
-      can_update_vehicle_usage: helpers.current_user_form_update?(:vehicle_usages),
-      can_view_vehicle_usage: helpers.current_user_form_visible?(:vehicle_usages),
+      can_destroy_vehicle_config: helpers.current_user_space_action_usable?(:vehicle_usages, :edit),
+      can_update_vehicle_usage: helpers.current_user_space_action_usable?(:vehicle_usages, :edit),
+      can_view_vehicle_usage: helpers.current_user_space_visible?(:vehicle_usages),
       nested_colspan: show_set_checkbox ? 5 : 4,
       sets_count: sets.size
     }

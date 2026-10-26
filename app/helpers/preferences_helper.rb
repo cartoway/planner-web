@@ -93,57 +93,56 @@ module PreferencesHelper
     toolbar_operation_visible?(zone, operation_id) && !toolbar_operation_usable?(zone, operation_id)
   end
 
-  # Form policy (vehicle_usage toolbar vs forms.vehicle_usages.visible).
-  def current_user_form_visible?(resource)
-    return true unless user_signed_in? && current_user.respond_to?(:form_visible?)
+  # Spaces policy (Active / Disabled / Hidden).
+  # visible? → show in sidebar; usable? → space Active (action DnD applies);
+  # action_usable? → enable a specific right (edit/sync/transmit/…).
+  def current_user_space_visible?(resource)
+    return true unless user_signed_in? && current_user.respond_to?(:space_visible?)
 
-    current_user.form_visible?(resource)
+    current_user.space_visible?(resource)
   end
 
-  def current_user_form_create?(resource)
-    return true unless user_signed_in? && current_user.respond_to?(:form_create?)
+  def current_user_space_usable?(resource)
+    return true unless user_signed_in? && current_user.respond_to?(:space_usable?)
 
-    current_user.form_create?(resource)
+    current_user.space_usable?(resource)
   end
 
-  def current_user_form_update?(resource)
-    return true unless user_signed_in? && current_user.respond_to?(:form_update?)
+  def current_user_space_action_usable?(resource, action_id)
+    return true unless user_signed_in? && current_user.respond_to?(:space_action_usable?)
 
-    current_user.form_update?(resource)
+    current_user.space_action_usable?(resource, action_id)
   end
 
-  # Destroy follows update mutability in form permissions.
-  def current_user_form_destroy_enabled?(resource)
-    current_user_form_update?(resource)
+  def current_user_space_action_disabled?(resource, action_id)
+    current_user_space_visible?(resource) && !current_user_space_action_usable?(resource, action_id)
   end
 
-  # Planning create/update forms (header flat form, new planning form, sidebar fragments).
-  def current_user_planning_form_submit_enabled?(planning)
-    planning.new_record? ? current_user_form_create?(:plannings) : current_user_form_update?(:plannings)
+  # HTML form submit (create or update) for spaces with an :edit action.
+  def current_user_planning_form_submit_enabled?(_planning)
+    current_user_space_action_usable?(:plannings, :edit)
   end
 
-  # Stores form (depot / reload); read-only GET edit when forms.stores visible but not usable.
-  def current_user_store_form_submit_enabled?(store)
-    store.new_record? ? current_user_form_create?(:stores) : current_user_form_update?(:stores)
+  def current_user_store_form_submit_enabled?(_store)
+    current_user_space_action_usable?(:stores, :edit)
   end
 
-  # Destination + visits form; read-only edit when forms.destination is visible but not usable.
-  def current_user_destination_form_submit_enabled?(destination)
-    destination.new_record? ? current_user_form_create?(:destination) : current_user_form_update?(:destination)
+  def current_user_destination_form_submit_enabled?(_destination)
+    current_user_space_action_usable?(:destination, :edit)
   end
 
-  def current_user_deliverable_unit_form_submit_enabled?(deliverable_unit)
-    deliverable_unit.new_record? ? current_user_form_create?(:deliverable_units) : current_user_form_update?(:deliverable_units)
+  def current_user_deliverable_unit_form_submit_enabled?(_deliverable_unit)
+    current_user_space_action_usable?(:deliverable_units, :edit)
   end
 
-  def current_user_custom_attribute_form_submit_enabled?(custom_attribute)
-    custom_attribute.new_record? ? current_user_form_create?(:custom_attributes) : current_user_form_update?(:custom_attributes)
+  def current_user_custom_attribute_form_submit_enabled?(_custom_attribute)
+    current_user_space_action_usable?(:custom_attributes, :edit)
   end
 
-  def current_user_customer_form_submit_enabled?(customer)
+  def current_user_customer_form_submit_enabled?(_customer)
     return true if user_signed_in? && current_user.admin?
 
-    customer.new_record? ? current_user_form_create?(:customer) : current_user_form_update?(:customer)
+    current_user_space_action_usable?(:customer, :edit)
   end
 
   # Primary text for a stop row in the planning sidebar (field order from user preferences, max 3 fields).

@@ -18,9 +18,9 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 module Preferences
-  # Maps controller actions (CanCan subjects) to operations toolbar items (zone + tool id).
+  # Maps CanCan actions to Role#operations toolbar segments (planning / route / stop).
   # Used by Ability to deny access when the segment is not usable for the current user.
-  module OperationAbilityMap
+  module PlanningToolbarAbilityMap
     # Each rule: can? action on model is denied when !user.operation_segment_usable?(zone, segment).
     RULES = [
       { model: Planning, actions: %i[optimize optimize_route], zone: :planning, segment: 'optimize' },

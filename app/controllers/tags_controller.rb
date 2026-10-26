@@ -21,7 +21,7 @@ class TagsController < ApplicationController
   before_action :icons_table, except: [:index]
 
   include PreferencesAuthorization
-  before_action -> { deny_unless_form_update!(:tags) }, only: [:destroy_multiple]
+  before_action -> { deny_unless_space_action_usable!(:tags, :edit) }, only: [:destroy_multiple]
 
   load_and_authorize_resource
 

@@ -18,8 +18,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 
-# Canonical ids for display preferences (headers, operations toolbars, forms).
-# User stores headers plus optional user-level operations/forms; Role stores operations/forms as assignable permissions.
+# Canonical ids for display preferences (headers, planning toolbar, spaces).
+# User stores headers; Role stores planning_toolbar + spaces (resource permissions).
 # Implementation is split under preferences/catalog/* for maintainability.
 module Preferences
   module Catalog
@@ -29,10 +29,11 @@ module Preferences
     HEADER_ROUTE_DEFAULT = Headers::HEADER_ROUTE_DEFAULT
     STOP_LIST_MAX_ACTIVE = StopList::MAX_ACTIVE
     DESTINATIONS_LIST_MAX_ACTIVE = DestinationsList::MAX_ACTIVE
-    OPERATION_GROUPS_PLANNING = Operations::OPERATION_GROUPS_PLANNING
-    OPERATION_GROUPS_ROUTE = Operations::OPERATION_GROUPS_ROUTE
-    OPERATION_GROUPS_STOP = Operations::OPERATION_GROUPS_STOP
-    FORM_RESOURCES = Forms::FORM_RESOURCES
+    PLANNING_TOOLBAR_GROUPS_PLANNING = PlanningToolbar::GROUPS_PLANNING
+    PLANNING_TOOLBAR_GROUPS_ROUTE = PlanningToolbar::GROUPS_ROUTE
+    PLANNING_TOOLBAR_GROUPS_STOP = PlanningToolbar::GROUPS_STOP
+    SPACE_KEYS = Spaces::SPACE_KEYS
+    SPACE_ACTIONS = Spaces::SPACE_ACTIONS
     DEFAULT_BOOL = Core::DEFAULT_BOOL
 
     class << self
@@ -80,76 +81,69 @@ module Preferences
         StopList.field_value(stop, field_id)
       end
 
-      def default_operations
-        Operations.default_operations
+      def default_planning_toolbar
+        PlanningToolbar.default
       end
 
-      # Reseller system default role operations (YAML or disabled-tier fallback; see Operations.baseline_role_operations_json).
-      def baseline_role_operations_json
-        Operations.baseline_role_operations_json
+      def baseline_role_planning_toolbar_json
+        PlanningToolbar.baseline_role_json
       end
 
-      # Optional override from config/default_new_reseller_role.yml; otherwise same as normalize_forms({}).
-      def baseline_role_forms_json
-        raw = ConfigSeeds.default_role_forms_raw
-        raw.nil? ? normalize_forms({}) : normalize_forms(raw.is_a?(Hash) ? raw.stringify_keys : {})
+      def baseline_role_spaces_json
+        raw = ConfigSeeds.default_role_spaces_raw
+        raw.nil? ? normalize_spaces({}) : normalize_spaces(raw.is_a?(Hash) ? raw.stringify_keys : {})
       end
 
-      # Admin "New role" drag-and-drop seed (unnormalized shape ok; Role normalizes on save).
-      def new_role_admin_operations_seed
-        raw = ConfigSeeds.new_role_operations_raw
-        (raw.nil? ? Operations.default_operations : normalize_operations(raw.is_a?(Hash) ? raw.stringify_keys : {})).deep_dup
+      def new_role_admin_planning_toolbar_seed
+        raw = ConfigSeeds.new_role_planning_toolbar_raw
+        (raw.nil? ? PlanningToolbar.default : normalize_planning_toolbar(raw.is_a?(Hash) ? raw.stringify_keys : {})).deep_dup
       end
 
-      def new_role_admin_forms_seed
-        raw = ConfigSeeds.new_role_forms_raw
-        (raw.nil? ? default_forms : normalize_forms(raw.is_a?(Hash) ? raw.stringify_keys : {})).deep_dup
+      def new_role_admin_spaces_seed
+        raw = ConfigSeeds.new_role_spaces_raw
+        (raw.nil? ? default_spaces : normalize_spaces(raw.is_a?(Hash) ? raw.stringify_keys : {})).deep_dup
       end
 
-      def no_role_operations_seed_hash
-        raw = ConfigSeeds.no_role_operations_raw
+      def no_role_planning_toolbar_seed_hash
+        raw = ConfigSeeds.no_role_planning_toolbar_raw
         raw.nil? ? {} : (raw.is_a?(Hash) ? raw.stringify_keys : {})
       end
 
-      def no_role_forms_seed_hash
-        raw = ConfigSeeds.no_role_forms_raw
+      def no_role_spaces_seed_hash
+        raw = ConfigSeeds.no_role_spaces_raw
         raw.nil? ? {} : (raw.is_a?(Hash) ? raw.stringify_keys : {})
       end
 
       def normalize_zone(zone_hash, allowed_ids)
-        Operations.normalize_zone(zone_hash, allowed_ids)
+        PlanningToolbar.normalize_zone(zone_hash, allowed_ids)
       end
 
-      def normalize_operations(raw)
-        Operations.normalize_operations(raw)
+      def normalize_planning_toolbar(raw)
+        PlanningToolbar.normalize(raw)
       end
 
       def normalize_stop_zone(zone_hash)
-        Operations.normalize_stop_zone(zone_hash)
+        PlanningToolbar.normalize_stop_zone(zone_hash)
       end
 
-      def merge_operations_zone_from_three_columns_dragndrop(zone_existing, allowed_ids, active_ordered_ids, disabled_ordered_ids, hidden_ordered_ids = nil)
-        Operations.merge_operations_zone_from_three_columns_dragndrop(zone_existing, allowed_ids, active_ordered_ids, disabled_ordered_ids, hidden_ordered_ids)
+      def merge_planning_toolbar_zone_from_three_columns_dragndrop(zone_existing, allowed_ids, active_ordered_ids, disabled_ordered_ids, hidden_ordered_ids = nil)
+        PlanningToolbar.merge_zone_from_three_columns_dragndrop(zone_existing, allowed_ids, active_ordered_ids, disabled_ordered_ids, hidden_ordered_ids)
       end
 
-      def merge_operations_with_params(base_ops, raw_params)
-        Operations.merge_operations_with_params(base_ops, raw_params)
+      def merge_planning_toolbar_with_params(base_ops, raw_params)
+        PlanningToolbar.merge_with_params(base_ops, raw_params)
       end
 
-      def default_forms
-        Forms.default_forms
+      def default_spaces
+        Spaces.default_spaces
       end
 
-      def normalize_forms(raw)
-        Forms.normalize_forms(raw)
+      def normalize_spaces(raw)
+        Spaces.normalize_spaces(raw)
       end
 
-      def forms_param_ids(raw_hash, key, allowed)
-        Forms.forms_param_ids(raw_hash, key, allowed)
-      end
-
-      def merge_forms_with_params(base_forms, raw_hash)
-        Forms.merge_forms_with_params(base_forms, raw_hash)
+      def merge_spaces_with_params(base_spaces, raw_hash)
+        Spaces.merge_spaces_with_params(base_spaces, raw_hash)
       end
 
       def header_block_partial(zone, key)

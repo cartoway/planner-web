@@ -23,33 +23,31 @@ class PreferencesHelperTest < ActionView::TestCase
     u.update!(role_id: nil) if u.reload.role_id.present?
   end
 
-  test 'current_user_planning_form_submit_enabled is false when forms.plannings is visible but not usable' do
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['plannings'] = { 'visible' => true, 'usable' => false }
+  def assign_space!(space_key, visible:, usable:)
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    key = space_key.to_s
+    spaces[key] = Preferences::Catalog::Spaces.default_space_entry(
+      key, visible: visible, usable: usable && visible, actions_all_usable: usable && visible
+    )
     role = Role.create!(
       reseller: @current_user.customer.reseller,
-      name: "helper-planning-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
+      name: "helper-#{key}-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
     )
     @current_user.update!(role_id: role.id)
     @current_user.reload
+  end
+
+  test 'current_user_planning_form_submit_enabled is false when plannings edit is not usable' do
+    assign_space!(:plannings, visible: true, usable: false)
 
     assert_not current_user_planning_form_submit_enabled?(plannings(:planning_one))
     assert_not current_user_planning_form_submit_enabled?(Planning.new(customer: @current_user.customer))
   end
 
-  test 'current_user_destination_form_submit_enabled is false when forms.destination is visible but not usable' do
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['destination'] = { 'visible' => true, 'usable' => false }
-    role = Role.create!(
-      reseller: @current_user.customer.reseller,
-      name: "helper-destination-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
-    )
-    @current_user.update!(role_id: role.id)
-    @current_user.reload
+  test 'current_user_destination_form_submit_enabled is false when destination edit is not usable' do
+    assign_space!(:destination, visible: true, usable: false)
 
     assert_not current_user_destination_form_submit_enabled?(destinations(:destination_one))
     assert_not current_user_destination_form_submit_enabled?(
@@ -57,17 +55,8 @@ class PreferencesHelperTest < ActionView::TestCase
     )
   end
 
-  test 'current_user_customer_form_submit_enabled is false when forms.customer is visible but not usable' do
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['customer'] = { 'visible' => true, 'usable' => false }
-    role = Role.create!(
-      reseller: @current_user.customer.reseller,
-      name: "helper-customer-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
-    )
-    @current_user.update!(role_id: role.id)
-    @current_user.reload
+  test 'current_user_customer_form_submit_enabled is false when customer edit is not usable' do
+    assign_space!(:customer, visible: true, usable: false)
 
     assert_not current_user_customer_form_submit_enabled?(@current_user.customer)
   end
@@ -77,5 +66,13 @@ class PreferencesHelperTest < ActionView::TestCase
     @current_user.reload
 
     assert current_user_customer_form_submit_enabled?(customers(:customer_one))
+  end
+
+  test 'space helpers expose visible vs usable for sidebar show/disable' do
+    assign_space!(:operations, visible: true, usable: false)
+
+    assert current_user_space_visible?(:operations)
+    assert_not current_user_space_usable?(:operations)
+    assert current_user_space_action_disabled?(:operations, :export)
   end
 end

@@ -277,27 +277,27 @@
   color: #856404;
 }
 
-.active-inactive-zones.operations-toolbar-dnd.operations-three-zones {
+.active-inactive-zones.three-columns {
   display: block;
   max-height: none;
 
-  .operations-three-columns {
+  .three-columns {
     display: flex;
     flex-wrap: wrap;
     gap: 16px;
     align-items: stretch;
   }
 
-  .operations-tier-active,
-  .operations-tier-disabled,
-  .operations-tier-hidden {
+  .tier-active,
+  .tier-disabled,
+  .tier-hidden {
     flex: 1 1 180px;
     min-width: 160px;
     display: flex;
     flex-direction: column;
   }
 
-  .operations-tier-disabled .draggable-item:not(.inactive) {
+  .tier-disabled .draggable-item:not(.inactive) {
     opacity: 0.78;
     border-style: dashed;
   }

@@ -63,17 +63,18 @@ module PlanningToolbarRouteStopFlags
     @manage_planning[:manage_route_departure] = route_op_visible.call('departure')
     @manage_planning[:disable_route_departure] = route_op_disabled.call('departure')
 
-    store_form_visible = !current_user.respond_to?(:form_visible?) || current_user.form_visible?(:stores)
-    store_form_usable = !current_user.respond_to?(:form_update?) || current_user.form_update?(:stores)
-    @manage_planning[:manage_store] = store_form_visible
-    @manage_planning[:disable_store_form] = store_form_visible && !store_form_usable
+    store_visible = !current_user.respond_to?(:space_visible?) || current_user.space_visible?(:stores)
+    store_editable = !current_user.respond_to?(:space_action_usable?) || current_user.space_action_usable?(:stores, :edit)
+    @manage_planning[:manage_store] = store_visible
+    @manage_planning[:disable_store_form] = store_visible && !store_editable
 
     route_vehicle_usage_operation_visible = route_op_visible.call('vehicle_usage')
-    form_ok = !current_user.respond_to?(:form_visible?) || current_user.form_visible?(:vehicle_usages)
+    vehicle_usages_visible = !current_user.respond_to?(:space_visible?) || current_user.space_visible?(:vehicle_usages)
     @manage_planning[:manage_route_vehicle_usage] =
-      route_vehicle_usage_operation_visible && @manage_planning[:manage_vehicle] && form_ok
-    form_update_ok = !current_user.respond_to?(:form_update?) || current_user.form_update?(:vehicle_usages)
-    @manage_planning[:disable_route_vehicle_usage] = route_op_disabled.call('vehicle_usage') || !form_update_ok
+      route_vehicle_usage_operation_visible && @manage_planning[:manage_vehicle] && vehicle_usages_visible
+    vehicle_usages_editable =
+      !current_user.respond_to?(:space_action_usable?) || current_user.space_action_usable?(:vehicle_usages, :edit)
+    @manage_planning[:disable_route_vehicle_usage] = route_op_disabled.call('vehicle_usage') || !vehicle_usages_editable
   end
 
   def apply_stop_toolbar_operation_flags!

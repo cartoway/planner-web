@@ -14,7 +14,7 @@
   <%= render 'form' %>
   <%
     controller.js(
-      tag_entity_create_allowed: current_user_form_create?(:tags)
+      tag_entity_create_allowed: current_user_space_action_usable?(:tags, :edit)
     )
   %>
 <% end %>

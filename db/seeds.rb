@@ -46,8 +46,8 @@ Role.create!(
   reseller: reseller,
   name: 'Démo (permissions restreintes)',
   ref: 'seed_restricted',
-  operations: Preferences::Catalog.normalize_operations(Preferences::Catalog.no_role_operations_seed_hash),
-  forms: Preferences::Catalog.normalize_forms(Preferences::Catalog.no_role_forms_seed_hash)
+  planning_toolbar: Preferences::Catalog.normalize_planning_toolbar(Preferences::Catalog.no_role_planning_toolbar_seed_hash),
+  spaces: Preferences::Catalog.normalize_spaces(Preferences::Catalog.no_role_spaces_seed_hash)
 )
 
 customer = Customer.create!(reseller: reseller, name: "Toto", default_country: "France", router: car, profile: profile_all, test: true, max_vehicles: 2)

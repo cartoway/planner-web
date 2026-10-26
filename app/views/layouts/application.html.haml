@@ -62,7 +62,7 @@
                       .hidden-menu
                         = t 'admin.profiles.menu.profiles'
             - if user_signed_in? && current_user.customer
-              - if !@unsubscribed && can?(:manage, Operation)
+              - if !@unsubscribed && current_user_space_visible?(:operations)
                 %li#menu-operation.menu-list-item
                   %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#operationsCollpase'}
                     .d-flex.align-items-center.justify-content-center
@@ -95,7 +95,7 @@
                         = t 'plannings.menu.plannings'
                   %ul#planningsCollpase.accordion-menu.menu-content.collapse.hidden-menu
                     - can_new_planning = !current_user.customer.too_many_plannings?
-                    - if can_new_planning && current_user_form_create?(:plannings)
+                    - if can_new_planning && current_user_space_action_usable?(:plannings, :edit)
                       %li
                         = link_to new_planning_path do
                           %i.fa.fa-plus.fa-fw
@@ -184,8 +184,8 @@
                     .hidden-menu.menu_label
                       = t 'destinations.menu.destinations'
                 %ul#destinationsCollpase.accordion-menu.menu-content.collapse.hidden-menu
-                  %li{ class: ("disabled" if current_user.customer.too_many_destinations? || !current_user_form_create?(:destination)) }
-                    = link_to new_destination_path, disabled: current_user.customer.too_many_destinations? || !current_user_form_create?(:destination) do
+                  %li{ class: ("disabled" if current_user.customer.too_many_destinations? || !current_user_space_action_usable?(:destination, :edit)) }
+                    = link_to new_destination_path, disabled: current_user.customer.too_many_destinations? || !current_user_space_action_usable?(:destination, :edit) do
                       %i.fa.fa-plus.fa-fw
                       = t 'all.verb.new'
                   %li
@@ -193,14 +193,14 @@
                       %i.fa.fa-map-marker.fa-fw
                       = t 'all.verb.list'
                   %li.divider
-                  - if current_user_form_visible?(:tags)
+                  - if current_user_space_visible?(:tags)
                     %li
                       = link_to tags_path do
                         %i.fa.fa-tags.fa-fw
                         = t 'destinations.menu.tags'
                     %li.divider
-                  %li{ class: ("disabled" if !current_user_form_update?(:destination)) }
-                    = link_to destination_import_path, disabled: !current_user_form_update?(:destination) do
+                  %li{ class: ("disabled" if !current_user_space_action_usable?(:destination, :edit)) }
+                    = link_to destination_import_path, disabled: !current_user_space_action_usable?(:destination, :edit) do
                       %i.fa.fa-upload.fa-fw
                       = t 'destinations.menu.import'
                   %li
@@ -208,8 +208,8 @@
                       %i.fa.fa-download.fa-fw
                       = t 'destinations.menu.export_spreadsheet_standard'
                   %li.divider
-                  %li{ class: ("disabled" if !current_user_form_update?(:destination)) }
-                    = link_to destinations_path, method: :delete, disabled: !current_user_form_update?(:destination), data: { confirm: t('destinations.menu.clear_confirm') } do
+                  %li{ class: ("disabled" if !current_user_space_action_usable?(:destination, :edit)) }
+                    = link_to destinations_path, method: :delete, disabled: !current_user_space_action_usable?(:destination, :edit), data: { confirm: t('destinations.menu.clear_confirm') } do
                       %i.fa.fa-trash.fa-fw
                       = t 'destinations.menu.clear'
               %li.pannel.panel-default.menu-list-item
@@ -219,28 +219,28 @@
                     .hidden-menu.menu_label
                       = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
                 %ul#vehiclesCollpase.accordion-menu.menu-content.collapse.hidden-menu
-                  - if current_user_form_visible?(:vehicle_usages)
+                  - if current_user_space_visible?(:vehicle_usages)
                     %li
                       = link_to vehicle_usage_sets_path do
                         %i.fa.fa-truck-field.fa-fw
                         = t 'all.verb.list'
-                    %li{ class: ("disabled" if !current_user_form_update?(:vehicle_usages)) }
-                      = link_to import_vehicle_usage_sets_path, disabled: !current_user_form_update?(:vehicle_usages) do
+                    %li{ class: ("disabled" if !current_user_space_action_usable?(:vehicle_usages, :edit)) }
+                      = link_to import_vehicle_usage_sets_path, disabled: !current_user_space_action_usable?(:vehicle_usages, :edit) do
                         %i.fa.fa-upload.fa-fw
                         = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
                     %li.divider
-                  - if current_user_form_visible?(:deliverable_units)
+                  - if current_user_space_visible?(:deliverable_units)
                     %li
                       = link_to deliverable_units_path do
                         %i.fa.fa-dumpster.fa-fw
                         = t 'vehicle_usage_sets.menu.deliverable_units'
-                  - if current_user_form_visible?(:stores)
+                  - if current_user_space_visible?(:stores)
                     %li
                       = link_to stores_path do
                         %i.fa.fa-store.fa-fw
                         = t 'destinations.menu.stores'
                     %li
-                      = link_to store_import_path, disabled: !current_user_form_create?(:stores) do
+                      = link_to store_import_path, disabled: !current_user_space_action_usable?(:stores, :edit) do
                         %i.fa.fa-upload.fa-fw
                         = t 'destinations.menu.import_stores'
         #menu-settings-dock
@@ -300,7 +300,7 @@
                       = link_to edit_customer_path(current_user.customer) do
                         %i.fa.fa-wrench.fa-fw
                         = t 'customers.menu.customer'
-                    - if current_user_form_visible?(:custom_attributes)
+                    - if current_user_space_visible?(:custom_attributes)
                       %li
                         = link_to custom_attributes_path do
                           %i.fa.fa-file-lines.fa-fw

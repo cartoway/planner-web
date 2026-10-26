@@ -18,7 +18,7 @@
 class VehicleUsagesController < ApplicationController
   before_action :authenticate_user!
   before_action :set_vehicle_usage, only: [:edit, :update, :toggle]
-  before_action -> { deny_unless_form_update!(:vehicle_usages) }, only: [:update, :toggle]
+  before_action -> { deny_unless_space_action_usable!(:vehicle_usages, :edit) }, only: [:update, :toggle]
 
   load_and_authorize_resource
 
@@ -89,8 +89,8 @@ class VehicleUsagesController < ApplicationController
       locals: {
         vehicle_usage: @vehicle_usage,
         vehicle_usage_set: @vehicle_usage.vehicle_usage_set,
-        can_update_vehicle_usage: helpers.current_user_form_update?(:vehicle_usages),
-        can_view_vehicle_usage: helpers.current_user_form_visible?(:vehicle_usages)
+        can_update_vehicle_usage: helpers.current_user_space_action_usable?(:vehicle_usages, :edit),
+        can_view_vehicle_usage: helpers.current_user_space_visible?(:vehicle_usages)
       }
     )
   end

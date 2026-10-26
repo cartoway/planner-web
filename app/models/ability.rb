@@ -20,8 +20,8 @@ class Ability
   include CanCan::Ability
   def initialize(user = nil)
     # Default CanCan aliases map :edit -> :update, so `cannot :update` blocks GET edit.
-    # Form permissions need GET edit (planning map, etc.) when forms.* is visible but not usable,
-    # while PATCH update stays denied via FormAbilityMap. Map :edit -> :read instead.
+    # Space permissions need GET edit (planning map, etc.) when a space is visible but not usable,
+    # while PATCH update stays denied via SpaceAbilityMap. Map :edit -> :read instead.
     clear_aliased_actions
     alias_action :index, :show, to: :read
     alias_action :new, to: :create
@@ -58,12 +58,11 @@ class Ability
         if !user.customer.end_subscription || user.customer.end_subscription > Time.now
           can :manage, Planning, customer_id: user.customer.id
           can [:new, :create], Planning
-          if user.customer.device.operations_enabled?
-            can :manage, Operation, customer_id: user.customer.id
-            can [:new, :create], Operation
-            can :manage, OperationRoute, operation: { customer_id: user.customer.id }
-            can :manage, OperationStop, operation_route: { operation: { customer_id: user.customer.id } }
-          end
+          # Operations access is gated by Role.spaces (SpaceAbilityMap), not by device/Cartoway Deliver.
+          can :manage, Operation, customer_id: user.customer.id
+          can [:new, :create], Operation
+          can :manage, OperationRoute, operation: { customer_id: user.customer.id }
+          can :manage, OperationStop, operation_route: { operation: { customer_id: user.customer.id } }
         end
         can :manage, Route, planning: {customer_id: user.customer.id}
         can :show, Vehicle, customer_id: user.customer.id
@@ -78,8 +77,8 @@ class Ability
           # can [:new, :create], DeliverableUnit
         end
         can :manage, CustomAttribute, customer_id: user.customer.id
-        Preferences::OperationAbilityMap.apply_cannot_rules!(self, user)
-        Preferences::FormAbilityMap.apply_cannot_rules!(self, user)
+        Preferences::PlanningToolbarAbilityMap.apply_cannot_rules!(self, user)
+        Preferences::SpaceAbilityMap.apply_cannot_rules!(self, user)
       end
     else
       can [:password, :set_password], User

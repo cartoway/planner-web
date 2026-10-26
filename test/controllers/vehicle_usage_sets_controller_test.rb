@@ -26,18 +26,22 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     assert_response :not_found
   end
 
-  test 'vehicle_usage_sets are forbidden when forms vehicle_usages is hidden' do
+  test 'vehicle_usage_sets are forbidden when vehicle_usages space is hidden' do
     u = users(:user_one)
-    forms = Preferences::Catalog.default_forms.merge('vehicle_usages' => { 'visible' => false, 'usable' => false })
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['vehicle_usages'] = Preferences::Catalog::Spaces.default_space_entry(
+      'vehicle_usages', visible: false, usable: false, actions_all_usable: false
+    )
+    spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: @reseller,
-      name: "no-vus-forms-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
+      name: "no-vus-spaces-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: spaces
     )
     u.update!(role_id: role.id)
 
-    assert_not u.reload.form_visible?(:vehicle_usages)
+    assert_not u.reload.space_visible?(:vehicle_usages)
     ability = Ability.new(u)
     assert ability.cannot? :manage, @vehicle_usage_set
 
@@ -452,16 +456,20 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
   end
 
   test 'import disables file field when vehicle_usages form is read-only' do
-    return unless Role.column_names.include?('forms')
+    return unless Role.column_names.include?('spaces')
 
     u = users(:user_one)
     role = Role.create!(
       reseller: @reseller,
       name: "vus-import-ro-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(
-        'vehicle_usages' => { 'visible' => true, 'usable' => false }
-      )
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: begin
+        s = Preferences::Catalog.default_spaces.deep_dup
+        s['vehicle_usages'] = Preferences::Catalog::Spaces.default_space_entry(
+          'vehicle_usages', visible: true, usable: false, actions_all_usable: false
+        )
+        Preferences::Catalog.normalize_spaces(s)
+      end
     )
     u.update!(role_id: role.id)
     sign_in u
@@ -476,16 +484,20 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
   end
 
   test 'upload_csv returns forbidden when vehicle_usages form is read-only' do
-    return unless Role.column_names.include?('forms')
+    return unless Role.column_names.include?('spaces')
 
     u = users(:user_one)
     role = Role.create!(
       reseller: @reseller,
       name: "vus-upload-ro-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(
-        'vehicle_usages' => { 'visible' => true, 'usable' => false }
-      )
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: begin
+        s = Preferences::Catalog.default_spaces.deep_dup
+        s['vehicle_usages'] = Preferences::Catalog::Spaces.default_space_entry(
+          'vehicle_usages', visible: true, usable: false, actions_all_usable: false
+        )
+        Preferences::Catalog.normalize_spaces(s)
+      end
     )
     u.update!(role_id: role.id)
     sign_in u

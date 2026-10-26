@@ -13,11 +13,15 @@ class AbilityVehicleUsageApiTest < ActiveSupport::TestCase
     u.update!(role_id: nil) if u.reload.role_id.present?
   end
 
-  test 'customer user without role cannot mutate VehicleUsage when no_role restricts forms.vehicle_usages' do
+  test 'customer user without role cannot mutate VehicleUsage when no_role restricts spaces.vehicle_usages' do
     prev = Rails.application.config.default_permissions_config
     cfg = prev.deep_dup.deep_stringify_keys
     no_role = (cfg['no_role'] || {}).deep_dup
-    no_role['forms'] = (no_role['forms'] || {}).merge('vehicle_usages' => { 'visible' => true, 'usable' => false })
+    spaces = (no_role['spaces'] || {}).deep_dup
+    spaces['vehicle_usages'] = Preferences::Catalog::Spaces.default_space_entry(
+      'vehicle_usages', visible: true, usable: false, actions_all_usable: false
+    )
+    no_role['spaces'] = spaces
     cfg['no_role'] = no_role
     Rails.application.config.default_permissions_config = cfg
 
@@ -35,8 +39,8 @@ class AbilityVehicleUsageApiTest < ActiveSupport::TestCase
     role = Role.create!(
       reseller: @user.customer.reseller,
       name: "api-vu-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.default_forms
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.default_spaces
     )
     @user.update!(role_id: role.id)
 

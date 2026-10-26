@@ -2,8 +2,8 @@
 - content_for :title, t('plannings.index.title')
 - settings = (current_user.export_settings || {}).stringify_keys
 - export_stops = settings.key?('stops') ? Array(settings['stops']) : %w[out-of-route store rest inactive]
-- can_destroy = current_user_form_destroy_enabled?(:plannings)
-- cannot_new = current_user.customer.too_many_plannings? || !current_user_form_create?(:plannings)
+- can_destroy = current_user_space_action_usable?(:plannings, :edit)
+- cannot_new = current_user.customer.too_many_plannings? || !current_user_space_action_usable?(:plannings, :edit)
 - callback_visible = toolbar_operation_visible?(:planning, 'external_callback')
 - callback_usable = toolbar_operation_usable?(:planning, 'external_callback')
 - dashboard_visible = toolbar_operation_visible?(:planning, 'planning_dashboard')

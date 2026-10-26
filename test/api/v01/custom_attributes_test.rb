@@ -133,13 +133,16 @@ class V01::CustomAttributesTest < ActiveSupport::TestCase
 
   test 'GET custom_attributes returns 403 when form is hidden' do
     u = users(:user_one)
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['custom_attributes'] = { 'visible' => false, 'usable' => false }
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['custom_attributes'] = Preferences::Catalog::Spaces.default_space_entry(
+      'custom_attributes', visible: false, usable: false, actions_all_usable: false
+    )
+    spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),
       name: "api-hidden-custom-attributes-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: spaces
     )
     u.update!(role_id: role.id)
 
@@ -152,13 +155,16 @@ class V01::CustomAttributesTest < ActiveSupport::TestCase
 
   test 'POST custom_attribute returns 403 when form is read-only' do
     u = users(:user_one)
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['custom_attributes'] = { 'visible' => true, 'usable' => false }
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['custom_attributes'] = Preferences::Catalog::Spaces.default_space_entry(
+      'custom_attributes', visible: true, usable: false, actions_all_usable: false
+    )
+    spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),
       name: "api-ro-custom-attributes-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: spaces
     )
     u.update!(role_id: role.id)
 

@@ -300,17 +300,17 @@ class V01::RoutesTest < V01::RoutesBaseTest
   end
 
   test 'PUT route color returns 403 when operations.route.paint is not usable' do
-    return unless Role.column_names.include?('operations')
+    return unless Role.column_names.include?('planning_toolbar')
 
     user = users(:user_one)
     previous_role_id = user.role_id
-    ops = Preferences::Catalog.default_operations.deep_dup
+    ops = Preferences::Catalog.default_planning_toolbar.deep_dup
     ops['route']['segment_controls']['paint'] = { 'visible' => true, 'usable' => false }
     role = Role.create!(
       reseller: user.customer.reseller,
       name: "api-no-paint-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.normalize_operations(ops),
-      forms: Preferences::Catalog.default_forms
+      planning_toolbar: Preferences::Catalog.normalize_planning_toolbar(ops),
+      spaces: Preferences::Catalog.default_spaces
     )
     user.update!(role_id: role.id)
 
@@ -325,17 +325,17 @@ class V01::RoutesTest < V01::RoutesBaseTest
   end
 
   test 'PUT route departure returns 403 when operations.route.departure is not usable' do
-    return unless Role.column_names.include?('operations')
+    return unless Role.column_names.include?('planning_toolbar')
 
     user = users(:user_one)
     previous_role_id = user.role_id
-    ops = Preferences::Catalog.default_operations.deep_dup
+    ops = Preferences::Catalog.default_planning_toolbar.deep_dup
     ops['route']['segment_controls']['departure'] = { 'visible' => true, 'usable' => false }
     role = Role.create!(
       reseller: user.customer.reseller,
       name: "api-no-departure-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.normalize_operations(ops),
-      forms: Preferences::Catalog.default_forms
+      planning_toolbar: Preferences::Catalog.normalize_planning_toolbar(ops),
+      spaces: Preferences::Catalog.default_spaces
     )
     user.update!(role_id: role.id)
 

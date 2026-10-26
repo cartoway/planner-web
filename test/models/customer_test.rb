@@ -476,7 +476,7 @@ class CustomerTest < ActiveSupport::TestCase
   end
 
   test 'duplicate keeps user role when role still exists' do
-    return unless Role.column_names.include?('operations')
+    return unless Role.column_names.include?('planning_toolbar')
 
     duplicate = nil
     role = nil
@@ -486,8 +486,8 @@ class CustomerTest < ActiveSupport::TestCase
       reseller: reseller,
       name: "Duplication role #{SecureRandom.hex(4)}",
       ref: "dup_role_#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.baseline_role_operations_json,
-      forms: Preferences::Catalog.baseline_role_forms_json
+      planning_toolbar: Preferences::Catalog.baseline_role_planning_toolbar_json,
+      spaces: Preferences::Catalog.baseline_role_spaces_json
     )
     user = customer.users.first
     user.update_column(:role_id, role.id)
@@ -502,7 +502,7 @@ class CustomerTest < ActiveSupport::TestCase
   end
 
   test 'duplicate falls back to reseller default role when user role is missing' do
-    return unless Role.column_names.include?('operations')
+    return unless Role.column_names.include?('planning_toolbar')
 
     duplicate = nil
     foreign_role = nil
@@ -516,8 +516,8 @@ class CustomerTest < ActiveSupport::TestCase
       reseller: resellers(:reseller_two),
       name: "Foreign role #{SecureRandom.hex(4)}",
       ref: "dup_foreign_#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.baseline_role_operations_json,
-      forms: Preferences::Catalog.baseline_role_forms_json
+      planning_toolbar: Preferences::Catalog.baseline_role_planning_toolbar_json,
+      spaces: Preferences::Catalog.baseline_role_spaces_json
     )
     user = customer.users.first
     user.update_column(:role_id, foreign_role.id)
