@@ -1896,13 +1896,16 @@ class Route < ApplicationRecord
     @stops_updated = true
   end
 
-  # When route is created, rest is already set in init_stops
+  # When route is created, rest is already set in init_stops (except regulatory).
   def update_vehicle_usage
     if vehicle_usage_id_changed?
-      if vehicle_usage.default_rest_duration.nil?
-        stops.select{ |stop| stop.is_a?(StopRest) }.each{ |stop|
-          remove_stop(stop)
-        }
+      previous_usage = vehicle_usage_id_was && VehicleUsage.find_by(id: vehicle_usage_id_was)
+      was_regulatory = previous_usage&.regulatory_rest?
+
+      if !vehicle_usage.rest?
+        remove_rests
+      elsif vehicle_usage.regulatory_rest?
+        remove_rests unless was_regulatory
       elsif stops.none?{ |stop| stop.is_a?(StopRest) }
         add_rest
       end

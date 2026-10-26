@@ -182,7 +182,8 @@ class VehicleUsageSet < ApplicationRecord
     return if import_skip
 
     if rest_configuration_changed?
-      vehicle_usages.each(&:update_rest)
+      was_regulatory = rest_duration_was.to_i.positive? && rest_lapse_was.to_i.positive?
+      vehicle_usages.each { |vehicle_usage| vehicle_usage.update_rest(was_regulatory: was_regulatory) }
     end
 
     if rest_type_changed?

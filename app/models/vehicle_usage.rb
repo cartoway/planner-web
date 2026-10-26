@@ -314,10 +314,16 @@ class VehicleUsage < ApplicationRecord
     default_rest_duration.present? && default_rest_duration > 0
   end
 
-  def update_rest
-    if !rest? || regulatory_rest?
-      # No rest, or regulatory rests are created from the optimizer solution
+  # Regulatory rests are not auto-created (optimizer / manual). On config change:
+  # - entering regulatory from none/classic → drop classic rests
+  # - already regulatory → keep existing rests
+  def update_rest(was_regulatory: nil)
+    was_regulatory = previous_regulatory_rest? if was_regulatory.nil?
+
+    if !rest?
       routes.each(&:remove_rests)
+    elsif regulatory_rest?
+      routes.each(&:remove_rests) unless was_regulatory
     else
       routes.each(&:add_or_update_rest)
     end
