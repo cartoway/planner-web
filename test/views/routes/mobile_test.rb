@@ -11,8 +11,7 @@ class RouteMobileTest < ActiveSupport::TestCase
   setup do
     @route = routes(:route_one_one)
     @route.planning.update!(date: 1.week.from_now.to_date)
-    Operation.where(customer_id: @route.planning.customer_id).delete_all
-    @operation = Operations::PublishFromPlanning.call(planning: @route.planning)
+    @operation = publish_operation!(planning: @route.planning)
     @operation_route = @operation.operation_routes.find_by!(route_id: @route.id)
   end
 

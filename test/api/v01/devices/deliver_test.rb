@@ -11,62 +11,54 @@ class V01::Devices::DeliverTest < ActiveSupport::TestCase
 
   setup do
     @customer = customers(:customer_one)
-    @customer.update(devices: { deliver: { enable: true } }, enable_vehicle_position: true, enable_proofs: true)
+    @customer.update!(
+      devices: { deliver: { enable: true } },
+      enable_vehicle_position: true,
+      enable_proofs: true,
+      enable_email_driver: true,
+      enable_sms_driver: false
+    )
     set_route
+    Operation.where(customer_id: @customer.id).delete_all
+    @planning = plannings(:planning_one)
+    @planning_route = routes(:route_one_one)
+    @operation = publish_operation!(planning: @planning, route_ids: [@planning_route.id])
+    @operation_route = @operation.operation_routes.find_by!(route_id: @planning_route.id)
+    @operation_route.update!(vehicle_snapshot: (@operation_route.vehicle_snapshot || {}).merge('contact_email' => 'driver@example.com'))
   end
 
-  def planning_api(part = nil, param = {})
-    part = part ? '/' + part.to_s : ''
-    "/api/0.1/plannings#{part}.json?api_key=testkey1&" + param.collect { |k, v| "#{k}=" + URI::DEFAULT_PARSER.escape(v.to_s) }.join('&')
+  teardown do
+    Operation.where(customer_id: @customer.id).delete_all
   end
 
-  test 'should send route' do
-    route = routes(:route_one_one)
-    post api('devices/deliver/send', { customer_id: @customer.id, route_id: route.id })
+  test 'send and send_multiple transmit operation routes' do
+    post api('devices/deliver/send', { customer_id: @customer.id, operation_route_id: @operation_route.id, channel: 'email' })
     assert_equal 201, last_response.status, last_response.body
-    route.reload
-    assert route.reload.last_sent_at
-    assert_equal({ 'id' => route.id, 'last_sent_to' => 'Deliver', 'last_sent_at' => route.last_sent_at.iso8601(3), 'last_sent_at_formatted' => I18n.l(route.last_sent_at) }, JSON.parse(last_response.body))
-  end
+    rows = JSON.parse(last_response.body)
+    assert_equal @operation_route.id, rows.first['id']
+    assert_equal 'email', @operation_route.reload.last_sent_to
+    assert @operation_route.last_sent_at
 
-  test 'should send multiple routes' do
-    planning = plannings(:planning_one)
-    post api('devices/deliver/send_multiple', { customer_id: @customer.id, planning_id: planning.id })
+    @operation_route.update_columns(last_sent_at: nil, last_sent_to: nil)
+
+    post api('devices/deliver/send_multiple', { customer_id: @customer.id, operation_id: @operation.id, channel: 'email' })
     assert_equal 201, last_response.status, last_response.body
-    routes = planning.routes.select(&:vehicle_usage_id)
-    routes.each(&:reload)
-    assert_equal(
-      routes.map{ |route| {
-        'id' => route.id, 'last_sent_to' => 'Deliver', 'last_sent_at' => route.last_sent_at.iso8601(3), 'last_sent_at_formatted' => I18n.l(route.last_sent_at)
-      }},
-      JSON.parse(last_response.body))
+    rows = JSON.parse(last_response.body)
+    assert rows.any? { |row| row['id'] == @operation_route.id && row['last_sent_to'] == 'email' }
+    assert_equal 'email', @operation_route.reload.last_sent_to
   end
 
-  test 'should clear' do
-    route = routes(:route_one_one)
-    delete api('devices/deliver/clear', { customer_id: @customer.id, route_id: route.id })
-    assert_equal 200, last_response.status
-    route.reload
-    assert !route.last_sent_at
-    assert_equal({ 'id' => route.id, 'last_sent_to' => nil, 'last_sent_at' => nil, 'last_sent_at_formatted' => nil }, JSON.parse(last_response.body))
-  end
+  test 'clear and clear_multiple reset last_sent on operation routes' do
+    @operation_route.update_columns(last_sent_at: Time.current, last_sent_to: 'email')
 
-  test 'should clear multiple' do
-    planning = plannings(:planning_one)
-    route = routes(:route_one_one)
-    route_three = routes(:route_three_one)
-    route.update(last_sent_at: Time.now, last_sent_to: 'Deliver')
+    delete api('devices/deliver/clear', { customer_id: @customer.id, operation_route_id: @operation_route.id })
+    assert_equal 200, last_response.status, last_response.body
+    assert_nil @operation_route.reload.last_sent_at
+    assert_nil @operation_route.last_sent_to
 
-    delete api('devices/deliver/clear_multiple', customer_id: @customer.id), planning_id: planning.id
-    assert_equal 200, last_response.status
-
-    assert_equal([route_three.id, nil, nil, nil, route.id, nil, nil, nil],
-      JSON.parse(last_response.body).flat_map{ |rt|
-        [rt['id'], rt['last_sent_to'], rt['last_sent_at'], rt['last_sent_at_formatted']]
-      })
-
-    routes = planning.routes.select(&:vehicle_usage_id)
-    routes.each(&:reload)
-    routes.each { |rt| assert !rt.last_sent_at }
+    @operation_route.update_columns(last_sent_at: Time.current, last_sent_to: 'email')
+    delete api('devices/deliver/clear_multiple', customer_id: @customer.id), operation_id: @operation.id
+    assert_equal 200, last_response.status, last_response.body
+    assert_nil @operation_route.reload.last_sent_at
   end
 end

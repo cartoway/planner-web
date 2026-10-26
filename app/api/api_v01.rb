@@ -87,10 +87,10 @@ There is no create-stop or create-route endpoint. Creating a planning automatica
 
 ## Conventions
 ### Authentication
-Send the user `api_key` as a query parameter **or** as header `Api-Key`:
+Preferred: header `Api-Key` (query `api_key` also works):
+`curl -H "Api-Key: {your_personal_api_key}" https://planner.cartoway.com/api/0.1/destinations.json`
 `https://planner.cartoway.com/api/0.1/destinations.json?api_key={your_personal_api_key}`
-`curl -H "Api-Key: {your_personal_api_key}" ...`
-All data is scoped to the user\'s `Customer`. HTTP **402** means the subscription has expired. HTTP **403** means the action is forbidden.
+All data is scoped to the user\'s `Customer`. HTTP **402** means the subscription has expired. HTTP **403** means the action is forbidden (admin-only routes such as `GET /customers`, `GET /profiles`, or missing permission).
 ### Identifiers
 Path and filter ids accept a numeric id (`42`) or an external reference (`ref:CLIENT-12`). References must not contain commas. `ref` is the upsert key on destination/visit/store import.
 ### Formats

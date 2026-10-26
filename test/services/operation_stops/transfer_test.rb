@@ -5,7 +5,7 @@ require 'test_helper'
 class OperationStopsTransferTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @source_route = @operation.operation_routes.find_by!(route_id: routes(:route_one_one).id)
     @target_route = @operation.operation_routes.planned.where.not(id: @source_route.id).detect { |route| route.route_id.present? }
     skip 'Need a second vehicle route in the operation' unless @target_route

@@ -77,8 +77,16 @@ class V100::Api < Grape::API
     ActiveRecord::Base.connection.transaction_open? && ActiveRecord::Base.connection.rollback_transaction
 
     @error = e
-    Rails.logger.error "\n\n#{e.class} (#{e.message}):\n    " + e.backtrace.join("\n    ") + "\n\n"
-    puts Rails.backtrace_cleaner.clean(e.backtrace).join("\n    ") if ENV['RAILS_ENV'] == 'development'
+    expected = e.is_a?(ActiveRecord::RecordNotFound) || e.is_a?(ArgumentError) ||
+               e.is_a?(ActiveRecord::RecordInvalid) || e.is_a?(RangeError) || e.is_a?(Grape::Exceptions::ValidationErrors) ||
+               e.is_a?(Exceptions::StopIndexError) || e.is_a?(Exceptions::OverMaxLimitError) ||
+               e.is_a?(Grape::Exceptions::MethodNotAllowed) || e.is_a?(Exceptions::JobInProgressError)
+    if expected
+      Rails.logger.warn "#{e.class} (#{e.message})"
+    else
+      Rails.logger.error "\n\n#{e.class} (#{e.message}):\n    " + e.backtrace.join("\n    ") + "\n\n"
+      puts Rails.backtrace_cleaner.clean(e.backtrace).join("\n    ") if ENV['RAILS_ENV'] == 'development'
+    end
 
     response = {message: e.message}
     if e.is_a?(ActiveRecord::RecordNotFound) || e.is_a?(ArgumentError)

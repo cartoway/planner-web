@@ -9,6 +9,9 @@ class V01::CustomerTest < ActiveSupport::TestCase
 
   setup do
     @customer = customers(:customer_one)
+    # Leftover open operations from other tests break PublishFromPlanning and can
+    # make customer.duplicate fail inside transaction_without_selects.
+    Operation.where(customer_id: @customer.id).delete_all
   end
 
   def api(part = nil, param = {}, format = 'json')
@@ -278,6 +281,7 @@ class V01::CustomerTest < ActiveSupport::TestCase
     assert_difference 'Customer.count', +1 do
       assert_no_difference 'User.count' do
         patch api_admin(@customer.id.to_s + '/duplicate', 'json', {'exclude_users' => true})
+        assert last_response.ok?, last_response.body
       end
     end
   end
@@ -286,9 +290,10 @@ class V01::CustomerTest < ActiveSupport::TestCase
     assert_difference('Customer.count', +1) do
       @customer.vehicles.each{ |vehicle|
         vehicle.tags |= [@customer.tags.first]
-        vehicle.save
+        vehicle.save!
       }
       patch api_admin(@customer.id.to_s + '/duplicate')
+      assert last_response.ok?, last_response.body
       Customer.last.vehicles.each.with_index{ |vehicle, index|
         assert vehicle.tags.any?, @customer.vehicles[index].tags.map(&:label)
         assert_equal vehicle.tags.map(&:label), @customer.vehicles[index].tags.map(&:label)

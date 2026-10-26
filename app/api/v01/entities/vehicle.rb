@@ -23,7 +23,7 @@ class V01::Entities::VehicleWithoutVehicleUsage < Grape::Entity
   expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 2 })
   expose(:ref, documentation: { type: String, desc: 'External unique reference. Use ref:VALUE in path/ids filters.', example: 'VEH-1' })
   expose(:name, documentation: { type: String, desc: 'Display name.', example: 'Truck 1' })
-  expose(:contact_email, documentation: { type: String, desc: 'Driver device e-mail(s). Several addresses may be separated by spaces, commas or semicolons.' })
+  expose(:contact_email, documentation: { type: String, desc: 'Driver email(s) for ICS/Deliver. Several addresses separated by spaces, commas or semicolons. Invalid format → HTTP 400. Empty/null clears.' })
   expose(:phone_number, documentation: { type: String, desc: 'Driver phone number (SMS).' })
   expose(:emission, documentation: { type: Float, desc: 'CO2 emission factor used to compute route emission.' })
   expose(:consumption, documentation: { type: Float, desc: 'Fuel consumption factor used to compute route consumption.' })

@@ -1,7 +1,9 @@
 - if route[:vehicle_id]
-  .last-sent-at
-    - if route[:last_sent_at_formatted]
-      = render partial: 'routes/last_sent_at.html.haml', locals: { route: route }
+  -# Device last_sent lives on operations when Deliver unlocks has_operations.
+  - unless @planning&.customer&.device&.operations_enabled?
+    .last-sent-at
+      - if route[:last_sent_at_formatted]
+        = render partial: 'routes/last_sent_at.html.haml', locals: { route: route }
   .optimized-at
     - if route[:optimized_at_formatted]
       %label

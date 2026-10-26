@@ -197,7 +197,7 @@ class V01::Vehicles < Grape::API
     end
 
     desc 'Update vehicle.',
-      detail: 'Updates capacities, router, speed, tags (skills) and device ids. Existing plannings using this vehicle become outdated until refresh/compute.',
+      detail: 'Existing routes using this vehicle become outdated (need refresh/compute) when any of these change: emission, consumption, capacities, router_id, router_dimension, router_options, speed_multiplier, max_distance, max_ride_distance, max_ride_duration, tag_ids. contact_email, name, phone_number and color do not mark routes outdated (color only refreshes route color).',
       nickname: 'updateVehicle',
       success: V01::Status.success(:code_200, V01::Entities::Vehicle),
       failure: V01::Status.failures

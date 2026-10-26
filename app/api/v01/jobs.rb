@@ -44,7 +44,7 @@ class V01::Jobs < Grape::API
     end
 
     desc 'Return a job.',
-      detail: 'HTTP 200 with status running or failed while the job exists; succeeded, failed, or killed after completion. HTTP 404 if this id was never a job of this customer.',
+      detail: 'Poll about every 2–5s. HTTP 200 with status running/queued/working while in progress; succeeded, failed, or killed after completion (finished jobs keep a reduced payload: id, status, type, finished_at). See Job.progress for optimizer/geocoder fields. HTTP 404 if this id was never a job of this customer.',
       nickname: 'getJob',
       success: V01::Entities::Job
     params do

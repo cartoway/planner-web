@@ -33,23 +33,25 @@ class V01::Devices::AlyacomTest < ActiveSupport::TestCase
   test 'send' do
     with_stubs({ get: [:staff, :users, :planning], post: [:staff, :users, :planning] }) do
       set_route
-      post api("devices/alyacom/send", { customer_id: @customer.id, route_id: @route.id })
+      _operation, operation_route = publish_operation_for!(@route)
+      post api("devices/alyacom/send", { customer_id: @customer.id, operation_route_id: operation_route.id })
       assert_equal 201, last_response.status, last_response.body
-      @route.reload
-      assert @route.reload.last_sent_at
-      assert_equal({ "id" => @route.id, "last_sent_to" => 'Alyacom', "last_sent_at" => @route.last_sent_at.iso8601(3), "last_sent_at_formatted"=>I18n.l(@route.last_sent_at) }, JSON.parse(last_response.body))
+      operation_route.reload
+      assert operation_route.last_sent_at
+      assert_equal last_sent_payload(operation_route), JSON.parse(last_response.body)
     end
   end
 
   test 'send multiple' do
     with_stubs({ get: [:staff, :users, :planning], post: [:staff, :users, :planning] }) do
       set_route
-      post api("devices/alyacom/send_multiple", { customer_id: @customer.id, planning_id: @route.planning_id })
+      operation, _operation_route = publish_operation_for!(@route)
+      post api("devices/alyacom/send_multiple", { customer_id: @customer.id, operation_id: operation.id })
       assert_equal 201, last_response.status, last_response.body
-      routes = @route.planning.routes.select(&:vehicle_usage)
-      routes.each &:reload
-      routes.each{|route| assert route.last_sent_at }
-      assert_equal(routes.map{|route| { "id" => route.id, "last_sent_to" => 'Alyacom', "last_sent_at" => route.last_sent_at.iso8601(3), "last_sent_at_formatted"=>I18n.l(route.last_sent_at) } }, JSON.parse(last_response.body))
+      routes = operation.operation_routes.planned.where.not(vehicle_id: nil).to_a
+      routes.each(&:reload)
+      routes.each { |oroute| assert oroute.last_sent_at }
+      assert_equal(routes.map { |oroute| last_sent_payload(oroute) }, JSON.parse(last_response.body))
     end
   end
 end

@@ -28,6 +28,25 @@ class V01::ErrorTest < ActiveSupport::TestCase
     assert_equal 'application/json; charset=UTF-8', last_response.content_type, 'Bad content type for request: ' + last_response.body
   end
 
+  test 'RecordNotFound 404 logs warn without stacktrace' do
+    error_logs = []
+    warn_logs = []
+    Rails.logger.stubs(:error).with { |msg|
+      error_logs << msg.to_s
+      true
+    }
+    Rails.logger.stubs(:warn).with { |msg|
+      warn_logs << msg.to_s
+      true
+    }
+
+    get '/api/0.1/destinations/999999999.json?api_key=testkey1'
+
+    assert_equal 404, last_response.status, last_response.body
+    assert warn_logs.any? { |msg| msg.include?('RecordNotFound') }
+    refute error_logs.any? { |msg| msg.include?('RecordNotFound') }
+  end
+
   test 'should rescue database error' do
     message = "#{I18n.t('errors.database.default')} #{I18n.t('errors.database.invalid_statement')}"
     Customer.stub_any_instance(:assign_attributes, ->(*_a) { raise ActiveRecord::StatementInvalid.new(self) }) do

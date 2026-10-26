@@ -312,7 +312,7 @@ class StopsControllerTest < ActionController::TestCase
 
   # Tests for edit action (planning mobile retired → redirect to operation mobile)
   test 'edit redirects driver to operation route mobile' do
-    operation = Operations::PublishFromPlanning.call(planning: @planning)
+    operation = publish_operation!(planning: @planning)
     operation_stop = operation.operation_stops.find_by!(stop_id: @stop.id)
 
     get :edit, params: { id: @stop, driver_token: @vehicle.driver_token }
@@ -348,7 +348,7 @@ class StopsControllerTest < ActionController::TestCase
   # Tests for update action
   test 'planning stop update ignores status' do
     @stop.update!(status: 'intransit')
-    operation = Operations::PublishFromPlanning.call(planning: @planning)
+    operation = publish_operation!(planning: @planning)
     operation_stop = operation.operation_stops.find_by!(stop_id: @stop.id)
 
     patch :update, params: {

@@ -22,10 +22,10 @@ class V01::Entities::Job < Grape::Entity
     end
   }
   expose(:attempts, documentation: { type: Integer, desc: 'Number of execution attempts.', example: 1 }, if: lambda { |m, _| m.respond_to?(:attempts) })
-  expose(:created_at, documentation: { type: Date, desc: 'When the job was enqueued.' }, if: lambda { |m, _| m.respond_to?(:created_at) })
-  expose(:failed_at, documentation: { type: Date, desc: 'Set when the job failed. Null while running or after success.' }, if: lambda { |m, _| m.respond_to?(:failed_at) })
-  expose(:locked_at, documentation: { type: Date, desc: 'Set while a worker is executing the job.' }, if: lambda { |m, _| m.respond_to?(:locked_at) })
-  expose(:progress, documentation: { type: JSON, desc: 'Optimizer/geocoder progress payload (percent, phase, nested job_id). Shape depends on job type.' }, if: lambda { |m, _| m.respond_to?(:progress) })
-  expose(:run_at, documentation: { type: Date, desc: 'Scheduled run time.' }, if: lambda { |m, _| m.respond_to?(:run_at) })
-  expose(:finished_at, documentation: { type: DateTime, desc: 'Set when status is succeeded.' }, if: lambda { |m, _| m.respond_to?(:finished_at) && m.finished_at })
+  expose(:created_at, documentation: { type: DateTime, desc: 'When the job was enqueued (customer time zone offset).' }, if: lambda { |m, _| m.respond_to?(:created_at) })
+  expose(:failed_at, documentation: { type: DateTime, desc: 'Set when the job failed. Null while running or after success.' }, if: lambda { |m, _| m.respond_to?(:failed_at) })
+  expose(:locked_at, documentation: { type: DateTime, desc: 'Set while a worker is executing the job.' }, if: lambda { |m, _| m.respond_to?(:locked_at) })
+  expose(:progress, documentation: { type: JSON, desc: 'Optimizer/geocoder progress. Typical keys: completed (bool), first_progression / second_progression (0–100 or interim solver metrics), status (e.g. queued, working, completed). Shape depends on job type; ignore interim second_progression until status completes.' }, if: lambda { |m, _| m.respond_to?(:progress) })
+  expose(:run_at, documentation: { type: DateTime, desc: 'Scheduled run time.' }, if: lambda { |m, _| m.respond_to?(:run_at) })
+  expose(:finished_at, documentation: { type: DateTime, desc: 'Set when status is succeeded (UTC / Z). Prefer this over comparing created_at offsets.' }, if: lambda { |m, _| m.respond_to?(:finished_at) && m.finished_at })
 end

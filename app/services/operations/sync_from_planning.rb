@@ -3,10 +3,10 @@
 module Operations
   class SyncFromPlanning
     CURSOR_STOP = %w[status eta status_updated_at].freeze
+    # last_sent_* belong to operation transmit (email/SMS), not planning device send — do not sync from Route.
     CURSOR_ROUTE = %w[
       departure_status departure_eta departure_status_updated_at
       arrival_status arrival_eta arrival_status_updated_at
-      last_sent_at last_sent_to
     ].freeze
 
     def self.call(planning:, operation:, route_ids: nil, stop_ids: nil, refresh_snapshots: true, desync_route_ids: nil, update_selection_meta: false)

@@ -45,33 +45,25 @@ class V01::Devices::PraxedoTest < ActiveSupport::TestCase
   test 'should send route' do
     with_stubs [:create_events_wsdl, :create_events] do
       set_route
-      post api('devices/praxedo/send', { customer_id: @customer.id, route_id: @route.id })
+      _operation, operation_route = publish_operation_for!(@route)
+      post api('devices/praxedo/send', { customer_id: @customer.id, operation_route_id: operation_route.id })
       assert_equal 201, last_response.status, last_response.body
-      @route.reload
-      assert @route.reload.last_sent_at
-
-      assert_equal(
-        {
-          'id' => @route.id,
-          'last_sent_to' => 'Praxedo',
-          'last_sent_at' => @route.last_sent_at.iso8601(3),
-          'last_sent_at_formatted' => I18n.l(@route.last_sent_at)
-        },
-        JSON.parse(last_response.body))
+      operation_route.reload
+      assert operation_route.last_sent_at
+      assert_equal last_sent_payload(operation_route), JSON.parse(last_response.body)
     end
   end
 
   test 'should send multiple routes' do
     set_route
     with_stubs [:create_events_wsdl, :create_events] do
-      planning = plannings(:planning_one)
-      post api('devices/praxedo/send_multiple', { customer_id: @customer.id, planning_id: planning.id })
+      operation, _operation_route = publish_operation_for!(@route)
+      post api('devices/praxedo/send_multiple', { customer_id: @customer.id, operation_id: operation.id })
       assert_equal 201, last_response.status, last_response.body
-      routes = planning.routes.select(&:vehicle_usage_id)
+      routes = operation.operation_routes.select { |oroute| oroute.vehicle&.devices&.[](:praxedo_agent_id) }
       routes.each(&:reload)
-      routes.each { |route|
-        assert_equal([{ 'id' => route.id, 'last_sent_to' => 'Praxedo', 'last_sent_at' => route.last_sent_at.iso8601(3), 'last_sent_at_formatted' => I18n.l(route.last_sent_at) }], JSON.parse(last_response.body)) if route.ref == 'route_one'
-      }
+      routes.each { |oroute| assert oroute.last_sent_at }
+      assert_equal(routes.map { |oroute| last_sent_payload(oroute) }, JSON.parse(last_response.body))
     end
   end
 
@@ -81,8 +73,7 @@ class V01::Devices::PraxedoTest < ActiveSupport::TestCase
       @customer.update_attribute(:enable_proofs, true)
       set_route
       planning = @route.planning
-      Operation.where(customer_id: @customer.id).delete_all
-      operation = Operations::PublishFromPlanning.call(planning: planning, route_ids: [@route.id])
+      operation = publish_operation!(planning: planning, route_ids: [@route.id])
 
       Operations::FetchDeviceStopsStatus.call(operation: operation)
 

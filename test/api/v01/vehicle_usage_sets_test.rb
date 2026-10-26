@@ -90,6 +90,19 @@ class V01::VehicleUsageSetsTest < ActiveSupport::TestCase
     assert_nil JSON.parse(last_response.body)['store_rest_id']
   end
 
+  test 'updates store_reload_ids and 404s on unknown reload id' do
+    @customer.update!(enable_store_stops: true)
+    reload = store_reloads(:store_reload_one)
+
+    put api(@vehicle_usage_set.id), store_reload_ids: [reload.id]
+    assert last_response.ok?, last_response.body
+    assert_equal [reload.id], JSON.parse(last_response.body)['store_reload_ids']
+
+    put api(@vehicle_usage_set.id), store_reload_ids: [999_999_999]
+    assert_equal 404, last_response.status, last_response.body
+    assert_match(/StoreReload/, JSON.parse(last_response.body)['message'])
+  end
+
   test 'should destroy a vehicle_usage_set' do
     assert_difference('VehicleUsageSet.count', -1) do
       delete api(@vehicle_usage_set.id)

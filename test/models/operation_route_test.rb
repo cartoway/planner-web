@@ -8,7 +8,7 @@ class OperationRouteTest < ActiveSupport::TestCase
   end
 
   test 'list_depots ignores empty store snapshots without loading live usage' do
-    operation = Operations::PublishFromPlanning.call(planning: plannings(:planning_one))
+    operation = publish_operation!(planning: plannings(:planning_one))
     route = operation.operation_routes.planned.first
     route.update_columns(
       vehicle_usage_snapshot: route.vehicle_usage_snapshot.merge('store_start' => {}, 'store_stop' => {})
@@ -25,14 +25,14 @@ class OperationRouteTest < ActiveSupport::TestCase
     usage.update_columns(store_start_id: nil, store_stop_id: nil)
     usage.reload
 
-    operation = Operations::PublishFromPlanning.call(planning: plannings(:planning_one))
+    operation = publish_operation!(planning: plannings(:planning_one))
     route = operation.operation_routes.find_by!(vehicle_usage_id: usage.id)
 
     assert_equal set_start.name, route.vehicle_usage_snapshot.dig('store_start', 'name')
   end
 
   test 'depot_status_events rebuilds atstore then finished from loading stash' do
-    operation = Operations::PublishFromPlanning.call(planning: plannings(:planning_one))
+    operation = publish_operation!(planning: plannings(:planning_one))
     route = operation.operation_routes.planned.first
     day = operation.date
     loading_at = Time.zone.local(day.year, day.month, day.day, 7, 50)

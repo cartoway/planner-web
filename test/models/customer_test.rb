@@ -547,7 +547,7 @@ class CustomerTest < ActiveSupport::TestCase
   end
 
   test 'duplicate includes operations with remapped links' do
-    operation = Operations::PublishFromPlanning.call(planning: plannings(:planning_one))
+    operation = publish_operation!(planning: plannings(:planning_one))
     customer = Customer.for_duplication.find(@customer.id)
     route_count = operation.operation_routes.count
     stop_count = operation.operation_stops.count

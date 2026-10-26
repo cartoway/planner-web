@@ -11,7 +11,7 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
       "http://short.test/#{url.hash.abs}"
     end
     Rails.application.config.stubs(:url_shortener).returns(shortener)
-    @operation = Operations::PublishFromPlanning.call(planning: @planning, date: Date.current)
+    @operation = publish_operation!(planning: @planning, date: Date.current)
     @tracking = @operation.operation_delivery_trackings.first
     stop = @tracking.visit_stops.first
     stop.update!(destination_snapshot: stop.destination_snapshot.merge(

@@ -102,4 +102,15 @@ class ParseIdsRefsTest < ActiveSupport::TestCase
 
     assert_equal route, planning.routes.where(condition).first
   end
+
+  test 'where_pluck_ids returns ids for known tokens' do
+    ids = ParseIdsRefs.where_pluck_ids(Tag, CoerceArrayString.parse("#{@tag_one.id},ref:#{@tag_two.ref}"))
+    assert_equal [@tag_one.id, @tag_two.id].sort, ids.sort
+  end
+
+  test 'where_pluck_ids raises RecordNotFound for unknown id' do
+    assert_raises(ActiveRecord::RecordNotFound) do
+      ParseIdsRefs.where_pluck_ids(Tag, ['999999999'])
+    end
+  end
 end

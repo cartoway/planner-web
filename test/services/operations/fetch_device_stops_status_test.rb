@@ -8,7 +8,7 @@ class Operations::FetchDeviceStopsStatusTest < ActiveSupport::TestCase
     @customer = @planning.customer
     Operation.where(customer_id: @customer.id).delete_all
     @customer.update!(enable_proofs: true, devices: { tomtom: { enable: true, account: 'a', user: 'u', password: 'p' } })
-    @operation = Operations::PublishFromPlanning.call(planning: @planning, route_ids: [routes(:route_one_one).id])
+    @operation = publish_operation!(planning: @planning, route_ids: [routes(:route_one_one).id])
     @stop = @operation.operation_stops.find_by!(visit_id: visits(:visit_one).id)
   end
 

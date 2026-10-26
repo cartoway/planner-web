@@ -9,7 +9,7 @@ class OperationsControllerTest < ActionController::TestCase
     request.host = @reseller.host
     sign_in users(:user_one)
     @planning = plannings(:planning_one)
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     shortener = Object.new
     def shortener.shorten(url)
       url
@@ -249,8 +249,9 @@ class OperationsControllerTest < ActionController::TestCase
   test 'index filters by status chip and search' do
     open_op = @operation
     open_op.update_columns(ref: 'ref-open', name: 'Open Op', status: 'in_progress')
-    historized = Operations::PublishFromPlanning.call(
+    historized = publish_operation!(
       planning: @planning,
+      clear: false,
       date: Date.current - 1,
       route_ids: [routes(:route_three_one).id],
       allow_past: true

@@ -30,7 +30,7 @@ class V01::Geocoder < Grape::API
 
   resource :geocoder do
     desc 'Geocode.',
-      detail: 'Free-text address search against the configured geocoder (not persisted). Returns an array of { address: { housenumber, street, postcode, city, country }, boundingbox, display_name, importance, lat, lon }. limit defaults to 10 (max 10). lat/lng bias results. json_callback wraps JSONP as text/plain.',
+      detail: 'Free-text address search against the configured geocoder (not persisted). Returns an array of { address: { housenumber, street, postcode, city, country }, boundingbox, display_name, importance, lat, lon }. housenumber may be null when only the street is matched. importance is geocoder accuracy in 0..1 (not the same enum as store geocoding_level). limit defaults to 10 (max 10). lat/lng bias results. json_callback wraps JSONP as text/plain.',
       nickname: 'geocode',
       is_array: true,
       success: V01::Status.success(:code_200),
@@ -39,7 +39,8 @@ class V01::Geocoder < Grape::API
       requires :q, type: String, desc: 'Free query string.'
       optional :lat, type: Float, desc: 'Prioritize results around this latitude.'
       optional :lng, type: Float, desc: 'Prioritize results around this longitude.'
-      optional :limit, type: Integer, desc: 'Max results numbers. (default and upper max 10)'
+      optional :limit, type: Integer, desc: 'Max results (default and max 10).'
+      optional :json_callback, type: String, desc: 'When set, response is JSONP text/plain wrapped as callback(...).'
     end
     get 'search' do
       json = Planner::Application.config.geocoder.code_free(params[:q], current_customer.default_country, params[:limit] || 10, params[:lat], params[:lng]).collect{ |result|

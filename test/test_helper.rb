@@ -101,6 +101,16 @@ class ActiveSupport::TestCase
     vehicle_usage.reload
   end
 
+  # use_transactional_tests is false — leftover open operations cause RouteConflict on publish.
+  # Pass clear: false when intentionally stacking another operation for the same customer.
+  def publish_operation!(planning = nil, clear: true, **kwargs)
+    planning ||= kwargs.delete(:planning)
+    raise ArgumentError, 'planning required' if planning.blank?
+
+    Operation.where(customer_id: planning.customer_id).delete_all if clear
+    Operations::PublishFromPlanning.call(planning: planning, **kwargs)
+  end
+
   # Sync counter cache columns when tests bypass ActiveRecord callbacks (delete_all, SQL).
   def sync_customer_counters!(customer = nil)
     scope = customer ? Customer.where(id: customer.id) : Customer.all

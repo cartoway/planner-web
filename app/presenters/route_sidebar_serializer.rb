@@ -120,10 +120,11 @@ class RouteSidebarSerializer
     data[:time_window_start] = vehicle_usage&.default_time_window_start_time
     data[:max_reload] = vehicle_usage&.default_max_reload if vehicle_usage
     data[:optimized_at_formatted] = @route.optimized_at && @view_helpers.l(@route.optimized_at)
-    data[:last_sent_at_formatted] = @route.last_sent_at && @view_helpers.l(@route.last_sent_at)
-    data[:last_sent_to] = @route.last_sent_to
+    unless customer.device.operations_enabled?
+      data[:last_sent_at_formatted] = @route.last_sent_at && @view_helpers.l(@route.last_sent_at)
+      data[:last_sent_to] = @route.last_sent_to
+    end
     data[:contact_email] = vehicle&.contact_email if vehicle&.contact_email.present?
-    merge_device_flags!(data, vehicle_usage, vehicle)
     data[:route_error] = route_error?
     merge_route_errors!(data)
     data
@@ -155,20 +156,6 @@ class RouteSidebarSerializer
     return {} unless vehicle_usage
 
     @view_helpers.route_devices(@view_helpers.planning_devices(@planning.customer), @route)
-  end
-
-  def merge_device_flags!(data, vehicle_usage, vehicle)
-    return unless vehicle_usage && vehicle
-
-    customer.device.configured_definitions.each do |key, definition|
-      has_route_operation = definition[:route_operations].present?
-      has_vehicle_form = definition[:forms][:vehicle]
-      has_required_device_keys = definition[:forms][:vehicle].keys.all? { |k| vehicle.devices[k].present? }
-      next unless has_route_operation && has_vehicle_form && has_required_device_keys
-
-      data[key] = true
-      data[:driver_token] = vehicle.driver_token if key == :deliver
-    end
   end
 
   def route_size_destinations(route_data)
