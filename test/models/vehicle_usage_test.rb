@@ -424,6 +424,20 @@ class VehicleUsageTest < ActiveSupport::TestCase
     assert route.reload.outdated
   end
 
+  test 'changing regulatory rest params keeps existing rests' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    enable_regulatory_rest!(vehicle_usage, lapse: 6.hours.to_i)
+    vehicle_usage.reload
+    route = vehicle_usage.routes.take
+    route.add_rest
+    route.save!
+    assert_equal 1, route.stops.count{ |stop| stop.is_a?(StopRest) }
+
+    vehicle_usage.update!(rest_lapse: 5.hours.to_i, rest_duration: 45.minutes.to_i)
+
+    assert_equal 1, route.reload.stops.count{ |stop| stop.is_a?(StopRest) }
+  end
+
   test 'regulatory rest does not require a time window' do
     vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
     enable_regulatory_rest!(vehicle_usage)

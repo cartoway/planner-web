@@ -400,6 +400,20 @@ class VehicleUsageSetTest < ActiveSupport::TestCase
     end
   end
 
+  test 'changing regulatory rest params on the set keeps existing rests' do
+    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
+    enable_regulatory_rest!(vehicle_usage)
+    vehicle_usage.reload
+    route = vehicle_usage.routes.take
+    route.add_rest
+    route.save!
+    assert_equal 1, route.stops.count{ |stop| stop.is_a?(StopRest) }
+
+    vehicle_usage.vehicle_usage_set.update!(rest_lapse: 5.hours.to_i, rest_duration: 45.minutes.to_i)
+
+    assert_equal 1, route.reload.stops.count{ |stop| stop.is_a?(StopRest) }
+  end
+
   test 'switching to regulatory rest on the set clears leftover time window' do
     vehicle_usage_set = vehicle_usage_sets(:vehicle_usage_set_one)
     vehicle_usage_set.assign_attributes(
