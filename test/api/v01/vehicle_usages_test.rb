@@ -59,6 +59,19 @@ class V01::VehicleUsagesTest < ActiveSupport::TestCase
     assert_equal @vehicle_usage.rest_duration_absolute_time_with_seconds, JSON.parse(last_response.body)['rest_duration']
   end
 
+  test 'should update a vehicle_usage active flag' do
+    assert @vehicle_usage.active
+
+    put api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id), active: false
+    assert last_response.ok?, last_response.body
+    assert_equal false, JSON.parse(last_response.body)['active']
+
+    get api(@vehicle_usage.vehicle_usage_set.id, @vehicle_usage.id)
+    assert last_response.ok?, last_response.body
+    assert_equal false, JSON.parse(last_response.body)['active']
+    refute @vehicle_usage.reload.active
+  end
+
   test 'should update a vehicle_usage tag_ids' do
 
     tags_str = tags(:tag_one).id.to_s + ',' + tags(:tag_two).id.to_s
