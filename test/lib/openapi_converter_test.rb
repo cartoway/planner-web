@@ -45,6 +45,13 @@ class OpenapiConverterTest < ActiveSupport::TestCase
     refute doc.key?('swagger')
     refute doc.key?('definitions')
     assert doc.dig('servers', 0, 'url').present?
+    assert_equal 'https://example.test/api',
+                 OpenapiConverter.convert(
+                   swagger.merge('host' => 'example.test', 'schemes' => ['https'], 'basePath' => '/api')
+                 ).dig('servers', 0, 'url')
+    fallback_base = Planner::Application.config.swagger_docs_base_path.to_s.chomp('/')
+    assert_equal "#{fallback_base}/api",
+                 OpenapiConverter.convert(swagger.merge('basePath' => '/api')).dig('servers', 0, 'url')
     assert_equal '#/components/schemas/V01_Destination',
                  doc.dig('paths', '/0.1/destinations.json', 'post', 'requestBody', 'content', 'application/json', 'schema', '$ref')
     assert_equal '#/components/schemas/V01_Destination',
