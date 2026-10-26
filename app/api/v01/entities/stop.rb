@@ -36,8 +36,8 @@ class V01::Entities::Stop < V01::Entities::StopStatus
   }
   expose(:active, documentation: { type: 'Boolean', desc: 'When false the stop is skipped (not visited) but kept on the route.', example: true })
   expose(:locked, documentation: { type: 'Boolean', desc: 'When true, optimization keeps this visit on its current vehicle route (StopVisit only).', example: false })
-  expose(:distance, documentation: { type: Float, desc: 'Distance in meters between this stop and the previous one.' })
-  expose(:drive_time, documentation: { type: Integer, desc: 'Drive time in seconds between this stop and the previous one.' })
+  expose(:distance, documentation: { type: Float, desc: 'Distance in meters between this stop and the previous one. Null when the router found no path for this leg.' })
+  expose(:drive_time, documentation: { type: Integer, desc: 'Drive time in seconds between this stop and the previous one. Null when the router found no path for this leg.' })
   expose(:visit_id, documentation: { type: Integer, desc: 'Visit id when stop_type is visit.' })
   expose(:route_id, documentation: { type: Integer, desc: 'Route this stop belongs to.' }) { |stop|
     stop.route_id

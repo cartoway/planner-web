@@ -5,17 +5,18 @@ class V01::Entities::Operation < Grape::Entity
     'V01_Operation'
   end
 
-  expose :id
-  expose :planning_id
-  expose :date
-  expose :name
-  expose :ref
-  expose :status
-  expose :published_at
-  expose :synced_at
-  expose :closed_at
-  expose :cancelled_at
-  expose :planning_snapshot
-  expose :deliverable_units_snapshot
-  expose :operation_routes, using: V01::Entities::OperationRoute, if: ->(_operation, options) { options[:type] == :full }
+  expose :id, documentation: { type: Integer }
+  expose :planning_id, documentation: { type: Integer }
+  expose :date, documentation: { type: Date }
+  expose :name, documentation: { type: String }
+  expose :ref, documentation: { type: String }
+  expose :status, documentation: { type: String }
+  expose :published_at, documentation: { type: DateTime }
+  expose :synced_at, documentation: { type: DateTime }
+  expose :closed_at, documentation: { type: DateTime }
+  expose :cancelled_at, documentation: { type: DateTime }
+  expose :planning_snapshot, documentation: { type: Hash }
+  expose :deliverable_units_snapshot, documentation: { type: Hash }
+  # Omitted from GET /operations list; present on GET /operations/:id, publish and sync (type: :full).
+  expose :operation_routes, using: V01::Entities::OperationRoute, documentation: { is_array: true, desc: 'Routes snapshot. Only included on detail/publish/sync responses, not on GET /operations list.' }, if: ->(_operation, options) { options[:type] == :full }
 end
