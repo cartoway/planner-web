@@ -9,6 +9,8 @@ class CustomerTest < ActiveSupport::TestCase
 
   setup do
     @customer = customers(:customer_one)
+    # Leftover open operations from other tests break duplicate (UniqueViolation / transaction_without_selects).
+    Operation.where(customer_id: @customer.id).delete_all
   end
 
   test 'should not save' do
