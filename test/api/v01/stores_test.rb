@@ -205,4 +205,27 @@ class V01::StoresTest < ActiveSupport::TestCase
     assert_not_nil json['store_reloads'], 'store_reloads should be exposed when enable_store_stops is true'
     assert_kind_of Array, json['store_reloads'], 'store_reloads should be an array'
   end
+
+  test 'should create and update store_reloads via API' do
+    @store.customer.update!(enable_store_stops: true)
+    @store.store_reloads.destroy_all
+
+    assert_difference('StoreReload.count', 1) do
+      put api(@store.id), store_reloads: [{ ref: 'RELOAD-1', duration: '00:15:00' }]
+      assert last_response.ok?, last_response.body
+    end
+
+    json = JSON.parse(last_response.body)
+    assert_equal 1, json['store_reloads'].size
+    assert_equal 'RELOAD-1', json['store_reloads'][0]['ref']
+    assert_equal 15.minutes.to_i, json['store_reloads'][0]['duration']
+    reload_id = json['store_reloads'][0]['id']
+
+    put api(@store.id), store_reloads: [{ id: reload_id, ref: 'RELOAD-1', duration: '00:20:00' }]
+    assert last_response.ok?, last_response.body
+    updated = JSON.parse(last_response.body)['store_reloads']
+    assert_equal 1, updated.size
+    assert_equal reload_id, updated[0]['id']
+    assert_equal 20.minutes.to_i, updated[0]['duration']
+  end
 end
