@@ -359,7 +359,7 @@ class PlanningsController < ApplicationController
           .group_by(&:route_id)
 
     planning_summary = planning_summary(@planning)
-    open_ops_by_route = current_user.space_visible?(:operations) ? @planning.open_operations_by_route_id : nil
+    open_ops_by_route = @planning.customer.device.operations_enabled? ? @planning.open_operations_by_route_id : nil
     payloads = ordered_routes.map do |route|
       stops_for_sidebar = stops_by_route_id[route.id] || []
       route_data = RouteSidebarSerializer.new(
@@ -387,7 +387,7 @@ class PlanningsController < ApplicationController
 
   def data_header
     json_data = JSON.parse(render_to_string(template: 'plannings/head_data.json.jbuilder'), symbolize_names: true)
-    if current_user.space_visible?(:operations)
+    if current_user.space_visible?(:operations) && @planning.customer.device.operations_enabled?
       json_data[:execution_operations] =
         @planning.operations.open_status
                  .select(:id, :structure_fingerprint, :custom_attributes)

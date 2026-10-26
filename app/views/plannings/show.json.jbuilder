@@ -52,7 +52,7 @@ else
     distance_total += route.distance || 0
   end
 
-  open_ops_by_route = current_user_space_visible?(:operations) ? @planning.open_operations_by_route_id : nil
+  open_ops_by_route = @planning.customer.device.operations_enabled? ? @planning.open_operations_by_route_id : nil
   routes_data = routes_array.map do |route|
     data = RouteSidebarSerializer.new(
       route: route,
