@@ -7,7 +7,7 @@ class DeliverDemoControlTest < ActiveSupport::TestCase
     @planning = plannings(:planning_one)
     @customer = @planning.customer
     @customer.update!(devices: { deliver: { enable: true, demo: true } })
-    @operation = Operations::PublishFromPlanning.call(
+    @operation = publish_operation!(
       planning: @planning,
       route_ids: [routes(:route_one_one).id]
     )

@@ -13,7 +13,7 @@ class OperationDeliveryTrackingTest < ActiveSupport::TestCase
   end
 
   test 'ensure_for! creates one tracking per visit destination' do
-    operation = Operations::PublishFromPlanning.call(planning: @planning)
+    operation = publish_operation!(planning: @planning)
 
     destination_ids = operation.operation_stops.executable.where(kind: 'visit').filter_map { |stop|
       stop.destination_id.presence || stop.destination_snapshot&.[]('id')
@@ -24,7 +24,7 @@ class OperationDeliveryTrackingTest < ActiveSupport::TestCase
   end
 
   test 'ensure_for! is a no-op when the table is missing' do
-    operation = Operations::PublishFromPlanning.call(planning: @planning)
+    operation = publish_operation!(planning: @planning)
     OperationDeliveryTracking.where(operation_id: operation.id).delete_all
     OperationDeliveryTracking.connection.stubs(:table_exists?).returns(false)
 
@@ -33,7 +33,7 @@ class OperationDeliveryTrackingTest < ActiveSupport::TestCase
   end
 
   test 'preload_visit_stops! loads all destination stops in a constant number of queries' do
-    operation = Operations::PublishFromPlanning.call(planning: @planning)
+    operation = publish_operation!(planning: @planning)
     trackings = operation.operation_delivery_trackings.with_destination.to_a
     skip 'need several destination trackings' if trackings.size < 2
 

@@ -5,7 +5,7 @@ require 'test_helper'
 class ExecutionWriteGuardTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @stop = @operation.operation_stops.find_by!(visit_id: visits(:visit_one).id)
     @route = @stop.operation_route
   end

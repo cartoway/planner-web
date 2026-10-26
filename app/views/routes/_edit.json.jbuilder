@@ -1,7 +1,6 @@
 customer = planning.customer
 enable_orders = customer.enable_orders
 route_vehicle = route.vehicle_usage&.vehicle
-configured_device_definitions = customer.device.configured_definitions
 available_stop_status = customer.device.available_stop_status?
 customer_deliverable_units = local_assigns[:customer_deliverable_units] || customer.deliverable_units.to_a
 start_route_custom_attributes = local_assigns[:start_route_custom_attributes] || customer.custom_attributes.for_route.for_related_field('start_route_data')
@@ -92,20 +91,6 @@ if route.vehicle_usage_id
     json.color tag.default_color
   end
 
-  # Devices
-  configured_device_definitions.each do |key, definition|
-    has_route_operation = !definition[:route_operations].empty?
-    has_vehicle = definition[:forms][:vehicle]
-    has_blank_key = definition[:forms][:vehicle].keys.all?{ |k| !route_vehicle.devices[k].blank? }
-
-    if has_route_operation && has_vehicle && has_blank_key
-      json.set!(key, true)
-
-      if key == :deliver
-        json.driver_token route.vehicle_usage.vehicle.driver_token
-      end
-    end
-  end
   if @with_stops && @with_devices
     status_map = {}
     route_stops.each do |stop|

@@ -16,7 +16,7 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
   end
 
   test 'publish snapshots include planned route and stop fields without status' do
-    operation = Operations::PublishFromPlanning.call(planning: @planning, date: '2026-09-30', name: 'Snap', allow_past: true)
+    operation = publish_operation!(planning: @planning, date: '2026-09-30', name: 'Snap', allow_past: true)
     route = operation.operation_routes.planned.first
     stop = route.operation_stops.find { |row| row.kind == 'visit' }
 
@@ -31,7 +31,7 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
   end
 
   test 'to_history_stops uses operation status not planning live status' do
-    operation = Operations::PublishFromPlanning.call(planning: @planning, date: '2026-09-30', name: 'Map', allow_past: true)
+    operation = publish_operation!(planning: @planning, date: '2026-09-30', name: 'Map', allow_past: true)
     route = operation.operation_routes.planned.first
     stop = route.operation_stops.find { |row| row.kind == 'visit' }
     live = stop.stop
@@ -58,6 +58,7 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
       route_ids = @planning.routes.where.not(vehicle_usage_id: nil).order(:id).pluck(:id)
       assert_operator route_ids.size, :>=, 2
 
+      Operation.where(customer_id: @customer.id).delete_all
       matching = Operations::PublishFromPlanning.call(
         planning: @planning, date: '2026-09-30', name: 'Match', route_ids: [route_ids.first], allow_past: true
       )
@@ -88,6 +89,7 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
       @planning.update!(date: Date.new(2026, 1, 1))
       route_id = @planning.routes.where.not(vehicle_usage_id: nil).order(:id).pick(:id)
 
+      Operation.where(customer_id: @customer.id).delete_all
       yesterday = Operations::PublishFromPlanning.call(
         planning: @planning, date: '2026-09-30', name: 'Yesterday', route_ids: [route_id], allow_past: true
       )

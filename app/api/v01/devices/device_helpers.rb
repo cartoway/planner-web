@@ -17,39 +17,77 @@
 #
 module V01::Devices
   module DeviceHelpers
+    def devices_customer
+      @customer || @current_customer
+    end
+
+    def find_operation!
+      devices_customer.operations.find(params[:operation_id])
+    end
+
+    def find_operation_route!
+      OperationRoute.joins(:operation).merge(devices_customer.operations).find(params[:operation_route_id])
+    end
+
+    # Bridge: GPS device libs still consume planning Route; API surface is OperationRoute.
+    def planning_route_for!(operation_route)
+      route = operation_route.route
+      error!({ message: 'OperationRoute has no linked planning route to send.', status: 422 }, 422) unless route
+
+      route
+    end
+
+    def device_send_label
+      service.service.definition[:label_small]
+    end
+
     def device_send_routes(options = {})
-      planning = @current_customer.plannings.find params[:planning_id]
-      routes = planning.routes.select(&:vehicle_usage_id)
-      routes = routes.select{ |route| route.vehicle_usage.vehicle.devices[options[:device_id]] } if options[:device_id]
-      routes.select{ |r| r.stops.only_active_stop_visits.select{ |s| s.position? }.size > 0 }.each{ |route|
-        Route.transaction do
-          service.send_route(route, options)
-          route.save!
-        end
+      operation = find_operation!
+      operation_routes = operation.operation_routes.planned.where.not(vehicle_id: nil).includes(:vehicle, :route)
+      if options[:device_id]
+        operation_routes = operation_routes.select { |oroute| oroute.vehicle&.devices&.[](options[:device_id]).present? }
+      end
+      operation_routes = operation_routes.select { |oroute|
+        route = oroute.route
+        route && route.stops.only_active_stop_visits.any?(&:position?)
       }
-      present routes, with: V01::Entities::DeviceRouteLastSentAt
+      operation_routes.each do |operation_route|
+        Route.transaction do
+          planning_route = planning_route_for!(operation_route)
+          service.send_route(planning_route, options)
+          planning_route.save!
+          operation_route.mark_sent!(device_send_label)
+        end
+      end
+      present operation_routes, with: V01::Entities::DeviceRouteLastSentAt
     end
 
     def device_clear_route(_options = {})
+      operation_route = find_operation_route!
       Route.transaction do
-        route = Route.for_customer_id(@current_customer.id).find params[:route_id]
-        service.clear_route(route)
-        route.save!
-        present route, with: V01::Entities::DeviceRouteLastSentAt
+        planning_route = planning_route_for!(operation_route)
+        service.clear_route(planning_route)
+        planning_route.save!
+        operation_route.update_columns(last_sent_at: nil, last_sent_to: nil, updated_at: Time.current)
+        present operation_route, with: V01::Entities::DeviceRouteLastSentAt
       end
     end
 
     def device_clear_routes(options = {})
-      planning = @current_customer.plannings.find params[:planning_id]
-      routes = planning.routes.select(&:vehicle_usage_id)
-      routes = routes.select{ |route| route.vehicle_usage.vehicle.devices[options[:device_id]] } if options[:device_id]
-      routes.each{ |route|
+      operation = find_operation!
+      operation_routes = operation.operation_routes.planned.where.not(vehicle_id: nil).includes(:vehicle, :route)
+      if options[:device_id]
+        operation_routes = operation_routes.select { |oroute| oroute.vehicle&.devices&.[](options[:device_id]).present? }
+      end
+      operation_routes.each do |operation_route|
         Route.transaction do
-          service.clear_route(route)
-          route.save!
+          planning_route = planning_route_for!(operation_route)
+          service.clear_route(planning_route)
+          planning_route.save!
+          operation_route.update_columns(last_sent_at: nil, last_sent_to: nil, updated_at: Time.current)
         end
-      }
-      present routes, with: V01::Entities::DeviceRouteLastSentAt
+      end
+      present operation_routes, with: V01::Entities::DeviceRouteLastSentAt
     end
 
     # Orange

@@ -225,9 +225,9 @@ class V01::Destinations < Grape::API
         V01::Status.success(:code_200, V01::Entities::Destination)
       ].concat(V01::Status.failures(is_array: true, add: [:code_422]))
     params do
-      optional(:replace, type: Boolean, documentation: {param_type: 'form'})
+      optional(:replace, type: Boolean, desc: 'When true, destinations and associated visits absent from the import payload/file are deleted before create/update. When false (default), only upsert.', documentation: {param_type: 'form'})
       optional(:synchronous, type: Boolean, desc: 'Run import synchronously (default false when DelayedJob is enabled).', documentation: {param_type: 'form'})
-      optional(:file, type: CSVFile, desc: 'CSV file, encoding, separator and line return automatically detected, with localized CSV header according to HTTP header Accept-Language.', documentation: {param_type: 'form'})
+      optional(:file, type: CSVFile, desc: 'CSV file upload (multipart / binary). Encoding, separator and line endings auto-detected; headers follow Accept-Language.', documentation: {param_type: 'form'})
       optional(:remote, type: Symbol, values: [:tomtom], documentation: {param_type: 'form'})
       optional(:planning, type: Hash, documentation: { param_type: 'body' }, desc: 'Planning definition in case of planning created in the same time of destinations import. Planning is created if "route" field is provided in CVS or Json.') do
         optional(:name, type: String)

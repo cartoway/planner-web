@@ -64,7 +64,8 @@ class V01::VehicleUsageSets < Grape::API
 
     desc 'Create vehicle_usage_set.',
       detail: "(Note a vehicle_usage_set is already automatically created with a customer.) Only available if \"multi usage set\" option is active for current customer.
-        For instance, if customer needs to use its vehicle 2 times per day (morning and evening), he needs 2 VehicleUsageSet called \"Morning\" and \"Evening\". A VehicleUsage per Vehicle is automatically created. The new VehicleUsageSet allows to define new default values for VehicleUsage.",
+        For instance, if customer needs to use its vehicle 2 times per day (morning and evening), he needs 2 VehicleUsageSet called \"Morning\" and \"Evening\". A VehicleUsage per Vehicle is automatically created. The new VehicleUsageSet allows to define new default values for VehicleUsage.
+        Limited by customer max_vehicle_usage_sets (admin-configurable); exceeding it returns HTTP 403 \"Maximum number of vehicle base settings reached\".",
       nickname: 'createVehicleUsageSet',
       success: V01::Status.success(:code_201, V01::Entities::VehicleUsageSet),
       failure: V01::Status.failures
@@ -110,6 +111,7 @@ class V01::VehicleUsageSets < Grape::API
     end
 
     desc 'Update vehicle_usage_set.',
+      detail: 'HTTP 404 when the vehicle_usage_set id is unknown, or when store_reload_ids references an unknown StoreReload (message names StoreReload — not store/depot ids).',
       nickname: 'updateVehicleUsageSet',
       success: V01::Status.success(:code_200, V01::Entities::VehicleUsageSet),
       failure: V01::Status.failures

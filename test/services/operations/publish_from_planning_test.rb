@@ -6,6 +6,7 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
     @customer = @planning.customer
+    Operation.where(customer_id: @customer.id).delete_all
   end
 
   teardown do

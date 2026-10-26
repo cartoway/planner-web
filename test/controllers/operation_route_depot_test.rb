@@ -10,7 +10,7 @@ class OperationRouteDepotTest < ActionController::TestCase
     request.host = @reseller.host
     sign_in users(:user_one)
     @planning = plannings(:planning_one)
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @route = @operation.operation_routes.planned.first
   end
 

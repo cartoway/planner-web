@@ -66,4 +66,17 @@ class ParseIdsRefs
     clause = where_clause(param)
     clause ? clazz.where(clause) : clazz.none
   end
+
+  # Resolves ids/refs to primary keys. Raises RecordNotFound when any token is unknown
+  # (unlike silent .where.pluck which drops missing values).
+  def self.where_pluck_ids(clazz, param)
+    raw = Array(param).reject { |v| v.nil? || v.to_s.strip.empty? }
+    return [] if raw.empty?
+
+    found = where(clazz, raw).pluck(:id)
+    requested = raw.map { |token| read(token) }.uniq
+    return found if found.size >= requested.size
+
+    raise ActiveRecord::RecordNotFound, "#{clazz.name} not found for one or more ids/refs: #{raw.join(', ')}"
+  end
 end

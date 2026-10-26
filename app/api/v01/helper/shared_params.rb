@@ -82,7 +82,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :deliverable_unit_ids, type: Array[Integer]
 
     optional :ref, type: String, documentation: { desc: EDIT_ONLY_ADMIN }
-    optional :visit_duration, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :visit_duration, type: Integer, documentation: { type: 'string', desc: 'Default visit service duration (HH:MM). Null/omitted means no default (0); visits without their own duration inherit this.' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :take_over, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     mutually_exclusive :visit_duration, :take_over
 
@@ -104,12 +104,12 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :recipient_template, type: String
     optional :sms_concat, type: Boolean
     optional :sms_sender_name, type: String, desc: 'SMS sender name (3-11 alphanumeric characters)'
-    optional :enable_email_driver, type: Boolean, documentation: { desc: EDIT_ONLY_ADMIN }
-    optional :enable_sms_driver, type: Boolean, documentation: { desc: EDIT_ONLY_ADMIN }
-    optional :enable_email_destination, type: Boolean, documentation: { desc: EDIT_ONLY_ADMIN }
-    optional :enable_sms_destination, type: Boolean, documentation: { desc: EDIT_ONLY_ADMIN }
-    optional :enable_sms_intransit, type: Boolean, documentation: { desc: EDIT_ONLY_ADMIN }
-    optional :enable_store_stops, type: Boolean, documentation: { desc: 'When true, intermediate store reloads can be defined on stores and assigned to vehicle usages. ' + EDIT_ONLY_ADMIN }
+    optional :enable_email_driver, type: Boolean, documentation: { desc: 'When true, drivers can be emailed from an operation (transmit to vehicle contact_email). ' + EDIT_ONLY_ADMIN }
+    optional :enable_sms_driver, type: Boolean, documentation: { desc: 'When true, drivers can receive SMS from an operation (transmit). ' + EDIT_ONLY_ADMIN }
+    optional :enable_email_destination, type: Boolean, documentation: { desc: 'When true, destination/recipient email notifications are allowed. ' + EDIT_ONLY_ADMIN }
+    optional :enable_sms_destination, type: Boolean, documentation: { desc: 'When true, destination SMS notifications are allowed. ' + EDIT_ONLY_ADMIN }
+    optional :enable_sms_intransit, type: Boolean, documentation: { desc: 'When true, in-transit SMS to destinations are allowed. ' + EDIT_ONLY_ADMIN }
+    optional :enable_store_stops, type: Boolean, documentation: { desc: 'When true, intermediate store reloads can be defined on stores and assigned via store_reload_ids; takes effect immediately on save (no extra step). ' + EDIT_ONLY_ADMIN }
 
     optional :enable_external_callback, type: Boolean, documentation: { desc: 'Enable external callback' }
     optional :external_callback_url, type: String, documentation: { desc: 'External callback URL' }
@@ -169,7 +169,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :email, type: String, documentation: { desc: 'Contact email(s). Several addresses may be separated by spaces, commas or semicolons.', example: 'client@example.com' }
     optional :geocoding_accuracy, type: Float, documentation: { desc: 'Geocoding confidence in 0..1. Must be inside 0..1 range.' }
     optional :geocoding_level, type: String, values: ['point', 'house', 'street', 'intersection', 'city'], documentation: { desc: 'Precision of the geocoded position.' }
-    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', example: '1,2,ref:vip' }
+    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: TAG_IDS_DESC, example: '1,2,ref:vip' }
     optional :duration, type: Integer, documentation: { type: 'string', desc: 'Extra service duration at the destination (HH:MM or HH:MM:SS), on top of visit duration.' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     if options[:json_import]
       optional :tags, type: Array, coerce_with: CoerceArrayString, documentation: { desc: 'Tag labels separated by comma. Created if missing on import.', example: ['tag1', 'tag2', 'tag3'] }
@@ -277,7 +277,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   params :request_vehicle do |options|
     optional :ref, type: String, documentation: { desc: 'External unique reference. Use ref:VALUE in path/ids filters.', example: 'VEH-1' }
     optional :name, type: String, documentation: { desc: 'Display name.', example: 'Truck 1' }
-    optional :contact_email, type: String, documentation: { desc: 'Driver\'s device E-Mail. Several emails might be transmitted separated by spaces, commas or semicolons.' }
+    optional :contact_email, type: String, documentation: { desc: 'Driver email(s) for ICS/Deliver. Several addresses separated by spaces, commas or semicolons. Invalid format → HTTP 400. Send empty string or null to clear.' }
     optional :phone_number, type: String
     optional :emission, type: Float, coerce_with: CoerceFloatString
     optional :consumption, type: Float, coerce_with: CoerceFloatString
@@ -298,7 +298,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :max_distance, type: Integer, documentation: { desc: 'Maximum achievable distance in meters' }
     optional :max_ride_distance, type: Integer, documentation: { desc: 'Maximum riding distance between two stops within a route in meters' }
     optional :max_ride_duration, type: Integer, documentation: { desc: 'Maximum riding time between two stops within a route (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
-    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', param_type: 'form', example: '1,2,ref:vip' }
+    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: TAG_IDS_DESC, param_type: 'form', example: '1,2,ref:vip' }
     optional :devices, type: Hash, documentation: { desc: 'Telematics device identifiers keyed by provider.' }
     optional :custom_attributes, type: Hash, documentation: { desc: 'Additional typed properties defined on CustomAttribute for vehicles.' }
   end
@@ -318,11 +318,11 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :rest_lapse, type: Integer, documentation: { type: 'string', desc: 'Work lapse between cumulative rests (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :visit_duration_coef, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient applied to visit durations for this vehicle usage (falls back to vehicle usage set, then 1)' }
     optional :destination_duration_coef, type: Float, coerce_with: CoerceFloatString, documentation: { desc: 'Coefficient applied to destination durations for this vehicle usage (falls back to vehicle usage set, then 1)' }
-    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', param_type: 'form', example: '1,2,ref:vip' }
+    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: TAG_IDS_DESC, param_type: 'form', example: '1,2,ref:vip' }
 
     optional :store_start_id, type: Integer, documentation: { type: Integer, desc: 'Start depot store id. Falls back to the set default.' }
     optional :store_stop_id, type: Integer, documentation: { type: Integer, desc: 'End depot store id. Falls back to the set default.' }
-    optional :store_reload_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(StoreReload, CoerceArrayString.parse(value)) }, documentation: { desc: 'Store reload ids or refs (not store/depot ids), separated by comma. Prefix refs with "ref:" e.g. ref:reload-1.', param_type: 'form', example: '1,2,ref:reload-1' }
+    optional :store_reload_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(StoreReload, CoerceArrayString.parse(value)) }, documentation: { desc: STORE_RELOAD_IDS_DESC, param_type: 'form', example: '1,2,ref:reload-1' }
 
     # Deprecated fields
     optional :open, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
@@ -337,7 +337,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Default shift end (HH:MM) inherited by vehicle usages.' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :store_start_id, type: Integer, documentation: { type: Integer, desc: 'Default start depot store id.' }
     optional :store_stop_id, type: Integer, documentation: { type: Integer, desc: 'Default end depot store id.' }
-    optional :store_reload_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(StoreReload, CoerceArrayString.parse(value)) }, documentation: { desc: 'Default store reload ids or refs (not store/depot ids), separated by comma. Prefix refs with "ref:" e.g. ref:reload-1.', param_type: 'form', example: '1,2,ref:reload-1' }
+    optional :store_reload_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(StoreReload, CoerceArrayString.parse(value)) }, documentation: { desc: STORE_RELOAD_IDS_DEFAULT_DESC, param_type: 'form', example: '1,2,ref:reload-1' }
     optional :service_time_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :service_time_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :work_time, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
@@ -358,7 +358,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   end
 
   params :request_visit do |options|
-    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', example: '1,2,ref:vip' }
+    optional :tag_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where(Tag, CoerceArrayString.parse(value)).pluck(:id) }, documentation: { desc: TAG_IDS_DESC, example: '1,2,ref:vip' }
     if options[:json_import]
       optional :tags, type: Array, coerce_with: CoerceArrayString, documentation: { desc: 'Tag labels separated by comma.', example: ['tag1', 'tag2', 'tag3'] }
     end
@@ -390,7 +390,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :close1, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     mutually_exclusive :time_window_end_1, :close1
 
-    optional :duration, type: Integer, documentation: { type: 'string', desc: 'Visit service duration (HH:MM or HH:MM:SS). Falls back to customer visit_duration when omitted.', example: '00:10:00' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
+    optional :duration, type: Integer, documentation: { type: 'string', desc: 'Visit service duration (HH:MM or HH:MM:SS). Falls back to customer visit_duration when omitted (null customer default means no service duration).', example: '00:10:00' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :time_window_start_2, type: Integer, documentation: { type: 'string', desc: 'Start of the optional second time window (HH:MM or HH:MM:SS).' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :open2, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     mutually_exclusive :time_window_start_2, :open2
@@ -495,5 +495,8 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   en: mm-dd-yyyy\n
   fr: dd-mm-yyyy"
   EDIT_ONLY_ADMIN = 'Only available in admin.'.freeze
+  TAG_IDS_DESC = 'Tag ids: JSON array of integers (e.g. [1,2]) or comma-separated ids/refs in form data. Prefix refs with "ref:" e.g. 1,2,ref:vip. Form clients may also send repeated tag_ids[].'.freeze
+  STORE_RELOAD_IDS_DESC = 'Store reload ids or refs (not store/depot ids). JSON array of integers or comma-separated form values. Prefix refs with "ref:" e.g. 1,2,ref:reload-1. Unknown ids/refs → HTTP 404 naming StoreReload.'.freeze
+  STORE_RELOAD_IDS_DEFAULT_DESC = ('Default ' + STORE_RELOAD_IDS_DESC).freeze
   MAX_DAYS = 31
 end

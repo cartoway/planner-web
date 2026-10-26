@@ -10,7 +10,7 @@ class OperationRouteMediaTest < ActionController::TestCase
     request.host = @reseller.host
     sign_in users(:user_one)
     @planning = plannings(:planning_one)
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @operation_route = @operation.operation_routes.planned.first
     @stop = @operation_route.operation_stops.where(kind: 'visit').first
     @stop.photos.attach(
