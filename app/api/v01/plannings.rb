@@ -432,7 +432,7 @@ class V01::Plannings < Grape::API
       optional :name, type: String
       optional :date, type: Date
       optional :route_ids, type: Array[Integer], coerce_with: CoerceArrayInteger, desc: 'Planning route ids to include. Defaults to all eligible routes.'
-      optional :visible_routes_only, type: Boolean, default: false
+      optional :visible_routes_only, type: Boolean, default: false, desc: 'When true, skip hidden planning routes in the published operation snapshot.'
     end
     post ':id/operations' do
       authorize!(:create, Operation)

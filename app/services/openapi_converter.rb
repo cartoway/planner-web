@@ -38,9 +38,17 @@ class OpenapiConverter
   private
 
   def servers
-    base = Planner::Application.config.swagger_docs_base_path.to_s.chomp('/')
-    base = 'http://localhost:8080' if base.empty?
-    [{ 'url' => base }]
+    base_path = @src['basePath'].to_s.chomp('/')
+    host = @src['host'].to_s.presence
+    url = if host
+            scheme = Array(@src['schemes']).first.presence || 'https'
+            "#{scheme}://#{host}#{base_path}"
+          else
+            base = Planner::Application.config.swagger_docs_base_path.to_s.chomp('/')
+            base = 'http://localhost:8080' if base.empty?
+            "#{base}#{base_path}"
+          end
+    [{ 'url' => url }]
   end
 
   def components
