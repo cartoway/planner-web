@@ -59,6 +59,23 @@ class V01::CustomerTest < ActiveSupport::TestCase
     assert_equal 404, last_response.status, 'Bad response for JSON request: ' + last_response.body
   end
 
+  test 'should update and return enable_store_stops as admin' do
+    refute @customer.enable_store_stops
+
+    put api(@customer.id), enable_store_stops: true
+    assert last_response.ok?, last_response.body
+    refute @customer.reload.enable_store_stops, 'non-admin must not update enable_store_stops'
+
+    put api_admin(@customer.id), enable_store_stops: true
+    assert last_response.ok?, last_response.body
+    assert_equal true, JSON.parse(last_response.body)['enable_store_stops']
+
+    get api(@customer.id)
+    assert last_response.ok?, last_response.body
+    assert_equal true, JSON.parse(last_response.body)['enable_store_stops']
+    assert @customer.reload.enable_store_stops
+  end
+
   test 'should update a customer' do
     @customer.devices[:tomtom] = {enable: true}
     @customer.save!
