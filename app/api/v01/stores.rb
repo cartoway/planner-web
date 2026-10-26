@@ -26,7 +26,12 @@ class V01::Stores < Grape::API
     def store_params
       p = ActionController::Parameters.new(params)
       p = p[:store] if p.key?(:store)
-      p.permit(:ref, :name, :street, :postalcode, :city, :state, :country, :lat, :lng, :geocoding_accuracy, :geocoding_level, :color, :icon, :icon_size)
+      p[:store_reloads_attributes] = p.delete(:store_reloads) if p[:store_reloads]
+      p.permit(
+        :ref, :name, :street, :postalcode, :city, :state, :country, :lat, :lng,
+        :geocoding_accuracy, :geocoding_level, :color, :icon, :icon_size,
+        store_reloads_attributes: [:id, :ref, :duration, :time_window_start, :time_window_end, :_destroy]
+      )
     end
   end
 

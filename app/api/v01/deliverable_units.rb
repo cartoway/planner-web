@@ -28,7 +28,7 @@ class V01::DeliverableUnits < Grape::API
       p[:default_pickup] = p[:default_quantity].abs if p.key?(:default_quantity) && p[:default_quantity] < 0
       p.delete(:default_quantity) if p.key?(:default_quantity)
 
-      p.permit(:label, :ref, :default_pickup, :default_delivery, :optimization_overload_multiplier, :icon)
+      p.permit(:label, :ref, :default_pickup, :default_delivery, :default_capacity, :optimization_overload_multiplier, :icon)
     end
   end
 
