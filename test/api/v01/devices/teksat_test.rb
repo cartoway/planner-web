@@ -89,8 +89,7 @@ class V01::Devices::TeksatTest < ActiveSupport::TestCase
       routes = operation.operation_routes.select { |oroute| oroute.vehicle&.devices&.[](:teksat_id) }
       routes.each(&:reload)
       routes.each { |oroute| assert oroute.last_sent_at }
-      mapped_routes = routes.map { |oroute| last_sent_payload(oroute).transform_keys(&:to_sym) }
-      assert_equal(mapped_routes, JSON.parse(last_response.body, symbolize_names: true))
+      assert_last_sent_payloads(routes)
     end
   end
 
@@ -117,8 +116,7 @@ class V01::Devices::TeksatTest < ActiveSupport::TestCase
       assert_equal 200, last_response.status
       routes.each(&:reload)
       routes.each { |oroute| assert_nil oroute.last_sent_at }
-      mapped_routes = routes.map { |oroute| last_sent_payload(oroute).transform_keys(&:to_sym) }
-      assert_equal(mapped_routes, JSON.parse(last_response.body, symbolize_names: true))
+      assert_last_sent_payloads(routes)
     end
   end
 

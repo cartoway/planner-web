@@ -26,6 +26,12 @@ module ApiBase
     }
   end
 
+  def assert_last_sent_payloads(operation_routes, body = JSON.parse(last_response.body))
+    expected = Array(operation_routes).map { |route| last_sent_payload(route) }.sort_by { |row| row['id'] }
+    actual = Array(body).sort_by { |row| row['id'] }
+    assert_equal expected, actual
+  end
+
   def params_for(device, customer)
     device.to_sym unless device.is_a? Symbol
     case device
