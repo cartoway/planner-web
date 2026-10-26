@@ -93,6 +93,16 @@ class OperationsControllerTest < ActionController::TestCase
     assert_select %([data-v2--operation-show-past-date-confirm-value="#{I18n.t('operations.show.past_date_change_confirm')}"])
   end
 
+  test 'show displays a placeholder when the operation has no ref' do
+    @operation.customer.update!(enable_references: true)
+    @operation.update_columns(ref: nil)
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_select '.operation-header-sub [data-v2--operation-show-target="refLabel"].is-placeholder',
+                  text: I18n.t('operations.show.ref_placeholder')
+    assert_select %(.operation-header-sub input.operation-ref[placeholder="#{I18n.t('operations.show.ref_placeholder')}"]), 1
+  end
+
   test 'show exposes export spreadsheet and archive links' do
     get :show, params: { id: @operation.id }
     assert_response :success

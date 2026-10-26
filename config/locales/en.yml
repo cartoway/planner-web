@@ -4173,6 +4173,7 @@ en:
       ref_updated: Reference updated
       edit_name: Edit the name
       edit_ref: Edit the reference
+      ref_placeholder: Reference
       date_locked: The date of a historized operation cannot be changed
       past_date_change_confirm: This operation is dated in the past. After changing it, you will not be able to set a past date again. Continue?
       date_taken: An operation with this ref already exists on that date
