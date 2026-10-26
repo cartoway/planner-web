@@ -5,7 +5,7 @@ require 'test_helper'
 class OperationsSyncPreviewTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
   end
 
   teardown do

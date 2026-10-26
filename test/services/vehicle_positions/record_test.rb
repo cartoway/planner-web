@@ -6,7 +6,7 @@ class VehiclePositionsRecordTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
     @customer = @planning.customer
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @route = @operation.operation_routes.planned.first
   end
 

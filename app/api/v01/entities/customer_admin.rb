@@ -38,5 +38,5 @@ class V01::Entities::CustomerAdmin < V01::Entities::Customer
   expose(:max_plannings, documentation: { type: Integer, desc: EDIT_ONLY_ADMIN })
   expose(:max_zonings, documentation: { type: Integer, desc: EDIT_ONLY_ADMIN })
   expose(:max_destinations, documentation: { type: Integer, desc: EDIT_ONLY_ADMIN })
-  expose(:max_vehicle_usage_sets, documentation: { type: Integer, desc: EDIT_ONLY_ADMIN })
+  expose(:max_vehicle_usage_sets, documentation: { type: Integer, desc: 'Max vehicle usage sets (contexts) for this customer. Creating beyond this limit returns HTTP 403 with "Maximum number of vehicle base settings reached". ' + EDIT_ONLY_ADMIN })
 end

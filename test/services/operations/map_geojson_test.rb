@@ -5,7 +5,7 @@ require 'test_helper'
 class OperationsMapGeojsonTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @operation_route = @operation.operation_routes.find_by!(route_id: routes(:route_one_one).id)
   end
 
@@ -124,8 +124,7 @@ class OperationsMapGeojsonTest < ActiveSupport::TestCase
     rest_stop = route.stops.find { |stop| stop.is_a?(StopRest) }
     refute rest_stop.position?
 
-    Operation.where(customer_id: @planning.customer_id).delete_all
-    operation = Operations::PublishFromPlanning.call(planning: @planning.reload)
+    operation = publish_operation!(planning: @planning.reload)
     operation_route = operation.operation_routes.find_by!(route_id: route.id)
     rest = operation_route.operation_stops.find_by!(kind: 'rest')
 

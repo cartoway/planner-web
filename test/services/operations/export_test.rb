@@ -6,7 +6,7 @@ require 'zip'
 class OperationsExportTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @stop = @operation.operation_stops.find_by!(stop_id: stops(:stop_one_one).id)
     @stop.update_columns(status: 'delivered', status_updated_at: Time.zone.parse('2026-09-25 11:00'))
     file = Rack::Test::UploadedFile.new(Rails.root.join('test/fixtures/files/stop_photo.jpg'), 'image/jpeg')

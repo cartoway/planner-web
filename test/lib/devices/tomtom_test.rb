@@ -92,8 +92,7 @@ class TomtomTest < ActionController::TestCase
   test 'should update operation stop status' do
     with_stubs [:orders_service_wsdl, :show_order_report] do
       planning = plannings(:planning_one)
-      Operation.where(customer_id: @customer.id).delete_all
-      operation = Operations::PublishFromPlanning.call(planning: planning, route_ids: [routes(:route_one_one).id])
+      operation = publish_operation!(planning: planning, route_ids: [routes(:route_one_one).id])
 
       Operations::FetchDeviceStopsStatus.call(operation: operation)
 

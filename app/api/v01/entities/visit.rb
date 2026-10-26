@@ -46,7 +46,7 @@ class V01::Entities::Visit < Grape::Entity
   expose(:priority, documentation: { type: Integer, desc: 'Insertion priority when optimizing (-4 to 4, 0 if not defined). Higher is served first.', example: 0 })
   expose(:ref, documentation: { type: String, desc: 'External reference unique among visits of the same destination. Upsert key on import.', example: 'V1' })
   expose(:duration, documentation: { type: DateTime, desc: 'Service duration of this visit (HH:MM or HH:MM:SS on input).' }) { |m| m.duration_absolute_time_with_seconds }
-  expose(:duration_default, documentation: { type: DateTime, desc: 'Customer default visit duration, used when duration is not set on the visit.' }) { |m| m.destination.customer && m.destination.customer.visit_duration_absolute_time_with_seconds }
+  expose(:duration_default, documentation: { type: DateTime, desc: 'Customer default visit duration when the visit has no duration. Null when customer visit_duration is unset (no default service time).' }) { |m| m.destination.customer && m.destination.customer.visit_duration_absolute_time_with_seconds }
   expose(:tag_ids, documentation: { type: Integer, is_array: true, desc: 'Tag ids. A planning with tag_ids only includes visits matching tag_operation (and/or).', example: [1] })
   expose(:force_position, documentation: { type: String, values: %w[neutral always_first never_first always_final], desc: 'Forced position among visits that share the same constraint on the route: always_first, never_first, always_final, or neutral (default).', example: 'neutral' })
   expose(:custom_attributes_typed_hash, documentation: { type: Hash, desc: 'Additional typed properties defined on CustomAttribute for visits.' }, as: :custom_attributes)

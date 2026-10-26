@@ -7,8 +7,7 @@ class StopPhotosControllerTest < ActionController::TestCase
     customers(:customer_one).update(job_optimizer_id: nil)
     request.host = resellers(:reseller_one).host
     @planning = plannings(:planning_one)
-    Operation.where(customer_id: @planning.customer_id).delete_all
-    @operation = Operations::PublishFromPlanning.call(planning: @planning)
+    @operation = publish_operation!(planning: @planning)
     @operation_stop = @operation.operation_stops.find_by!(stop_id: stops(:stop_one_one).id)
     @vehicle = vehicles(:vehicle_one)
   end

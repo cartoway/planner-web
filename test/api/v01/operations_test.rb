@@ -13,7 +13,7 @@ class V01::OperationsTest < ActiveSupport::TestCase
     @planning = plannings(:planning_one)
     Operation.where(customer_id: @planning.customer_id).delete_all
     @route = routes(:route_one_one)
-    @operation = Operations::PublishFromPlanning.call(
+    @operation = publish_operation!(
       planning: @planning,
       route_ids: [@route.id]
     )
@@ -81,6 +81,20 @@ class V01::OperationsTest < ActiveSupport::TestCase
     assert_equal 'historized', closed['status'], closed
     assert closed['closed_at']
     assert_equal 'historized', Operation.find(operation_id).status
+  end
+
+  test 'transmit emails drivers on open operation' do
+    @planning.customer.update!(enable_email_driver: true, enable_sms_driver: false)
+    @operation_route.update!(vehicle_snapshot: (@operation_route.vehicle_snapshot || {}).merge('contact_email' => 'driver@example.com'))
+
+    post "/api/0.1/operations/#{@operation.id}/transmit.json?api_key=testkey1", channel: 'email'
+    assert_equal 200, last_response.status, last_response.body
+    body = JSON.parse(last_response.body)
+    assert_equal 1, body['emailed']
+    assert_equal 0, body['sms']
+    assert_equal 'email', @operation_route.reload.last_sent_to
+    assert @operation_route.last_sent_at
+    assert body.dig('operation', 'operation_routes').present?
   end
 
   test 'fetch_device_status pulls telematics into the operation' do

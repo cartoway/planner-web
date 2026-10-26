@@ -33,23 +33,25 @@ class V01::Devices::MasternautTest < ActiveSupport::TestCase
   test 'send' do
     with_stubs [:poi_wsdl, :poi, :job_wsdl, :job] do
       set_route
-      post api("devices/masternaut/send", { customer_id: @customer.id, route_id: @route.id })
+      _operation, operation_route = publish_operation_for!(@route)
+      post api("devices/masternaut/send", { customer_id: @customer.id, operation_route_id: operation_route.id })
       assert_equal 201, last_response.status, last_response.body
-      @route.reload
-      assert @route.reload.last_sent_at
-      assert_equal({ "id" => @route.id, "last_sent_to" => 'Masternaut', "last_sent_at" => @route.last_sent_at.iso8601(3), "last_sent_at_formatted"=>I18n.l(@route.last_sent_at) }, JSON.parse(last_response.body))
+      operation_route.reload
+      assert operation_route.last_sent_at
+      assert_equal last_sent_payload(operation_route), JSON.parse(last_response.body)
     end
   end
 
   test 'send multiple' do
     with_stubs [:poi_wsdl, :poi, :job_wsdl, :job] do
       set_route
-      post api("devices/masternaut/send_multiple", { customer_id: @customer.id, planning_id: @route.planning_id })
+      operation, _operation_route = publish_operation_for!(@route)
+      post api("devices/masternaut/send_multiple", { customer_id: @customer.id, operation_id: operation.id })
       assert_equal 201, last_response.status, last_response.body
-      routes = @route.planning.routes.select(&:vehicle_usage).select{|route| route.vehicle_usage.vehicle.devices[:masternaut_ref] }
-      routes.each &:reload
-      routes.each{|route| assert route.last_sent_at }
-      assert_equal(routes.map{|route| { "id" => route.id, "last_sent_to" => 'Masternaut', "last_sent_at" => route.last_sent_at.iso8601(3), "last_sent_at_formatted"=>I18n.l(route.last_sent_at) } }, JSON.parse(last_response.body))
+      routes = operation.operation_routes.select { |oroute| oroute.vehicle&.devices&.[](:masternaut_ref) }
+      routes.each(&:reload)
+      routes.each { |oroute| assert oroute.last_sent_at }
+      assert_equal(routes.map { |oroute| last_sent_payload(oroute) }, JSON.parse(last_response.body))
     end
   end
 end

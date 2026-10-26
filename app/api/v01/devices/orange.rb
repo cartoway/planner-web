@@ -16,6 +16,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class V01::Devices::Orange < Grape::API
+  helpers V01::Devices::DeviceHelpers
   namespace :devices do
     namespace :orange do
 
@@ -43,13 +44,13 @@ class V01::Devices::Orange < Grape::API
         present service.list_devices, with: V01::Entities::DeviceItem
       end
 
-      desc 'Send Planning Routes.',
+      desc 'Send Operation Routes.',
         detail: 'For Orange device.',
         nickname: 'deviceOrangeSendMultiple',
         success: V01::Status.success(:code_201),
         failure: V01::Status.failures
       params do
-        requires :planning_id, type: Integer, desc: 'Planning ID'
+        requires :operation_id, type: Integer, desc: 'Operation ID'
       end
       post '/send_multiple' do
         device_send_routes device_id: :orange_id
@@ -61,19 +62,19 @@ class V01::Devices::Orange < Grape::API
         success: V01::Status.success(:code_204),
         failure: V01::Status.failures
       params do
-        requires :route_id, type: Integer, desc: 'Route ID'
+        requires :operation_route_id, type: Integer, desc: 'OperationRoute ID'
       end
       delete '/clear' do
         device_clear_route
       end
 
-      desc 'Clear Planning Routes.',
+      desc 'Clear Operation Routes.',
         detail: 'For Orange device.',
         nickname: 'deviceOrangeClearMultiple',
         success: V01::Status.success(:code_204),
         failure: V01::Status.failures
       params do
-        requires :planning_id, type: Integer, desc: 'Planning ID'
+        requires :operation_id, type: Integer, desc: 'Operation ID'
       end
       delete '/clear_multiple' do
         device_clear_routes device_id: :orange_id

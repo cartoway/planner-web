@@ -7,7 +7,7 @@ class DeliveryTrackingTest < ActionController::TestCase
 
   setup do
     @planning = plannings(:planning_one)
-    @operation = Operations::PublishFromPlanning.call(planning: @planning, date: Date.current)
+    @operation = publish_operation!(planning: @planning, date: Date.current)
     @tracking = @operation.operation_delivery_trackings.first
     assert @tracking.present?
   end

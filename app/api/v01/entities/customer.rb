@@ -32,7 +32,7 @@ class V01::Entities::Customer < Grape::Entity
 
   expose(:ref, documentation: { type: String, desc: EDIT_ONLY_ADMIN })
   expose(:name, documentation: { type: String, desc: EDIT_ONLY_ADMIN })
-  expose(:visit_duration, documentation: { type: DateTime, desc: 'Visit duration' }) { |m| m.visit_duration_time_with_seconds }
+  expose(:visit_duration, documentation: { type: DateTime, desc: 'Default visit service duration. Null means no default (0); visits without their own duration inherit this.' }) { |m| m.visit_duration_time_with_seconds }
   expose(:default_country, documentation: { type: String })
   expose(:router_id, documentation: { type: Integer })
   expose(:router_dimension, documentation: { type: String, values: ::Router::DIMENSION.keys })
@@ -50,12 +50,12 @@ class V01::Entities::Customer < Grape::Entity
   expose(:recipient_template, documentation: { type: String, desc: 'Recipient email template for delivery tracking' })
   expose(:sms_concat, documentation: { type: 'Boolean' })
   expose(:sms_sender_name, documentation: { type: String })
-  expose(:enable_email_driver, documentation: { type: 'Boolean', desc: EDIT_ONLY_ADMIN })
-  expose(:enable_sms_driver, documentation: { type: 'Boolean', desc: EDIT_ONLY_ADMIN })
-  expose(:enable_email_destination, documentation: { type: 'Boolean', desc: EDIT_ONLY_ADMIN })
-  expose(:enable_sms_destination, documentation: { type: 'Boolean', desc: EDIT_ONLY_ADMIN })
-  expose(:enable_sms_intransit, documentation: { type: 'Boolean', desc: EDIT_ONLY_ADMIN })
-  expose(:enable_store_stops, documentation: { type: 'Boolean', desc: 'When true, intermediate store reloads can be defined on stores and assigned to vehicle usages. ' + EDIT_ONLY_ADMIN })
+  expose(:enable_email_driver, documentation: { type: 'Boolean', desc: 'When true, drivers can be emailed from an operation (transmit to vehicle contact_email). ' + EDIT_ONLY_ADMIN })
+  expose(:enable_sms_driver, documentation: { type: 'Boolean', desc: 'When true, drivers can receive SMS from an operation (transmit). ' + EDIT_ONLY_ADMIN })
+  expose(:enable_email_destination, documentation: { type: 'Boolean', desc: 'When true, destination/recipient email notifications are allowed. ' + EDIT_ONLY_ADMIN })
+  expose(:enable_sms_destination, documentation: { type: 'Boolean', desc: 'When true, destination SMS notifications are allowed. ' + EDIT_ONLY_ADMIN })
+  expose(:enable_sms_intransit, documentation: { type: 'Boolean', desc: 'When true, in-transit SMS to destinations are allowed. ' + EDIT_ONLY_ADMIN })
+  expose(:enable_store_stops, documentation: { type: 'Boolean', desc: 'When true, intermediate store reloads can be defined on stores and assigned via store_reload_ids; takes effect immediately on save. ' + EDIT_ONLY_ADMIN })
 
   expose(:enable_external_callback, documentation: { type: 'Boolean', desc: 'Enable external callback', default: false })
   expose(:external_callback_url, documentation: { type: String, desc: 'External callback URL' })

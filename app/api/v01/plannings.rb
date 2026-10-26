@@ -39,7 +39,7 @@ class V01::Plannings < Grape::API
 
   resource :plannings do # rubocop:disable Metrics/BlockLength
     desc 'Create planning.',
-      detail: 'Create a planning. There is no create-route or create-stop endpoint: an out-of-route (unassigned) route and a route for each vehicle of the vehicle_usage_set are created automatically. If visits exist (filtered by tag_ids / tag_operation when set), as many stops as matching visits are created. Defaults vehicle_usage_set_id to the customer first set. HTTP 400 when the planning quota is exceeded.',
+      detail: 'Create a planning. There is no create-route or create-stop endpoint: an out-of-route (unassigned) route and one route per active vehicle usage of the vehicle_usage_set are created automatically (inactive vehicle_usages get no route). The response exposes route_ids (not nested routes); fetch routes via GET /plannings/:id/routes. If visits exist (filtered by tag_ids / tag_operation when set), as many stops as matching visits are created. Defaults vehicle_usage_set_id to the customer first set. HTTP 400 when the planning quota is exceeded.',
       nickname: 'createPlanning',
       success: V01::Status.success(:code_201, V01::Entities::Planning),
       failure: V01::Status.failures
@@ -47,7 +47,7 @@ class V01::Plannings < Grape::API
       use :params_from_entity, entity: V01::Entities::Planning.documentation_for_params.deep_merge(
         name: { required: true },
       )
-      optional :tag_ids, type: Array[Integer], desc: 'Ids separated by comma.', coerce_with: CoerceArrayInteger, documentation: { param_type: 'form' }
+      optional :tag_ids, type: Array[Integer], desc: SharedParams::TAG_IDS_DESC, coerce_with: CoerceArrayInteger, documentation: { param_type: 'form', example: '1,2,ref:vip' }
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: 'Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring.'
     end
     post do
@@ -287,7 +287,7 @@ class V01::Plannings < Grape::API
     end
 
     desc 'Optimize routes.',
-      detail: 'Starts an asynchronous optimization of unlocked routes. global=true allows moving visits between routes; false (default) keeps visits on their current route (use after zoning or import with visit.route). Returns a Job; poll GET /jobs/:id until status is succeeded or failed. HTTP 409 if another optimizer job is already running. HTTP 304 if the solver finds no solution. Synchronous mode is deprecated.',
+      detail: 'Starts an asynchronous optimization of unlocked routes (GET for historical reasons; prefer polling the returned Job). global=true allows moving visits between routes; false (default) keeps visits on their current route (use after zoning or import with visit.route). Returns a Job; poll GET /jobs/:id about every 2–5s until status is succeeded or failed. HTTP 409 if another optimizer job is already running. HTTP 304 if the solver finds no solution. Synchronous mode is deprecated.',
       nickname: 'optimizeRoutes',
       http_codes: [
         V01::Status.success(:code_200, V01::Entities::Job),
@@ -299,7 +299,7 @@ class V01::Plannings < Grape::API
       optional :synchronous, type: Boolean, desc: '[Deprecated] Optimize synchronously, Optimization must be performed asynchronously at least to lock the planning', default: false
       optional :all_stops, type: Boolean, desc: 'Deprecated (Use active_only instead)'
       optional :active_only, type: Boolean, desc: 'If true only active stops are taken into account by optimization, else inactive stops are also taken into account but are not activated in result route.', default: true
-      optional :ignore_overload_multipliers, type: String, desc: "Deliverable Unit id and whether or not it should be ignored : {'0'=>{'unit_id'=>'7', 'ignore'=>'true'}}"
+      optional :ignore_overload_multipliers, type: String, desc: 'JSON object of deliverable units to ignore for capacity, keyed by index. Example URL-encoded: ignore_overload_multipliers%5B0%5D%5Bunit_id%5D=7&ignore_overload_multipliers%5B0%5D%5Bignore%5D=true (unit_id=7, ignore=true).'
       optional :with_details, type: Boolean, desc: '[Deprecated] Output route details, only active with synchronous option', default: false
       optional :with_geojson, type: Symbol, values: [:true, :false, :point, :polyline], default: :false, desc: '[Deprecated] Fill the geojson field with route geometry: `point` to return only points, `polyline` to return with encoded linestring. Only active with synchronous option'
     end
