@@ -56,7 +56,7 @@ class V01::DeliverableUnitsTest < ActiveSupport::TestCase
       @deliverable_unit.label = 'new label'
       post api(), @deliverable_unit.attributes.except('default_pickup', 'default_delivery').merge({ref: 'other_ref', default_quantity: -1.2})
       assert last_response.created?, last_response.body
-      assert 1.2, JSON.parse(last_response.body)['default_pickup']
+      assert_equal 1.2, JSON.parse(last_response.body)['default_pickup']
     end
   end
 
@@ -65,7 +65,7 @@ class V01::DeliverableUnitsTest < ActiveSupport::TestCase
       @deliverable_unit.label = 'new label'
       post api(), @deliverable_unit.attributes.merge({ref: 'other_ref', default_pickup: 1.2})
       assert last_response.created?, last_response.body
-      assert 1.2, JSON.parse(last_response.body)['default_pickup']
+      assert_equal 1.2, JSON.parse(last_response.body)['default_pickup']
     end
   end
 
@@ -82,8 +82,18 @@ class V01::DeliverableUnitsTest < ActiveSupport::TestCase
       @deliverable_unit.default_capacity = 1.2
       post api(), @deliverable_unit.attributes.merge({ref: 'other_ref'})
       assert last_response.created?, last_response.body
-      assert 1.2, JSON.parse(last_response.body)['default_capacity']
+      assert_equal 1.2, JSON.parse(last_response.body)['default_capacity']
     end
+  end
+
+  test 'should update a deliverable unit default_capacity' do
+    put api(@deliverable_unit.id), default_capacity: 48.5
+    assert last_response.ok?, last_response.body
+    assert_equal 48.5, JSON.parse(last_response.body)['default_capacity']
+
+    get api(@deliverable_unit.id)
+    assert last_response.ok?, last_response.body
+    assert_equal 48.5, JSON.parse(last_response.body)['default_capacity']
   end
 
   test 'should update a deliverable unit' do
