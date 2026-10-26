@@ -1051,7 +1051,32 @@ en:
       form:
         permissions_legend: Permissions
         permissions_help: >-
-          Defines toolbar and form permissions for users assigned this role.
+          Defines space access, per-space rights, and toolbar permissions for users assigned this role.
+        spaces_title: Spaces (navigation)
+        spaces_help: >-
+          The left column grants full access to the space. The middle column shows it in navigation for viewing only. The right column hides it.
+        space_actions_section_title: Per-space permissions
+        space_actions_help: >-
+          For each active space, the left column allows the listed actions. The middle column shows them as read-only where applicable. The right column hides them.
+        planning_toolbar_section_title: Planning toolbars
+        space_resources:
+          plannings: Plans
+          destination: Destination/Visits
+          vehicle_usages: Vehicle configurations
+          stores: Facilities
+          tags: Tags
+          customer: Account
+          deliverable_units: Deliverable units
+          custom_attributes: Custom attributes
+          operations: Operations
+        space_actions:
+          common:
+            edit: Create, edit, and delete
+          operations:
+            sync: Publish and sync from planning
+            transmit: Send to drivers and destinations
+            destroy: Delete operations
+            export: Export spreadsheets and archives
         forms_title: Forms (navigation)
         forms_help: >-
           The left column allows creating, editing, and deleting records. The middle column shows the form in navigation but only for viewing. The right column hides it.

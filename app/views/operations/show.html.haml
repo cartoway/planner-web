@@ -1,4 +1,6 @@
 - content_for :title, @operation.name
+- can_export = can?(:export, Operation)
+- can_transmit = can?(:transmit, Operation)
 - content_for :meta do
   %meta{name: 'turbo-refresh-method', content: 'morph'}
   %meta{name: 'turbo-refresh-scroll', content: 'preserve'}
@@ -45,26 +47,27 @@
           = link_to edit_planning_path(@operation.planning), class: 'btn btn-light', target: '_blank', rel: 'noopener', data: { turbo: false } do
             %i.fa.fa-map-location.fa-fw
             = t('operations.show.planning')
-        .dropdown
-          %button.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
-            %i.fa.fa-download.fa-fw
-            = t('operations.show.export')
-          %ul.dropdown-menu
-            %li
-              = link_to export_operation_path(@operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
-                %i.fa.fa-file-excel.fa-fw
-                = t('operations.show.export_spreadsheet')
-            %li
-              = link_to export_operation_path(@operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
-                %i.fa.fa-file-zipper.fa-fw
-                = t('operations.show.export_archive')
+        - if can_export
+          .dropdown
+            %button.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
+              %i.fa.fa-download.fa-fw
+              = t('operations.show.export')
+            %ul.dropdown-menu
+              %li
+                = link_to export_operation_path(@operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
+                  %i.fa.fa-file-excel.fa-fw
+                  = t('operations.show.export_spreadsheet')
+              %li
+                = link_to export_operation_path(@operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
+                  %i.fa.fa-file-zipper.fa-fw
+                  = t('operations.show.export_archive')
         = render 'operations/demo_actions'
         #operation-send-buttons
-          - if @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
+          - if can_transmit && @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
             %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-drivers' }}
               %i.fa.fa-paper-plane.fa-fw
               = t('operations.show.send_drivers')
-          - if @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
+          - if can_transmit && @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
             %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations' }}
               %i.fa.fa-envelope-open-text.fa-fw
               = t('operations.show.send_destinations')
@@ -77,20 +80,21 @@
               = link_to edit_planning_path(@operation.planning), class: 'dropdown-item', target: '_blank', rel: 'noopener', data: { turbo: false } do
                 %i.fa.fa-map-location.fa-fw
                 = t('operations.show.planning')
-          %li
-            = link_to export_operation_path(@operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
-              %i.fa.fa-file-excel.fa-fw
-              = t('operations.show.export_spreadsheet')
-          %li
-            = link_to export_operation_path(@operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
-              %i.fa.fa-file-zipper.fa-fw
-              = t('operations.show.export_archive')
-          - if @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
+          - if can_export
+            %li
+              = link_to export_operation_path(@operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
+                %i.fa.fa-file-excel.fa-fw
+                = t('operations.show.export_spreadsheet')
+            %li
+              = link_to export_operation_path(@operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
+                %i.fa.fa-file-zipper.fa-fw
+                = t('operations.show.export_archive')
+          - if can_transmit && @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
             %li
               %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-drivers' }}
                 %i.fa.fa-paper-plane.fa-fw
                 = t('operations.show.send_drivers')
-          - if @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
+          - if can_transmit && @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
             %li
               %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations' }}
                 %i.fa.fa-envelope-open-text.fa-fw
@@ -217,23 +221,24 @@
       .operation-detail-bar
         %button.btn-close{type: 'button', data: { action: 'click->v2--operation-show#closeDetail' }, 'aria-label': t('web.dialog.close')}
       #operation-detail-body.operation-detail-body
-#operation-route-send.modal.fade{tabindex: '-1', aria: { hidden: 'true' }, data: { email_title: t('operations.show.send_email_title'), sms_title: t('operations.show.send_sms_title'), email_label: t('activerecord.attributes.vehicle.contact_email'), sms_label: t('activerecord.attributes.vehicle.phone_number'), email_submit: t('operations.show.send_email'), sms_submit: t('operations.show.send_sms') }}
-  .modal-dialog
-    .modal-content
-      = form_with url: transmit_operation_path(@operation), method: :post, local: true, data: { turbo: false } do
-        = hidden_field_tag :channel, '', data: { route_send_channel: true }
-        = hidden_field_tag :send, '1', data: { route_send_flag: true }
-        .modal-header
-          %h2.h5.modal-title{data: { route_send_title: true }}
-          %button.btn-close{type: 'button', data: { bs_dismiss: 'modal' }, aria: { label: t('web.dialog.close') }}
-        .modal-body
-          %p.mb-2{data: { route_send_name: true }}
-          %label.form-label{for: 'operation-route-send-contact', data: { route_send_label: true }}
-          %input.form-control{type: 'text', id: 'operation-route-send-contact', autocomplete: 'off', data: { route_send_input: true }}
-        .modal-footer
-          %button.btn.btn-light{type: 'button', data: { bs_dismiss: 'modal' }}= t('all.verb.cancel')
-          = submit_tag t('operations.show.send_email'), class: 'btn btn-primary', data: { route_send_submit: true }
-- if @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
+- if can_transmit
+  #operation-route-send.modal.fade{tabindex: '-1', aria: { hidden: 'true' }, data: { email_title: t('operations.show.send_email_title'), sms_title: t('operations.show.send_sms_title'), email_label: t('activerecord.attributes.vehicle.contact_email'), sms_label: t('activerecord.attributes.vehicle.phone_number'), email_submit: t('operations.show.send_email'), sms_submit: t('operations.show.send_sms') }}
+    .modal-dialog
+      .modal-content
+        = form_with url: transmit_operation_path(@operation), method: :post, local: true, data: { turbo: false } do
+          = hidden_field_tag :channel, '', data: { route_send_channel: true }
+          = hidden_field_tag :send, '1', data: { route_send_flag: true }
+          .modal-header
+            %h2.h5.modal-title{data: { route_send_title: true }}
+            %button.btn-close{type: 'button', data: { bs_dismiss: 'modal' }, aria: { label: t('web.dialog.close') }}
+          .modal-body
+            %p.mb-2{data: { route_send_name: true }}
+            %label.form-label{for: 'operation-route-send-contact', data: { route_send_label: true }}
+            %input.form-control{type: 'text', id: 'operation-route-send-contact', autocomplete: 'off', data: { route_send_input: true }}
+          .modal-footer
+            %button.btn.btn-light{type: 'button', data: { bs_dismiss: 'modal' }}= t('all.verb.cancel')
+            = submit_tag t('operations.show.send_email'), class: 'btn btn-primary', data: { route_send_submit: true }
+- if can_transmit && @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
   = render 'operations/send_drivers_modal', operation: @operation, routes: @send_routes
-- if @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
+- if can_transmit && @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
   = render 'operations/send_destinations_modal', operation: @operation, trackings: @send_trackings

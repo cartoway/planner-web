@@ -21,7 +21,7 @@ module Preferences
   module Catalog
     # Maps catalog ids to edit UI partial paths (single source for planning/route heads + toolbars).
     module ViewRegistry
-      # Subset of OPERATION_GROUPS_PLANNING rendered in #global_tools .pull-right.btn-group on planning edit.
+      # Subset of PlanningToolbar::GROUPS_PLANNING rendered in #global_tools .pull-right.btn-group on planning edit.
       PLANNING_EDIT_GLOBAL_TOOLBAR_OPERATION_IDS = %w[toggle_routes toggle_route_data lock_routes activate_stops export].freeze
 
       module_function
@@ -42,7 +42,7 @@ module Preferences
       # @return [String, nil] e.g. "plannings/operations/export" or "routes/operations/optimize"
       def toolbar_operation_partial(zone, operation_id)
         oid = operation_id.to_s
-        allowed = zone.to_s == 'route' ? Operations::OPERATION_GROUPS_ROUTE : Operations::OPERATION_GROUPS_PLANNING
+        allowed = zone.to_s == 'route' ? PlanningToolbar::GROUPS_ROUTE : PlanningToolbar::GROUPS_PLANNING
         return nil unless allowed.include?(oid)
 
         if zone.to_s == 'route'

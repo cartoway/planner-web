@@ -18,8 +18,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 
-# Shared helpers for admin drag-and-drop UIs over JSONB headers / operations / forms.
-# Requires #read_operations_hash and #read_forms_hash (see Role, UserPreferences).
+# Shared helpers for admin drag-and-drop UIs over JSONB headers / planning_toolbar / spaces.
+# Requires #read_planning_toolbar_hash, #read_spaces_hash (see Role, UserPreferences).
 module PreferencesCatalogSplits
   extend ActiveSupport::Concern
 
@@ -49,19 +49,19 @@ module PreferencesCatalogSplits
     [h['active'], h['hidden']]
   end
 
-  # Active | disabled | hidden toolbar item ids for admin operations DnD (segment_controls visible + usable).
-  def operations_tier_split(zone)
+  # Active | disabled | hidden toolbar item ids for admin planning toolbar DnD (segment_controls visible + usable).
+  def planning_toolbar_tier_split(zone)
     z = zone.to_s
     allowed = case z
-              when 'route' then Preferences::Catalog::OPERATION_GROUPS_ROUTE
-              when 'stop' then Preferences::Catalog::OPERATION_GROUPS_STOP
-              else Preferences::Catalog::OPERATION_GROUPS_PLANNING
+              when 'route' then Preferences::Catalog::PLANNING_TOOLBAR_GROUPS_ROUTE
+              when 'stop' then Preferences::Catalog::PLANNING_TOOLBAR_GROUPS_STOP
+              else Preferences::Catalog::PLANNING_TOOLBAR_GROUPS_PLANNING
               end
     ops = case z
           when 'stop'
-            Preferences::Catalog.normalize_stop_zone(read_operations_hash['stop'])
+            Preferences::Catalog.normalize_stop_zone(read_planning_toolbar_hash['stop'])
           else
-            h = read_operations_hash[z] || {}
+            h = read_planning_toolbar_hash[z] || {}
             h.is_a?(Hash) ? h.stringify_keys : {}
           end
     order = Array(ops['segments']).map(&:to_s)
@@ -69,9 +69,9 @@ module PreferencesCatalogSplits
 
     bucket = lambda do |id|
       c = controls[id].is_a?(Hash) ? controls[id].stringify_keys : {}
-      # Defaults must match Operations.normalize_zone missing segment_controls (visible, not usable).
-      vis = Preferences::Catalog.truthy?(c.fetch('visible', Preferences::Catalog::Operations::NORMALIZE_SEGMENT_VISIBLE_DEFAULT))
-      use = Preferences::Catalog.truthy?(c.fetch('usable', Preferences::Catalog::Operations::NORMALIZE_SEGMENT_USABLE_DEFAULT))
+      # Defaults must match PlanningToolbar.normalize_zone missing segment_controls (visible, not usable).
+      vis = Preferences::Catalog.truthy?(c.fetch('visible', Preferences::Catalog::PlanningToolbar::NORMALIZE_SEGMENT_VISIBLE_DEFAULT))
+      use = Preferences::Catalog.truthy?(c.fetch('usable', Preferences::Catalog::PlanningToolbar::NORMALIZE_SEGMENT_USABLE_DEFAULT))
       return :hidden unless vis
 
       use ? :active : :disabled
@@ -108,10 +108,10 @@ module PreferencesCatalogSplits
     [active, disabled, hidden]
   end
 
-  # Active | disabled | hidden form resource ids (visible + usable, same semantics as operations tiers).
-  def forms_resources_three_way_split
-    allowed = Preferences::Catalog::FORM_RESOURCES
-    h = Preferences::Catalog.normalize_forms(read_forms_hash)
+  # Active | disabled | hidden space keys (access tiers).
+  def spaces_resources_three_way_split
+    allowed = Preferences::Catalog::SPACE_KEYS
+    h = Preferences::Catalog.normalize_spaces(read_spaces_hash)
     ordered = []
     h.each_key { |k| ordered << k if allowed.include?(k) }
     allowed.each { |k| ordered << k unless ordered.include?(k) }
@@ -122,8 +122,8 @@ module PreferencesCatalogSplits
 
     ordered.each do |id|
       e = h[id].is_a?(Hash) ? h[id].stringify_keys : {}
-      vis = Preferences::Catalog.truthy?(e.fetch('visible', Preferences::Catalog::Forms::NORMALIZE_FORM_VISIBLE_DEFAULT))
-      use = Preferences::Catalog.truthy?(e.fetch('usable', Preferences::Catalog::Forms::NORMALIZE_FORM_USABLE_DEFAULT))
+      vis = Preferences::Catalog.truthy?(e.fetch('visible', Preferences::Catalog::Spaces::NORMALIZE_SPACE_VISIBLE_DEFAULT))
+      use = Preferences::Catalog.truthy?(e.fetch('usable', Preferences::Catalog::Spaces::NORMALIZE_SPACE_USABLE_DEFAULT))
 
       if !vis
         hidden << id
@@ -131,6 +131,44 @@ module PreferencesCatalogSplits
         active << id
       else
         disabled << id
+      end
+    end
+
+    [active, disabled, hidden]
+  end
+
+  # Active | disabled | hidden action ids for one space (when space is Active).
+  def space_actions_tier_split(space_key)
+    key = space_key.to_s
+    allowed = Preferences::Catalog::SPACE_ACTIONS.fetch(key, [])
+    entry = Preferences::Catalog.normalize_spaces(read_spaces_hash)[key] || {}
+    actions = entry['actions'].is_a?(Hash) ? entry['actions'].stringify_keys : {}
+    order = Array(actions['segments']).map(&:to_s)
+    controls = actions['segment_controls'].is_a?(Hash) ? actions['segment_controls'].stringify_keys : {}
+
+    bucket = lambda do |id|
+      c = controls[id].is_a?(Hash) ? controls[id].stringify_keys : {}
+      vis = Preferences::Catalog.truthy?(c.fetch('visible', Preferences::Catalog::Spaces::NORMALIZE_ACTION_VISIBLE_DEFAULT))
+      use = Preferences::Catalog.truthy?(c.fetch('usable', Preferences::Catalog::Spaces::NORMALIZE_ACTION_USABLE_DEFAULT))
+      return :hidden unless vis
+
+      use ? :active : :disabled
+    end
+
+    active = []
+    disabled = []
+    hidden = []
+    seen = {}
+
+    (order + allowed).each do |id|
+      next unless allowed.include?(id)
+      next if seen[id]
+
+      seen[id] = true
+      case bucket.call(id)
+      when :active then active << id
+      when :disabled then disabled << id
+      else hidden << id
       end
     end
 

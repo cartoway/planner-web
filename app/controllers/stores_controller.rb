@@ -31,8 +31,8 @@ class StoresController < ApplicationController
   include PreferencesAuthorization
   include V2Layout
 
-  before_action -> { deny_unless_form_create!(:stores) }, only: [:create, :upload_csv]
-  before_action -> { deny_unless_form_update!(:stores) }, only: [:update, :destroy, :destroy_multiple]
+  before_action -> { deny_unless_space_action_usable!(:stores, :edit) }, only: [:create, :upload_csv]
+  before_action -> { deny_unless_space_action_usable!(:stores, :edit) }, only: [:update, :destroy, :destroy_multiple]
 
   def index
     if current_user.customer.job_store_geocoding

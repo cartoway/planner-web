@@ -30,15 +30,15 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test 'does not assign reseller default role on create' do
-    return unless Role.column_names.include?('operations')
+    return unless Role.column_names.include?('planning_toolbar')
 
     reseller = resellers(:reseller_one)
     role = Role.create!(
       reseller: reseller,
       name: 'Model default role',
       ref: "model_default_#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.baseline_role_operations_json,
-      forms: Preferences::Catalog.baseline_role_forms_json
+      planning_toolbar: Preferences::Catalog.baseline_role_planning_toolbar_json,
+      spaces: Preferences::Catalog.baseline_role_spaces_json
     )
     reseller.update_column(:default_role_id, role.id)
 
@@ -105,18 +105,18 @@ class UserTest < ActiveSupport::TestCase
   end
 
   test 'toolbar segment visibility follows role operations when role_id is set' do
-    return unless Role.column_names.include?('operations')
+    return unless Role.column_names.include?('planning_toolbar')
 
     reseller = resellers(:reseller_one)
-    ops = Preferences::Catalog.default_operations.deep_dup
+    ops = Preferences::Catalog.default_planning_toolbar.deep_dup
     ops['planning']['segment_controls']['optimize'] = {
       'visible' => false, 'usable' => false
     }
     role = Role.create!(
       reseller: reseller,
       name: 'Restricted toolbar',
-      operations: ops,
-      forms: Preferences::Catalog.default_forms
+      planning_toolbar: ops,
+      spaces: Preferences::Catalog.default_spaces
     )
     user = users(:user_one)
     user.update!(role_id: role.id)

@@ -42,7 +42,7 @@ class PlanningsController < ApplicationController
   before_action :check_no_existing_job, only: [:optimize, :optimize_route]
   around_action :over_max_limit, only: [:create, :duplicate]
 
-  before_action -> { deny_unless_form_update!(:plannings) }, only: %i[destroy destroy_multiple duplicate]
+  before_action -> { deny_unless_space_action_usable!(:plannings, :edit) }, only: %i[destroy destroy_multiple duplicate]
 
   load_and_authorize_resource except: [:driver_move]
 
@@ -359,7 +359,7 @@ class PlanningsController < ApplicationController
           .group_by(&:route_id)
 
     planning_summary = planning_summary(@planning)
-    open_ops_by_route = @planning.customer.device.operations_enabled? ? @planning.open_operations_by_route_id : nil
+    open_ops_by_route = current_user.space_visible?(:operations) ? @planning.open_operations_by_route_id : nil
     payloads = ordered_routes.map do |route|
       stops_for_sidebar = stops_by_route_id[route.id] || []
       route_data = RouteSidebarSerializer.new(
@@ -387,7 +387,7 @@ class PlanningsController < ApplicationController
 
   def data_header
     json_data = JSON.parse(render_to_string(template: 'plannings/head_data.json.jbuilder'), symbolize_names: true)
-    if can?(:manage, Operation) && @planning.customer.device.operations_enabled?
+    if current_user.space_visible?(:operations)
       json_data[:execution_operations] =
         @planning.operations.open_status
                  .select(:id, :structure_fingerprint, :custom_attributes)
@@ -797,6 +797,7 @@ class PlanningsController < ApplicationController
 
   def publish_operation
     authorize! :create, Operation
+    authorize! :transmit, Operation if params[:transmit].present?
     route_ids = params.key?(:route_ids) ? Array(params[:route_ids]) : nil
     operation = Operations::PublishFromPlanning.call(
       planning: @planning,

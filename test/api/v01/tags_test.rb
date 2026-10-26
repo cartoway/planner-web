@@ -133,13 +133,16 @@ class V01::TagsTest < ActiveSupport::TestCase
 
   test 'GET tags returns 403 when tags form is hidden' do
     u = users(:user_one)
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['tags'] = { 'visible' => false, 'usable' => false }
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['tags'] = Preferences::Catalog::Spaces.default_space_entry(
+      'tags', visible: false, usable: false, actions_all_usable: false
+    )
+    spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),
       name: "api-hidden-tags-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: spaces
     )
     u.update!(role_id: role.id)
 
@@ -152,13 +155,16 @@ class V01::TagsTest < ActiveSupport::TestCase
 
   test 'GET tags succeeds when tags form is read-only' do
     u = users(:user_one)
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['tags'] = { 'visible' => true, 'usable' => false }
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['tags'] = Preferences::Catalog::Spaces.default_space_entry(
+      'tags', visible: true, usable: false, actions_all_usable: false
+    )
+    spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),
       name: "api-ro-tags-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: spaces
     )
     u.update!(role_id: role.id)
 
@@ -171,13 +177,16 @@ class V01::TagsTest < ActiveSupport::TestCase
 
   test 'POST tag returns 403 when tags form is read-only' do
     u = users(:user_one)
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['tags'] = { 'visible' => true, 'usable' => false }
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['tags'] = Preferences::Catalog::Spaces.default_space_entry(
+      'tags', visible: true, usable: false, actions_all_usable: false
+    )
+    spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),
       name: "api-ro-tags-post-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: spaces
     )
     u.update!(role_id: role.id)
 

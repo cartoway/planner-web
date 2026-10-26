@@ -2,7 +2,7 @@
 -# data-turbo-frame=_top: form lives inside #form_sidebar; break out so turbo_stream can close sidebar + refresh list.
 - form_html = { class: 'number-to-percentage form-horizontal form-sidebar-form', id: 'vehicle-usage-form-sidebar', 'data-turbo-frame' => '_top', 'data-controller' => 'v2--rest-type-fields v2--router-options v2--number-to-percentage v2--vehicle-devices v2--time-fields', 'data-action' => 'change->v2--rest-type-fields#change change->v2--router-options#change submit->v2--rest-type-fields#submit submit->v2--number-to-percentage#submit', 'data-v2--rest-type-fields-prefix-value' => 'vehicle_usage', 'data-v2--number-to-percentage-prefix-value' => 'vehicle_usage[vehicle]', 'data-v2--time-fields-invalid-message-value' => t('schedule_type.invalid'), 'data-v2--rest-type-fields-duration-must-be-filled-value' => t('vehicle_usages.form.rest_type.duration_must_be_filled'), 'data-v2--rest-type-fields-lapse-must-be-filled-value' => t('vehicle_usages.form.rest_type.lapse_must_be_filled'), 'data-v2--rest-type-fields-duration-must-be-smaller-value' => t('vehicle_usages.form.rest_type.duration_must_be_smaller') }
 - form_html['data-v2-js-config'] = local_assigns[:v2_js_config] if local_assigns[:v2_js_config]
-- tom_select_data = { controller: 'v2--tom-select', v2__tom_select_create_value: current_user_form_create?(:tags), v2__tom_select_placeholder_value: t('web.select2.placeholder') }
+- tom_select_data = { controller: 'v2--tom-select', v2__tom_select_create_value: current_user_space_action_usable?(:tags, :edit), v2__tom_select_placeholder_value: t('web.select2.placeholder') }
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
 - v2_bootstrap_label_col = 'col-md-10 offset-md-1 fw-bold'
 - v2_control_col = 'col-md-10 offset-md-1 field'

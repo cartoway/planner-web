@@ -1,10 +1,10 @@
 <% javascript 'vehicle_usage_set' %>
 
 <% invisible_class = current_user.customer.vehicle_usage_sets.size > 1 ? '' : 'invisible' %>
-<% can_destroy_vehicle_config = current_user_form_destroy_enabled?(:vehicle_usages) %>
-<% can_update_vehicle_usage = current_user_form_update?(:vehicle_usages) %>
-<% can_create_vehicle_usage = current_user_form_create?(:vehicle_usages) %>
-<% can_view_vehicle_usage = current_user_form_visible?(:vehicle_usages) %>
+<% can_destroy_vehicle_config = current_user_space_action_usable?(:vehicle_usages, :edit) %>
+<% can_update_vehicle_usage = current_user_space_action_usable?(:vehicle_usages, :edit) %>
+<% can_create_vehicle_usage = current_user_space_action_usable?(:vehicle_usages, :edit) %>
+<% can_view_vehicle_usage = current_user_space_visible?(:vehicle_usages) %>
 
 <% content_for :title, t('.title') %>
 
@@ -75,7 +75,7 @@
         </td>
         <td class="text-right">
           <% if current_user.customer.default_max_vehicle_usage_sets > 1 %>
-            <%= link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), disabled: current_user.customer.too_many_vehicle_usage_sets? || !current_user_form_update?(:vehicle_usages), :class => 'btn btn-default btn-sm', method: :patch, title: t('all.verb.duplicate') do %><i class="fa fa-copy fa-fw"></i><% end %>
+            <%= link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), disabled: current_user.customer.too_many_vehicle_usage_sets? || !current_user_space_action_usable?(:vehicle_usages, :edit), :class => 'btn btn-default btn-sm', method: :patch, title: t('all.verb.duplicate') do %><i class="fa fa-copy fa-fw"></i><% end %>
           <% end %>
 
           <%= link_to vehicle_usage_set_path(vehicle_usage_set, format: :excel), :class => 'btn btn-default btn-sm' do %>

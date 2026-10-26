@@ -18,12 +18,12 @@ class ResellerTest < ActiveSupport::TestCase
     assert_equal I18n.t('admin.roles.default_permissions_role_name'), role.name
     assert_equal Role.default_new_reseller_role_icon, role.icon
     assert_equal(
-      Preferences::Catalog.baseline_role_operations_json,
-      role.operations
+      Preferences::Catalog.baseline_role_planning_toolbar_json,
+      role.planning_toolbar
     )
     assert_equal(
-      Preferences::Catalog.baseline_role_forms_json,
-      role.forms
+      Preferences::Catalog.baseline_role_spaces_json,
+      role.spaces
     )
     reseller_id = reseller.id
     assert_difference(-> { Role.where(reseller_id: reseller_id).count }, -1) do
@@ -63,21 +63,21 @@ class ResellerTest < ActiveSupport::TestCase
 
   test 'allows several roles with no ref for the same reseller' do
     reseller = @reseller
-    ops = Preferences::Catalog.normalize_operations({})
-    forms = Preferences::Catalog.normalize_forms({})
+    ops = Preferences::Catalog.normalize_planning_toolbar({})
+    spaces = Preferences::Catalog.normalize_spaces({})
     Role.create!(
       reseller: reseller,
       name: "Sans ref A #{SecureRandom.hex(4)}",
       ref: nil,
-      operations: ops,
-      forms: forms
+      planning_toolbar: ops,
+      spaces: spaces
     )
     role_b = Role.create!(
       reseller: reseller,
       name: "Sans ref B #{SecureRandom.hex(4)}",
       ref: '',
-      operations: ops,
-      forms: forms
+      planning_toolbar: ops,
+      spaces: spaces
     )
     assert_nil role_b.ref
     assert role_b.persisted?
@@ -93,8 +93,8 @@ class ResellerTest < ActiveSupport::TestCase
       reseller: reseller,
       name: 'Secondary seed role',
       ref: "seed_extra_#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.normalize_operations(Preferences::Catalog.no_role_operations_seed_hash),
-      forms: Preferences::Catalog.normalize_forms(Preferences::Catalog.no_role_forms_seed_hash)
+      planning_toolbar: Preferences::Catalog.normalize_planning_toolbar(Preferences::Catalog.no_role_planning_toolbar_seed_hash),
+      spaces: Preferences::Catalog.normalize_spaces(Preferences::Catalog.no_role_spaces_seed_hash)
     )
 
     assert_equal 2, reseller.roles.count

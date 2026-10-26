@@ -1077,7 +1077,32 @@ fr:
       form:
         permissions_legend: Permissions
         permissions_help: >-
-          Définit les permissions (barres d’outils et formulaires) pour les utilisateurs auxquels ce rôle est assigné.
+          Définit l’accès aux espaces, les droits par espace et les barres d’outils pour les utilisateurs auxquels ce rôle est assigné.
+        spaces_title: Espaces (navigation)
+        spaces_help: >-
+          La colonne de gauche accorde l’accès complet à l’espace. La colonne centrale l’affiche dans la navigation en consultation seule. La colonne de droite le masque.
+        space_actions_section_title: Permissions par espace
+        space_actions_help: >-
+          Pour chaque espace actif, la colonne de gauche autorise les actions listées. La colonne centrale les limite à la consultation lorsque c’est pertinent. La colonne de droite les masque.
+        planning_toolbar_section_title: Barres d’outils planning
+        space_resources:
+          plannings: Plans
+          destination: Destination/Visites
+          vehicle_usages: Configurations de véhicules
+          stores: Sites
+          tags: Catégories
+          customer: Espace client
+          deliverable_units: Unités livrables
+          custom_attributes: Champs additionnels
+          operations: Opérations
+        space_actions:
+          common:
+            edit: Création, édition et suppression
+          operations:
+            sync: Publication et synchronisation depuis le plan
+            transmit: Envoi aux livreurs et destinations
+            destroy: Suppression des opérations
+            export: Export tableurs et archives
         forms_title: Formulaires
         forms_help: >-
           La colonne de gauche autorise la création, l’édition et la suppression. La colonne centrale affiche le formulaire dans la navigation en consultation seule. La colonne de droite le masque.

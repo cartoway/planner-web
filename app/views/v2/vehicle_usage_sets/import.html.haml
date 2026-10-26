@@ -1,6 +1,6 @@
 -# Copyright © Cartoway
 - content_for :title, t('vehicle_usage_sets.import.title')
-- can_import_vehicle_config = current_user_form_update?(:vehicle_usages)
+- can_import_vehicle_config = current_user_space_action_usable?(:vehicle_usages, :edit)
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
 - v2_control_col = 'col-md-10 offset-md-1 field'
 .p-3

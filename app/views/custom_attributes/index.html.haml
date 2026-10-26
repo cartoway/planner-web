@@ -1,7 +1,7 @@
 - javascript 'custom_attribute'
 - content_for :title, t('.title')
-- can_destroy_custom_attributes = current_user_form_destroy_enabled?(:custom_attributes)
-- can_create_custom_attributes = current_user_form_create?(:custom_attributes)
+- can_destroy_custom_attributes = current_user_space_action_usable?(:custom_attributes, :edit)
+- can_create_custom_attributes = current_user_space_action_usable?(:custom_attributes, :edit)
 %h1= t '.title'
 .row.row-top
   .col-md-6

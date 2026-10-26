@@ -356,7 +356,7 @@ class CustomersControllerTest < ActionController::TestCase
   end
 
   test 'external_callback is forbidden when planning and route external_callback segments are not usable' do
-    return unless Role.column_names.include?('operations')
+    return unless Role.column_names.include?('planning_toolbar')
 
     user = users(:user_one)
     @customer.update!(
@@ -365,7 +365,7 @@ class CustomersControllerTest < ActionController::TestCase
     )
 
     reseller = resellers(:reseller_one)
-    ops = Preferences::Catalog.default_operations.deep_dup
+    ops = Preferences::Catalog.default_planning_toolbar.deep_dup
     ops['planning']['segment_controls']['external_callback'] = {
       'visible' => true, 'usable' => false
     }
@@ -377,8 +377,8 @@ class CustomersControllerTest < ActionController::TestCase
     role = Role.create!(
       reseller: reseller,
       name: 'Planning callback view-only role',
-      operations: ops,
-      forms: Preferences::Catalog.default_forms
+      planning_toolbar: ops,
+      spaces: Preferences::Catalog.default_spaces
     )
     user.update!(role_id: role.id)
     sign_in user
