@@ -238,7 +238,7 @@
                 - else
                   = stop.kind
               %td
-                = stop.status_label.presence || stop.status
+                = stop.status_label.presence || stop.status.presence || t('plannings.edit.stop_status.none')
                 - if stop.delay_minutes
                   .muted= "#{stop.delay_minutes.positive? ? '+' : ''}#{stop.delay_minutes} min"
               %td
