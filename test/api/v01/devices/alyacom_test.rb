@@ -51,7 +51,7 @@ class V01::Devices::AlyacomTest < ActiveSupport::TestCase
       routes = operation.operation_routes.planned.where.not(vehicle_id: nil).to_a
       routes.each(&:reload)
       routes.each { |oroute| assert oroute.last_sent_at }
-      assert_equal(routes.map { |oroute| last_sent_payload(oroute) }, JSON.parse(last_response.body))
+      assert_last_sent_payloads(routes)
     end
   end
 end

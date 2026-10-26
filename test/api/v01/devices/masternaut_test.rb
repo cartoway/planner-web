@@ -51,7 +51,7 @@ class V01::Devices::MasternautTest < ActiveSupport::TestCase
       routes = operation.operation_routes.select { |oroute| oroute.vehicle&.devices&.[](:masternaut_ref) }
       routes.each(&:reload)
       routes.each { |oroute| assert oroute.last_sent_at }
-      assert_equal(routes.map { |oroute| last_sent_payload(oroute) }, JSON.parse(last_response.body))
+      assert_last_sent_payloads(routes)
     end
   end
 end
