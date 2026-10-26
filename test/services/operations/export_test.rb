@@ -78,6 +78,18 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes sheet, @stop.index.to_s
   end
 
+  test 'xlsx and html use without-status label when stop has no status' do
+    @stop.update_columns(status: nil, status_updated_at: nil)
+    label = I18n.t('plannings.edit.stop_status.none')
+
+    sheet = xlsx_sheet_xml(Operations::Export.new(@operation.reload).to_xlsx)
+    assert_includes sheet, label
+
+    Operations::DeliveryNotePdf.stubs(:call).returns("%PDF-1.4\n%%EOF\n")
+    html = zip_entries(Operations::Export.new(@operation).to_zip)['index.html'].force_encoding('UTF-8')
+    assert_includes html, label
+  end
+
   test 'xlsx and html include route start and end depots' do
     route = @stop.operation_route
     start_depot, end_depot = route.list_depots

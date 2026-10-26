@@ -447,7 +447,7 @@ module Operations
     end
 
     def export_stop_status(stop)
-      stop.status_label.presence || stop.status
+      stop.status_label.presence || stop.status.presence || I18n.t('plannings.edit.stop_status.none')
     end
 
     def export_depot_status(route, status)
