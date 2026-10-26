@@ -5,6 +5,8 @@ class CustomersControllerTest < ActionController::TestCase
     @reseller = resellers(:reseller_one)
     request.host = @reseller.host
     @customer = customers(:customer_one)
+    # Leftover open operations from other tests break duplicate inside transaction_without_selects.
+    Operation.where(customer_id: @customer.id).delete_all
   end
 
   test 'user can only edit its customer' do
