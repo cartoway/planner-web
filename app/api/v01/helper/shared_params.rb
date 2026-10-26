@@ -104,11 +104,12 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :recipient_template, type: String
     optional :sms_concat, type: Boolean
     optional :sms_sender_name, type: String, desc: 'SMS sender name (3-11 alphanumeric characters)'
-    optional :enable_email_driver, type: Boolean
-    optional :enable_sms_driver, type: Boolean
-    optional :enable_email_destination, type: Boolean
-    optional :enable_sms_destination, type: Boolean
-    optional :enable_sms_intransit, type: Boolean
+    optional :enable_email_driver, type: Boolean, documentation: { desc: EDIT_ONLY_ADMIN }
+    optional :enable_sms_driver, type: Boolean, documentation: { desc: EDIT_ONLY_ADMIN }
+    optional :enable_email_destination, type: Boolean, documentation: { desc: EDIT_ONLY_ADMIN }
+    optional :enable_sms_destination, type: Boolean, documentation: { desc: EDIT_ONLY_ADMIN }
+    optional :enable_sms_intransit, type: Boolean, documentation: { desc: EDIT_ONLY_ADMIN }
+    optional :enable_store_stops, type: Boolean, documentation: { desc: 'When true, intermediate store reloads can be defined on stores and assigned to vehicle usages. ' + EDIT_ONLY_ADMIN }
 
     optional :enable_external_callback, type: Boolean, documentation: { desc: 'Enable external callback' }
     optional :external_callback_url, type: String, documentation: { desc: 'External callback URL' }
@@ -303,6 +304,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
   end
 
   params :request_vehicle_usage do |options|
+    optional :active, type: Boolean, documentation: { desc: 'When false, no route is built for this usage in new plannings.', example: true }
     optional :time_window_start, type: Integer, documentation: { type: 'string', desc: 'Shift start (HH:MM). Falls back to the set default when unset.' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Shift end (HH:MM). Falls back to the set default when unset.' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :service_time_start, type: Integer, documentation: { type: 'string', desc: 'Service time at the start store (HH:MM).' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
