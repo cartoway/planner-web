@@ -22,6 +22,11 @@
             %span.destinations-card-ref{title: destinations_list_column_label('ref')}= destination.ref
           %h2.v2-index-card-title.destinations-card-name= destination.name.presence || '–'
         .v2-index-card-badges
+          - visit_count = visits.size
+          - if visit_count.positive?
+            %span.badge.text-bg-light.border.destinations-card-visits-count{title: t('destinations.index.card_visits_count_help', count: visit_count)}
+              %i.fa.fa-clipboard-list.fa-fw{"aria-hidden": "true"}
+              %span.destinations-card-visits-count-value= visit_count
           - if show_geocoding
             = render 'v2/destinations/list_card_geocoding_chip', destination: destination
           - elsif !destination.position?
