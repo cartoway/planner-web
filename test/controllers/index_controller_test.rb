@@ -32,17 +32,17 @@ class IndexControllerTest < ActionController::TestCase
   end
 
   test 'home dashboard hides planning dashboard link when planning_dashboard operation is not visible' do
-    return unless Role.column_names.include?('operations')
+    return unless Role.column_names.include?('planning_toolbar')
 
     @reseller.update!(planning_dashboard_url: 'https://analytics.example.com?p_id={P_ID}')
     user = users(:user_one)
-    ops = Preferences::Catalog.default_operations.deep_dup
+    ops = Preferences::Catalog.default_planning_toolbar.deep_dup
     ops['planning']['segment_controls']['planning_dashboard'] = { 'visible' => false, 'usable' => false }
     role = Role.create!(
       reseller: @reseller,
       name: "no-home-planning-dashboard-#{SecureRandom.hex(4)}",
-      operations: ops,
-      forms: Preferences::Catalog.default_forms
+      planning_toolbar: ops,
+      spaces: Preferences::Catalog.default_spaces
     )
     user.update!(role_id: role.id)
     sign_in user

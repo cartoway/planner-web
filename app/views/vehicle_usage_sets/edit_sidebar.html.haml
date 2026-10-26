@@ -6,6 +6,6 @@
   .sidebar-form
     = render "v2/vehicle_usage_sets/form", v2_js_config: { customer_id: @vehicle_usage_set.customer.id }.to_json
     .form-submit-bar
-      %button.btn.btn-primary{type: 'submit', form: 'vehicle-usage-set-form-sidebar', disabled: !current_user_form_update?(:vehicle_usages)}
+      %button.btn.btn-primary{type: 'submit', form: 'vehicle-usage-set-form-sidebar', disabled: !current_user_space_action_usable?(:vehicle_usages, :edit)}
         %i.fa.fa-floppy-disk.fa-fw
         = t('helpers.submit.update', model: VehicleUsageSet.model_name.human)

@@ -14,7 +14,7 @@
 
 <div class="row row-top">
   <div class="col-md-6">
-    <% cannot_new_planning = current_user.customer.too_many_plannings? || !current_user_form_create?(:plannings) %>
+    <% cannot_new_planning = current_user.customer.too_many_plannings? || !current_user_space_action_usable?(:plannings, :edit) %>
     <%= link_to new_planning_path, disabled: cannot_new_planning, class:"btn btn-primary btn-sm" do %><i class="fa fa-plus fa-fw"></i> <%= t '.new' %><% end %>
   </div>
   <div class="col-md-6">
@@ -25,7 +25,7 @@
   </div>
 </div>
 
-<% can_destroy_plannings = current_user_form_destroy_enabled?(:plannings) %>
+<% can_destroy_plannings = current_user_space_action_usable?(:plannings, :edit) %>
 <% planning_callback_usable = toolbar_operation_usable?(:planning, 'external_callback') %>
 <% planning_callback_visible = toolbar_operation_visible?(:planning, 'external_callback') %>
 <% planning_dashboard_visible = toolbar_operation_visible?(:planning, 'planning_dashboard') %>

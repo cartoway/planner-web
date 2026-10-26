@@ -37,20 +37,14 @@ module PreferencesAuthorization
     refuse_display_ui!
   end
 
-  def deny_unless_form_visible!(resource)
-    return if current_user.form_visible?(resource)
+  def deny_unless_space_visible!(resource)
+    return if current_user.space_visible?(resource)
 
     refuse_display_ui!
   end
 
-  def deny_unless_form_update!(resource)
-    return if current_user.form_update?(resource)
-
-    refuse_display_ui!
-  end
-
-  def deny_unless_form_create!(resource)
-    return if current_user.form_create?(resource)
+  def deny_unless_space_action_usable!(resource, action_id = :edit)
+    return if current_user.space_action_usable?(resource, action_id)
 
     refuse_display_ui!
   end

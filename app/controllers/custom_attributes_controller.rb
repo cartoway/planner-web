@@ -3,8 +3,8 @@ class CustomAttributesController < ApplicationController
   before_action :set_custom_attribute, only: [:edit, :update, :destroy, :update_default_value_partial, :update_mobile_visible_partial]
 
   include PreferencesAuthorization
-  before_action -> { deny_unless_form_create!(:custom_attributes) }, only: [:create]
-  before_action -> { deny_unless_form_update!(:custom_attributes) }, only: [:update, :destroy, :destroy_multiple]
+  before_action -> { deny_unless_space_action_usable!(:custom_attributes, :edit) }, only: [:create]
+  before_action -> { deny_unless_space_action_usable!(:custom_attributes, :edit) }, only: [:update, :destroy, :destroy_multiple]
 
   load_and_authorize_resource
 

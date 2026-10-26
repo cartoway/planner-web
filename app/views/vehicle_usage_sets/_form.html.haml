@@ -257,4 +257,4 @@
         %span.input-group-addon
           %i.fa.fa-arrows-left-right.fa-fw
       %p.help-block= t '.rest_start_stop_help'
-  = f.submit disabled: !current_user_form_update?(:vehicle_usages)
+  = f.submit disabled: !current_user_space_action_usable?(:vehicle_usages, :edit)

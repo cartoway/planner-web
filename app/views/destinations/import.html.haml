@@ -1,6 +1,6 @@
 - javascript 'destination'
 - content_for :title, t('.title')
-- can_import_destinations = current_user_form_update?(:destination)
+- can_import_destinations = current_user_space_action_usable?(:destination, :edit)
 
 %h1= t '.title'
 .panel.panel-default.accordion

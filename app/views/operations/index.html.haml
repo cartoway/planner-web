@@ -1,5 +1,6 @@
 - content_for :title, t('operations.index.title')
 - can_destroy = can?(:destroy, Operation)
+- can_export = can?(:export, Operation)
 - filter_chips = [{ value: '', label: t('operations.index.chip_all') }, { value: 'in_progress', label: t('operations.statuses.in_progress') }, { value: 'historized', label: t('operations.statuses.historized') }]
 .operations-index.pt-3
   .px-3
@@ -43,19 +44,20 @@
             %i.fa.fa-tower-broadcast.fa-fw
             = t('execution.open_tracking')
           .v2-index-card-secondary
-            .dropdown
-              %button.btn.btn-secondary.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
-                %i.fa.fa-download.fa-fw
-                = t('operations.show.export')
-              %ul.dropdown-menu
-                %li
-                  = link_to export_operation_path(operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
-                    %i.fa.fa-file-excel.fa-fw
-                    = t('operations.show.export_spreadsheet')
-                %li
-                  = link_to export_operation_path(operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
-                    %i.fa.fa-file-zipper.fa-fw
-                    = t('operations.show.export_archive')
+            - if can_export
+              .dropdown
+                %button.btn.btn-secondary.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
+                  %i.fa.fa-download.fa-fw
+                  = t('operations.show.export')
+                %ul.dropdown-menu
+                  %li
+                    = link_to export_operation_path(operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
+                      %i.fa.fa-file-excel.fa-fw
+                      = t('operations.show.export_spreadsheet')
+                  %li
+                    = link_to export_operation_path(operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
+                      %i.fa.fa-file-zipper.fa-fw
+                      = t('operations.show.export_archive')
             - if operation.planning
               = link_to edit_planning_path(operation.planning), class: 'btn btn-secondary', target: '_blank', rel: 'noopener', data: { turbo: false }, title: (operation.planning.ref.presence || operation.planning.name) do
                 %i.fa.fa-map-location.fa-fw

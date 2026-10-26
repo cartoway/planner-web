@@ -65,7 +65,7 @@
                   .d-flex.justify-content-center
                     - dis = @manage_planning[:disable_zoning] || !current_user_planning_form_submit_enabled?(@planning)
                     = f.submit message: t('plannings.edit.zonings.action'), button: "btn #{@planning.zoning_outdated ? 'btn-warning' : 'btn-default'}", title: (@planning.zoning_outdated ? t('.outdated_zoning') : nil), disabled: dis
-        = render 'plannings/execution' if @planning.persisted? && can?(:manage, Operation)
+        = render 'plannings/execution' if @planning.persisted? && current_user_space_visible?(:operations)
         #global_tools.row
           - if @manage_planning[:manage_optimize]
             .btn-group
@@ -102,7 +102,7 @@
         %button#refresh-modal.btn.btn-primary{type: "button", disabled: refresh_dis}
           = t('plannings.edit.refresh')
 
-- if @planning.persisted? && can?(:manage, Operation)
+- if @planning.persisted? && current_user_space_action_usable?(:operations, :sync)
   = render 'plannings/operation_modal'
   = render 'plannings/sync_modal'
 
@@ -199,5 +199,5 @@
     available_temperature: available_temperature?,
     devices: planning_devices(@planning.customer),
     optimization_duration: optimization_duration(@planning.customer),
-    tag_entity_create_allowed: current_user_form_create?(:tags)
+    tag_entity_create_allowed: current_user_space_action_usable?(:tags, :edit)
   )

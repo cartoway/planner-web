@@ -37,16 +37,13 @@ class Admin::RolesController < ApplicationController
 
   def new
     authorize! :create, Role
-    # Empty JSON columns default every form resource to visible+usable in the DnD split;
-    # seed from catalog so new roles match config/default_permissions (+new_role+) and role_attributes on create.
     @role = @reseller.roles.build(
-      operations: Preferences::Catalog.new_role_admin_operations_seed,
-      forms: Preferences::Catalog.new_role_admin_forms_seed
+      planning_toolbar: Preferences::Catalog.new_role_admin_planning_toolbar_seed,
+      spaces: Preferences::Catalog.new_role_admin_spaces_seed
     )
   end
 
   def create
-    # Build first so role_attributes can use @role.new_record?
     @role = @reseller.roles.build
     authorize! :create, @role
     @role.assign_attributes(role_attributes)
@@ -98,8 +95,8 @@ class Admin::RolesController < ApplicationController
       name: unique_duplicate_name(source.name),
       icon: source.icon,
       color: source.color,
-      operations: json_column_dup(source.operations),
-      forms: json_column_dup(source.forms)
+      planning_toolbar: json_column_dup(source.planning_toolbar),
+      spaces: json_column_dup(source.spaces)
     )
 
     if copy.save
@@ -126,39 +123,39 @@ class Admin::RolesController < ApplicationController
       :ref,
       :icon,
       :color,
-      :forms_ui,
-      operations: {
+      :spaces_ui,
+      planning_toolbar: {
         planning: [], planning_disabled: [], planning_hidden: [],
         route: [], route_disabled: [], route_hidden: [],
         stop: [], stop_disabled: [], stop_hidden: []
       },
-      forms_active: [],
-      forms_disabled: []
+      spaces_active: [],
+      spaces_disabled: [],
+      spaces_actions: {}
     )
 
-    operations_seed = operations_seed_for_role_form
-    operations_val = if p[:operations].present?
-                       Preferences::Catalog.merge_operations_with_params(operations_seed, p[:operations])
-                     else
-                       Preferences::Catalog.normalize_operations(operations_seed)
-                     end
+    toolbar_base = planning_toolbar_seed
+    toolbar_val = if p[:planning_toolbar].present?
+                    Preferences::Catalog.merge_planning_toolbar_with_params(toolbar_base, p[:planning_toolbar])
+                  else
+                    Preferences::Catalog.normalize_planning_toolbar(toolbar_base)
+                  end
 
-    forms_seed = forms_seed_for_role_form
+    spaces_base = spaces_seed
     raw_role = params.require(:role).to_unsafe_h.stringify_keys
-    forms_val = if raw_role['forms_ui'].present?
-                  Preferences::Catalog.merge_forms_with_params(forms_seed, raw_role)
-                else
-                  Preferences::Catalog.normalize_forms(forms_seed)
-                end
+    spaces_val = if raw_role['spaces_ui'].present?
+                   Preferences::Catalog.merge_spaces_with_params(spaces_base, raw_role)
+                 else
+                   Preferences::Catalog.normalize_spaces(spaces_base)
+                 end
 
     {
       name: p[:name],
       ref: p[:ref],
-      # Same allowlist as TagsController#icons_table (FontAwesome::ICONS_TABLE); unknown tokens fail Role validation.
       icon: role_icon_param_for_attributes(p[:icon]),
       color: p[:color],
-      operations: operations_val,
-      forms: forms_val
+      planning_toolbar: toolbar_val,
+      spaces: spaces_val
     }
   end
 
@@ -170,16 +167,16 @@ class Admin::RolesController < ApplicationController
     @grouped_role_icons = [FontAwesome::ICONS_TABLE_ROLE, (FontAwesome::ICONS_TABLE - FontAwesome::ICONS_TABLE_ROLE)]
   end
 
-  def operations_seed_for_role_form
-    return Preferences::Catalog.new_role_admin_operations_seed if @role.blank? || @role.new_record?
+  def planning_toolbar_seed
+    return Preferences::Catalog.new_role_admin_planning_toolbar_seed if @role.blank? || @role.new_record?
 
-    @role.operations.present? ? @role.operations.deep_dup : Preferences::Catalog.new_role_admin_operations_seed
+    @role.planning_toolbar.present? ? @role.planning_toolbar.deep_dup : Preferences::Catalog.new_role_admin_planning_toolbar_seed
   end
 
-  def forms_seed_for_role_form
-    return Preferences::Catalog.new_role_admin_forms_seed if @role.blank? || @role.new_record?
+  def spaces_seed
+    return Preferences::Catalog.new_role_admin_spaces_seed if @role.blank? || @role.new_record?
 
-    @role.forms.present? ? @role.forms.deep_dup : Preferences::Catalog.new_role_admin_forms_seed
+    @role.spaces.present? ? @role.spaces.deep_dup : Preferences::Catalog.new_role_admin_spaces_seed
   end
 
   def json_column_dup(value)

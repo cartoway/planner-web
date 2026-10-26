@@ -1542,16 +1542,20 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'import disables file field when destination form is read-only' do
-    return unless Role.column_names.include?('forms')
+    return unless Role.column_names.include?('spaces')
 
     user = users(:user_one)
     role = Role.create!(
       reseller: user.customer.reseller,
       name: "import-ro-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(
-        'destination' => { 'visible' => true, 'usable' => false }
-      )
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: begin
+        s = Preferences::Catalog.default_spaces.deep_dup
+        s['destination'] = Preferences::Catalog::Spaces.default_space_entry(
+          'destination', visible: true, usable: false, actions_all_usable: false
+        )
+        Preferences::Catalog.normalize_spaces(s)
+      end
     )
     user.update!(role_id: role.id)
     sign_in user
@@ -1566,16 +1570,20 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'upload_csv returns forbidden when destination form is read-only' do
-    return unless Role.column_names.include?('forms')
+    return unless Role.column_names.include?('spaces')
 
     user = users(:user_one)
     role = Role.create!(
       reseller: user.customer.reseller,
       name: "upload-ro-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(
-        'destination' => { 'visible' => true, 'usable' => false }
-      )
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: begin
+        s = Preferences::Catalog.default_spaces.deep_dup
+        s['destination'] = Preferences::Catalog::Spaces.default_space_entry(
+          'destination', visible: true, usable: false, actions_all_usable: false
+        )
+        Preferences::Catalog.normalize_spaces(s)
+      end
     )
     user.update!(role_id: role.id)
     sign_in user
@@ -1590,16 +1598,20 @@ class DestinationsControllerTest < ActionController::TestCase
   end
 
   test 'clear returns forbidden when destination form is read-only' do
-    return unless Role.column_names.include?('forms')
+    return unless Role.column_names.include?('spaces')
 
     user = users(:user_one)
     role = Role.create!(
       reseller: user.customer.reseller,
       name: "clear-ro-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(
-        'destination' => { 'visible' => true, 'usable' => false }
-      )
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: begin
+        s = Preferences::Catalog.default_spaces.deep_dup
+        s['destination'] = Preferences::Catalog::Spaces.default_space_entry(
+          'destination', visible: true, usable: false, actions_all_usable: false
+        )
+        Preferences::Catalog.normalize_spaces(s)
+      end
     )
     user.update!(role_id: role.id)
 

@@ -315,13 +315,16 @@ class V01::CustomerTest < ActiveSupport::TestCase
 
   test 'GET customer returns 403 when customer form is hidden' do
     u = users(:user_one)
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['customer'] = { 'visible' => false, 'usable' => false }
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['customer'] = Preferences::Catalog::Spaces.default_space_entry(
+      'customer', visible: false, usable: false, actions_all_usable: false
+    )
+    spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),
       name: "api-hidden-customer-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: spaces
     )
     u.update!(role_id: role.id)
 
@@ -334,13 +337,16 @@ class V01::CustomerTest < ActiveSupport::TestCase
 
   test 'GET customer succeeds when customer form is read-only' do
     u = users(:user_one)
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['customer'] = { 'visible' => true, 'usable' => false }
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['customer'] = Preferences::Catalog::Spaces.default_space_entry(
+      'customer', visible: true, usable: false, actions_all_usable: false
+    )
+    spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),
       name: "api-ro-customer-get-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: spaces
     )
     u.update!(role_id: role.id)
 
@@ -353,13 +359,16 @@ class V01::CustomerTest < ActiveSupport::TestCase
 
   test 'PUT customer returns 403 when customer form is read-only' do
     u = users(:user_one)
-    forms = Preferences::Catalog.default_forms.deep_dup.deep_stringify_keys
-    forms['customer'] = { 'visible' => true, 'usable' => false }
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['customer'] = Preferences::Catalog::Spaces.default_space_entry(
+      'customer', visible: true, usable: false, actions_all_usable: false
+    )
+    spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),
       name: "api-ro-customer-put-#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.default_operations,
-      forms: Preferences::Catalog.normalize_forms(forms)
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: spaces
     )
     u.update!(role_id: role.id)
 

@@ -34,51 +34,48 @@ module Preferences
         h.is_a?(Hash) ? h.deep_stringify_keys : {}
       end
 
-      # nil => Operations.default_operations uses normalize_operations({}) (disabled tier for all segments).
-      def default_role_operations_raw
+      # nil => PlanningToolbar.default uses normalize({}) (disabled tier for all segments).
+      def default_role_planning_toolbar_raw
         dr = roles_hash['default_role']
         return nil if dr.blank?
 
-        dr['operations']
+        dr.key?('planning_toolbar') ? dr['planning_toolbar'] : dr['operations']
       end
 
-      # nil => use normalize_forms({}) (same as previous baseline forms).
-      def default_role_forms_raw
+      # nil => use normalize_spaces({}).
+      def default_role_spaces_raw
         dr = roles_hash['default_role']
         return nil if dr.blank?
 
-        dr['forms']
+        dr['spaces']
       end
 
-      # nil => treat as {} before normalize_operations (built-in empty defaults).
-      def no_role_operations_raw
+      def no_role_planning_toolbar_raw
         nr = permissions_defaults_hash['no_role']
         return nil if nr.blank?
 
-        nr['operations']
+        nr.key?('planning_toolbar') ? nr['planning_toolbar'] : nr['operations']
       end
 
-      def no_role_forms_raw
+      def no_role_spaces_raw
         nr = permissions_defaults_hash['no_role']
         return nil if nr.blank?
 
-        nr['forms']
+        nr['spaces']
       end
 
-      # nil => use Operations.default_operations (admin drag-drop seed).
-      def new_role_operations_raw
+      def new_role_planning_toolbar_raw
         nr = permissions_defaults_hash['new_role']
         return nil if nr.blank?
 
-        nr['operations']
+        nr.key?('planning_toolbar') ? nr['planning_toolbar'] : nr['operations']
       end
 
-      # nil => use Forms.default_forms.
-      def new_role_forms_raw
+      def new_role_spaces_raw
         nr = permissions_defaults_hash['new_role']
         return nil if nr.blank?
 
-        nr['forms']
+        nr['spaces']
       end
     end
   end
