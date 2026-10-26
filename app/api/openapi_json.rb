@@ -6,7 +6,13 @@ module OpenapiJson
       helpers do
         def openapi_from_swagger
           swagger_path = "/#{version}/swagger_doc"
-          response = Rack::MockRequest.new(ApiRootDef).get(swagger_path)
+          # Forward host/scheme so grape-swagger fills host the same way as a direct swagger_doc hit.
+          response = Rack::MockRequest.new(ApiRootDef).get(
+            swagger_path,
+            'HTTP_HOST' => env['HTTP_HOST'],
+            'HTTPS' => env['HTTPS'],
+            'rack.url_scheme' => env['rack.url_scheme']
+          )
           error!({ message: 'Failed to build Swagger 2.0 document', status: 500 }, 500) unless response.status == 200
           OpenapiConverter.convert(JSON.parse(response.body), scope: params[:scope])
         end

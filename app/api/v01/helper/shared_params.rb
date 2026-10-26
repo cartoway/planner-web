@@ -322,7 +322,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
 
     optional :store_start_id, type: Integer, documentation: { type: Integer, desc: 'Start depot store id. Falls back to the set default.' }
     optional :store_stop_id, type: Integer, documentation: { type: Integer, desc: 'End depot store id. Falls back to the set default.' }
-    optional :store_reload_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(StoreReload, CoerceArrayString.parse(value)) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', example: '1,2,ref:vip' }
+    optional :store_reload_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(StoreReload, CoerceArrayString.parse(value)) }, documentation: { desc: 'Store reload ids or refs (not store/depot ids), separated by comma. Prefix refs with "ref:" e.g. ref:reload-1.', param_type: 'form', example: '1,2,ref:reload-1' }
 
     # Deprecated fields
     optional :open, type: Integer, documentation: { hidden: true, type: 'string', desc: '[Deprecated] Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
@@ -337,7 +337,7 @@ module SharedParams # rubocop:disable Metrics/ModuleLength
     optional :time_window_end, type: Integer, documentation: { type: 'string', desc: 'Default shift end (HH:MM) inherited by vehicle usages.' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :store_start_id, type: Integer, documentation: { type: Integer, desc: 'Default start depot store id.' }
     optional :store_stop_id, type: Integer, documentation: { type: Integer, desc: 'Default end depot store id.' }
-    optional :store_reload_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(StoreReload, CoerceArrayString.parse(value)) }, documentation: { desc: 'Ids or refs separated by comma. Prefix refs with "ref:" e.g. ref:promo,ref:vip', example: '1,2,ref:vip' }
+    optional :store_reload_ids, type: Array[Integer], coerce_with: ->(value) { ParseIdsRefs.where_pluck_ids(StoreReload, CoerceArrayString.parse(value)) }, documentation: { desc: 'Default store reload ids or refs (not store/depot ids), separated by comma. Prefix refs with "ref:" e.g. ref:reload-1.', param_type: 'form', example: '1,2,ref:reload-1' }
     optional :service_time_start, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :service_time_end, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
     optional :work_time, type: Integer, documentation: { type: 'string', desc: 'Schedule time (HH:MM)' }, coerce_with: ->(value) { ScheduleType.new.cast(value) }
