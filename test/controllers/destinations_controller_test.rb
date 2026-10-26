@@ -299,6 +299,21 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select 'turbo-frame#destinations_list .destination-visit-subrow', 0
   end
 
+  test 'v2 index list card shows linked visits count' do
+    assert_difference('Visit.count', 1) do
+      @request.headers['Turbo-Frame'] = 'form_sidebar'
+      post :append_visit, params: { id: @destination.id }
+    end
+    visit_count = @destination.reload.visits.size
+    assert_operator visit_count, :>, 1
+
+    @request.headers['Turbo-Frame'] = 'destinations_list'
+    get :index, params: { per_page: 100, page: 1 }
+    assert_response :success
+    assert_select %(turbo-frame#destinations_list .v2-index-card.destination[data-destination-id="#{@destination.id}"] .destinations-card-visits-count .destinations-card-visits-count-value),
+                  text: visit_count.to_s
+  end
+
   test 'v2 index edit links target form_sidebar turbo frame' do
     get :index
     assert_response :success

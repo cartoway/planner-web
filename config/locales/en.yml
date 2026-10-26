@@ -1636,6 +1636,9 @@ en:
       remove_filter: Remove this filter
       destinations_count_help: Number of destinations
       visits_count_help: Number of visits for the destinations
+      card_visits_count_help:
+        one: "%{count} visit linked to this destination"
+        other: "%{count} visits linked to this destination"
       center_view_help: Center the map on the destination
       search_keys:
         ref: ref
