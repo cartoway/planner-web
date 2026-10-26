@@ -1158,27 +1158,45 @@ export const RoutesLayer = L.FeatureGroup.extend({
     this._fitMapBounds(this.clustersByRoute[routeId].getBounds());
   },
 
-  // Drop in-flight geojson loads that touch the same route ids.
+  // Abort only in-flight loads whose routes are all covered by the new request.
+  // Partially overlapping loads are kept alive; ownership is re-checked on success.
   _abortPendingRouteLoads: function(routeIds) {
+    var covered = {};
+    (routeIds || []).forEach(function(id) { covered[String(id)] = true; });
+    var seen = [];
     (routeIds || []).forEach(function(routeId) {
-      var prev = this._pendingRouteLoads[routeId];
-      if (prev && prev.readyState !== 4) {
+      var prev = this._pendingRouteLoads[String(routeId)];
+      if (!prev || prev.readyState === 4 || seen.indexOf(prev) !== -1) return;
+      seen.push(prev);
+      var fullyCovered = (prev._routeIds || []).every(function(id) {
+        return covered[String(id)];
+      });
+      if (fullyCovered) {
         prev.abort();
       }
     }.bind(this));
   },
 
   _trackPendingRouteLoads: function(routeIds, xhr) {
+    xhr._routeIds = (routeIds || []).slice();
     (routeIds || []).forEach(function(routeId) {
-      this._pendingRouteLoads[routeId] = xhr;
+      this._pendingRouteLoads[String(routeId)] = xhr;
     }.bind(this));
   },
 
   _clearPendingRouteLoads: function(routeIds, xhr) {
     (routeIds || []).forEach(function(routeId) {
-      if (this._pendingRouteLoads[routeId] === xhr) {
-        delete this._pendingRouteLoads[routeId];
+      var key = String(routeId);
+      if (this._pendingRouteLoads[key] === xhr) {
+        delete this._pendingRouteLoads[key];
       }
+    }.bind(this));
+  },
+
+  // Route ids still owned by this xhr (a newer request may have taken some over).
+  _ownedRouteIds: function(routeIds, xhr) {
+    return (routeIds || []).filter(function(routeId) {
+      return this._pendingRouteLoads[String(routeId)] === xhr;
     }.bind(this));
   },
 
@@ -1226,11 +1244,24 @@ export const RoutesLayer = L.FeatureGroup.extend({
       url: '/api/0.1' + (this.planningId ? '/plannings/' + this.planningId : '') + '/routes.geojson',
       data: requestData,
       beforeSend: beforeSendWaiting,
-      success: function(data) {
-        this._replaceRoutesGeojson(requestedIds, data, callback);
+      success: function(data, _textStatus, jqXHR) {
+        var ownedIds = this._ownedRouteIds(requestedIds, jqXHR);
+        // Fully superseded by newer loads — nothing left to paint for this xhr.
+        if (!ownedIds.length) return;
+        if (ownedIds.length < requestedIds.length && data && Array.isArray(data.features)) {
+          var owned = {};
+          ownedIds.forEach(function(id) { owned[String(id)] = true; });
+          // Drop routes we no longer own; also drop stores (no route_id) so a
+          // partial redraw does not stack a second store marker.
+          data.features = data.features.filter(function(feature) {
+            var rid = feature.properties && feature.properties.route_id;
+            return rid && owned[String(rid)];
+          });
+        }
+        this._replaceRoutesGeojson(ownedIds, data, callback);
       }.bind(this),
-      complete: function() {
-        this._clearPendingRouteLoads(requestedIds, xhr);
+      complete: function(jqXHR) {
+        this._clearPendingRouteLoads(requestedIds, jqXHR);
         completeAjaxMap();
       }.bind(this),
       error: function(jqXHR, textStatus) {
@@ -1239,7 +1270,9 @@ export const RoutesLayer = L.FeatureGroup.extend({
       }
     });
 
-    this._trackPendingRouteLoads(requestedIds, xhr);
+    if (xhr && xhr.state() === 'pending') {
+      this._trackPendingRouteLoads(requestedIds, xhr);
+    }
   },
 
   _loadAll: function(options, callback) {
