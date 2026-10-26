@@ -26,7 +26,7 @@ class V01::Entities::VehicleUsageSet < Grape::Entity
   expose(:time_window_end, documentation: { type: DateTime, desc: 'Default shift end (HH:MM on input) inherited by vehicle usages.' }) { |m| m.time_window_end_absolute_time_with_seconds }
   expose(:store_start_id, documentation: { type: Integer, desc: 'Default start depot store id.' })
   expose(:store_stop_id, documentation: { type: Integer, desc: 'Default end depot store id.' })
-  expose(:store_reload_ids, documentation: { type: Integer, is_array: true, desc: 'Default reload store ids inherited by vehicle usages.' }) { |m| m.store_reloads.map(&:id) }
+  expose(:store_reload_ids, documentation: { type: Integer, is_array: true, desc: 'Default store reload ids inherited by vehicle usages (not store/depot ids).' }) { |m| m.store_reloads.map(&:id) }
   expose(:service_time_start, documentation: { type: DateTime, desc: 'Default service time at the start store (HH:MM on input).' }) { |m| m.service_time_start_absolute_time_with_seconds }
   expose(:service_time_end, documentation: { type: DateTime, desc: 'Default service time at the stop store (HH:MM on input).' }) { |m| m.service_time_end_absolute_time_with_seconds }
   expose(:work_time, documentation: { type: DateTime, desc: 'Default maximum working duration (HH:MM on input).' }) { |m| m.work_time_absolute_time_with_seconds }

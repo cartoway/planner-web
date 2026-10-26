@@ -27,7 +27,7 @@ class V01::Entities::VehicleUsage < Grape::Entity
   expose(:max_reload, documentation: { type: Integer, desc: 'Maximum number of reloads per route. Falls back to the set default.' })
   expose(:store_start_id, documentation: { type: Integer, desc: 'Start depot store id. Falls back to the set default.' })
   expose(:store_stop_id, documentation: { type: Integer, desc: 'End depot store id. Falls back to the set default.' })
-  expose(:store_reload_ids, documentation: { type: Integer, is_array: true, desc: 'Reload store ids allowed on this usage. Falls back to the set default.' }) { |m| m.store_reloads.map(&:id) }
+  expose(:store_reload_ids, documentation: { type: Integer, is_array: true, desc: 'Store reload ids allowed on this usage (not store/depot ids). Falls back to the set default.' }) { |m| m.store_reloads.map(&:id) }
   expose(:service_time_start, documentation: { type: DateTime, desc: 'Service time at the start store (HH:MM on input).' }) { |m| m.service_time_start_absolute_time_with_seconds }
   expose(:service_time_end, documentation: { type: DateTime, desc: 'Service time at the stop store (HH:MM on input).' }) { |m| m.service_time_end_absolute_time_with_seconds }
   expose(:work_time, documentation: { type: DateTime, desc: 'Maximum working duration (HH:MM on input).' }) { |m| m.work_time_absolute_time_with_seconds }
