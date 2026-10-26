@@ -4318,6 +4318,7 @@ fr:
       ref_updated: Référence mise à jour
       edit_name: Modifier le nom
       edit_ref: Modifier la référence
+      ref_placeholder: Référence
       date_locked: La date d'une opération historisée ne peut pas être modifiée
       past_date_change_confirm: Cette opération est datée dans le passé. Après modification, vous ne pourrez plus revenir à une date passée. Continuer ?
       date_taken: Une opération avec cette référence existe déjà à cette date

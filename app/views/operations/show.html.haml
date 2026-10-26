@@ -31,10 +31,11 @@
           %span.badge.operation-status= t("operations.statuses.#{@operation.status}")
         .operation-header-sub
           - if @operation.customer.enable_references
-            %span.operation-header-title{data: { v2__operation_show_target: 'refLabel' }}= @operation.ref
+            - ref_placeholder = t('operations.show.ref_placeholder')
+            %span.operation-header-title{class: ('is-placeholder' unless @operation.ref.present?), data: { v2__operation_show_target: 'refLabel' }}= @operation.ref.presence || ref_placeholder
             %button.btn.btn-link.p-0{type: 'button', aria: { label: t('operations.show.edit_ref') }, data: { action: 'v2--operation-show#editRef' }}
               %i.fa.fa-pencil
-            = f.text_field :ref, class: 'form-control form-control operation-ref d-none', aria: { label: t('operations.index.ref') }, data: { v2__operation_show_target: 'refInput', action: 'keydown->v2--operation-show#saveRefOnEnter change->v2--operation-show#saveRef' }
+            = f.text_field :ref, class: 'form-control form-control operation-ref d-none', placeholder: ref_placeholder, aria: { label: t('operations.index.ref') }, data: { v2__operation_show_target: 'refInput', action: 'keydown->v2--operation-show#saveRefOnEnter change->v2--operation-show#saveRef' }
           - elsif @operation.ref.present?
             %span.operation-header-title= @operation.ref
           = f.date_field :date, class: 'form-control form-control operation-date', aria: { label: t('operations.index.date') }, disabled: !@operation.open?, min: Date.current.strftime('%Y-%m-%d'), data: { action: 'change->v2--operation-show#saveDate' }
