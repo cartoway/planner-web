@@ -2,8 +2,8 @@
 
 <% content_for :title, t('.title') %>
 
-<% can_destroy_deliverable_units = current_user_form_destroy_enabled?(:deliverable_units) %>
-<% can_create_deliverable_units = current_user_form_create?(:deliverable_units) %>
+<% can_destroy_deliverable_units = current_user_space_action_usable?(:deliverable_units, :edit) %>
+<% can_create_deliverable_units = current_user_space_action_usable?(:deliverable_units, :edit) %>
 
 <h1><%= t '.title' %></h1>
 

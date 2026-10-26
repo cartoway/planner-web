@@ -1,6 +1,6 @@
 -# Copyright © Cartoway
 - content_for :title, t('stores.import.title')
-- can_import_stores = current_user_form_create?(:stores)
+- can_import_stores = current_user_space_action_usable?(:stores, :edit)
 - v2_label_col = 'col-form-label col-md-10 offset-md-1 fw-bold'
 - v2_control_col = 'col-md-10 offset-md-1 field'
 .p-3

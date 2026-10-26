@@ -2,7 +2,7 @@
 
 require 'test_helper'
 
-class PreferencesOperationAbilityMapTest < ActiveSupport::TestCase
+class PreferencesPlanningToolbarAbilityMapTest < ActiveSupport::TestCase
   setup do
     @user = users(:user_one)
     @planning = plannings(:planning_one)
@@ -14,8 +14,8 @@ class PreferencesOperationAbilityMapTest < ActiveSupport::TestCase
     role = Role.create!(
       reseller: user.customer.reseller,
       name: "ability-map-#{SecureRandom.hex(4)}",
-      operations: operations_hash,
-      forms: Preferences::Catalog.default_forms
+      planning_toolbar: operations_hash,
+      spaces: Preferences::Catalog.default_spaces
     )
     user.update!(role_id: role.id)
     user.reload
@@ -34,9 +34,9 @@ class PreferencesOperationAbilityMapTest < ActiveSupport::TestCase
   end
 
   test 'customer cannot optimize when planning optimize segment is not usable' do
-    ops = Preferences::Catalog.default_operations.deep_dup
+    ops = Preferences::Catalog.default_planning_toolbar.deep_dup
     ops['planning'] = (ops['planning'] || {}).stringify_keys
-    seg = ops['planning']['segments'] || Preferences::Catalog::OPERATION_GROUPS_PLANNING
+    seg = ops['planning']['segments'] || Preferences::Catalog::PLANNING_TOOLBAR_GROUPS_PLANNING
     ops['planning']['segments'] = seg
     controls = (ops['planning']['segment_controls'] || {}).stringify_keys
     controls['optimize'] = { 'visible' => true, 'usable' => false }
@@ -55,9 +55,9 @@ class PreferencesOperationAbilityMapTest < ActiveSupport::TestCase
   end
 
   test 'customer cannot optimize route when route optimize segment is not usable' do
-    ops = Preferences::Catalog.default_operations.deep_dup
+    ops = Preferences::Catalog.default_planning_toolbar.deep_dup
     ops['route'] = (ops['route'] || {}).stringify_keys
-    seg = ops['route']['segments'] || Preferences::Catalog::OPERATION_GROUPS_ROUTE
+    seg = ops['route']['segments'] || Preferences::Catalog::PLANNING_TOOLBAR_GROUPS_ROUTE
     ops['route']['segments'] = seg
     controls = (ops['route']['segment_controls'] || {}).stringify_keys
     controls['optimize'] = { 'visible' => true, 'usable' => false }
@@ -70,9 +70,9 @@ class PreferencesOperationAbilityMapTest < ActiveSupport::TestCase
   end
 
   test 'customer cannot apply_zonings when zoning segment is not usable' do
-    ops = Preferences::Catalog.default_operations.deep_dup
+    ops = Preferences::Catalog.default_planning_toolbar.deep_dup
     ops['planning'] = (ops['planning'] || {}).stringify_keys
-    seg = ops['planning']['segments'] || Preferences::Catalog::OPERATION_GROUPS_PLANNING
+    seg = ops['planning']['segments'] || Preferences::Catalog::PLANNING_TOOLBAR_GROUPS_PLANNING
     ops['planning']['segments'] = seg
     controls = (ops['planning']['segment_controls'] || {}).stringify_keys
     controls['zoning'] = { 'visible' => true, 'usable' => false }
@@ -86,9 +86,9 @@ class PreferencesOperationAbilityMapTest < ActiveSupport::TestCase
 
   test 'customer can still edit vehicle_usage when route vehicle_usage toolbar tool is not usable' do
     # Route toolbar vehicle_usage only affects the selector on the plan, not the vehicle_usage CRUD form.
-    ops = Preferences::Catalog.default_operations.deep_dup
+    ops = Preferences::Catalog.default_planning_toolbar.deep_dup
     ops['route'] = (ops['route'] || {}).stringify_keys
-    seg = ops['route']['segments'] || Preferences::Catalog::OPERATION_GROUPS_ROUTE
+    seg = ops['route']['segments'] || Preferences::Catalog::PLANNING_TOOLBAR_GROUPS_ROUTE
     ops['route']['segments'] = seg
     controls = (ops['route']['segment_controls'] || {}).stringify_keys
     controls['vehicle_usage'] = { 'visible' => true, 'usable' => false }

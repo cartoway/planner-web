@@ -15,15 +15,15 @@ class Admin::RolesControllerTest < ActionController::TestCase
     @role.update!(icon: 'fa-star', color: '#cc0000') if Role.column_names.include?('icon')
   end
 
-  test 'new seeds forms as visible but not usable (disabled tier)' do
-    return unless Role.column_names.include?('operations')
+  test 'new seeds spaces as visible but not usable (disabled tier)' do
+    return unless Role.column_names.include?('spaces')
 
     get :new
     assert_response :success
     role = assigns(:role)
-    active, disabled, hidden = role.forms_resources_three_way_split
+    active, disabled, hidden = role.spaces_resources_three_way_split
     assert_empty active
-    assert_equal Preferences::Catalog::FORM_RESOURCES.sort, disabled.sort
+    assert_equal Preferences::Catalog::SPACE_KEYS.sort, disabled.sort
     assert_empty hidden
   end
 
@@ -66,9 +66,9 @@ class Admin::RolesControllerTest < ActionController::TestCase
       assert_equal @role.icon, copy.icon
       assert_equal @role.color, copy.color
     end
-    if Role.column_names.include?('operations')
-      assert_equal @role.reload.operations, copy.operations
-      assert_equal @role.forms, copy.forms
+    if Role.column_names.include?('planning_toolbar')
+      assert_equal @role.reload.planning_toolbar, copy.planning_toolbar
+      assert_equal @role.spaces, copy.spaces if Role.column_names.include?('spaces')
     end
   end
 
@@ -86,17 +86,26 @@ class Admin::RolesControllerTest < ActionController::TestCase
     assert_match(/\(\d+\)\z/, copy.name)
   end
 
-  test 'update persists toolbar and form permissions' do
-    return unless Role.column_names.include?('operations')
+  test 'update persists toolbar and space permissions' do
+    return unless Role.column_names.include?('planning_toolbar')
+    return unless Role.column_names.include?('spaces')
 
     patch :update, params: {
       id: @role.id,
       role: {
         name: @role.name,
-        forms_ui: '1',
-        forms_active: %w[plannings],
-        forms_disabled: %w[destination vehicle_usages],
-        operations: {
+        spaces_ui: '1',
+        spaces_active: %w[plannings operations],
+        spaces_disabled: %w[destination vehicle_usages],
+        spaces_actions: {
+          plannings: { active: %w[edit], disabled: [], hidden: [] },
+          operations: {
+            active: %w[sync transmit export],
+            disabled: [],
+            hidden: %w[destroy]
+          }
+        },
+        planning_toolbar: {
           planning: %w[zoning optimize external_callback],
           route: %w[vehicle_usage export]
         }
@@ -106,21 +115,54 @@ class Admin::RolesControllerTest < ActionController::TestCase
     assert_redirected_to edit_admin_role_path(@role)
     @role.reload
 
-    sp = Preferences::Catalog::OPERATION_GROUPS_PLANNING
+    sp = Preferences::Catalog::PLANNING_TOOLBAR_GROUPS_PLANNING
     expected_planning_segments = %w[zoning optimize external_callback] + (sp - %w[zoning optimize external_callback])
-    assert_equal expected_planning_segments, @role.operations['planning']['segments']
+    assert_equal expected_planning_segments, @role.planning_toolbar['planning']['segments']
 
-    sr = Preferences::Catalog::OPERATION_GROUPS_ROUTE
+    sr = Preferences::Catalog::PLANNING_TOOLBAR_GROUPS_ROUTE
     expected_route_segments = %w[vehicle_usage export] + (sr - %w[vehicle_usage export])
-    assert_equal expected_route_segments, @role.operations['route']['segments']
+    assert_equal expected_route_segments, @role.planning_toolbar['route']['segments']
 
-    assert_equal %w[custom_attributes customer deliverable_units destination plannings stores tags vehicle_usages], @role.forms.keys.map(&:to_s).sort
-    assert @role.forms['plannings']['visible']
-    assert @role.forms['plannings']['usable']
-    refute @role.forms['customer']['visible']
-    refute @role.forms['customer']['usable']
-    assert @role.forms['destination']['visible']
-    assert_not @role.forms['destination']['usable']
+    assert_equal Preferences::Catalog::SPACE_KEYS.sort, @role.spaces.keys.map(&:to_s).sort
+    assert @role.spaces['plannings']['visible']
+    assert @role.spaces['plannings']['usable']
+    assert Preferences::Catalog::Spaces.space_action_usable_in?(@role.spaces['plannings'], 'edit')
+    refute @role.spaces['customer']['visible']
+    assert @role.spaces['destination']['visible']
+    assert_not @role.spaces['destination']['usable']
+    assert @role.spaces['operations']['usable']
+    assert Preferences::Catalog::Spaces.space_action_usable_in?(@role.spaces['operations'], 'sync')
+    assert_not Preferences::Catalog::Spaces.space_action_usable_in?(@role.spaces['operations'], 'destroy')
+  end
+
+  test 'edit form lists spaces section before toolbars and has no forms_active' do
+    return unless Role.column_names.include?('planning_toolbar')
+    return unless Role.column_names.include?('spaces')
+
+    spaces = Preferences::Catalog.normalize_spaces(@role.spaces)
+    spaces['plannings'] = Preferences::Catalog::Spaces.default_space_entry(
+      'plannings', visible: true, usable: true, actions_all_usable: true
+    )
+    @role.update_column(:spaces, Preferences::Catalog.normalize_spaces(spaces))
+
+    get :edit, params: { id: @role.id }
+    assert_response :success
+    assert_includes response.body, 'spaces_active'
+    assert_not_includes response.body, 'forms_active'
+    space_actions_accordion = ActionView::RecordIdentifier.dom_id(@role, 'space_actions_accordion')
+    planning_toolbar_accordion = ActionView::RecordIdentifier.dom_id(@role, 'planning_toolbar_accordion')
+    # assert_select: HAML emits id='…', not id="…"
+    assert_select "##{space_actions_accordion}"
+    assert_select "##{planning_toolbar_accordion}"
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@role, 'space_actions_plannings')}_collapse"
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@role, 'operations_planning')}_collapse"
+    # Role.create! seeds toolbar segments in the disabled tier, so active inputs
+    # ([planning_toolbar][planning][]) may be absent — use the accordion id as marker.
+    spaces_pos = response.body.index('spaces_active')
+    planning_pos = response.body.index(planning_toolbar_accordion)
+    assert spaces_pos
+    assert planning_pos
+    assert_operator spaces_pos, :<, planning_pos
   end
 
   test 'update persists metadata fields' do

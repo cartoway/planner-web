@@ -1,7 +1,7 @@
 <% javascript 'destination' %>
 
 <% content_for :title, t('.title') %>
-<% can_import_stores = current_user_form_create?(:stores) %>
+<% can_import_stores = current_user_space_action_usable?(:stores, :edit) %>
 
 <h1><%= t '.title' %></h1>
 

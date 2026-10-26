@@ -1,7 +1,7 @@
 <% javascript 'vehicle_usage_set' %>
 
 <% content_for :title, t('.title') %>
-<% can_import_vehicle_config = current_user_form_update?(:vehicle_usages) %>
+<% can_import_vehicle_config = current_user_space_action_usable?(:vehicle_usages, :edit) %>
 
 <h1><%= t '.title' %></h1>
 

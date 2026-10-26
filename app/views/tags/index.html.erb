@@ -4,8 +4,8 @@
 
 <h1><%= t '.title' %></h1>
 
-<% can_create_tags = current_user_form_create?(:tags) %>
-<% can_mutate_tags = current_user_form_update?(:tags) %>
+<% can_create_tags = current_user_space_action_usable?(:tags, :edit) %>
+<% can_mutate_tags = current_user_space_action_usable?(:tags, :edit) %>
 
 <div class="row row-top">
   <div class="col-md-6">

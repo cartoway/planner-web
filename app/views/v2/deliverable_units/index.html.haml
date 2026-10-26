@@ -2,8 +2,8 @@
 - content_for :form_sidebar do
   = render "v2/layouts/form_sidebar_placeholder"
 - content_for :title, t('deliverable_units.index.title')
-- can_destroy = current_user_form_destroy_enabled?(:deliverable_units)
-- can_create = current_user_form_create?(:deliverable_units)
+- can_destroy = current_user_space_action_usable?(:deliverable_units, :edit)
+- can_create = current_user_space_action_usable?(:deliverable_units, :edit)
 .deliverable-units-index{data: { controller: 'v2--table-filter v2--table-selection v2--index-selection', v2__index_selection_select_label_value: t('all.verb.select'), v2__index_selection_cancel_label_value: t('all.verb.cancel') }}
   .deliverable-units-toolbar.px-3.pt-3
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2

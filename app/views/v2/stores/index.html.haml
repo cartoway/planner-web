@@ -3,8 +3,8 @@
 - content_for :form_sidebar do
   = render "v2/layouts/form_sidebar_placeholder"
 - content_for :title, t('stores.index.title')
-- can_destroy = current_user_form_destroy_enabled?(:stores)
-- can_create = current_user_form_create?(:stores)
+- can_destroy = current_user_space_action_usable?(:stores, :edit)
+- can_create = current_user_space_action_usable?(:stores, :edit)
 - customer = current_user.customer
 - layers = (customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: layer.url, vector_style_url: layer.vector_style_url, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
 - v2_js_cfg = { map_lat: customer.default_position[:lat], map_lng: customer.default_position[:lng], map_zoom: 12, geocoder: true, map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)], stores: @stores.map { |s| { id: s.id, name: s.name, lat: s.lat, lng: s.lng } }, index_url: stores_path }

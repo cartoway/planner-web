@@ -132,13 +132,13 @@ class PlanningStatesControllerTest < ActionController::TestCase
 
   test 'index is forbidden when planning_states operation is not visible' do
     u = users(:user_one)
-    ops = Preferences::Catalog.default_operations.deep_dup
+    ops = Preferences::Catalog.default_planning_toolbar.deep_dup
     ops['planning']['segment_controls']['planning_states'] = { 'visible' => false, 'usable' => false }
     role = Role.create!(
       reseller: resellers(:reseller_one),
       name: "no-planning-states-#{SecureRandom.hex(4)}",
-      operations: ops,
-      forms: Preferences::Catalog.default_forms
+      planning_toolbar: ops,
+      spaces: Preferences::Catalog.default_spaces
     )
     u.update!(role_id: role.id)
     sign_in u
@@ -153,13 +153,13 @@ class PlanningStatesControllerTest < ActionController::TestCase
 
   test 'reapply is forbidden when planning_states operation is visible but not usable' do
     u = users(:user_one)
-    ops = Preferences::Catalog.default_operations.deep_dup
+    ops = Preferences::Catalog.default_planning_toolbar.deep_dup
     ops['planning']['segment_controls']['planning_states'] = { 'visible' => true, 'usable' => false }
     role = Role.create!(
       reseller: resellers(:reseller_one),
       name: "planning-states-disabled-#{SecureRandom.hex(4)}",
-      operations: ops,
-      forms: Preferences::Catalog.default_forms
+      planning_toolbar: ops,
+      spaces: Preferences::Catalog.default_spaces
     )
     u.update!(role_id: role.id)
     sign_in u

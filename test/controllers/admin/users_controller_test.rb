@@ -34,14 +34,14 @@ class Admin::UsersControllerTest < ActionController::TestCase
   end
 
   test 'new preselects reseller default_role when set' do
-    return unless Role.column_names.include?('operations')
+    return unless Role.column_names.include?('planning_toolbar')
 
     role = Role.create!(
       reseller: @reseller,
       name: 'Default pick',
       ref: 'new_user_default',
-      operations: Preferences::Catalog.baseline_role_operations_json,
-      forms: Preferences::Catalog.baseline_role_forms_json
+      planning_toolbar: Preferences::Catalog.baseline_role_planning_toolbar_json,
+      spaces: Preferences::Catalog.baseline_role_spaces_json
     )
     @reseller.update_column(:default_role_id, role.id)
 

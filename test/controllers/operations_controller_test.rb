@@ -135,6 +135,31 @@ class OperationsControllerTest < ActionController::TestCase
     assert_includes names, 'stops.xlsx'
   end
 
+  test 'export is forbidden when role lacks export action' do
+    user = users(:user_one)
+    customer = user.customer
+    previous_devices = customer.devices
+    customer.update!(devices: { deliver: { enable: true } })
+
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    controls = spaces['operations']['actions']['segment_controls']
+    controls['export'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: customer.reseller,
+      name: "no-export-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user.update!(role_id: role.id)
+    sign_in user
+
+    get :export, params: { id: @operation.id, format: :xlsx }
+    assert_response :redirect
+
+    user.update!(role_id: nil)
+    customer.update!(devices: previous_devices)
+  end
+
   test 'show exposes mobile panes and detail sheet chrome' do
     get :show, params: { id: @operation.id }
     assert_response :success
@@ -591,11 +616,11 @@ class OperationsControllerTest < ActionController::TestCase
     assert_equal I18n.t('operations.show.date_locked'), flash[:alert]
   end
 
-  test 'index is forbidden when Cartoway Deliver is not enabled' do
+  test 'index remains available when Cartoway Deliver device is disabled' do
     previous = @planning.customer.devices
     @planning.customer.update!(devices: {})
     get :index
-    assert_redirected_to root_path
+    assert_response :success
   ensure
     @planning.customer.update!(devices: previous) if previous
   end

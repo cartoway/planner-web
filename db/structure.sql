@@ -1275,8 +1275,8 @@ CREATE TABLE public.roles (
     ref character varying,
     icon character varying,
     color character varying,
-    operations jsonb DEFAULT '{}'::jsonb NOT NULL,
-    forms jsonb DEFAULT '{}'::jsonb NOT NULL,
+    planning_toolbar jsonb DEFAULT '{}'::jsonb NOT NULL,
+    spaces jsonb DEFAULT '{}'::jsonb NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL
 );
@@ -5094,6 +5094,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20261014140000'),
 ('20261014150000'),
 ('20261016140000'),
-('20261020100000');
+('20261020100000'),
+('20261022120000');
 
 

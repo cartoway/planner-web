@@ -3,10 +3,10 @@
   = render "v2/layouts/form_sidebar_placeholder"
 - content_for :title, t('vehicle_usage_sets.index.title')
 - invisible_class = current_user.customer.vehicle_usage_sets.size > 1 ? '' : 'invisible'
-- can_destroy_vehicle_config = current_user_form_destroy_enabled?(:vehicle_usages)
-- can_update_vehicle_usage = current_user_form_update?(:vehicle_usages)
-- can_create_vehicle_usage = current_user_form_create?(:vehicle_usages)
-- can_view_vehicle_usage = current_user_form_visible?(:vehicle_usages)
+- can_destroy_vehicle_config = current_user_space_action_usable?(:vehicle_usages, :edit)
+- can_update_vehicle_usage = current_user_space_action_usable?(:vehicle_usages, :edit)
+- can_create_vehicle_usage = current_user_space_action_usable?(:vehicle_usages, :edit)
+- can_view_vehicle_usage = current_user_space_visible?(:vehicle_usages)
 - show_set_checkbox = current_user.customer.default_max_vehicle_usage_sets > 1
 - sets_count = @vehicle_usage_sets.count
 - vehicles_count = @vehicle_usage_sets[0]&.vehicle_usages&.count || 0

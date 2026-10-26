@@ -48,7 +48,7 @@ module PlanningOperationHelper
   # open_ops_by_route: optional { route_id => [Operation, ...] } from Planning#open_operations_by_route_id
   # to avoid one query per route on planning show/refresh.
   def attach_open_operations!(route_data, planning, route_id = route_data[:route_id], open_ops_by_route: nil)
-    return route_data unless planning.customer.device.operations_enabled?
+    return route_data unless current_user_space_visible?(:operations)
 
     operation = if open_ops_by_route
                   (open_ops_by_route[route_id] || []).find { |op| op.date == Date.current }

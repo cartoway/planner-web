@@ -39,14 +39,14 @@ class Admin::ResellersControllerTest < ActionController::TestCase
   end
 
   test 'should update reseller default_role_id' do
-    return unless Role.column_names.include?('operations')
+    return unless Role.column_names.include?('planning_toolbar')
 
     role = Role.create!(
       reseller: @reseller,
       name: 'Pick default',
       ref: 'pick_default',
-      operations: Preferences::Catalog.baseline_role_operations_json,
-      forms: Preferences::Catalog.baseline_role_forms_json
+      planning_toolbar: Preferences::Catalog.baseline_role_planning_toolbar_json,
+      spaces: Preferences::Catalog.baseline_role_spaces_json
     )
 
     patch :update, params: { id: @reseller, reseller: { name: @reseller.name, default_role_id: role.id } }

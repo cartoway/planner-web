@@ -132,7 +132,7 @@
               %option{value: "4"}
             %span.small.text-muted.text-nowrap{data: {v2__range_output_target: 'display'}}= pri
           %p.help-block= vf.call('priority_help')
-      - tom_select_data = { controller: 'v2--tom-select', v2__tom_select_create_value: current_user_form_create?(:tags), v2__tom_select_placeholder_value: t('web.select2.placeholder') }
+      - tom_select_data = { controller: 'v2--tom-select', v2__tom_select_create_value: current_user_space_action_usable?(:tags, :edit), v2__tom_select_placeholder_value: t('web.select2.placeholder') }
       .destination_visits_attributes_tag_ids_input
         = f.select :tag_ids, options_for_select(visit.destination.customer.tags.map { |tag| [tag.label, tag.id, tag_select_option_attributes(tag)] }, visit.tags.collect(&:id)), {label: t('activerecord.attributes.visit.tag_ids'), help: vf.call('tags_help'), append: content_tag('i', '', class: 'fa fa-tags fa-fw')}, {multiple: true, data: tom_select_data}
 

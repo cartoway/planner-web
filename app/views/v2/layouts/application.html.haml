@@ -59,7 +59,7 @@
                       .hidden-menu
                         = t 'admin.profiles.menu.profiles'
             - if user_signed_in? && current_user.customer
-              - if !@unsubscribed && can?(:manage, Operation)
+              - if !@unsubscribed && current_user_space_visible?(:operations)
                 %li#menu-operation.menu-list-item
                   %a.menu-section{'data-bs-toggle': "collapse", 'data-bs-parent': '#accordion-menu', href: '#operationsCollpase', data: { turbo: false }}
                     .d-flex.align-items-center.justify-content-center
@@ -202,8 +202,8 @@
                       %i.fa.fa-download.fa-fw
                       = t 'destinations.menu.export_spreadsheet_standard'
                   %li.divider
-                  %li{ class: ("disabled" if !current_user_form_update?(:destination)) }
-                    = link_to destinations_path, disabled: !current_user_form_update?(:destination), data: { turbo_method: :delete, turbo_confirm: t('destinations.menu.clear_confirm') } do
+                  %li{ class: ("disabled" if !current_user_space_action_usable?(:destination, :edit)) }
+                    = link_to destinations_path, disabled: !current_user_space_action_usable?(:destination, :edit), data: { turbo_method: :delete, turbo_confirm: t('destinations.menu.clear_confirm') } do
                       %i.fa.fa-trash.fa-fw
                       = t 'destinations.menu.clear'
               %li.pannel.panel-default.menu-list-item
@@ -213,28 +213,28 @@
                     .hidden-menu
                       = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
                 %ul#vehiclesCollpase.accordion-menu.menu-content.collapse.hidden-menu{'data-bs-parent': '#accordion-menu'}
-                  - if current_user_form_visible?(:vehicle_usages)
+                  - if current_user_space_visible?(:vehicle_usages)
                     %li
                       = link_to vehicle_usage_sets_path, data: { turbo_frame: "main", turbo_action: "advance" } do
                         %i.fa.fa-truck-field.fa-fw
                         = t 'all.verb.list'
-                    %li{ class: ("disabled" if !current_user_form_update?(:vehicle_usages)) }
-                      = link_to import_vehicle_usage_sets_path, disabled: !current_user_form_update?(:vehicle_usages), data: { turbo_frame: "main", turbo_action: "advance" } do
+                    %li{ class: ("disabled" if !current_user_space_action_usable?(:vehicle_usages, :edit)) }
+                      = link_to import_vehicle_usage_sets_path, disabled: !current_user_space_action_usable?(:vehicle_usages, :edit), data: { turbo_frame: "main", turbo_action: "advance" } do
                         %i.fa.fa-upload.fa-fw
                         = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
                     %li.divider
-                  - if current_user_form_visible?(:deliverable_units)
+                  - if current_user_space_visible?(:deliverable_units)
                     %li
                       = link_to deliverable_units_path, data: { turbo_frame: "main", turbo_action: "advance" } do
                         %i.fa.fa-dumpster.fa-fw
                         = t 'vehicle_usage_sets.menu.deliverable_units'
-                  - if current_user_form_visible?(:stores)
+                  - if current_user_space_visible?(:stores)
                     %li
                       = link_to stores_path, data: { turbo_frame: "main", turbo_action: "advance" } do
                         %i.fa.fa-store.fa-fw
                         = t 'destinations.menu.stores'
                     %li
-                      = link_to store_import_path, disabled: !current_user_form_create?(:stores), data: { turbo_frame: "main", turbo_action: "advance" } do
+                      = link_to store_import_path, disabled: !current_user_space_action_usable?(:stores, :edit), data: { turbo_frame: "main", turbo_action: "advance" } do
                         %i.fa.fa-upload.fa-fw
                         = t 'destinations.menu.import_stores'
         #menu-settings-dock

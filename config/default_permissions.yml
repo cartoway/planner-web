@@ -1,18 +1,14 @@
 # Default permissions when a user has no Role, and seeds for a new Role in admin (before first save).
-# null for operations/forms means "use built-in Ruby catalog" (see Preferences::Catalog / Operations).
+# null for planning_toolbar/spaces means "use built-in Ruby catalog" (see Preferences::Catalog).
 #
-# Structure when set (operations) mirrors stored JSON after normalize_operations:
-#   planning: { segments: [...], segment_controls: { <id>: { visible, usable }, ... } }
-#   route:    { ... }
-#   stop:     { ... }
-# forms mirrors normalize_forms keys: plannings, destination, vehicle_usages, stores, tags, customer,
-# deliverable_units, custom_attributes → { visible, usable }
-#
-# Shared operations/forms for no_role and new_role use a YAML anchor on no_role and merge (<<) into new_role.
+# Structure when set (planning_toolbar) mirrors stored JSON after normalize_planning_toolbar:
+#   planning / route / stop → segments + segment_controls
+# spaces mirrors normalize_spaces (compact or full):
+#   plannings / destination / … / operations → { visible, usable } (+ optional actions)
 #
 default: &default
-  no_role: &restricted_operations_and_forms
-    operations:
+  no_role: &restricted_operations_and_spaces
+    planning_toolbar:
       planning:
         segments: [external_callback, optimize, zoning, vehicle_usage_set, toggle_routes, toggle_route_data, lock_routes, activate_stops, export, refresh, planning_states, duplicate, planning_dashboard]
         segment_controls:
@@ -47,7 +43,7 @@ default: &default
           active_stop: { visible: true, usable: false }
           move_stop: { visible: true, usable: false }
           lock_stop: { visible: true, usable: false }
-    forms:
+    spaces:
       plannings: { visible: true, usable: false }
       destination: { visible: true, usable: false }
       vehicle_usages: { visible: true, usable: false }
@@ -56,18 +52,17 @@ default: &default
       customer: { visible: true, usable: false }
       deliverable_units: { visible: true, usable: false }
       custom_attributes: { visible: true, usable: false }
+      operations: { visible: true, usable: false }
   new_role:
-    <<: *restricted_operations_and_forms
+    <<: *restricted_operations_and_spaces
 
 development:
   <<: *default
 
-# RAILS_ENV=test: users in fixtures often have no Role — use permissive no_role so API/controller
-# suites match historical behavior. Restricted no_role stays the default for development/production.
 test:
   <<: *default
   no_role:
-    operations:
+    planning_toolbar:
       planning:
         segments: [external_callback, optimize, zoning, vehicle_usage_set, toggle_routes, toggle_route_data, lock_routes, activate_stops, export, refresh, planning_states, duplicate, planning_dashboard]
         segment_controls:
@@ -102,7 +97,7 @@ test:
           active_stop: { visible: true, usable: true }
           move_stop: { visible: true, usable: true }
           lock_stop: { visible: false, usable: false }
-    forms:
+    spaces:
       plannings: { visible: true, usable: true }
       destination: { visible: true, usable: true }
       vehicle_usages: { visible: true, usable: true }
@@ -111,6 +106,7 @@ test:
       customer: { visible: true, usable: true }
       deliverable_units: { visible: true, usable: true }
       custom_attributes: { visible: true, usable: true }
+      operations: { visible: true, usable: true }
 
 production:
   <<: *default

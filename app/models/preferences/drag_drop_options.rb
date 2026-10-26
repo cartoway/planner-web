@@ -75,26 +75,40 @@ module Preferences
       )
     end
 
-    def operations_three_zone_options(param_prefix, zone_key)
+    def planning_toolbar_three_zone_options(param_prefix, zone_key)
       p = param_prefix.to_s
       z = zone_key.to_s
       BASE.merge(showOrder: false, columns: [
-        { containerSelector: '.operations-tier-active .item-list', inputName: "#{p}[operations][#{z}][]" },
-        { containerSelector: '.operations-tier-disabled .item-list', inputName: "#{p}[operations][#{z}_disabled][]" },
+        { containerSelector: '.tier-active .item-list', inputName: "#{p}[planning_toolbar][#{z}][]" },
+        { containerSelector: '.tier-disabled .item-list', inputName: "#{p}[planning_toolbar][#{z}_disabled][]" },
         {
-          containerSelector: '.operations-tier-hidden .item-list',
-          inputName: "#{p}[operations][#{z}_hidden][]",
+          containerSelector: '.tier-hidden .item-list',
+          inputName: "#{p}[planning_toolbar][#{z}_hidden][]",
           inactive: true
         }
       ])
     end
 
-    def forms_three_tier_options(param_prefix)
+    def spaces_three_tier_options(param_prefix)
       p = param_prefix.to_s
       BASE.merge(showOrder: false, columns: [
-        { containerSelector: '.forms-tier-active .item-list', inputName: "#{p}[forms_active][]", toggleTo: 1 },
-        { containerSelector: '.forms-tier-disabled .item-list', inputName: "#{p}[forms_disabled][]", toggleTo: 2 },
-        { containerSelector: '.forms-tier-hidden .item-list', inactive: true, toggleTo: 0 }
+        { containerSelector: '.tier-active .item-list', inputName: "#{p}[spaces_active][]", toggleTo: 1 },
+        { containerSelector: '.tier-disabled .item-list', inputName: "#{p}[spaces_disabled][]", toggleTo: 2 },
+        { containerSelector: '.tier-hidden .item-list', inactive: true, toggleTo: 0 }
+      ])
+    end
+
+    def space_actions_three_zone_options(param_prefix, space_key)
+      p = param_prefix.to_s
+      sk = space_key.to_s
+      BASE.merge(showOrder: false, columns: [
+        { containerSelector: '.tier-active .item-list', inputName: "#{p}[spaces_actions][#{sk}][active][]" },
+        { containerSelector: '.tier-disabled .item-list', inputName: "#{p}[spaces_actions][#{sk}][disabled][]" },
+        {
+          containerSelector: '.tier-hidden .item-list',
+          inputName: "#{p}[spaces_actions][#{sk}][hidden][]",
+          inactive: true
+        }
       ])
     end
   end

@@ -120,7 +120,7 @@
             <td class="text-right"><%= vehicle.ref %></td>
             <td class="text-right"><%= vehicle_devices vehicle %></td>
             <td class="text-right">
-            <% if current_user_form_destroy_enabled?(:vehicle_usages) %>
+            <% if current_user_space_action_usable?(:vehicle_usages, :edit) %>
               <%= link_to delete_vehicle_customer_path(@customer, vehicle_id: vehicle.id), class: 'btn btn-danger btn-sm', method: :delete, data: {confirm: t('all.verb.destroy_confirm') } do %>
               <i class="fa fa-trash fa-fw"></i>
               <%= t 'all.verb.destroy' %>
@@ -138,7 +138,7 @@
       </table>
       <div id="delete-action">
         <div class="form-inline">
-          <%= button_tag type: :submit, class: "btn btn-danger btn-sm form-group", disabled: !current_user_form_destroy_enabled?(:vehicle_usages) do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+          <%= button_tag type: :submit, class: "btn btn-danger btn-sm form-group", disabled: !current_user_space_action_usable?(:vehicle_usages, :edit) do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
         </div>
       </div>
       </div>

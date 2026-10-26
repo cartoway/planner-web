@@ -18,7 +18,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 
-# JSON on User: headers only (layout). Toolbar + form permissions: Role.operations / Role.forms when a role is set;
+# JSON on User: headers only (layout). Toolbar + space permissions: Role.planning_toolbar / Role.spaces when a role is set;
 # otherwise catalog defaults (see ::Preferences::Catalog).
 module UserPreferences
   extend ActiveSupport::Concern
@@ -30,7 +30,7 @@ module UserPreferences
 
   def operation_segment_control(zone, segment_id)
     id = segment_id.to_s
-    z = effective_read_operations_hash[zone.to_s]
+    z = effective_read_planning_toolbar_hash[zone.to_s]
     return default_segment_control if z.blank?
 
     sc = z['segment_controls']
@@ -58,34 +58,58 @@ module UserPreferences
     ::Preferences::Catalog.truthy?(v)
   end
 
-  def form_policy(resource)
+  def space_entry(resource)
     key = resource.to_s
-    unless ::Preferences::Catalog::FORM_RESOURCES.include?(key)
-      return { 'visible' => true, 'usable' => true, 'create' => true, 'update' => true }
-    end
+    return nil unless ::Preferences::Catalog::SPACE_KEYS.include?(key)
 
-    f = effective_read_forms_hash[key] || {}
-    vis = ::Preferences::Catalog.truthy?(f.fetch('visible', ::Preferences::Catalog::Forms::NORMALIZE_FORM_VISIBLE_DEFAULT))
-    use = ::Preferences::Catalog.truthy?(f.fetch('usable', ::Preferences::Catalog::Forms::NORMALIZE_FORM_USABLE_DEFAULT))
-    can_mutate = vis && use
-    {
-      'visible' => vis,
-      'usable' => use,
-      'create' => can_mutate,
-      'update' => can_mutate
-    }
+    effective_read_spaces_hash[key]
   end
 
-  def form_visible?(resource)
-    form_policy(resource)['visible']
+  def space_visible?(resource)
+    entry = space_entry(resource)
+    return true if entry.nil?
+
+    ::Preferences::Catalog.truthy?(entry['visible'])
   end
 
-  def form_create?(resource)
-    form_policy(resource)['create']
+  def space_usable?(resource)
+    return false unless space_visible?(resource)
+
+    entry = space_entry(resource)
+    return true if entry.nil?
+
+    ::Preferences::Catalog.truthy?(entry['usable'])
   end
 
-  def form_update?(resource)
-    form_policy(resource)['update']
+  def space_action_control(resource, action_id)
+    entry = space_entry(resource)
+    return default_segment_control if entry.blank?
+
+    actions = entry['actions'].is_a?(Hash) ? entry['actions'].stringify_keys : {}
+    sc = actions['segment_controls'].is_a?(Hash) ? actions['segment_controls'].stringify_keys : {}
+    raw = sc[action_id.to_s]
+    return default_segment_control if raw.nil? || !raw.is_a?(Hash)
+
+    raw.stringify_keys
+  end
+
+  def space_action_visible?(resource, action_id)
+    return false unless space_visible?(resource)
+
+    v = space_action_control(resource, action_id)['visible']
+    return false if v.nil?
+
+    ::Preferences::Catalog.truthy?(v)
+  end
+
+  def space_action_usable?(resource, action_id)
+    return false unless space_usable?(resource)
+    return false unless space_action_visible?(resource, action_id)
+
+    u = space_action_control(resource, action_id)['usable']
+    return false if u.nil?
+
+    ::Preferences::Catalog.truthy?(u)
   end
 
   def apply_self_service_display_ui!(headers_params: nil)
@@ -135,30 +159,30 @@ module UserPreferences
     headers.is_a?(Hash) ? headers.stringify_keys : {}
   end
 
-  def read_operations_hash
+  def read_planning_toolbar_hash
     raw = if permissions_from_role?
-            role.operations
+            role.planning_toolbar
           else
-            ::Preferences::Catalog.no_role_operations_seed_hash
+            ::Preferences::Catalog.no_role_planning_toolbar_seed_hash
           end
-    ::Preferences::Catalog.normalize_operations(raw.is_a?(Hash) ? raw : {}).deep_stringify_keys
+    ::Preferences::Catalog.normalize_planning_toolbar(raw.is_a?(Hash) ? raw : {}).deep_stringify_keys
   end
 
-  def read_forms_hash
+  def read_spaces_hash
     raw = if permissions_from_role?
-            role.forms
+            role.spaces
           else
-            ::Preferences::Catalog.no_role_forms_seed_hash
+            ::Preferences::Catalog.no_role_spaces_seed_hash
           end
-    ::Preferences::Catalog.normalize_forms(raw.is_a?(Hash) ? raw : {}).stringify_keys
+    ::Preferences::Catalog.normalize_spaces(raw.is_a?(Hash) ? raw : {}).deep_stringify_keys
   end
 
-  def effective_read_operations_hash
-    read_operations_hash
+  def effective_read_planning_toolbar_hash
+    read_planning_toolbar_hash
   end
 
-  def effective_read_forms_hash
-    read_forms_hash
+  def effective_read_spaces_hash
+    read_spaces_hash
   end
 
   def permissions_from_role?

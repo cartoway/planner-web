@@ -18,7 +18,7 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 
-# Reseller-defined label (name, ref, icon, color) plus toolbar + form permissions (operations, forms).
+# Reseller-defined label (name, ref, icon, color) plus toolbar + space permissions (planning_toolbar, spaces).
 # Header layout stays on User only.
 class Role < ApplicationRecord
   include PreferencesCatalogSplits
@@ -33,22 +33,21 @@ class Role < ApplicationRecord
                                 message: ->(*_) { I18n.t('activerecord.errors.models.role.icon_unknown') }
 
   before_validation :nilify_blank_ref
-  before_validation :normalize_operations_and_forms_json
+  before_validation :normalize_planning_toolbar_and_spaces_json
 
   # Idempotent: returns existing or newly created system default role for this reseller.
   # with_lock on the reseller serializes find+create (no TOCTOU between find_by and create!).
   def self.create_default_permissions_role_for!(reseller)
     ref = default_permissions_role_ref
     reseller.with_lock do
-      # Query Role directly so we never rely on a stale in-memory `reseller.roles` association.
       existing = Role.find_by(reseller_id: reseller.id, ref: ref)
       existing ||=
         reseller.roles.create!(
           name: I18n.t('admin.roles.default_permissions_role_name', default: 'Default permissions'),
           ref: ref,
           icon: default_new_reseller_role_icon,
-          operations: default_new_reseller_role_operations_json,
-          forms: default_new_reseller_role_forms_json
+          planning_toolbar: default_new_reseller_role_planning_toolbar_json,
+          spaces: default_new_reseller_role_spaces_json
         )
     end
   rescue ActiveRecord::RecordNotUnique
@@ -56,9 +55,6 @@ class Role < ApplicationRecord
   end
 
   class << self
-
-    # System role created for each reseller (see Reseller#create_default_permissions_role).
-    # ref / icon / operations / forms are read from config/default_new_reseller_role.yml (+default_role+).
     def default_permissions_role_ref
       raw = default_role_yaml_hash['ref']
       if raw.nil? || raw.to_s.strip.empty?
@@ -75,45 +71,40 @@ class Role < ApplicationRecord
 
     private
 
-    # Slice of config/default_new_reseller_role.yml under +default_role+ (ref, icon, operations, forms).
     def default_role_yaml_hash
       dr = Preferences::Catalog::ConfigSeeds.roles_hash['default_role']
       dr.is_a?(Hash) ? dr : {}
     end
 
-    # Normalized operations JSON for the reseller system role (+default_role.operations+ in YAML).
-    def default_new_reseller_role_operations_json
-      Preferences::Catalog.baseline_role_operations_json.deep_dup
+    def default_new_reseller_role_planning_toolbar_json
+      Preferences::Catalog.baseline_role_planning_toolbar_json.deep_dup
     end
 
-    # Normalized forms JSON for the reseller system role (+default_role.forms+ in YAML).
-    def default_new_reseller_role_forms_json
-      Preferences::Catalog.baseline_role_forms_json.deep_dup
+    def default_new_reseller_role_spaces_json
+      Preferences::Catalog.baseline_role_spaces_json.deep_dup
     end
   end
 
   private
 
-  # Aligns with DB partial unique index (reseller_id, ref) WHERE ref IS NOT NULL: store NULL, not "".
   def nilify_blank_ref
     self.ref = ref&.strip.presence
   end
 
-  # Unused for Role UI (no header drag-drop); required if header_blocks_split is ever called.
   def read_headers_hash
     {}
   end
 
-  def read_operations_hash
-    operations.is_a?(Hash) ? operations.deep_stringify_keys : {}
+  def read_planning_toolbar_hash
+    planning_toolbar.is_a?(Hash) ? planning_toolbar.deep_stringify_keys : {}
   end
 
-  def read_forms_hash
-    forms.is_a?(Hash) ? forms.stringify_keys : {}
+  def read_spaces_hash
+    spaces.is_a?(Hash) ? spaces.deep_stringify_keys : {}
   end
 
-  def normalize_operations_and_forms_json
-    self.operations = Preferences::Catalog.normalize_operations(read_operations_hash)
-    self.forms = Preferences::Catalog.normalize_forms(read_forms_hash)
+  def normalize_planning_toolbar_and_spaces_json
+    self.planning_toolbar = Preferences::Catalog.normalize_planning_toolbar(read_planning_toolbar_hash)
+    self.spaces = Preferences::Catalog.normalize_spaces(read_spaces_hash)
   end
 end

@@ -78,15 +78,15 @@ class V01::UsersTest < ActiveSupport::TestCase
   end
 
   test 'should create a user with reseller default role when role_id is omitted' do
-    return unless Role.column_names.include?('operations')
+    return unless Role.column_names.include?('planning_toolbar')
 
     reseller = resellers(:reseller_one)
     role = Role.create!(
       reseller: reseller,
       name: 'API default role',
       ref: "api_default_#{SecureRandom.hex(4)}",
-      operations: Preferences::Catalog.baseline_role_operations_json,
-      forms: Preferences::Catalog.baseline_role_forms_json
+      planning_toolbar: Preferences::Catalog.baseline_role_planning_toolbar_json,
+      spaces: Preferences::Catalog.baseline_role_spaces_json
     )
     reseller.update_column(:default_role_id, role.id)
 
