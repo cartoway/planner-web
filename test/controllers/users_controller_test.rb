@@ -89,7 +89,17 @@ class UsersControllerTest < ActionController::TestCase
   end
 
   test 'self-service update persists destinations index toggle' do
-    refute @user.destinations_index_v2?
+    assert @user.destinations_index_v2?
+
+    patch :update, params: {
+      id: @user,
+      user: {
+        layer_id: @user.layer_id,
+        headers: { destinations_index: Preferences::Catalog::Headers::DESTINATIONS_INDEX_LEGACY }
+      }
+    }
+    assert_redirected_to edit_user_path(@user)
+    refute @user.reload.destinations_index_v2?
 
     # Checked switch submits hidden (legacy) then checkbox (v2); keep last value.
     patch :update, params: {
@@ -101,16 +111,6 @@ class UsersControllerTest < ActionController::TestCase
     }
     assert_redirected_to edit_user_path(@user)
     assert @user.reload.destinations_index_v2?
-
-    patch :update, params: {
-      id: @user,
-      user: {
-        layer_id: @user.layer_id,
-        headers: { destinations_index: Preferences::Catalog::Headers::DESTINATIONS_INDEX_LEGACY }
-      }
-    }
-    assert_redirected_to edit_user_path(@user)
-    refute @user.reload.destinations_index_v2?
   end
 
   test 'self-service update persists stop_list field order' do

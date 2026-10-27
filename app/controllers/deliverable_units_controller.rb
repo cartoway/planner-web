@@ -121,9 +121,12 @@ class DeliverableUnitsController < ApplicationController
   private
 
   def deliverable_unit_row_locals
+    can_mutate = helpers.current_user_space_action_usable?(:deliverable_units, :edit)
     {
       deliverable_unit: @deliverable_unit,
-      can_destroy: helpers.current_user_space_action_usable?(:deliverable_units, :edit)
+      show_mutate: helpers.current_user_space_action_visible?(:deliverable_units, :edit),
+      can_mutate: can_mutate,
+      can_destroy: can_mutate
     }
   end
 

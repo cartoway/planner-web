@@ -212,6 +212,13 @@ class ActionController::TestCase
     )
     user.save!
   end
+
+  def enable_layout_legacy!(user = users(:user_one))
+    user.apply_self_service_display_ui!(
+      headers_params: { destinations_index: Preferences::Catalog::Headers::DESTINATIONS_INDEX_LEGACY }
+    )
+    user.save!
+  end
 end
 
 def suppress_output
