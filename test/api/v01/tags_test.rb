@@ -157,8 +157,9 @@ class V01::TagsTest < ActiveSupport::TestCase
     u = users(:user_one)
     spaces = Preferences::Catalog.default_spaces.deep_dup
     spaces['tags'] = Preferences::Catalog::Spaces.default_space_entry(
-      'tags', visible: true, usable: false, actions_all_usable: false
+      'tags', visible: true, usable: true, actions_all_usable: true
     )
+    spaces['tags']['actions']['segment_controls']['edit'] = { 'visible' => true, 'usable' => false }
     spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),
@@ -179,8 +180,9 @@ class V01::TagsTest < ActiveSupport::TestCase
     u = users(:user_one)
     spaces = Preferences::Catalog.default_spaces.deep_dup
     spaces['tags'] = Preferences::Catalog::Spaces.default_space_entry(
-      'tags', visible: true, usable: false, actions_all_usable: false
+      'tags', visible: true, usable: true, actions_all_usable: true
     )
+    spaces['tags']['actions']['segment_controls']['edit'] = { 'visible' => true, 'usable' => false }
     spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),

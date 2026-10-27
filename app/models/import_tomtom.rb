@@ -25,7 +25,19 @@ class ImportTomtom
   attr_accessor :importer, :replace, :customer, :content_code
 
   def replace=(value)
-    @replace = ValueToBoolean.value_to_boolean(value)
+    @replace = case value.to_s
+               when 'visits' then :visits
+               when '1', 'true', 'destinations' then true
+               else ValueToBoolean.value_to_boolean(value)
+               end
+  end
+
+  def replace_destinations?
+    @replace == true
+  end
+
+  def replace_visits?
+    @replace == :visits
   end
 
   def import(synchronous = false)

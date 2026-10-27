@@ -199,8 +199,11 @@ class ImporterDestinations < ImporterBase
       @customer.delete_all_plannings
       @customer.plannings.reload
     end
-    if options[:replace]
+    case options[:replace]
+    when true, '1', 'destinations'
       @customer.delete_all_destinations
+    when :visits, 'visits'
+      @customer.delete_all_visits
     end
 
     @common_tags = {}

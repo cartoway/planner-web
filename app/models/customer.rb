@@ -709,9 +709,11 @@ class Customer < ApplicationRecord
     reindex_routes
   end
 
-  def delete_all_visits
-    Visit.where(id: visits.map(&:id)).delete_all
-    self.reload
+  def delete_all_visits(destination_ids: nil)
+    scope = Visit.joins(:destination).where(destinations: { customer_id: id })
+    scope = scope.where(destination_id: destination_ids) if destination_ids.present?
+    scope.delete_all
+    reload
     reindex_routes
   end
 

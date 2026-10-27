@@ -1072,6 +1072,11 @@ en:
         space_actions:
           common:
             edit: Create, edit, and delete
+          destination:
+            delete_all_destinations: Delete all destinations
+            delete_all_visits: Delete all visits
+          tags:
+            delete_visits_by_tags: Delete visits by tags
           operations:
             sync: Publish and sync from planning
             transmit: Send to drivers and destinations
@@ -1513,6 +1518,10 @@ en:
       import_stores: Import facilities
       tags: Categories
       clear: Clear all destinations
+      clear_visits: Delete all visits
+      clear_visits_confirm: >-
+        Are you sure you want to delete all visits? Destinations are kept, but
+        existing routes will be lost.
       clear_confirm: >-
         Are you sure to want to delete all destinations? Existing routes will be
         lost.
@@ -1564,6 +1573,13 @@ en:
       replace_no_help: >-
         An update of existing destinations (unchanged destination references) is
         made and the new ones are added in the application.
+      replace_visits: Delete previous visits
+      replace_visits_help: >-
+        Delete all existing visits before import. Destinations are kept; old
+        routes will be lost.
+      replace_visits_confirm: >-
+        Deleting all visits will affect your old plans. Destinations are kept.
+        Are you sure?
       replace_yes: Delete previous destinations
       replace_yes_help: >-
         Delete and replace destinations with import ones. Overwrite all
