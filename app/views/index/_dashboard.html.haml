@@ -1,55 +1,69 @@
 - if current_user && !current_user.admin?
   .row.d-flex.flex-wrap
-    .col-xs-12.col-md-6.col-lg-4.my-4
-      .card.card-shadow.card-height-uniform
-        .card-body.pv-1
-          %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
-            %span
-              %i.fa.fa-map-location.fa-fw
-              %span= t 'plannings.menu.plannings'
-            - too_many_or_cannot_create = @customer_summary[:plannings][:count] >= @customer_summary[:plannings][:limit] || !current_user_space_action_usable?(:plannings, :edit)
-            = link_to new_planning_path, class: "ml-auto btn #{too_many_or_cannot_create ? 'btn-default disabled' : 'btn-primary'}" do
-              %i.fa.fa-fw.fa-plus
-              = t('plannings.index.new')
-          - if @customer_summary[:plannings][:count] == 0
-            .d-flex.justify-content-center.align-items-center.my-4
-              %p.card-text.text-muted= t('plannings.index.none')
-          - else
-            .table-responsive.table-container
-              %table.table.table-hover.mb-1
-                %thead
-                  %tr
-                    %th= t 'activerecord.attributes.planning.name'
-                    %th.hide-xs= t 'activerecord.attributes.planning.date'
-                    %th.hide-md= t 'activerecord.attributes.route.emission'
-                    %th.hide-md= t 'activerecord.attributes.planning.tags'
-                    %th
-                %tbody
-                  - @customer_summary[:plannings][:latest].each do |planning|
-                    %tr
-                      %td
-                        = planning.name
-                      %td.hide-xs
-                        = planning.date && l(planning.date, format: :date)
-                      %td.hide-md
-                        - emission = planning.routes.map(&:route_data).map(&:emission).compact.reduce(&:+)
-                        - if emission
-                          = "#{emission.round(2)} #{t('all.unit.kgco2e_html')}"
-                      %td.hide-md.planning-tags
-                        - planning.tags.each do |tag|
-                          %span
-                            = tag_icon tag
-                            %span= tag.label
-                      %td.text-right
-                        .btn-group{ role: 'group'}
-                          - if @customer.reseller.planning_dashboard_url && toolbar_operation_visible?(:planning, 'planning_dashboard')
-                            = link_to @customer.reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', title: t('analytics.index.link'), class: 'btn btn-default btn-sm', disabled: toolbar_operation_disabled?(:planning, 'planning_dashboard') do
-                              %i.fa.fa-chart-line.fa-fw
-                          = link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm", title: t('all.verb.edit') do
-                            %i.fa.fa-edit.fa-fw
-        .card-footer.text-center
-          = link_to plannings_path do
-            = t('plannings.index.show', count: @customer_summary[:plannings][:count])
+    - if current_user_space_visible?(:plannings)
+      - plannings_usable = current_user_space_usable?(:plannings)
+      .col-xs-12.col-md-6.col-lg-4.my-4
+        .card.card-shadow.card-height-uniform
+          .card-body.pv-1
+            %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
+              %span
+                %i.fa.fa-map-location.fa-fw
+                %span= t 'plannings.menu.plannings'
+              - if plannings_usable && current_user_space_action_visible?(:plannings, :edit)
+                - too_many_or_cannot_create = @customer_summary[:plannings][:count] >= @customer_summary[:plannings][:limit] || !current_user_space_action_usable?(:plannings, :edit)
+                - if too_many_or_cannot_create
+                  %button.ml-auto.btn.btn-default{type: 'button', disabled: true}
+                    %i.fa.fa-fw.fa-plus
+                    = t('plannings.index.new')
+                - else
+                  = link_to new_planning_path, class: 'ml-auto btn btn-primary' do
+                    %i.fa.fa-fw.fa-plus
+                    = t('plannings.index.new')
+            - if plannings_usable
+              - if @customer_summary[:plannings][:count] == 0
+                .d-flex.justify-content-center.align-items-center.my-4
+                  %p.card-text.text-muted= t('plannings.index.none')
+              - else
+                .table-responsive.table-container
+                  %table.table.table-hover.mb-1
+                    %thead
+                      %tr
+                        %th= t 'activerecord.attributes.planning.name'
+                        %th.hide-xs= t 'activerecord.attributes.planning.date'
+                        %th.hide-md= t 'activerecord.attributes.route.emission'
+                        %th.hide-md= t 'activerecord.attributes.planning.tags'
+                        %th
+                    %tbody
+                      - @customer_summary[:plannings][:latest].each do |planning|
+                        %tr
+                          %td
+                            = planning.name
+                          %td.hide-xs
+                            = planning.date && l(planning.date, format: :date)
+                          %td.hide-md
+                            - emission = planning.routes.map(&:route_data).map(&:emission).compact.reduce(&:+)
+                            - if emission
+                              = "#{emission.round(2)} #{t('all.unit.kgco2e_html')}"
+                          %td.hide-md.planning-tags
+                            - planning.tags.each do |tag|
+                              %span
+                                = tag_icon tag
+                                %span= tag.label
+                          %td.text-right
+                            .btn-group{ role: 'group'}
+                              - if @customer.reseller.planning_dashboard_url && toolbar_operation_visible?(:planning, 'planning_dashboard')
+                                = link_to @customer.reseller.planning_dashboard_url.gsub('{LG}', I18n.locale.to_s).gsub('{ID}', current_user.customer.id.to_s).gsub('{P_ID}', planning.id.to_s), target: '_blank', title: t('analytics.index.link'), class: 'btn btn-default btn-sm', disabled: toolbar_operation_disabled?(:planning, 'planning_dashboard') do
+                                  %i.fa.fa-chart-line.fa-fw
+                              -# Planning edit stays available via planning_toolbar, not space :edit.
+                              = link_to edit_planning_path(planning), :class => "btn btn-primary btn-sm", title: t('all.verb.edit') do
+                                %i.fa.fa-edit.fa-fw
+            - else
+              .d-flex.justify-content-center.align-items-center.my-4
+                %p.card-text.text-muted= t('spaces.view_forbidden')
+          - if plannings_usable
+            .card-footer.text-center
+              = link_to plannings_path do
+                = t('plannings.index.show', count: @customer_summary[:plannings][:count])
 
     .col-xs-12.col-md-6.col-lg-4.my-4
       .card.card-shadow.card-height-uniform
@@ -87,130 +101,194 @@
           = link_to zonings_path do
             = t('zonings.index.show', count: @customer_summary[:zonings][:count])
 
-    .col-xs-12.col-md-6.col-lg-4.my-4
-      .card.card-shadow.card-height-uniform
-        .card-body.pv-1
-          %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
-            %span
-              %i.fa.fa-map-marker.fa-fw
-              = t 'destinations.menu.destinations'
-            = link_to new_destination_path, class: "ml-auto btn #{@customer_summary[:destinations][:count] >= @customer_summary[:destinations][:limit] ? 'btn-default disabled' : 'btn-primary'}" do
-              %i.fa.fa-fw.fa-plus
-              = t('destinations.index.new')
-          .row.d-flex.flex-wrap.align-items-center.justify-content-between.my-4
-            .col.d-flex.justify-content-center
-              = link_to destination_import_path, class: "btn btn-primary" do
-                %i.fa.fa-upload.fa-fw
-                = t 'destinations.import.title'
-            .col.d-flex.justify-content-center
-              = link_to destinations_path({format: :excel}), class: "btn btn-default" do
-                %i.fa.fa-download.fa-fw
-                = t 'all.verb.export.button'
-        .card-footer.text-center
-          = link_to destinations_path, data: { turbolinks: false } do
-            = t('destinations.index.show', count: @customer_summary[:destinations][:count])
-
-    .col-xs-12.col-md-6.col-lg-4.my-4
-      .card.card-shadow.card-height-uniform
-        .card-body.pv-1
-          %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
-            %span
-              %i.fa.fa-store.fa-fw
-              = t 'stores.menu.stores'
-            = link_to new_store_path, class: "ml-auto btn btn-primary" do
-              .fa.fa-fw.fa-plus
-              = t('stores.index.new')
-          - if @customer_summary[:stores][:count] == 0
-            .d-flex.justify-content-center.my-4
-              %p.card-text.text-muted= t('stores.index.none')
-          - else
-            .table-responsive
-              %table.table.table-hover.mb-1
-                %thead
-                  %tr
-                    %th= t 'activerecord.attributes.store.name'
-                    %th= t 'activerecord.attributes.store.updated_at'
-                    %th
-                %tbody
-                  - @customer_summary[:stores][:latest].each do |store|
-                    %tr
-                      %td
-                        = store.name
-                      %td
-                        = l(store.updated_at, format: :datepicker)
-                      %td.text-right
-                        = link_to edit_store_path(store), :class => "btn btn-primary btn-sm" do
-                          %i.fa.fa-edit.fa-fw
-        .card-footer.text-center
-          = link_to stores_path do
-            = t('stores.index.show', count: @customer_summary[:stores][:count])
-
-
-
-    - if @customer_summary[:vehicle_usage_sets][:count] < 2 && @customer_summary[:vehicles][:count] <= 5
+    - if current_user_space_visible?(:destination)
+      - destination_usable = current_user_space_usable?(:destination)
       .col-xs-12.col-md-6.col-lg-4.my-4
         .card.card-shadow.card-height-uniform
           .card-body.pv-1
             %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
               %span
-                %i.fa.fa-truck-field.fa-fw
-                = t 'vehicles.menu.vehicles'
-            - if @customer_summary[:vehicles][:count] == 0
-              .d-flex.justify-content-center.my-4
-                %p.card-text.text-muted= t('vehicles.index.none')
+                %i.fa.fa-map-marker.fa-fw
+                = t 'destinations.menu.destinations'
+              - if destination_usable && current_user_space_action_visible?(:destination, :edit)
+                - cannot_new_destination = @customer_summary[:destinations][:count] >= @customer_summary[:destinations][:limit] || !current_user_space_action_usable?(:destination, :edit)
+                - if cannot_new_destination
+                  %button.ml-auto.btn.btn-default{type: 'button', disabled: true}
+                    %i.fa.fa-fw.fa-plus
+                    = t('destinations.index.new')
+                - else
+                  = link_to new_destination_path, class: 'ml-auto btn btn-primary' do
+                    %i.fa.fa-fw.fa-plus
+                    = t('destinations.index.new')
+            - if destination_usable
+              .row.d-flex.flex-wrap.align-items-center.justify-content-between.my-4
+                - if current_user_space_action_visible?(:destination, :edit)
+                  .col.d-flex.justify-content-center
+                    - if current_user_space_action_usable?(:destination, :edit)
+                      = link_to destination_import_path, class: "btn btn-primary" do
+                        %i.fa.fa-upload.fa-fw
+                        = t 'destinations.import.title'
+                    - else
+                      %button.btn.btn-primary{type: 'button', disabled: true}
+                        %i.fa.fa-upload.fa-fw
+                        = t 'destinations.import.title'
+                .col.d-flex.justify-content-center
+                  = link_to destinations_path({format: :excel}), class: "btn btn-default" do
+                    %i.fa.fa-download.fa-fw
+                    = t 'all.verb.export.button'
             - else
-              .table-responsive
-                %table.table.table-hover.mb-1
-                  %thead
-                    %tr
-                      %th= t 'activerecord.attributes.vehicles.name'
-                      %th= t 'activerecord.attributes.vehicles.updated_at'
-                      %th
-                  %tbody
-                    - @customer_summary[:vehicle_usages][:latest].each do |vehicle_usage|
-                      %tr
-                        %td
-                          = vehicle_usage.vehicle.name
-                        %td
-                          = l(vehicle_usage.updated_at, format: :datepicker)
-                        %td.text-right
-                          = link_to edit_vehicle_usage_path(vehicle_usage), :class => "btn btn-primary btn-sm" do
-                            %i.fa.fa-edit.fa-fw
-    - elsif @customer_summary[:vehicle_usage_sets][:limit] > 1
+              .d-flex.justify-content-center.align-items-center.my-4
+                %p.card-text.text-muted= t('spaces.view_forbidden')
+          - if destination_usable
+            .card-footer.text-center
+              = link_to destinations_path, data: { turbolinks: false } do
+                = t('destinations.index.show', count: @customer_summary[:destinations][:count])
+
+    - if current_user_space_visible?(:stores)
+      - stores_usable = current_user_space_usable?(:stores)
       .col-xs-12.col-md-6.col-lg-4.my-4
         .card.card-shadow.card-height-uniform
           .card-body.pv-1
             %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
               %span
-                %i.fa.fa-truck-field.fa-fw
-                = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
-              = link_to new_vehicle_usage_set_path, class: "ml-auto btn #{@customer_summary[:vehicle_usage_sets][:count] >= @customer_summary[:vehicle_usage_sets][:limit] ? 'btn-default disabled' : 'btn-primary'}" do
-                %i.fa.fa-fw.fa-plus
-                = t('vehicle_usage_sets.index.new')
-            - if @customer_summary[:vehicles][:count] == 0
-              .d-flex.justify-content-center.my-4
-                %p.card-text.text-muted= t('vehicle_usage_sets.index.none')
-            - else
-              .table-responsive
-                %table.table.table-hover.mb-1
-                  %thead
-                    %tr
-                      %th= t 'activerecord.attributes.vehicle_usage_set.name'
-                      %th= t 'activerecord.attributes.vehicle_usage_set.updated_at'
-                      %th
-                  %tbody
-                    - @customer_summary[:vehicle_usage_sets][:latest].each do |vehicle_usage_set|
+                %i.fa.fa-store.fa-fw
+                = t 'stores.menu.stores'
+              - if stores_usable && current_user_space_action_visible?(:stores, :edit)
+                - if current_user_space_action_usable?(:stores, :edit)
+                  = link_to new_store_path, class: "ml-auto btn btn-primary" do
+                    .fa.fa-fw.fa-plus
+                    = t('stores.index.new')
+                - else
+                  %button.ml-auto.btn.btn-default{type: 'button', disabled: true}
+                    .fa.fa-fw.fa-plus
+                    = t('stores.index.new')
+            - if stores_usable
+              - if @customer_summary[:stores][:count] == 0
+                .d-flex.justify-content-center.my-4
+                  %p.card-text.text-muted= t('stores.index.none')
+              - else
+                .table-responsive
+                  %table.table.table-hover.mb-1
+                    %thead
                       %tr
-                        %td
-                          = vehicle_usage_set.name
-                        %td
-                          = l(vehicle_usage_set.updated_at, format: :datepicker)
-                        %td.text-right
-                          = link_to edit_vehicle_usage_set_path(vehicle_usage_set), :class => "btn btn-primary btn-sm" do
-                            %i.fa.fa-edit.fa-fw
-          .card-footer.text-center
-            = link_to vehicle_usage_sets_path do
-              = t('vehicle_usage_sets.index.show', count: @customer_summary[:vehicle_usage_sets][:count])
+                        %th= t 'activerecord.attributes.store.name'
+                        %th= t 'activerecord.attributes.store.updated_at'
+                        %th
+                    %tbody
+                      - @customer_summary[:stores][:latest].each do |store|
+                        %tr
+                          %td
+                            = store.name
+                          %td
+                            = l(store.updated_at, format: :datepicker)
+                          %td.text-right
+                            - if current_user_space_action_visible?(:stores, :edit)
+                              - if current_user_space_action_usable?(:stores, :edit)
+                                = link_to edit_store_path(store), :class => "btn btn-primary btn-sm" do
+                                  %i.fa.fa-edit.fa-fw
+                              - else
+                                %button.btn.btn-primary.btn-sm{type: 'button', disabled: true}
+                                  %i.fa.fa-edit.fa-fw
+            - else
+              .d-flex.justify-content-center.align-items-center.my-4
+                %p.card-text.text-muted= t('spaces.view_forbidden')
+          - if stores_usable
+            .card-footer.text-center
+              = link_to stores_path do
+                = t('stores.index.show', count: @customer_summary[:stores][:count])
+
+    - if current_user_space_visible?(:vehicle_usages)
+      - vehicle_usages_usable = current_user_space_usable?(:vehicle_usages)
+      - if @customer_summary[:vehicle_usage_sets][:count] < 2 && @customer_summary[:vehicles][:count] <= 5
+        .col-xs-12.col-md-6.col-lg-4.my-4
+          .card.card-shadow.card-height-uniform
+            .card-body.pv-1
+              %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
+                %span
+                  %i.fa.fa-truck-field.fa-fw
+                  = t 'vehicles.menu.vehicles'
+              - if vehicle_usages_usable
+                - if @customer_summary[:vehicles][:count] == 0
+                  .d-flex.justify-content-center.my-4
+                    %p.card-text.text-muted= t('vehicles.index.none')
+                - else
+                  .table-responsive
+                    %table.table.table-hover.mb-1
+                      %thead
+                        %tr
+                          %th= t 'activerecord.attributes.vehicles.name'
+                          %th= t 'activerecord.attributes.vehicles.updated_at'
+                          %th
+                      %tbody
+                        - @customer_summary[:vehicle_usages][:latest].each do |vehicle_usage|
+                          %tr
+                            %td
+                              = vehicle_usage.vehicle.name
+                            %td
+                              = l(vehicle_usage.updated_at, format: :datepicker)
+                            %td.text-right
+                              - if current_user_space_action_visible?(:vehicle_usages, :edit)
+                                - if current_user_space_action_usable?(:vehicle_usages, :edit)
+                                  = link_to edit_vehicle_usage_path(vehicle_usage), :class => "btn btn-primary btn-sm" do
+                                    %i.fa.fa-edit.fa-fw
+                                - else
+                                  %button.btn.btn-primary.btn-sm{type: 'button', disabled: true}
+                                    %i.fa.fa-edit.fa-fw
+              - else
+                .d-flex.justify-content-center.align-items-center.my-4
+                  %p.card-text.text-muted= t('spaces.view_forbidden')
+      - elsif @customer_summary[:vehicle_usage_sets][:limit] > 1
+        .col-xs-12.col-md-6.col-lg-4.my-4
+          .card.card-shadow.card-height-uniform
+            .card-body.pv-1
+              %h3.card-title.fw-bold.d-flex.flex-wrap.justify-content-between
+                %span
+                  %i.fa.fa-truck-field.fa-fw
+                  = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
+                - if vehicle_usages_usable && current_user_space_action_visible?(:vehicle_usages, :edit)
+                  - cannot_new_vus = @customer_summary[:vehicle_usage_sets][:count] >= @customer_summary[:vehicle_usage_sets][:limit] || !current_user_space_action_usable?(:vehicle_usages, :edit)
+                  - if cannot_new_vus
+                    %button.ml-auto.btn.btn-default{type: 'button', disabled: true}
+                      %i.fa.fa-fw.fa-plus
+                      = t('vehicle_usage_sets.index.new')
+                  - else
+                    = link_to new_vehicle_usage_set_path, class: 'ml-auto btn btn-primary' do
+                      %i.fa.fa-fw.fa-plus
+                      = t('vehicle_usage_sets.index.new')
+              - if vehicle_usages_usable
+                - if @customer_summary[:vehicles][:count] == 0
+                  .d-flex.justify-content-center.my-4
+                    %p.card-text.text-muted= t('vehicle_usage_sets.index.none')
+                - else
+                  .table-responsive
+                    %table.table.table-hover.mb-1
+                      %thead
+                        %tr
+                          %th= t 'activerecord.attributes.vehicle_usage_set.name'
+                          %th= t 'activerecord.attributes.vehicle_usage_set.updated_at'
+                          %th
+                      %tbody
+                        - @customer_summary[:vehicle_usage_sets][:latest].each do |vehicle_usage_set|
+                          %tr
+                            %td
+                              = vehicle_usage_set.name
+                            %td
+                              = l(vehicle_usage_set.updated_at, format: :datepicker)
+                            %td.text-right
+                              - if current_user_space_action_visible?(:vehicle_usages, :edit)
+                                - if current_user_space_action_usable?(:vehicle_usages, :edit)
+                                  = link_to edit_vehicle_usage_set_path(vehicle_usage_set), :class => "btn btn-primary btn-sm" do
+                                    %i.fa.fa-edit.fa-fw
+                                - else
+                                  %button.btn.btn-primary.btn-sm{type: 'button', disabled: true}
+                                    %i.fa.fa-edit.fa-fw
+              - else
+                .d-flex.justify-content-center.align-items-center.my-4
+                  %p.card-text.text-muted= t('spaces.view_forbidden')
+            - if vehicle_usages_usable
+              .card-footer.text-center
+                = link_to vehicle_usage_sets_path do
+                  = t('vehicle_usage_sets.index.show', count: @customer_summary[:vehicle_usage_sets][:count])
     - if @customer.reseller.customer_dashboard_url
       .col-xs-12.col-md-6.col-lg-4.my-4
         .card.card-shadow.card-height-uniform

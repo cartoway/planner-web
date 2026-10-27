@@ -2,14 +2,20 @@
 
 <% content_for :title, t('.title') %>
 
-<% can_destroy_stores = current_user_space_action_usable?(:stores, :edit) %>
-<% can_create_stores = current_user_space_action_usable?(:stores, :edit) %>
+<% show_mutate_stores = current_user_space_action_visible?(:stores, :edit) %>
+<% can_mutate_stores = current_user_space_action_usable?(:stores, :edit) %>
 
 <h1><%= t '.title' %></h1>
 
 <div class="row row-top">
   <div class="col-md-6">
-    <%= link_to new_store_path, disabled: !can_create_stores, class:"btn btn-primary btn-sm" do %><i class="fa fa-plus fa-fw"></i> <%= t '.new' %><% end %>
+    <% if show_mutate_stores %>
+      <% if can_mutate_stores %>
+        <%= link_to new_store_path, class:"btn btn-primary btn-sm" do %><i class="fa fa-plus fa-fw"></i> <%= t '.new' %><% end %>
+      <% else %>
+        <button type="button" class="btn btn-primary btn-sm" disabled><i class="fa fa-plus fa-fw"></i> <%= t '.new' %></button>
+      <% end %>
+    <% end %>
   </div>
   <div class="col-md-6">
     <div class="form-inline pull-right">
@@ -23,7 +29,7 @@
 <table id="stores" class="table table-striped table-hover">
   <thead>
     <tr>
-      <th><button type="button" class="btn btn-default btn-xs" data-toggle="selection" data-target="#stores" title="<%= t 'all.verb.toggle_selection' %>"<%= ' disabled' unless can_destroy_stores %>><i class="fa fa-check fa-fw"></i></button></th>
+      <th><% if show_mutate_stores %><button type="button" class="btn btn-default btn-xs" data-toggle="selection" data-target="#stores" title="<%= t 'all.verb.toggle_selection' %>"<%= ' disabled' unless can_mutate_stores %>><i class="fa fa-check fa-fw"></i></button><% end %></th>
       <th><%= t 'activerecord.attributes.store.icon' %></th>
       <th><%= t 'activerecord.attributes.store.name' %></th>
       <th><%= t 'activerecord.attributes.store.street' %></th>
@@ -35,17 +41,20 @@
   <tbody>
     <% @stores.each do |store| %>
       <tr<%= ' class="ui-state-error"'.html_safe if !store.position? %>>
-        <td><%= check_box_tag("stores[#{store.id}]", '1', false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions', disabled: !can_destroy_stores) %></td>
+        <td><% if show_mutate_stores %><%= check_box_tag("stores[#{store.id}]", '1', false, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions', disabled: !can_mutate_stores) %><% end %></td>
         <td><%= store_icon store %></td>
         <td><%= content_tag :i, nil, class: "fa fa-map-marker fa-fw", title: t('plannings.edit.error.no_geolocalization') if !store.position? %><%= store.name %></td>
         <td><%= store.street %></td>
         <td><%= store.city %></td>
         <td class="text-right">
-          <%= link_to edit_store_path(store), :class => 'btn btn-primary btn-sm' do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
-          <% if can_destroy_stores %>
-            <%= link_to store, class: 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
-          <% else %>
-            <button type="button" class="btn btn-danger btn-sm" disabled><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %></button>
+          <% if show_mutate_stores %>
+            <% if can_mutate_stores %>
+              <%= link_to edit_store_path(store), :class => 'btn btn-primary btn-sm' do %><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %><% end %>
+              <%= link_to store, class: 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %><% end %>
+            <% else %>
+              <button type="button" class="btn btn-primary btn-sm" disabled><i class="fa fa-edit fa-fw"></i> <%= t 'all.verb.edit' %></button>
+              <button type="button" class="btn btn-danger btn-sm" disabled><i class="fa fa-trash fa-fw"></i> <%= t 'all.verb.destroy' %></button>
+            <% end %>
           <% end %>
         </td>
       </tr>
@@ -56,7 +65,9 @@
 <% unless @stores.empty? %>
 <div id="multiple-actions" class="row">
   <div class="col-md-12">
-    <%= button_tag type: :submit, class: "btn btn-danger btn-sm", disabled: !can_destroy_stores, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+    <% if show_mutate_stores %>
+      <%= button_tag type: :submit, class: "btn btn-danger btn-sm", disabled: !can_mutate_stores, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>
+    <% end %>
   </div>
 </div>
 <% end %>

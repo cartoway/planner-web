@@ -1,11 +1,12 @@
--# locals: deliverable_unit, can_destroy:
+-# locals: deliverable_unit, show_mutate:, can_mutate:, can_destroy:
 - overload = deliverable_unit.default_optimization_overload_multiplier
 - overload_yes = !(overload == 0 || overload == -1)
 -# Always emit the same meta slots so columns stay aligned across cards (like VUS nested list).
 .v2-index-card{id: dom_id(deliverable_unit), data: { v2__table_filter_target: 'row' }}
   .v2-index-card-main
-    .v2-index-card-select
-      = check_box_tag "deliverable_units[#{deliverable_unit.id}]", '1', false, disabled: !can_destroy, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
+    - if show_mutate
+      .v2-index-card-select
+        = check_box_tag "deliverable_units[#{deliverable_unit.id}]", '1', false, disabled: !can_destroy, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
     .v2-index-card-body
       .v2-index-card-header
         %h2.v2-index-card-title
@@ -32,15 +33,21 @@
           - if overload_yes
             %span.v2-index-card-meta-label= "#{DeliverableUnit.human_attribute_name(:optimization_overload_multiplier)} :"
             %span.v2-index-card-meta-value= deliverable_unit.localized_optimization_overload_multiplier.presence || DeliverableUnit.localize_numeric_value(overload)
-  .v2-index-card-actions
-    = link_to edit_deliverable_unit_path(deliverable_unit), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
-      %i.fa.fa-pencil.fa-fw
-      = t('all.verb.edit')
-    %button.btn.btn-danger{
-      type: 'button',
-      disabled: !can_destroy,
-      title: t('all.verb.destroy'),
-      data: (can_destroy ? confirm_click_destroy_data(group: 'deliverable-units-destroy', url: deliverable_unit_path(deliverable_unit)) : {})
-    }
-      %i.fa.fa-trash.fa-fw
-      = t('all.verb.destroy')
+  - if show_mutate
+    .v2-index-card-actions
+      - if can_mutate
+        = link_to edit_deliverable_unit_path(deliverable_unit), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
+          %i.fa.fa-pencil.fa-fw
+          = t('all.verb.edit')
+      - else
+        %button.btn.btn-primary{type: 'button', disabled: true, title: t('all.verb.edit')}
+          %i.fa.fa-pencil.fa-fw
+          = t('all.verb.edit')
+      %button.btn.btn-danger{
+        type: 'button',
+        disabled: !can_destroy,
+        title: t('all.verb.destroy'),
+        data: (can_destroy ? confirm_click_destroy_data(group: 'deliverable-units-destroy', url: deliverable_unit_path(deliverable_unit)) : {})
+      }
+        %i.fa.fa-trash.fa-fw
+        = t('all.verb.destroy')

@@ -1,5 +1,7 @@
 - routes = local_assigns[:routes] || @page_routes
 - operation = local_assigns[:operation] || @operation
+- show_transmit = current_user_space_action_visible?(:operations, :transmit)
+- can_transmit = current_user_space_action_usable?(:operations, :transmit)
 - started, waiting = routes.partition(&:started?)
 - open_route = started.first || routes.first
 - [[nil, started], [t('operations.show.waiting_group'), waiting]].each do |title, group|
@@ -48,25 +50,26 @@
                 %button.btn.btn-light{type: 'button', title: t('operations.show.center_vehicle'), aria: { label: t('operations.show.center_vehicle') }, disabled: !has_position, data: { action: 'click->v2--operation-show#centerVehicle', route_id: route.id }}
                   %i.fa.fa-location-crosshairs.fa-fw
               .btn-group
-                - if operation.open?
+                - if operation.open? && show_transmit
                   .dropdown{data: { action: 'shown.bs.dropdown->v2--operation-show#shortenMobileLink' }}
-                    %button.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }}
+                    %button.btn.btn-light.dropdown-toggle{type: 'button', disabled: !can_transmit, data: (can_transmit ? { bs_toggle: 'dropdown' } : {})}
                       %i.fa.fa-paper-plane.fa-fw
                       = t('plannings.edit.deliver_send.singular.transmit')
-                    %ul.dropdown-menu
-                      - if operation.customer.enable_email_driver
-                        %li
-                          %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'email', route_id: route.id, field: 'contact_email', contact: route.driver_email, vehicle_name: route.vehicle_name }}
-                            = t('operations.show.send_email')
-                      - if operation.customer.enable_sms_driver
-                        %li
-                          %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'sms', route_id: route.id, field: 'phone_number', contact: route.driver_phone, vehicle_name: route.vehicle_name }}
-                            = t('operations.show.send_sms')
-                      - mobile_url = Operations::MobileUrl.path(route)
-                      - if mobile_url
-                        %li
-                          = link_to mobile_url, class: 'dropdown-item', target: '_blank', rel: 'noopener noreferrer', data: { short_url: mobile_url_operation_operation_route_path(operation, route) } do
-                            = t('plannings.edit.deliver_send.singular.access')
+                    - if can_transmit
+                      %ul.dropdown-menu
+                        - if operation.customer.enable_email_driver
+                          %li
+                            %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'email', route_id: route.id, field: 'contact_email', contact: route.driver_email, vehicle_name: route.vehicle_name }}
+                              = t('operations.show.send_email')
+                        - if operation.customer.enable_sms_driver
+                          %li
+                            %button.dropdown-item{type: 'button', data: { action: 'click->v2--operation-show#openRouteSend', channel: 'sms', route_id: route.id, field: 'phone_number', contact: route.driver_phone, vehicle_name: route.vehicle_name }}
+                              = t('operations.show.send_sms')
+                        - mobile_url = Operations::MobileUrl.path(route)
+                        - if mobile_url
+                          %li
+                            = link_to mobile_url, class: 'dropdown-item', target: '_blank', rel: 'noopener noreferrer', data: { short_url: mobile_url_operation_operation_route_path(operation, route) } do
+                              = t('plannings.edit.deliver_send.singular.access')
                 = link_to media_operation_operation_route_path(operation, route), class: 'btn btn-light', data: { action: 'click->v2--operation-show#openMedia' } do
                   %i.fa.fa-images.fa-fw
                   = t('operations.show.media')

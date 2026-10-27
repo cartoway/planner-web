@@ -143,4 +143,49 @@ class TagsControllerTest < ActionController::TestCase
     role&.destroy
     sign_in users(:user_one)
   end
+
+  test 'index disables new edit destroy when tags edit action is not usable' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['tags']['actions']['segment_controls']['edit'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "tags-edit-disabled-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    users(:user_one).update!(role_id: role.id)
+
+    get :index
+    assert_response :success
+    assert_select 'button.btn-primary[disabled]', text: /#{Regexp.escape(I18n.t('tags.index.new'))}/
+    assert_select 'button.btn-primary[disabled]', text: /#{Regexp.escape(I18n.t('all.verb.edit'))}/, minimum: 1
+    assert_select 'button.btn-danger[disabled]', text: /#{Regexp.escape(I18n.t('all.verb.destroy'))}/, minimum: 1
+    assert_select %(a[href="#{new_tag_path}"]), count: 0
+  ensure
+    users(:user_one).update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'index hides new edit destroy when tags edit action is not visible' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['tags']['actions']['segment_controls']['edit'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "tags-edit-hidden-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    users(:user_one).update!(role_id: role.id)
+
+    get :index
+    assert_response :success
+    assert_select %(a[href="#{new_tag_path}"]), count: 0
+    assert_select 'button.btn-primary', text: /#{Regexp.escape(I18n.t('tags.index.new'))}/, count: 0
+    assert_select 'a.btn-primary', text: /#{Regexp.escape(I18n.t('all.verb.edit'))}/, count: 0
+    assert_select 'button.btn-primary[disabled]', text: /#{Regexp.escape(I18n.t('all.verb.edit'))}/, count: 0
+    assert_select 'button.btn-danger', text: /#{Regexp.escape(I18n.t('all.verb.destroy'))}/, count: 0
+  ensure
+    users(:user_one).update!(role_id: nil)
+    role&.destroy
+  end
 end

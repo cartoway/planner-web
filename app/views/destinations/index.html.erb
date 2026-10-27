@@ -1,6 +1,8 @@
 <% javascript 'destination' %>
-<% can_destroy_destinations = current_user_space_action_usable?(:destination, :edit) %>
-<% can_create_destinations = current_user_space_action_usable?(:destination, :edit) %>
+<% show_mutate_destinations = current_user_space_action_visible?(:destination, :edit) %>
+<% can_mutate_destinations = current_user_space_action_usable?(:destination, :edit) %>
+<% can_destroy_destinations = can_mutate_destinations %>
+<% can_create_destinations = can_mutate_destinations %>
 
 <% content_for :title, t('.title') %>
 
@@ -16,8 +18,10 @@
 
 <div class="row row-top">
   <div class="col-md-5">
-    <button id="add" type="button" class="btn btn-primary btn-sm"<%= ' disabled' unless can_create_destinations %>><i class="fa fa-plus fa-fw"></i> <%= t '.new' %></button>
-    <button id="multiple-delete" class="btn btn-danger btn-sm" <%= 'disabled' unless can_destroy_destinations %>><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %></button>
+    <% if show_mutate_destinations %>
+      <button id="add" type="button" class="btn btn-primary btn-sm"<%= ' disabled' unless can_create_destinations %>><i class="fa fa-plus fa-fw"></i> <%= t '.new' %></button>
+      <button id="multiple-delete" class="btn btn-danger btn-sm" <%= 'disabled' unless can_destroy_destinations %>><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %></button>
+    <% end %>
   </div>
   <div class="col-md-3">
     <span id="count"></span> <%= t 'activerecord.models.destinations', count: 10 %>

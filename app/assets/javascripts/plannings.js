@@ -601,7 +601,10 @@ var initPlanningExecution = function(planningId) {
   var refreshCount = function() {
     var n = enabledBoxes().filter(':checked').length;
     if ($countEl.length && template) $countEl.text(String(template).replace('%{count}', n));
-    $('#execution-publish-submit, #execution-publish-transmit-submit').prop('disabled', n === 0);
+    $('#execution-publish-submit').prop('disabled', n === 0);
+    var $transmit = $('#execution-publish-transmit-submit');
+    // keep_disabled: no transmit permission — do not re-enable when routes are selected
+    $transmit.prop('disabled', n === 0 || !!$transmit.data('keep-disabled'));
   };
   $modal.off('click.planningContactsUnlock').on('click.planningContactsUnlock', '#execution-driver-contacts [data-contacts-edit]', function(event) {
     event.preventDefault();

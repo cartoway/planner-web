@@ -3,8 +3,10 @@
 - content_for :form_sidebar do
   = render "v2/layouts/form_sidebar_placeholder"
 - content_for :title, t('stores.index.title')
-- can_destroy = current_user_space_action_usable?(:stores, :edit)
-- can_create = current_user_space_action_usable?(:stores, :edit)
+- show_mutate = current_user_space_action_visible?(:stores, :edit)
+- can_mutate = current_user_space_action_usable?(:stores, :edit)
+- can_destroy = can_mutate
+- can_create = can_mutate
 - customer = current_user.customer
 - layers = (customer.profile.layers + [current_user.layer]).sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: layer.url, vector_style_url: layer.vector_style_url, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
 - v2_js_cfg = { map_lat: customer.default_position[:lat], map_lng: customer.default_position[:lng], map_zoom: 12, geocoder: true, map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)], stores: @stores.map { |s| { id: s.id, name: s.name, lat: s.lat, lng: s.lng } }, index_url: stores_path }
@@ -40,32 +42,39 @@
     = form_tag stores_path, method: :delete, id: 'stores-destroy' do
       .destinations-list-toolbar.d-flex.justify-content-between.align-items-center.mb-2.px-3.pt-3.pb-2.flex-wrap.gap-2
         .destinations-list-toolbar-actions.d-flex.gap-1.align-items-center.flex-wrap
-          = link_to new_store_path, class: 'btn btn-primary', disabled: !can_create, title: t('stores.index.new'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
-            %i.fa.fa-plus.fa-fw
-            %span.destinations-toolbar-label= t 'stores.index.new'
-          %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
-            %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
-            %span.destinations-toolbar-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
-          %button.btn.btn-danger.destinations-bulk-delete{
-            type: 'button',
-            disabled: true,
-            title: t('all.verb.destroy_selection'),
-            data: confirm_click_destroy_data(
-              group: 'stores-destroy',
-              form: 'stores-destroy'
-            ).merge(v2__table_selection_target: 'bulk')
-          }
-            %i.fa.fa-trash.fa-fw
-            %span.destinations-toolbar-label= t('all.verb.destroy_selection')
+          - if show_mutate
+            - if can_create
+              = link_to new_store_path, class: 'btn btn-primary', title: t('stores.index.new'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+                %i.fa.fa-plus.fa-fw
+                %span.destinations-toolbar-label= t 'stores.index.new'
+            - else
+              %button.btn.btn-primary{type: 'button', disabled: true, title: t('stores.index.new')}
+                %i.fa.fa-plus.fa-fw
+                %span.destinations-toolbar-label= t 'stores.index.new'
+            %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
+              %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+              %span.destinations-toolbar-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
+            %button.btn.btn-danger.destinations-bulk-delete{
+              type: 'button',
+              disabled: true,
+              title: t('all.verb.destroy_selection'),
+              data: confirm_click_destroy_data(
+                group: 'stores-destroy',
+                form: 'stores-destroy'
+              ).merge(v2__table_selection_target: 'bulk')
+            }
+              %i.fa.fa-trash.fa-fw
+              %span.destinations-toolbar-label= t('all.verb.destroy_selection')
       #store_box.destinations-list-scroll
         .v2-index-cards.px-2{data: { v2__index_selection_target: 'root' }}
-          .v2-index-cards-select-bar
-            %label.mb-0.d-flex.align-items-center.gap-2
-              %input{type: 'checkbox', disabled: !can_destroy, data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }}
-              %span= t('all.verb.select_all')
+          - if show_mutate
+            .v2-index-cards-select-bar
+              %label.mb-0.d-flex.align-items-center.gap-2
+                %input{type: 'checkbox', disabled: !can_destroy, data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }}
+                %span= t('all.verb.select_all')
           #stores-list
             - @stores.each do |store|
-              = render 'v2/stores/list_row', store: store, can_destroy: can_destroy
+              = render 'v2/stores/list_row', store: store, show_mutate: show_mutate, can_mutate: can_mutate, can_destroy: can_destroy
   %button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger{type: "button", title: t('destinations.index.expand_list'), 'aria-label': t('destinations.index.expand_list')}
     %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}
   %button.floating-btn.xl-floating-button.destinations-position-drag-cancel.d-none{type: "button", title: t('destinations.index.cancel_position_drag'), 'aria-label': t('destinations.index.cancel_position_drag')}
