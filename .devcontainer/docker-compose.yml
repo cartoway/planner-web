@@ -179,7 +179,7 @@ services:
 
   delayed-job:
     <<: *web
-    command: bash -c "bundle exec rails runner 'Delayed::Job.delete_all' && LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec './bin/delayed_job run'"
+    command: bash -c "bundle exec rails runner 'Delayed::Job.delete_all' && LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec './bin/delayed_job --queues=common run'"
     depends_on:
       db:
         condition: service_healthy
@@ -191,6 +191,23 @@ services:
         condition: service_started
     deploy:
       replicas: ${DELAYED_JOB_REPLICAS:-1}
+    networks:
+      - public-network
+
+  delayed-job-optimizer:
+    <<: *web
+    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec './bin/delayed_job --queue=optimizer run'"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis-cache:
+        condition: service_started
+      rustfs:
+        condition: service_healthy
+      web:
+        condition: service_started
+    deploy:
+      replicas: ${DELAYED_JOB_OPTIMIZER_REPLICAS:-1}
     networks:
       - public-network
 

@@ -86,11 +86,19 @@ services:
 
   delayed-job:
     <<: *web
-    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec './bin/delayed_job run'"
+    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec './bin/delayed_job --queues=common run'"
     healthcheck:
       disable: true
     deploy:
       replicas: ${DELAYED_JOB_REPLICAS:-1}
+
+  delayed-job-optimizer:
+    <<: *web
+    command: bash -c "LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2 bundle exec './bin/delayed_job --queue=optimizer run'"
+    healthcheck:
+      disable: true
+    deploy:
+      replicas: ${DELAYED_JOB_OPTIMIZER_REPLICAS:-1}
 
   sopac-consumer:
     <<: *web
