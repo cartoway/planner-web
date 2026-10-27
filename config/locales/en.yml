@@ -1054,7 +1054,7 @@ en:
           Defines space access, per-space rights, and toolbar permissions for users assigned this role.
         spaces_title: Spaces (navigation)
         spaces_help: >-
-          The left column grants full access to the space. The middle column shows it in navigation for viewing only. The right column hides it.
+          The left column grants full access to the space. The middle column shows it in navigation without allowing access. The right column hides it.
         space_actions_section_title: Per-space permissions
         space_actions_help: >-
           For each active space, the left column allows the listed actions. The middle column shows them as read-only where applicable. The right column hides them.
@@ -3950,10 +3950,13 @@ en:
         toggle_title: Columns
         reset_defaults: Reset to defaults
         hint: Open the menu, type to filter, toggle checkboxes (max 5), or reset to defaults.
+  spaces:
+    view_forbidden: You do not have permission to view this space.
   execution:
     title: Operations
     new: New
     empty: No operation for this planning
+    view_forbidden: You do not have permission to view ongoing operations.
     historized:
       one: '%{count} historized operation'
       other: '%{count} historized operations'

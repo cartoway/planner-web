@@ -2296,7 +2296,7 @@ class PlanningsControllerTest < ActionController::TestCase
     end
   end
 
-  test 'GET edit succeeds with plannings form visible but not usable (read-only role)' do
+  test 'GET edit succeeds with plannings space visible but not usable' do
     user = users(:user_one)
     spaces = Preferences::Catalog.default_spaces.deep_dup
     spaces['plannings'] = Preferences::Catalog::Spaces.default_space_entry(
@@ -2316,6 +2316,29 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :success
   ensure
     user.update!(role_id: nil)
+  end
+
+  test 'GET edit succeeds when plannings edit action is not usable' do
+    user = users(:user_one)
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['plannings'] = Preferences::Catalog::Spaces.default_space_entry(
+      'plannings', visible: true, usable: true, actions_all_usable: false
+    )
+    spaces = Preferences::Catalog.normalize_spaces(spaces)
+    role = Role.create!(
+      reseller: user.customer.reseller,
+      name: "plannings-no-edit-action-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: spaces
+    )
+    user.update!(role_id: role.id)
+    sign_in user
+
+    get :edit, params: { id: @planning }
+    assert_response :success
+  ensure
+    user.update!(role_id: nil)
+    role&.destroy
   end
 
   test 'PATCH duplicate is forbidden when plannings form is visible but not usable' do

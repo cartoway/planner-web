@@ -1,6 +1,10 @@
 - content_for :title, t('operations.index.title')
-- can_destroy = can?(:destroy, Operation)
-- can_export = can?(:export, Operation)
+- show_destroy = current_user_space_action_visible?(:operations, :destroy)
+- can_destroy = current_user_space_action_usable?(:operations, :destroy)
+- show_export = current_user_space_action_visible?(:operations, :export)
+- can_export = current_user_space_action_usable?(:operations, :export)
+- show_planning = current_user_space_visible?(:plannings)
+- can_planning = current_user_space_usable?(:plannings)
 - filter_chips = [{ value: '', label: t('operations.index.chip_all') }, { value: 'in_progress', label: t('operations.statuses.in_progress') }, { value: 'historized', label: t('operations.statuses.historized') }]
 .operations-index.pt-3
   .px-3
@@ -33,9 +37,6 @@
                 %span= operation.ref
                 %span ·
               %span= l(operation.date)
-              - if operation.published_at
-                %span ·
-                %span= l(operation.published_at, format: :short)
         .v2-index-card-mid
           = render 'v2/shared/status_segments', counts: counts
           %span.operations-index-progress-label.text-muted= t('operations.index.stops_count', treated: counts[:delivered] + counts[:failed] + counts[:exception], total: counts[:total])
@@ -44,26 +45,33 @@
             %i.fa.fa-tower-broadcast.fa-fw
             = t('execution.open_tracking')
           .v2-index-card-secondary
-            - if can_export
+            - if show_export
               .dropdown
-                %button.btn.btn-secondary.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
+                %button.btn.btn-secondary.dropdown-toggle{type: 'button', disabled: !can_export, data: (can_export ? { bs_toggle: 'dropdown' } : {}), aria: { expanded: 'false' }}
                   %i.fa.fa-download.fa-fw
                   = t('operations.show.export')
-                %ul.dropdown-menu
-                  %li
-                    = link_to export_operation_path(operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
-                      %i.fa.fa-file-excel.fa-fw
-                      = t('operations.show.export_spreadsheet')
-                  %li
-                    = link_to export_operation_path(operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
-                      %i.fa.fa-file-zipper.fa-fw
-                      = t('operations.show.export_archive')
-            - if operation.planning
-              = link_to edit_planning_path(operation.planning), class: 'btn btn-secondary', target: '_blank', rel: 'noopener', data: { turbo: false }, title: (operation.planning.ref.presence || operation.planning.name) do
-                %i.fa.fa-map-location.fa-fw
-                %span.v2-index-card-secondary-label= operation.planning.ref.presence || operation.planning.name
-            - if can_destroy
-              %button.btn.btn-danger{type: 'button', data: { bs_toggle: 'modal', bs_target: "##{modal_id}" }}
+                - if can_export
+                  %ul.dropdown-menu
+                    %li
+                      = link_to export_operation_path(operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
+                        %i.fa.fa-file-excel.fa-fw
+                        = t('operations.show.export_spreadsheet')
+                    %li
+                      = link_to export_operation_path(operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
+                        %i.fa.fa-file-zipper.fa-fw
+                        = t('operations.show.export_archive')
+            - if operation.planning && show_planning
+              - planning_label = operation.planning.ref.presence || operation.planning.name
+              - if can_planning
+                = link_to edit_planning_path(operation.planning), class: 'btn btn-secondary', target: '_blank', rel: 'noopener', data: { turbo: false }, title: planning_label do
+                  %i.fa.fa-map-location.fa-fw
+                  %span.v2-index-card-secondary-label= planning_label
+              - else
+                %button.btn.btn-secondary{type: 'button', disabled: true, title: planning_label}
+                  %i.fa.fa-map-location.fa-fw
+                  %span.v2-index-card-secondary-label= planning_label
+            - if show_destroy
+              %button.btn.btn-danger{type: 'button', disabled: !can_destroy, data: (can_destroy ? { bs_toggle: 'modal', bs_target: "##{modal_id}" } : {})}
                 %i.fa.fa-trash.fa-fw
                 = t('all.verb.destroy')
   - if can_destroy

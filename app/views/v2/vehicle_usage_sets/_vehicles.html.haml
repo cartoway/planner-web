@@ -1,4 +1,5 @@
--# locals: vehicle_usage_set, can_update_vehicle_usage, can_view_vehicle_usage
+-# locals: vehicle_usage_set, show_mutate_vehicle_usage:, can_update_vehicle_usage, can_view_vehicle_usage
+- show_mutate_vehicle_usage = local_assigns.fetch(:show_mutate_vehicle_usage) { can_update_vehicle_usage }
 .vehicle-usages-list
   .vehicle-usages-toolbar.d-flex.justify-content-between.align-items-center.gap-2.mb-2
     .d-flex.align-items-center.gap-2
@@ -31,7 +32,7 @@
         %span= t('all.verb.select_all')
   .vehicle-usages-sortable{id: "accordion-#{vehicle_usage_set.id}", class: ('vehicle-usages-sortable--enabled' if can_update_vehicle_usage), data: { vehicle_usage_set_id: vehicle_usage_set.id }}
     - vehicle_usage_set.vehicle_usages.each do |vehicle_usage|
-      = render 'v2/vehicle_usage_sets/vehicle_usage_row', vehicle_usage: vehicle_usage, vehicle_usage_set: vehicle_usage_set, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage
+      = render 'v2/vehicle_usage_sets/vehicle_usage_row', vehicle_usage: vehicle_usage, vehicle_usage_set: vehicle_usage_set, show_mutate_vehicle_usage: show_mutate_vehicle_usage, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage
   .vehicle-usages-bulk.mt-2{id: "multiple-actions-#{vehicle_usage_set.id}"}
     = button_tag type: :submit, class: 'btn btn-light', name: 'disable_multiple', value: vehicle_usage_set.id.to_s, disabled: true, data: { confirm: t('vehicle_usages.index.multiple_disable_confirm') } do
       %i.fa.fa-power-off.fa-fw

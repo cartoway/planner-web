@@ -1,9 +1,11 @@
+- show_mutate_vehicle_usage = local_assigns.fetch(:show_mutate_vehicle_usage) { can_update_vehicle_usage }
 %table{ id: "accordion-#{vehicle_usage_set.id}", class: 'table table-striped table-hover vehicle-usages-table' }
   %caption.vehicle-usages-table-caption
     .vehicle-usages-caption-row
-      %label
-        %input.select-unselect-all{ type: 'checkbox', data: { id: vehicle_usage_set.id }, disabled: !can_update_vehicle_usage }
-        = t('vehicle_usages.index.select_unselect_all')
+      - if show_mutate_vehicle_usage
+        %label
+          %input.select-unselect-all{ type: 'checkbox', data: { id: vehicle_usage_set.id }, disabled: !can_update_vehicle_usage }
+          = t('vehicle_usages.index.select_unselect_all')
       - if can_update_vehicle_usage
         .dropdown.vehicle-usages-sort-dropdown
           %button.btn.btn-default.btn-sm.dropdown-toggle{ type: 'button', 'data-toggle' => 'dropdown', title: t('vehicle_usages.index.sort') }
@@ -58,23 +60,24 @@
           - toggle_icon = vehicle_usage.active ? 'fa-power-off' : 'fa-circle-notch'
           - toggle_label = vehicle_usage.active ? t('.disable') : t('.enable')
           - toggle_data = vehicle_usage.active ? { confirm: t('.disable_confirm') } : {}
-          - if vehicle_usage.active
-            - unless can_view_vehicle_usage
-              %button.btn.btn-primary.btn-sm{ type: 'button', disabled: true }
-                %i.fa.fa-edit.fa-fw
-                = t('all.verb.edit')
-            - else
+          - if vehicle_usage.active && can_view_vehicle_usage && show_mutate_vehicle_usage
+            - if can_update_vehicle_usage
               = link_to edit_vehicle_usage_path(vehicle_usage, back: true), class: 'btn btn-primary btn-sm' do
                 %i.fa.fa-edit.fa-fw
                 = t('all.verb.edit')
-          - if can_update_vehicle_usage
-            = link_to [:toggle, vehicle_usage], method: :patch, class: 'btn btn-default btn-sm', data: toggle_data do
-              %i.fa.fa-fw{ class: toggle_icon }
-              = toggle_label
-          - else
-            %button.btn.btn-default.btn-sm{ type: 'button', disabled: true }
-              %i.fa.fa-fw{ class: toggle_icon }
-              = toggle_label
+            - else
+              %button.btn.btn-primary.btn-sm{ type: 'button', disabled: true }
+                %i.fa.fa-edit.fa-fw
+                = t('all.verb.edit')
+          - if show_mutate_vehicle_usage
+            - if can_update_vehicle_usage
+              = link_to [:toggle, vehicle_usage], method: :patch, class: 'btn btn-default btn-sm', data: toggle_data do
+                %i.fa.fa-fw{ class: toggle_icon }
+                = toggle_label
+            - else
+              %button.btn.btn-default.btn-sm{ type: 'button', disabled: true }
+                %i.fa.fa-fw{ class: toggle_icon }
+                = toggle_label
 
 .row{ id: "multiple-actions-#{vehicle_usage_set.id}" }
   .col-md-12

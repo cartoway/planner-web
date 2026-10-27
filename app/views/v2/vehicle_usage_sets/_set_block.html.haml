@@ -1,7 +1,8 @@
--# locals: vehicle_usage_set, index:, expanded:, show_set_checkbox:, invisible_class:, can_destroy_vehicle_config:, can_update_vehicle_usage:, can_view_vehicle_usage:, sets_count:
+-# locals: vehicle_usage_set, index:, expanded:, show_set_checkbox:, invisible_class:, show_mutate_vehicle_usage:, can_destroy_vehicle_config:, can_update_vehicle_usage:, can_view_vehicle_usage:, sets_count:
+- show_mutate_vehicle_usage = local_assigns.fetch(:show_mutate_vehicle_usage) { can_update_vehicle_usage || can_destroy_vehicle_config }
 .v2-index-card.vehicle-usage-set-card{id: dom_id(vehicle_usage_set), class: ('vehicle-usage-set-card--stripe' if index.even?)}
   .v2-index-card-main
-    - if show_set_checkbox
+    - if show_set_checkbox && show_mutate_vehicle_usage
       .v2-index-card-select
         = check_box_tag "vehicle_usage_sets[#{vehicle_usage_set.id}]", '1', false, class: "#{invisible_class} deleter-check", disabled: !can_destroy_vehicle_config, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
     .v2-index-card-body
@@ -22,25 +23,36 @@
           = vehicle_usage_set.time_window_end_time
           = "(+#{number_of_days(vehicle_usage_set.time_window_end)})" if number_of_days(vehicle_usage_set.time_window_end)
   .v2-index-card-actions
-    - if show_set_checkbox
-      = link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), class: 'btn btn-light', method: :patch, data: { turbo_method: :patch }, title: t('all.verb.duplicate'), disabled: !can_update_vehicle_usage do
-        %i.fa.fa-copy.fa-fw
-        %span.vehicle-usage-btn-label= t('all.verb.duplicate')
+    - if show_set_checkbox && show_mutate_vehicle_usage
+      - if can_update_vehicle_usage
+        = link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), class: 'btn btn-light', method: :patch, data: { turbo_method: :patch }, title: t('all.verb.duplicate') do
+          %i.fa.fa-copy.fa-fw
+          %span.vehicle-usage-btn-label= t('all.verb.duplicate')
+      - else
+        %button.btn.btn-light{type: 'button', disabled: true, title: t('all.verb.duplicate')}
+          %i.fa.fa-copy.fa-fw
+          %span.vehicle-usage-btn-label= t('all.verb.duplicate')
     = link_to vehicle_usage_set_path(vehicle_usage_set, format: :excel), class: 'btn btn-light', title: t('all.verb.export.button'), data: { turbo: false } do
       %i.fa.fa-download.fa-fw
-    = link_to edit_vehicle_usage_set_path(vehicle_usage_set), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
-      %i.fa.fa-pencil.fa-fw
-      %span.vehicle-usage-btn-label= t('all.verb.edit')
-    - if sets_count > 1
-      %button.btn.btn-danger{
-        type: 'button',
-        disabled: !can_destroy_vehicle_config,
-        title: t('all.verb.destroy'),
-        data: (can_destroy_vehicle_config ? confirm_click_destroy_data(group: 'vehicle-usage-sets-destroy', url: vehicle_usage_set_path(vehicle_usage_set)) : {})
-      }
-        %i.fa.fa-trash.fa-fw
-        %span.vehicle-usage-btn-label= t('all.verb.destroy')
+    - if show_mutate_vehicle_usage
+      - if can_update_vehicle_usage
+        = link_to edit_vehicle_usage_set_path(vehicle_usage_set), class: 'btn btn-primary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' }, title: t('all.verb.edit') do
+          %i.fa.fa-pencil.fa-fw
+          %span.vehicle-usage-btn-label= t('all.verb.edit')
+      - else
+        %button.btn.btn-primary{type: 'button', disabled: true, title: t('all.verb.edit')}
+          %i.fa.fa-pencil.fa-fw
+          %span.vehicle-usage-btn-label= t('all.verb.edit')
+      - if sets_count > 1
+        %button.btn.btn-danger{
+          type: 'button',
+          disabled: !can_destroy_vehicle_config,
+          title: t('all.verb.destroy'),
+          data: (can_destroy_vehicle_config ? confirm_click_destroy_data(group: 'vehicle-usage-sets-destroy', url: vehicle_usage_set_path(vehicle_usage_set)) : {})
+        }
+          %i.fa.fa-trash.fa-fw
+          %span.vehicle-usage-btn-label= t('all.verb.destroy')
   .vehicle-usage-set-card-vehicles
     .collapse{id: "collapseUsageSet#{vehicle_usage_set.id}", class: ('show' if expanded || sets_count == 1), 'data-bs-parent': (sets_count > 1 ? '#accordion-vehicle-usage-sets' : nil)}
       .vehicle-usages-inner
-        = render 'v2/vehicle_usage_sets/vehicles', vehicle_usage_set: vehicle_usage_set, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage
+        = render 'v2/vehicle_usage_sets/vehicles', vehicle_usage_set: vehicle_usage_set, show_mutate_vehicle_usage: show_mutate_vehicle_usage, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage

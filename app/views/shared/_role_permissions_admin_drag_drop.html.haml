@@ -71,8 +71,9 @@
                           - active_a.each_with_index do |aid, index|
                             .draggable-item{ data: { value: aid, index: index } }
                               %span.item-order
-                              - action_i18n = space_key == 'operations' ? "admin.roles.form.space_actions.operations.#{aid}" : 'admin.roles.form.space_actions.common.edit'
-                              %span.item-text= t(action_i18n, default: aid.to_s.humanize)
+                              - action_i18n = "admin.roles.form.space_actions.#{space_key}.#{aid}"
+                              - action_i18n_common = "admin.roles.form.space_actions.common.#{aid}"
+                              %span.item-text= t(action_i18n, default: t(action_i18n_common, default: aid.to_s.humanize))
                               %input{ type: 'hidden', name: "#{param_prefix}[spaces_actions][#{space_key}][active][]", value: aid }
                       .tier-disabled.priority-disabled.disabled-zone
                         .zone-title= t('users.form.display_ui.operations_disabled')
@@ -80,8 +81,9 @@
                           - disabled_a.each_with_index do |aid, index|
                             .draggable-item{ data: { value: aid, index: index } }
                               %span.item-order
-                              - action_i18n = space_key == 'operations' ? "admin.roles.form.space_actions.operations.#{aid}" : 'admin.roles.form.space_actions.common.edit'
-                              %span.item-text= t(action_i18n, default: aid.to_s.humanize)
+                              - action_i18n = "admin.roles.form.space_actions.#{space_key}.#{aid}"
+                              - action_i18n_common = "admin.roles.form.space_actions.common.#{aid}"
+                              %span.item-text= t(action_i18n, default: t(action_i18n_common, default: aid.to_s.humanize))
                               %input{ type: 'hidden', name: "#{param_prefix}[spaces_actions][#{space_key}][disabled][]", value: aid }
                       .tier-hidden.priority-inactive.inactive-zone
                         .zone-title= t('users.form.display_ui.operations_hidden')
@@ -89,8 +91,9 @@
                           - hidden_a.each_with_index do |aid, index|
                             .draggable-item.inactive{ data: { value: aid, index: index } }
                               %span.item-order
-                              - action_i18n = space_key == 'operations' ? "admin.roles.form.space_actions.operations.#{aid}" : 'admin.roles.form.space_actions.common.edit'
-                              %span.item-text= t(action_i18n, default: aid.to_s.humanize)
+                              - action_i18n = "admin.roles.form.space_actions.#{space_key}.#{aid}"
+                              - action_i18n_common = "admin.roles.form.space_actions.common.#{aid}"
+                              %span.item-text= t(action_i18n, default: t(action_i18n_common, default: aid.to_s.humanize))
                               %input{ type: 'hidden', name: "#{param_prefix}[spaces_actions][#{space_key}][hidden][]", value: aid }
 
 .form-group

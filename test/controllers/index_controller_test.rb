@@ -56,4 +56,57 @@ class IndexControllerTest < ActionController::TestCase
     @reseller.update!(planning_dashboard_url: nil)
     sign_in users(:user_one)
   end
+
+  test 'home dashboard hides plannings card when plannings space is not visible' do
+    user = users(:user_one)
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['plannings'] = {
+      'visible' => false,
+      'usable' => false,
+      'actions' => spaces['plannings']['actions']
+    }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "home-plannings-hidden-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user.update!(role_id: role.id)
+    sign_in user
+
+    get :index
+    assert_response :success
+    assert_not_includes response.body, I18n.t('plannings.menu.plannings')
+    assert_not_includes response.body, I18n.t('spaces.view_forbidden')
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'home dashboard shows view_forbidden when plannings space is disabled' do
+    user = users(:user_one)
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['plannings'] = {
+      'visible' => true,
+      'usable' => false,
+      'actions' => spaces['plannings']['actions']
+    }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "home-plannings-disabled-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user.update!(role_id: role.id)
+    sign_in user
+
+    get :index
+    assert_response :success
+    assert_includes response.body, I18n.t('plannings.menu.plannings')
+    assert_includes response.body, I18n.t('spaces.view_forbidden')
+    assert_select %(a[href="#{new_planning_path}"]), count: 0
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
 end

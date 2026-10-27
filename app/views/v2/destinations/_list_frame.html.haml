@@ -13,27 +13,35 @@
     },
     "aria-hidden": "true"
   }
+  - show_mutate_destinations = current_user_space_action_visible?(:destination, :edit)
+  - can_mutate_destinations = current_user_space_action_usable?(:destination, :edit)
   .destinations-list-toolbar.d-flex.justify-content-between.align-items-center.mb-2.px-3.pt-3.pb-2.flex-wrap.gap-2
     .destinations-list-toolbar-actions.d-flex.gap-1.align-items-center.flex-wrap
-      = link_to new_destination_path, class: 'btn btn-primary', title: t('destinations.index.new'), data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
-        %i.fa.fa-plus.fa-fw
-        %span.destinations-toolbar-label= t 'destinations.index.new'
-      %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
-        %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
-        %span.destinations-toolbar-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
-      %button.btn.btn-danger.destinations-bulk-delete{
-        type: "button",
-        disabled: true,
-        title: t('all.verb.destroy_selection'),
-        data: confirm_click_data(
-          group: 'destinations-destroy',
-          wait_message: t('all.verb.destroy_confirm_wait'),
-          confirm_message: t('all.verb.destroy_confirm'),
-          base_class: 'btn-danger'
-        ).merge(v2__table_selection_target: 'bulk')
-      }
-        %i.fa.fa-trash.fa-fw
-        %span.destinations-toolbar-label= t('all.verb.destroy_selection')
+      - if show_mutate_destinations
+        - if can_mutate_destinations && !current_user&.customer&.too_many_destinations?
+          = link_to new_destination_path, class: 'btn btn-primary', title: t('destinations.index.new'), data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
+            %i.fa.fa-plus.fa-fw
+            %span.destinations-toolbar-label= t 'destinations.index.new'
+        - else
+          %button.btn.btn-primary{type: 'button', disabled: true, title: t('destinations.index.new')}
+            %i.fa.fa-plus.fa-fw
+            %span.destinations-toolbar-label= t 'destinations.index.new'
+        %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
+          %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+          %span.destinations-toolbar-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
+        %button.btn.btn-danger.destinations-bulk-delete{
+          type: "button",
+          disabled: true,
+          title: t('all.verb.destroy_selection'),
+          data: confirm_click_data(
+            group: 'destinations-destroy',
+            wait_message: t('all.verb.destroy_confirm_wait'),
+            confirm_message: t('all.verb.destroy_confirm'),
+            base_class: 'btn-danger'
+          ).merge(v2__table_selection_target: 'bulk')
+        }
+          %i.fa.fa-trash.fa-fw
+          %span.destinations-toolbar-label= t('all.verb.destroy_selection')
     .destinations-list-toolbar-meta.d-flex.gap-1.align-items-center.flex-wrap.ms-auto
       = render 'v2/destinations/list_sort_selector'
       .dropdown
