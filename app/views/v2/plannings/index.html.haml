@@ -2,8 +2,10 @@
 - content_for :title, t('plannings.index.title')
 - settings = (current_user.export_settings || {}).stringify_keys
 - export_stops = settings.key?('stops') ? Array(settings['stops']) : %w[out-of-route store rest inactive]
-- can_destroy = current_user_space_action_usable?(:plannings, :edit)
-- cannot_new = current_user.customer.too_many_plannings? || !current_user_space_action_usable?(:plannings, :edit)
+- show_mutate = current_user_space_action_visible?(:plannings, :edit)
+- can_mutate = current_user_space_action_usable?(:plannings, :edit)
+- can_destroy = can_mutate
+- cannot_new = current_user.customer.too_many_plannings? || !can_mutate
 - callback_visible = toolbar_operation_visible?(:planning, 'external_callback')
 - callback_usable = toolbar_operation_usable?(:planning, 'external_callback')
 - dashboard_visible = toolbar_operation_visible?(:planning, 'planning_dashboard')
@@ -16,34 +18,41 @@
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
       .d-flex.gap-2.align-items-center.flex-wrap
         %h1.mb-0.mt-0= t('plannings.index.title')
-        = link_to new_planning_path, class: 'btn btn-primary', disabled: cannot_new, title: t('plannings.index.new'), data: { turbo: false } do
-          %i.fa.fa-plus.fa-fw
-          %span.plannings-btn-label= t('plannings.index.new')
-        %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
-          %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
-          %span.plannings-btn-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
-        %button.btn.btn-danger{
-          type: 'button',
-          disabled: true,
-          title: t('all.verb.destroy_selection'),
-          data: confirm_click_destroy_data(
-            group: 'plannings-destroy',
-            form: 'plannings-destroy'
-          ).merge(v2__table_selection_target: 'bulk')
-        }
-          %i.fa.fa-trash.fa-fw
-          %span.plannings-btn-label= t('all.verb.destroy_selection')
+        - if show_mutate
+          - if cannot_new
+            %button.btn.btn-primary{type: 'button', disabled: true, title: t('plannings.index.new')}
+              %i.fa.fa-plus.fa-fw
+              %span.plannings-btn-label= t('plannings.index.new')
+          - else
+            = link_to new_planning_path, class: 'btn btn-primary', title: t('plannings.index.new'), data: { turbo: false } do
+              %i.fa.fa-plus.fa-fw
+              %span.plannings-btn-label= t('plannings.index.new')
+          %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
+            %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+            %span.plannings-btn-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
+          %button.btn.btn-danger{
+            type: 'button',
+            disabled: true,
+            title: t('all.verb.destroy_selection'),
+            data: confirm_click_destroy_data(
+              group: 'plannings-destroy',
+              form: 'plannings-destroy'
+            ).merge(v2__table_selection_target: 'bulk')
+          }
+            %i.fa.fa-trash.fa-fw
+            %span.plannings-btn-label= t('all.verb.destroy_selection')
       .d-flex.gap-2.align-items-center.flex-shrink-0
         = text_field_tag :plannings_filter, nil, placeholder: t('all.verb.filter'), class: 'form-control form-control-sm plannings-filter', 'aria-label': t('all.verb.filter'), data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
         = render 'v2/shared/index_count', count: @plannings.size, help: t('plannings.index.plannings_count_help'), model_key: 'activerecord.models.plannings', nowrap: true
   = form_tag plannings_path, method: :delete, id: 'plannings-destroy', data: { turbo_frame: '_top' } do
     #plannings.v2-index-cards.px-3.pb-3{data: { v2__index_selection_target: 'root' }}
-      .v2-index-cards-select-bar
-        %label.mb-0.d-flex.align-items-center.gap-2
-          %input{type: 'checkbox', disabled: !can_destroy, title: t('all.verb.toggle_selection'), data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }}
-          %span= t('all.verb.select_all')
+      - if show_mutate
+        .v2-index-cards-select-bar
+          %label.mb-0.d-flex.align-items-center.gap-2
+            %input{type: 'checkbox', disabled: !can_destroy, title: t('all.verb.toggle_selection'), data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }}
+            %span= t('all.verb.select_all')
       - @plannings.each do |planning|
-        = render 'v2/plannings/list_row', planning: planning, can_destroy: can_destroy, dashboard_visible: dashboard_visible, dashboard_usable: dashboard_usable
+        = render 'v2/plannings/list_row', planning: planning, show_mutate: show_mutate, can_destroy: can_destroy, can_mutate: can_mutate, dashboard_visible: dashboard_visible, dashboard_usable: dashboard_usable
     - unless @plannings.empty?
       .plannings-bulk.px-3.py-2.d-flex.flex-wrap.gap-2.align-items-center
         %button.btn.btn-light{type: 'button', disabled: true, title: t('plannings.compare.action'), data: { v2__table_selection_target: 'bulk', min: '2', action: 'click->v2--plannings-index#compare' }}

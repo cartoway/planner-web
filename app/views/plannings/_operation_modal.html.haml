@@ -95,5 +95,7 @@
           %button.btn.btn-default{ type: 'button', 'data-dismiss': 'modal' }= t('all.verb.dismiss')
           = button_tag type: 'submit', name: 'publish_only', value: '1', class: 'btn btn-default', id: 'execution-publish-submit' do
             = t('execution.publish')
-          = button_tag type: 'submit', name: 'transmit', value: '1', class: 'btn btn-primary', id: 'execution-publish-transmit-submit' do
-            = t('execution.publish_and_transmit')
+          - if current_user_space_action_visible?(:operations, :transmit)
+            - can_transmit = current_user_space_action_usable?(:operations, :transmit)
+            = button_tag type: 'submit', name: 'transmit', value: '1', class: 'btn btn-primary', id: 'execution-publish-transmit-submit', disabled: !can_transmit, data: (can_transmit ? {} : { keep_disabled: true }) do
+              = t('execution.publish_and_transmit')

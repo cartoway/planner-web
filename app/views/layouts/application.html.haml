@@ -63,73 +63,94 @@
                         = t 'admin.profiles.menu.profiles'
             - if user_signed_in? && current_user.customer
               - if !@unsubscribed && current_user.customer.device.operations_enabled? && current_user_space_visible?(:operations)
-                %li#menu-operation.menu-list-item
-                  %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#operationsCollpase'}
-                    .d-flex.align-items-center.justify-content-center
-                      %i.fa.fa-clipboard-check.fa-fw
-                      .hidden-menu.menu_label
-                        = t 'operations.menu'
-                  %ul#operationsCollpase.accordion-menu.menu-content.collapse.hidden-menu
-                    %li
-                      = link_to operations_path do
+                - operations_usable = current_user_space_usable?(:operations)
+                %li#menu-operation.menu-list-item{ class: ('disabled' unless operations_usable) }
+                  - if operations_usable
+                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#operationsCollpase'}
+                      .d-flex.align-items-center.justify-content-center
                         %i.fa.fa-clipboard-check.fa-fw
-                        = t 'all.verb.list'
-                    %li.divider
-                    %li
-                      %i.fa.fa-calendar-check{"aria-hidden": "true"}
-                      %span
-                        = current_user.customer.operations.count
-                      \- #{t 'operations.menu'}
-                    - current_user.customer.operations.reorder(id: :desc).limit(10).reverse.each do |operation|
-                      %li{id: dom_id(operation, :menu), style: "display: inline;" }
-                        = link_to operation_path(operation) do
-                          .text-overflow
-                            %i.fa.fa-tower-broadcast.fa-fw
-                            = operation.name
-              - if !@unsubscribed
-                %li#menu-plan.menu-list-item
-                  %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#planningsCollpase'}
-                    .d-flex.align-items-center.justify-content-center
-                      %i.fa.fa-map-location.fa-fw
-                      .hidden-menu.menu_label
-                        = t 'plannings.menu.plannings'
-                  %ul#planningsCollpase.accordion-menu.menu-content.collapse.hidden-menu
-                    - can_new_planning = !current_user.customer.too_many_plannings?
-                    - if can_new_planning && current_user_space_action_usable?(:plannings, :edit)
+                        .hidden-menu.menu_label
+                          = t 'operations.menu'
+                    %ul#operationsCollpase.accordion-menu.menu-content.collapse.hidden-menu
                       %li
-                        = link_to new_planning_path do
-                          %i.fa.fa-plus.fa-fw
-                          = t 'all.verb.new'
-                    %li
-                      = link_to plannings_path do
-                        %i.fa.fa-map-location.fa-fw
-                        = t 'all.verb.list'
-                    %li.divider
-                    - if current_user.customer.default_max_plannings
+                        = link_to operations_path do
+                          %i.fa.fa-clipboard-check.fa-fw
+                          = t 'all.verb.list'
+                      %li.divider
                       %li
-                        - if current_user.customer.too_many_plannings?
-                          %i.fa.text-warning.fa-calendar-xmark{"aria-hidden": "true"}
-                          %span.text-warning
-                            = current_user.customer.plannings.length
-                          \/
-                          %span
-                            = current_user.customer.default_max_plannings
-                          \- #{t 'plannings.menu.plannings'}
-                        - else
-                          %i.fa.fa-calendar-check{"aria-hidden": "true"}
-                          %span
-                            = current_user.customer.plannings.length
-                          \/
-                          %span
-                            = current_user.customer.default_max_plannings
-                          \- #{t 'plannings.menu.plannings'}
-                      - current_user.customer.plannings.reorder(id: :desc).limit(10).reverse.each do |planning|
-                        %li{style: "display: inline;" }
-                          = link_to edit_planning_path(planning) do
+                        %i.fa.fa-calendar-check{"aria-hidden": "true"}
+                        %span
+                          = current_user.customer.operations.count
+                        \- #{t 'operations.menu'}
+                      - current_user.customer.operations.reorder(id: :desc).limit(10).reverse.each do |operation|
+                        %li{id: dom_id(operation, :menu), style: "display: inline;" }
+                          = link_to operation_path(operation) do
                             .text-overflow
-                              %i.fa.fa-route.fa-fw
-                              = planning.name
-              - else
+                              %i.fa.fa-tower-broadcast.fa-fw
+                              = operation.name
+                  - else
+                    %a.menu-section{href: "#"}
+                      .d-flex.align-items-center.justify-content-center
+                        %i.fa.fa-clipboard-check.fa-fw
+                        .hidden-menu.menu_label
+                          = t 'operations.menu'
+              - if !@unsubscribed && current_user_space_visible?(:plannings)
+                - plannings_usable = current_user_space_usable?(:plannings)
+                %li#menu-plan.menu-list-item{ class: ('disabled' unless plannings_usable) }
+                  - if plannings_usable
+                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#planningsCollpase'}
+                      .d-flex.align-items-center.justify-content-center
+                        %i.fa.fa-map-location.fa-fw
+                        .hidden-menu.menu_label
+                          = t 'plannings.menu.plannings'
+                    %ul#planningsCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                      - if current_user_space_action_visible?(:plannings, :edit)
+                        - can_new_planning = !current_user.customer.too_many_plannings? && current_user_space_action_usable?(:plannings, :edit)
+                        %li{ class: ('disabled' unless can_new_planning) }
+                          - if can_new_planning
+                            = link_to new_planning_path do
+                              %i.fa.fa-plus.fa-fw
+                              = t 'all.verb.new'
+                          - else
+                            %a{href: '#'}
+                              %i.fa.fa-plus.fa-fw
+                              = t 'all.verb.new'
+                      %li
+                        = link_to plannings_path do
+                          %i.fa.fa-map-location.fa-fw
+                          = t 'all.verb.list'
+                      %li.divider
+                      - if current_user.customer.default_max_plannings
+                        %li
+                          - if current_user.customer.too_many_plannings?
+                            %i.fa.text-warning.fa-calendar-xmark{"aria-hidden": "true"}
+                            %span.text-warning
+                              = current_user.customer.plannings.length
+                            \/
+                            %span
+                              = current_user.customer.default_max_plannings
+                            \- #{t 'plannings.menu.plannings'}
+                          - else
+                            %i.fa.fa-calendar-check{"aria-hidden": "true"}
+                            %span
+                              = current_user.customer.plannings.length
+                            \/
+                            %span
+                              = current_user.customer.default_max_plannings
+                            \- #{t 'plannings.menu.plannings'}
+                        - current_user.customer.plannings.reorder(id: :desc).limit(10).reverse.each do |planning|
+                          %li{style: "display: inline;" }
+                            = link_to edit_planning_path(planning) do
+                              .text-overflow
+                                %i.fa.fa-route.fa-fw
+                                = planning.name
+                  - else
+                    %a.menu-section{href: "#"}
+                      .d-flex.align-items-center.justify-content-center
+                        %i.fa.fa-map-location.fa-fw
+                        .hidden-menu.menu_label
+                          = t 'plannings.menu.plannings'
+              - elsif @unsubscribed
                 %li#menu-plan.disabled.menu-section.menu-content.menu-list-item
                   %a{href: "#"}
                     %i.fa.fa-map-location.fa-fw
@@ -177,72 +198,113 @@
                             %i.fa.fa-circle-nodes.fa-fw
                             = zoning.name
 
-              %li#menu-destination.menu-list-item
-                %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#destinationsCollpase'}
-                  .d-flex.align-items-center.justify-content-center
-                    %i.fa.fa-map-marker.fa-fw
-                    .hidden-menu.menu_label
-                      = t 'destinations.menu.destinations'
-                %ul#destinationsCollpase.accordion-menu.menu-content.collapse.hidden-menu
-                  %li{ class: ("disabled" if current_user.customer.too_many_destinations? || !current_user_space_action_usable?(:destination, :edit)) }
-                    = link_to new_destination_path, disabled: current_user.customer.too_many_destinations? || !current_user_space_action_usable?(:destination, :edit) do
-                      %i.fa.fa-plus.fa-fw
-                      = t 'all.verb.new'
-                  %li
-                    = link_to destinations_path, data: { turbolinks: false } do
-                      %i.fa.fa-map-marker.fa-fw
-                      = t 'all.verb.list'
-                  %li.divider
-                  - if current_user_space_visible?(:tags)
-                    %li
-                      = link_to tags_path do
-                        %i.fa.fa-tags.fa-fw
-                        = t 'destinations.menu.tags'
-                    %li.divider
-                  %li{ class: ("disabled" if !current_user_space_action_usable?(:destination, :edit)) }
-                    = link_to destination_import_path, disabled: !current_user_space_action_usable?(:destination, :edit) do
-                      %i.fa.fa-upload.fa-fw
-                      = t 'destinations.menu.import'
-                  %li
-                    = link_to destinations_path({format: :excel}) do
-                      %i.fa.fa-download.fa-fw
-                      = t 'destinations.menu.export_spreadsheet_standard'
-                  %li.divider
-                  %li{ class: ("disabled" if !current_user_space_action_usable?(:destination, :edit)) }
-                    = link_to destinations_path, method: :delete, disabled: !current_user_space_action_usable?(:destination, :edit), data: { confirm: t('destinations.menu.clear_confirm') } do
-                      %i.fa.fa-trash.fa-fw
-                      = t 'destinations.menu.clear'
-              %li.pannel.panel-default.menu-list-item
-                %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#vehiclesCollpase'}
-                  .d-flex.align-items-center.justify-content-center
-                    %i.fa.fa-truck-field.fa-fw
-                    .hidden-menu.menu_label
-                      = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
-                %ul#vehiclesCollpase.accordion-menu.menu-content.collapse.hidden-menu
-                  - if current_user_space_visible?(:vehicle_usages)
-                    %li
-                      = link_to vehicle_usage_sets_path do
-                        %i.fa.fa-truck-field.fa-fw
-                        = t 'all.verb.list'
-                    %li{ class: ("disabled" if !current_user_space_action_usable?(:vehicle_usages, :edit)) }
-                      = link_to import_vehicle_usage_sets_path, disabled: !current_user_space_action_usable?(:vehicle_usages, :edit) do
-                        %i.fa.fa-upload.fa-fw
-                        = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
-                    %li.divider
-                  - if current_user_space_visible?(:deliverable_units)
-                    %li
-                      = link_to deliverable_units_path do
-                        %i.fa.fa-dumpster.fa-fw
-                        = t 'vehicle_usage_sets.menu.deliverable_units'
-                  - if current_user_space_visible?(:stores)
-                    %li
-                      = link_to stores_path do
-                        %i.fa.fa-store.fa-fw
-                        = t 'destinations.menu.stores'
-                    %li
-                      = link_to store_import_path, disabled: !current_user_space_action_usable?(:stores, :edit) do
-                        %i.fa.fa-upload.fa-fw
-                        = t 'destinations.menu.import_stores'
+              - if current_user_space_visible?(:destination)
+                - destination_usable = current_user_space_usable?(:destination)
+                %li#menu-destination.menu-list-item{ class: ('disabled' unless destination_usable) }
+                  - if destination_usable
+                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#destinationsCollpase'}
+                      .d-flex.align-items-center.justify-content-center
+                        %i.fa.fa-map-marker.fa-fw
+                        .hidden-menu.menu_label
+                          = t 'destinations.menu.destinations'
+                    %ul#destinationsCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                      - if current_user_space_action_visible?(:destination, :edit)
+                        - can_mutate_destination = current_user_space_action_usable?(:destination, :edit) && !current_user.customer.too_many_destinations?
+                        %li{ class: ('disabled' unless can_mutate_destination) }
+                          - if can_mutate_destination
+                            = link_to new_destination_path do
+                              %i.fa.fa-plus.fa-fw
+                              = t 'all.verb.new'
+                          - else
+                            %a{href: '#'}
+                              %i.fa.fa-plus.fa-fw
+                              = t 'all.verb.new'
+                      %li
+                        = link_to destinations_path, data: { turbolinks: false } do
+                          %i.fa.fa-map-marker.fa-fw
+                          = t 'all.verb.list'
+                      %li.divider
+                      - if current_user_space_visible?(:tags)
+                        %li{ class: ("disabled" unless current_user_space_usable?(:tags)) }
+                          = link_to tags_path, disabled: !current_user_space_usable?(:tags) do
+                            %i.fa.fa-tags.fa-fw
+                            = t 'destinations.menu.tags'
+                        %li.divider
+                      - if current_user_space_action_visible?(:destination, :edit)
+                        %li{ class: ("disabled" unless current_user_space_action_usable?(:destination, :edit)) }
+                          - if current_user_space_action_usable?(:destination, :edit)
+                            = link_to destination_import_path do
+                              %i.fa.fa-upload.fa-fw
+                              = t 'destinations.menu.import'
+                          - else
+                            %a{href: '#'}
+                              %i.fa.fa-upload.fa-fw
+                              = t 'destinations.menu.import'
+                      %li
+                        = link_to destinations_path({format: :excel}) do
+                          %i.fa.fa-download.fa-fw
+                          = t 'destinations.menu.export_spreadsheet_standard'
+                      - if current_user_space_action_visible?(:destination, :edit)
+                        %li.divider
+                        %li{ class: ("disabled" unless current_user_space_action_usable?(:destination, :edit)) }
+                          - if current_user_space_action_usable?(:destination, :edit)
+                            = link_to destinations_path, method: :delete, data: { confirm: t('destinations.menu.clear_confirm') } do
+                              %i.fa.fa-trash.fa-fw
+                              = t 'destinations.menu.clear'
+                          - else
+                            %a{href: '#'}
+                              %i.fa.fa-trash.fa-fw
+                              = t 'destinations.menu.clear'
+                  - else
+                    %a.menu-section{href: "#"}
+                      .d-flex.align-items-center.justify-content-center
+                        %i.fa.fa-map-marker.fa-fw
+                        .hidden-menu.menu_label
+                          = t 'destinations.menu.destinations'
+              - if current_user_space_visible?(:vehicle_usages) || current_user_space_visible?(:deliverable_units) || current_user_space_visible?(:stores)
+                %li.pannel.panel-default.menu-list-item
+                  %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#vehiclesCollpase'}
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-truck-field.fa-fw
+                      .hidden-menu.menu_label
+                        = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
+                  %ul#vehiclesCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                    - if current_user_space_visible?(:vehicle_usages)
+                      %li{ class: ("disabled" unless current_user_space_usable?(:vehicle_usages)) }
+                        = link_to vehicle_usage_sets_path, disabled: !current_user_space_usable?(:vehicle_usages) do
+                          %i.fa.fa-truck-field.fa-fw
+                          = t 'all.verb.list'
+                      - if current_user_space_action_visible?(:vehicle_usages, :edit)
+                        %li{ class: ("disabled" unless current_user_space_action_usable?(:vehicle_usages, :edit)) }
+                          - if current_user_space_action_usable?(:vehicle_usages, :edit)
+                            = link_to import_vehicle_usage_sets_path do
+                              %i.fa.fa-upload.fa-fw
+                              = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
+                          - else
+                            %a{href: '#'}
+                              %i.fa.fa-upload.fa-fw
+                              = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
+                      %li.divider
+                    - if current_user_space_visible?(:deliverable_units)
+                      %li{ class: ("disabled" unless current_user_space_usable?(:deliverable_units)) }
+                        = link_to deliverable_units_path, disabled: !current_user_space_usable?(:deliverable_units) do
+                          %i.fa.fa-dumpster.fa-fw
+                          = t 'vehicle_usage_sets.menu.deliverable_units'
+                    - if current_user_space_visible?(:stores)
+                      %li{ class: ("disabled" unless current_user_space_usable?(:stores)) }
+                        = link_to stores_path, disabled: !current_user_space_usable?(:stores) do
+                          %i.fa.fa-store.fa-fw
+                          = t 'destinations.menu.stores'
+                      - if current_user_space_action_visible?(:stores, :edit)
+                        %li{ class: ("disabled" unless current_user_space_action_usable?(:stores, :edit)) }
+                          - if current_user_space_action_usable?(:stores, :edit)
+                            = link_to store_import_path do
+                              %i.fa.fa-upload.fa-fw
+                              = t 'destinations.menu.import_stores'
+                          - else
+                            %a{href: '#'}
+                              %i.fa.fa-upload.fa-fw
+                              = t 'destinations.menu.import_stores'
         #menu-settings-dock
           .divider.solid
           %li#menu-settings-burger.menu-section.menu-list-item.menu-section-burger
@@ -296,13 +358,14 @@
                           = current_user.email
                 %ul#customerCollpase.accordion-menu.menu-content.collapse.hidden-menu
                   - if current_user.customer
-                    %li
-                      = link_to edit_customer_path(current_user.customer) do
-                        %i.fa.fa-wrench.fa-fw
-                        = t 'customers.menu.customer'
+                    - if current_user_space_visible?(:customer)
+                      %li{ class: ("disabled" unless current_user_space_usable?(:customer)) }
+                        = link_to edit_customer_path(current_user.customer), disabled: !current_user_space_usable?(:customer) do
+                          %i.fa.fa-wrench.fa-fw
+                          = t 'customers.menu.customer'
                     - if current_user_space_visible?(:custom_attributes)
-                      %li
-                        = link_to custom_attributes_path do
+                      %li{ class: ("disabled" unless current_user_space_usable?(:custom_attributes)) }
+                        = link_to custom_attributes_path, disabled: !current_user_space_usable?(:custom_attributes) do
                           %i.fa.fa-file-lines.fa-fw
                           = t 'custom_attributes.menu.custom_attributes'
 

@@ -1,6 +1,12 @@
 - content_for :title, @operation.name
-- can_export = can?(:export, Operation)
-- can_transmit = can?(:transmit, Operation)
+- show_export = current_user_space_action_visible?(:operations, :export)
+- can_export = current_user_space_action_usable?(:operations, :export)
+- show_transmit = current_user_space_action_visible?(:operations, :transmit)
+- can_transmit = current_user_space_action_usable?(:operations, :transmit)
+- show_planning = current_user_space_visible?(:plannings)
+- can_planning = current_user_space_usable?(:plannings)
+- show_send_drivers = show_transmit && @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
+- show_send_destinations = show_transmit && @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
 - content_for :meta do
   %meta{name: 'turbo-refresh-method', content: 'morph'}
   %meta{name: 'turbo-refresh-scroll', content: 'preserve'}
@@ -44,60 +50,82 @@
       = render 'v2/shared/status_segments', counts: board, css_class: 'operation-segments'
     .operation-header-actions
       .operation-header-actions-desktop.d-flex.align-items-center.gap-2
-        - if @operation.planning
-          = link_to edit_planning_path(@operation.planning), class: 'btn btn-light', target: '_blank', rel: 'noopener', data: { turbo: false } do
-            %i.fa.fa-map-location.fa-fw
-            = t('operations.show.planning')
-        - if can_export
+        - if @operation.planning && show_planning
+          - if can_planning
+            = link_to edit_planning_path(@operation.planning), class: 'btn btn-light', target: '_blank', rel: 'noopener', data: { turbo: false } do
+              %i.fa.fa-map-location.fa-fw
+              = t('operations.show.planning')
+          - else
+            %button.btn.btn-light{type: 'button', disabled: true}
+              %i.fa.fa-map-location.fa-fw
+              = t('operations.show.planning')
+        - if show_export
           .dropdown
-            %button.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
+            %button.btn.btn-light.dropdown-toggle{type: 'button', disabled: !can_export, data: (can_export ? { bs_toggle: 'dropdown' } : {}), aria: { expanded: 'false' }}
               %i.fa.fa-download.fa-fw
               = t('operations.show.export')
-            %ul.dropdown-menu
-              %li
-                = link_to export_operation_path(@operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
-                  %i.fa.fa-file-excel.fa-fw
-                  = t('operations.show.export_spreadsheet')
-              %li
-                = link_to export_operation_path(@operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
-                  %i.fa.fa-file-zipper.fa-fw
-                  = t('operations.show.export_archive')
+            - if can_export
+              %ul.dropdown-menu
+                %li
+                  = link_to export_operation_path(@operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
+                    %i.fa.fa-file-excel.fa-fw
+                    = t('operations.show.export_spreadsheet')
+                %li
+                  = link_to export_operation_path(@operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
+                    %i.fa.fa-file-zipper.fa-fw
+                    = t('operations.show.export_archive')
         = render 'operations/demo_actions'
         #operation-send-buttons
-          - if can_transmit && @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
-            %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-drivers' }}
+          - if show_send_drivers
+            %button.btn.btn-light{type: 'button', disabled: !can_transmit, data: (can_transmit ? { bs_toggle: 'modal', bs_target: '#operation-send-drivers' } : {})}
               %i.fa.fa-paper-plane.fa-fw
               = t('operations.show.send_drivers')
-          - if can_transmit && @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
-            %button.btn.btn-light{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations' }}
+          - if show_send_destinations
+            %button.btn.btn-light{type: 'button', disabled: !can_transmit, data: (can_transmit ? { bs_toggle: 'modal', bs_target: '#operation-send-destinations' } : {})}
               %i.fa.fa-envelope-open-text.fa-fw
               = t('operations.show.send_destinations')
       .dropdown.operation-header-actions-mobile
         %button.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, aria: { expanded: 'false' }}
           = t('operations.show.more_actions')
         %ul.dropdown-menu.dropdown-menu-end
-          - if @operation.planning
+          - if @operation.planning && show_planning
+            - if can_planning
+              %li
+                = link_to edit_planning_path(@operation.planning), class: 'dropdown-item', target: '_blank', rel: 'noopener', data: { turbo: false } do
+                  %i.fa.fa-map-location.fa-fw
+                  = t('operations.show.planning')
+            - else
+              %li.disabled
+                %span.dropdown-item.disabled
+                  %i.fa.fa-map-location.fa-fw
+                  = t('operations.show.planning')
+          - if show_export
             %li
-              = link_to edit_planning_path(@operation.planning), class: 'dropdown-item', target: '_blank', rel: 'noopener', data: { turbo: false } do
-                %i.fa.fa-map-location.fa-fw
-                = t('operations.show.planning')
-          - if can_export
+              - if can_export
+                = link_to export_operation_path(@operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
+                  %i.fa.fa-file-excel.fa-fw
+                  = t('operations.show.export_spreadsheet')
+              - else
+                %button.dropdown-item{type: 'button', disabled: true}
+                  %i.fa.fa-file-excel.fa-fw
+                  = t('operations.show.export_spreadsheet')
             %li
-              = link_to export_operation_path(@operation, format: :xlsx), class: 'dropdown-item', data: { turbo: false } do
-                %i.fa.fa-file-excel.fa-fw
-                = t('operations.show.export_spreadsheet')
+              - if can_export
+                = link_to export_operation_path(@operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
+                  %i.fa.fa-file-zipper.fa-fw
+                  = t('operations.show.export_archive')
+              - else
+                %button.dropdown-item{type: 'button', disabled: true}
+                  %i.fa.fa-file-zipper.fa-fw
+                  = t('operations.show.export_archive')
+          - if show_send_drivers
             %li
-              = link_to export_operation_path(@operation, format: :zip), class: 'dropdown-item', data: { turbo: false } do
-                %i.fa.fa-file-zipper.fa-fw
-                = t('operations.show.export_archive')
-          - if can_transmit && @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
-            %li
-              %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-drivers' }}
+              %button.dropdown-item{type: 'button', disabled: !can_transmit, data: (can_transmit ? { bs_toggle: 'modal', bs_target: '#operation-send-drivers' } : {})}
                 %i.fa.fa-paper-plane.fa-fw
                 = t('operations.show.send_drivers')
-          - if can_transmit && @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
+          - if show_send_destinations
             %li
-              %button.dropdown-item{type: 'button', data: { bs_toggle: 'modal', bs_target: '#operation-send-destinations' }}
+              %button.dropdown-item{type: 'button', disabled: !can_transmit, data: (can_transmit ? { bs_toggle: 'modal', bs_target: '#operation-send-destinations' } : {})}
                 %i.fa.fa-envelope-open-text.fa-fw
                 = t('operations.show.send_destinations')
           - if @operation.open? && @deliver_demo_enabled
@@ -239,7 +267,7 @@
           .modal-footer
             %button.btn.btn-light{type: 'button', data: { bs_dismiss: 'modal' }}= t('all.verb.cancel')
             = submit_tag t('operations.show.send_email'), class: 'btn btn-primary', data: { route_send_submit: true }
-- if can_transmit && @operation.open? && @send_routes.present? && driver_contact_channels(@operation.customer).any?
+- if can_transmit && show_send_drivers
   = render 'operations/send_drivers_modal', operation: @operation, routes: @send_routes
-- if can_transmit && @operation.open? && @send_trackings.present? && destination_contact_channels(@operation.customer).any?
+- if can_transmit && show_send_destinations
   = render 'operations/send_destinations_modal', operation: @operation, trackings: @send_trackings

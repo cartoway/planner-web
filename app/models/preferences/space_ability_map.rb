@@ -19,8 +19,10 @@
 #
 module Preferences
   # Maps Role.spaces permissions to CanCan denies.
-  # - Spaces with :edit → create/update/destroy on catalog models
-  # - operations space → sync / transmit / destroy / export
+  # - Space not usable (disabled or hidden) → no index/show/manage access
+  # - Planning GET edit stays when space is visible (toolbar gates the workspace)
+  # - Spaces with :edit usable → create/update/destroy on catalog models (not GET edit)
+  # - operations space actions → sync / transmit / destroy / export
   # Toolbar planning/route/stop stays in PlanningToolbarAbilityMap.
   module SpaceAbilityMap
     OPERATIONS_SPACE = 'operations'
@@ -49,17 +51,29 @@ module Preferences
     def self.apply_edit_space_rules!(ability, user)
       SPACE_KEY_MODELS.each do |resource_key, models|
         models.each do |model|
+          # Disabled or hidden space → no access (menu shows disabled when visible).
+          unless user.space_usable?(resource_key)
+            ability.cannot :index, model
+            ability.cannot :show, model
+            ability.cannot :create, model
+            ability.cannot :new, model
+            ability.cannot :update, model
+            ability.cannot :destroy, model
+            # Planning edit page stays open when the space is merely disabled (visible):
+            # workspace tools are gated by planning_toolbar, not space :edit.
+            if model != ::Planning || !user.space_visible?(resource_key)
+              ability.cannot :edit, model
+            end
+            next
+          end
+
           # No block: CanCanCan does not run blocks for class-level can? checks.
+          # Do not cannot :edit here — GET edit stays available (alias edit→read); mutations only.
           unless user.space_action_usable?(resource_key, 'edit')
             ability.cannot :create, model
             ability.cannot :new, model
             ability.cannot :update, model
             ability.cannot :destroy, model
-          end
-
-          # Read-only UI (GET edit) when space is visible but not usable; deny only when hidden.
-          unless user.space_visible?(resource_key)
-            ability.cannot :edit, model
           end
         end
       end
@@ -68,15 +82,13 @@ module Preferences
         ability.cannot :toggle, ::VehicleUsage
       end
 
-      apply_vehicle_configuration_hidden_gate!(ability, user)
-      apply_space_index_show_gate!(ability, user, 'tags', ::Tag)
-      apply_space_index_show_gate!(ability, user, 'deliverable_units', DeliverableUnit)
-      apply_space_index_show_gate!(ability, user, 'custom_attributes', CustomAttribute)
+      apply_vehicle_configuration_access_gate!(ability, user)
     end
     private_class_method :apply_edit_space_rules!
 
     def self.apply_operations_space_rules!(ability, user)
-      unless user.space_visible?(OPERATIONS_SPACE)
+      # Disabled or hidden → no access; menu keeps a disabled entry when visible.
+      unless user.space_usable?(OPERATIONS_SPACE)
         ability.cannot :index, Operation
         ability.cannot :show, Operation
         ability.cannot :manage, Operation
@@ -112,8 +124,8 @@ module Preferences
     end
     private_class_method :apply_operations_space_rules!
 
-    def self.apply_vehicle_configuration_hidden_gate!(ability, user)
-      return if user.space_visible?(VEHICLE_CONFIGURATION_SPACE)
+    def self.apply_vehicle_configuration_access_gate!(ability, user)
+      return if user.space_usable?(VEHICLE_CONFIGURATION_SPACE)
 
       ability.cannot :manage, VehicleUsageSet
       ability.cannot :manage, VehicleUsage
@@ -122,14 +134,6 @@ module Preferences
         ability.cannot :delete_vehicle, ::Customer, id: user.customer.id
       end
     end
-    private_class_method :apply_vehicle_configuration_hidden_gate!
-
-    def self.apply_space_index_show_gate!(ability, user, space_key, model)
-      return if user.space_visible?(space_key)
-
-      ability.cannot :index, model
-      ability.cannot :show, model
-    end
-    private_class_method :apply_space_index_show_gate!
+    private_class_method :apply_vehicle_configuration_access_gate!
   end
 end

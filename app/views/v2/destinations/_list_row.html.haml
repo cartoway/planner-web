@@ -1,4 +1,6 @@
--# locals: destination, can_destroy_destinations:, list_columns: (optional)
+-# locals: destination, show_mutate_destinations:, can_mutate_destinations:, can_destroy_destinations:, list_columns: (optional)
+- show_mutate_destinations = local_assigns.fetch(:show_mutate_destinations) { current_user_space_action_visible?(:destination, :edit) }
+- can_mutate_destinations = local_assigns.fetch(:can_mutate_destinations) { current_user_space_action_usable?(:destination, :edit) }
 - list_columns = Array(local_assigns.fetch(:list_columns) { @destinations_list_columns })
 - dest_columns = list_columns.reject { |column_id| destinations_list_visit_scoped_column?(column_id) }
 - visit_columns = list_columns.select { |column_id| destinations_list_visit_scoped_column?(column_id) }
@@ -13,8 +15,9 @@
 -# String id (not dom_id): Lookbook sample destinations are Structs without to_key.
 .v2-index-card.destination.destinations-index-card{id: "destination_#{destination.id}", data: { destination_id: destination.id, lat: destination.lat, lng: destination.lng }}
   .v2-index-card-main
-    .v2-index-card-select
-      %input{type: "checkbox", id: "select_destination_#{destination.id}", name: "destinations[#{destination.id}]", value: "1", data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }}
+    - if show_mutate_destinations
+      .v2-index-card-select
+        %input{type: "checkbox", id: "select_destination_#{destination.id}", name: "destinations[#{destination.id}]", value: "1", disabled: !can_destroy_destinations, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }}
     .v2-index-card-body
       .v2-index-card-header.destinations-card-header
         .destinations-card-identity
@@ -39,21 +42,26 @@
             'aria-label': t('destinations.index.center_view_help')
           }
             %i.fa.fa-expand.fa-fw
-          = link_to edit_destination_path(destination), class: 'btn btn-primary', title: t('all.verb.edit'), 'aria-label': t('all.verb.edit'), data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
-            %i.fa.fa-pencil.fa-fw
-          %button.btn.btn-danger.destinations-row-delete{
-            type: "button",
-            disabled: !can_destroy_destinations,
-            title: t('all.verb.destroy'),
-            'aria-label': t('all.verb.destroy'),
-            data: confirm_click_data(
-              group: 'destinations-destroy',
-              wait_message: t('all.verb.destroy_confirm_wait'),
-              confirm_message: t('all.verb.destroy_confirm'),
-              base_class: 'btn-danger'
-            ).merge(destination_id: destination.id)
-          }
-            %i.fa.fa-trash.fa-fw
+          - if show_mutate_destinations
+            - if can_mutate_destinations
+              = link_to edit_destination_path(destination), class: 'btn btn-primary', title: t('all.verb.edit'), 'aria-label': t('all.verb.edit'), data: { turbo_frame: "form_sidebar", turbo_prefetch: "false" } do
+                %i.fa.fa-pencil.fa-fw
+            - else
+              %button.btn.btn-primary{type: 'button', disabled: true, title: t('all.verb.edit'), 'aria-label': t('all.verb.edit')}
+                %i.fa.fa-pencil.fa-fw
+            %button.btn.btn-danger.destinations-row-delete{
+              type: "button",
+              disabled: !can_destroy_destinations,
+              title: t('all.verb.destroy'),
+              'aria-label': t('all.verb.destroy'),
+              data: confirm_click_data(
+                group: 'destinations-destroy',
+                wait_message: t('all.verb.destroy_confirm_wait'),
+                confirm_message: t('all.verb.destroy_confirm'),
+                base_class: 'btn-danger'
+              ).merge(destination_id: destination.id)
+            }
+              %i.fa.fa-trash.fa-fw
       - if address_line.present? || geocoded_line.present?
         .destinations-card-address-block
           - if address_line.present?

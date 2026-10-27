@@ -52,11 +52,11 @@ class PreferencesSpaceAbilityMapEditSpacesTest < ActiveSupport::TestCase
     assert ability.cannot?(:destroy, @destination)
   end
 
-  test 'customer can open vehicle_usage edit in read-only when visible but not usable' do
+  test 'customer cannot open vehicle_usage when space is visible but not usable' do
     assign_role_with_space!(@user, :vehicle_usages, visible: true, usable: false)
 
     ability = Ability.new(@user)
-    assert ability.can?(:edit, @vehicle_usage)
+    assert ability.cannot?(:edit, @vehicle_usage)
     assert ability.cannot?(:update, @vehicle_usage)
     assert ability.cannot?(:toggle, @vehicle_usage)
   end
@@ -69,7 +69,7 @@ class PreferencesSpaceAbilityMapEditSpacesTest < ActiveSupport::TestCase
     assert ability.cannot?(:destroy, vehicle_usage_sets(:vehicle_usage_set_one))
   end
 
-  test 'customer can open planning edit in read-only when plannings visible but not usable' do
+  test 'customer can open planning edit when plannings space is visible but not usable' do
     assign_role_with_space!(@user, :plannings, visible: true, usable: false)
 
     ability = Ability.new(@user)
@@ -77,6 +77,28 @@ class PreferencesSpaceAbilityMapEditSpacesTest < ActiveSupport::TestCase
     assert_equal @user.customer_id, planning.customer_id
     assert ability.can?(:edit, planning)
     assert ability.cannot?(:update, planning)
+    assert ability.cannot?(:index, Planning)
+  end
+
+  test 'customer can open planning edit when plannings edit action is not usable' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['plannings'] = Preferences::Catalog::Spaces.default_space_entry(
+      'plannings', visible: true, usable: true, actions_all_usable: false
+    )
+    role = Role.create!(
+      reseller: @user.customer.reseller,
+      name: "plannings-edit-action-off-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    @user.update!(role_id: role.id)
+
+    ability = Ability.new(@user.reload)
+    planning = plannings(:planning_one)
+    assert ability.can?(:edit, planning)
+    assert ability.cannot?(:create, Planning)
+    assert ability.cannot?(:update, planning)
+    assert ability.cannot?(:destroy, planning)
   end
 
   test 'customer cannot update store when stores edit is not usable' do
@@ -86,11 +108,11 @@ class PreferencesSpaceAbilityMapEditSpacesTest < ActiveSupport::TestCase
     assert ability.cannot?(:update, stores(:store_one))
   end
 
-  test 'customer can open own customer edit in read-only when customer space is visible but not usable' do
+  test 'customer cannot open own customer when customer space is visible but not usable' do
     assign_role_with_space!(@user, :customer, visible: true, usable: false)
 
     ability = Ability.new(@user)
-    assert ability.can?(:edit, @user.customer)
+    assert ability.cannot?(:edit, @user.customer)
     assert ability.cannot?(:update, @user.customer)
   end
 
@@ -113,7 +135,7 @@ class PreferencesSpaceAbilityMapEditSpacesTest < ActiveSupport::TestCase
 
     ability = Class.new { include CanCan::Ability }.new
     ability.can :manage, Customer, id: @user.customer.id
-    Preferences::SpaceAbilityMap.send(:apply_vehicle_configuration_hidden_gate!, ability, @user)
+    Preferences::SpaceAbilityMap.send(:apply_vehicle_configuration_access_gate!, ability, @user)
 
     assert ability.cannot?(:delete_vehicle, @user.customer)
   end
@@ -128,11 +150,13 @@ class PreferencesSpaceAbilityMapEditSpacesTest < ActiveSupport::TestCase
     assert ability.cannot?(:show, tag)
   end
 
-  test 'tags visible but not usable denies create update destroy on Tag' do
+  test 'tags visible but not usable denies listing and mutating Tag' do
     assign_role_with_space!(@user, :tags, visible: true, usable: false)
 
     ability = Ability.new(@user)
     tag = tags(:tag_one)
+    assert ability.cannot?(:index, Tag)
+    assert ability.cannot?(:show, tag)
     assert ability.cannot?(:create, Tag)
     assert ability.cannot?(:new, Tag)
     assert ability.cannot?(:update, tag)

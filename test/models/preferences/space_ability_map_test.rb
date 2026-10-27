@@ -44,6 +44,24 @@ class PreferencesSpaceAbilityMapTest < ActiveSupport::TestCase
     assert ability.cannot?(:manage, Operation)
   end
 
+  test 'disabled operations space denies listing and managing operations' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations'] = {
+      'visible' => true,
+      'usable' => false,
+      'actions' => spaces['operations']['actions']
+    }
+
+    assign_role_with_spaces!(@user, spaces)
+
+    ability = Ability.new(@user)
+    assert @user.space_visible?(:operations)
+    assert_not @user.space_usable?(:operations)
+    assert ability.cannot?(:index, Operation)
+    assert ability.cannot?(:show, Operation)
+    assert ability.cannot?(:manage, Operation)
+  end
+
   test 'operations space without sync action denies create and planning publish' do
     spaces = Preferences::Catalog.default_spaces.deep_dup
     controls = spaces['operations']['actions']['segment_controls']

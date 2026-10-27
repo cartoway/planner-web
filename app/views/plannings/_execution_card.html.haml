@@ -17,8 +17,8 @@
     %span.planning-execution-progress-label.text-muted= t('operations.index.stops_count', treated: counts[:delivered] + counts[:failed] + counts[:exception], total: counts[:total])
   .planning-execution-actions.clearfix
     .pull-right
-      - if sync
-        %button.btn.btn-default.btn-sm.planning-execution-sync{ type: 'button', title: t('execution.sync'), data: { operation_id: operation.id } }
+      - if sync && current_user_space_action_visible?(:operations, :sync)
+        %button.btn.btn-default.btn-sm.planning-execution-sync{ type: 'button', title: t('execution.sync'), disabled: current_user_space_action_disabled?(:operations, :sync), data: { operation_id: operation.id } }
           %i.fa.fa-arrows-rotate.fa-fw
           = t('execution.sync')
       = link_to operation_path(operation), class: tracking_class, title: t('execution.open_tracking') do
