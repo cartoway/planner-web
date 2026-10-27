@@ -14,10 +14,9 @@ class DeliverTest < ActionController::TestCase
     end
   end
 
-  test 'should clear route' do
-    assert_nothing_raised do
-      @service.clear_route @customer, routes(:route_one_one)
-    end
+  test 'deliver is send-only (no clear on device definition)' do
+    assert_equal [:send], @service.definition[:route_operations]
+    assert_not @service.respond_to?(:clear_route)
   end
 
   test 'deliver fetch_stops is a no-op for planning status' do
