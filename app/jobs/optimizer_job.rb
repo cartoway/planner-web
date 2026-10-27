@@ -29,6 +29,10 @@ class OptimizerJob < OptimizerJobStruct
   @@force_start = Planner::Application.config.optimize_force_start
   @@optimize_minimal_time = Planner::Application.config.optimize_minimal_time
 
+  def queue_name
+    'optimizer'
+  end
+
   def perform
     optimum = nil
     return true if @job&.progress && @job.progress&.dig('failed') && @job.attempts > 0
