@@ -361,8 +361,9 @@ class V01::CustomerTest < ActiveSupport::TestCase
     u = users(:user_one)
     spaces = Preferences::Catalog.default_spaces.deep_dup
     spaces['customer'] = Preferences::Catalog::Spaces.default_space_entry(
-      'customer', visible: true, usable: false, actions_all_usable: false
+      'customer', visible: true, usable: true, actions_all_usable: true
     )
+    spaces['customer']['actions']['segment_controls']['edit'] = { 'visible' => true, 'usable' => false }
     spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),
@@ -383,8 +384,9 @@ class V01::CustomerTest < ActiveSupport::TestCase
     u = users(:user_one)
     spaces = Preferences::Catalog.default_spaces.deep_dup
     spaces['customer'] = Preferences::Catalog::Spaces.default_space_entry(
-      'customer', visible: true, usable: false, actions_all_usable: false
+      'customer', visible: true, usable: true, actions_all_usable: true
     )
+    spaces['customer']['actions']['segment_controls']['edit'] = { 'visible' => true, 'usable' => false }
     spaces = Preferences::Catalog.normalize_spaces(spaces)
     role = Role.create!(
       reseller: resellers(:reseller_one),

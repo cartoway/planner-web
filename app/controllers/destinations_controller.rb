@@ -28,10 +28,12 @@ class DestinationsController < ApplicationController
   before_action :set_destination, only: [:show, :edit, :update, :destroy, :append_visit]
   after_action :warnings, only: [:create, :update]
   around_action :over_max_limit, only: [:create, :duplicate]
-  before_action -> { deny_unless_space_action_usable!(:destination, :edit) }, only: [:clear]
+  before_action -> { deny_unless_space_action_usable!(:destination, :delete_all_destinations) }, only: [:clear]
+  before_action -> { deny_unless_space_action_usable!(:destination, :delete_all_visits) }, only: [:clear_visits]
   before_action -> { deny_unless_space_action_usable!(:destination, :edit) }, only: [:upload_csv, :upload_tomtom]
+  before_action :deny_import_clear_without_permission!, only: [:upload_csv, :upload_tomtom]
 
-  load_and_authorize_resource except: [:map, :list_columns, :import_status]
+  load_and_authorize_resource except: [:map, :list_columns, :import_status, :clear_visits]
 
   # visits/_form and v2/visits/_form iterate @visit_custom_attributes; keep it set for v1 and v2 destination flows.
   before_action :assign_visit_custom_attributes, only: [:new, :edit, :create, :update, :append_visit]
@@ -343,8 +345,19 @@ class DestinationsController < ApplicationController
   end
 
   def clear
+    authorize! :delete_all, Destination
     Destination.transaction do
       current_user.customer.delete_all_destinations
+    end
+    respond_to do |format|
+      format.html { redirect_to action: 'index' }
+    end
+  end
+
+  def clear_visits
+    authorize! :delete_all, Visit
+    Destination.transaction do
+      current_user.customer.delete_all_visits
     end
     respond_to do |format|
       format.html { redirect_to action: 'index' }
@@ -364,6 +377,16 @@ class DestinationsController < ApplicationController
   end
 
   private
+
+  def deny_import_clear_without_permission!
+    replace = params.dig(:import_csv, :replace).presence || params.dig(:import_tomtom, :replace)
+    case replace.to_s
+    when '1', 'true', 'destinations'
+      deny_unless_space_action_usable!(:destination, :delete_all_destinations)
+    when 'visits'
+      deny_unless_space_action_usable!(:destination, :delete_all_visits)
+    end
+  end
 
   def destination_import_status_payload
     if @customer.destination_import_running?

@@ -29,10 +29,10 @@ module Preferences
 
       SPACE_ACTIONS = {
         'plannings' => %w[edit],
-        'destination' => %w[edit],
+        'destination' => %w[edit delete_all_destinations delete_all_visits],
         'vehicle_usages' => %w[edit],
         'stores' => %w[edit],
-        'tags' => %w[edit],
+        'tags' => %w[edit delete_visits_by_tags],
         'customer' => %w[edit],
         'deliverable_units' => %w[edit],
         'custom_attributes' => %w[edit],
@@ -96,8 +96,14 @@ module Preferences
         segment_controls = {}
         allowed.each do |id|
           if controls_in[id].nil?
-            vis = space_visible
-            use = space_usable
+            # Opt-in: hide clear-all-visits until explicitly enabled (migration seeds the same).
+            if key == 'destination' && id == 'delete_all_visits'
+              vis = false
+              use = false
+            else
+              vis = space_visible
+              use = space_usable
+            end
           else
             c = controls_in[id].is_a?(Hash) ? controls_in[id].stringify_keys : {}
             vis = Core.truthy?(c.fetch('visible', NORMALIZE_ACTION_VISIBLE_DEFAULT))

@@ -466,8 +466,9 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
       spaces: begin
         s = Preferences::Catalog.default_spaces.deep_dup
         s['vehicle_usages'] = Preferences::Catalog::Spaces.default_space_entry(
-          'vehicle_usages', visible: true, usable: false, actions_all_usable: false
+          'vehicle_usages', visible: true, usable: true, actions_all_usable: true
         )
+        s['vehicle_usages']['actions']['segment_controls']['edit'] = { 'visible' => true, 'usable' => false }
         Preferences::Catalog.normalize_spaces(s)
       end
     )
@@ -494,8 +495,9 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
       spaces: begin
         s = Preferences::Catalog.default_spaces.deep_dup
         s['vehicle_usages'] = Preferences::Catalog::Spaces.default_space_entry(
-          'vehicle_usages', visible: true, usable: false, actions_all_usable: false
+          'vehicle_usages', visible: true, usable: true, actions_all_usable: true
         )
+        s['vehicle_usages']['actions']['segment_controls']['edit'] = { 'visible' => true, 'usable' => false }
         Preferences::Catalog.normalize_spaces(s)
       end
     )
