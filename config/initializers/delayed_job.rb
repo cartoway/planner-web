@@ -5,6 +5,7 @@ Delayed::Job.include DelayedJobProgressParser
 Delayed::Worker.destroy_failed_jobs = false
 Delayed::Worker.max_attempts = 3
 Delayed::Worker.sleep_delay = 1
+Delayed::Worker.default_queue_name = 'common'
 
 Delayed::Job.class_eval do
   attr_accessor :async_outcome_remembered

@@ -22,4 +22,15 @@ class OptimizerTest < ActionController::TestCase
       assert stop.active
     }
   end
+
+  test 'enqueues optimizer jobs on the optimizer queue' do
+    original = Planner::Application.config.delayed_job_use
+    Planner::Application.config.delayed_job_use = true
+    begin
+      job = Delayed::Job.enqueue(OptimizerJob.new(@route.planning.customer_id, @route.planning_id, @route.id, {}))
+      assert_equal 'optimizer', job.queue
+    ensure
+      Planner::Application.config.delayed_job_use = original
+    end
+  end
 end
