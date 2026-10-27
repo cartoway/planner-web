@@ -564,6 +564,7 @@ const destinations_import = function(params, api) {
   $('form#new_import_csv, form#new_import_tomtom').submit(function() {
     var confirmChecks = [];
     $('input[id$=replace_1]', $(this)).is(':checked') && confirmChecks.push('replace');
+    $('input[id$=replace_visits]', $(this)).is(':checked') && confirmChecks.push('replace_visits');
     $('input[name$=\\[delete_plannings\\]]', $(this)).is(':checked') && confirmChecks.push('delete_plannings');
     if (confirmChecks.length > 0 && !confirm(confirmChecks.map(function(c) {
       var store_import_translation = 'stores.import.' + c + '_confirm';

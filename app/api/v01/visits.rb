@@ -229,6 +229,8 @@ class V01::Visits < Grape::API
           error! V01::Status.code_response(:code_304), 304
         end
 
+        authorize! :delete_by_tags, Visit
+
         if current_customer.visits.count == ids.size
           current_customer.delete_all_visits
         else
@@ -240,28 +242,38 @@ class V01::Visits < Grape::API
     end
 
     desc 'Delete multiple visits.',
-      detail: 'Deletes visits listed in ids. WARNING: if ids is omitted or empty, ALL visits of the customer are deleted (destinations are kept). Rejected if an optimizer job is running.',
+      detail: 'Deletes visits listed in ids, or all visits of destinations listed in destination_ids. WARNING: if both are omitted or empty, ALL visits of the customer are deleted (destinations are kept). Rejected if an optimizer job is running.',
       nickname: 'deleteVisits',
       success: V01::Status.success(:code_204),
       failure: V01::Status.failures
     params do
-      optional :ids, type: Array[String], desc: 'Ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
+      optional :ids, type: Array[String], desc: 'Visit ids separated by comma. You can specify ref (not containing comma) instead of id, in this case you have to add "ref:" before each ref, e.g. ref:ref1,ref:ref2,ref:ref3.', coerce_with: CoerceArrayString
+      optional :destination_ids, type: Array[String], desc: 'Destination ids separated by comma (numeric ids or ref:VALUE). Deletes every visit belonging to those destinations. Ignored when ids is present.', coerce_with: CoerceArrayString
     end
     delete do
       raise Exceptions::JobInProgressError if current_customer.blocking_job
 
       Visit.transaction do
         if params[:ids] && !params[:ids].empty?
+          authorize! :destroy, Visit
           visits = current_customer.visits.select { |visit|
             params[:ids].any? { |s| ParseIdsRefs.match(s, visit) }
           }
 
           if current_customer.visits.count == visits.count
+            authorize! :delete_all, Visit
             current_customer.delete_all_visits
           else
             visits.each(&:destroy)
           end
+        elsif params[:destination_ids] && !params[:destination_ids].empty?
+          authorize! :delete_all, Visit
+          destination_ids = current_customer.destinations.where(ParseIdsRefs.where_clause(params[:destination_ids])).pluck(:id)
+          error! V01::Status.code_response(:code_304), 304 if destination_ids.empty?
+
+          current_customer.delete_all_visits(destination_ids: destination_ids)
         else
+          authorize! :delete_all, Visit
           current_customer.delete_all_visits
         end
 

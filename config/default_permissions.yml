@@ -99,10 +99,25 @@ test:
           lock_stop: { visible: false, usable: false }
     spaces:
       plannings: { visible: true, usable: true }
-      destination: { visible: true, usable: true }
+      destination:
+        visible: true
+        usable: true
+        actions:
+          segments: [edit, delete_all_destinations, delete_all_visits]
+          segment_controls:
+            edit: { visible: true, usable: true }
+            delete_all_destinations: { visible: true, usable: true }
+            delete_all_visits: { visible: true, usable: true }
       vehicle_usages: { visible: true, usable: true }
       stores: { visible: true, usable: true }
-      tags: { visible: true, usable: true }
+      tags:
+        visible: true
+        usable: true
+        actions:
+          segments: [edit, delete_visits_by_tags]
+          segment_controls:
+            edit: { visible: true, usable: true }
+            delete_visits_by_tags: { visible: true, usable: true }
       customer: { visible: true, usable: true }
       deliverable_units: { visible: true, usable: true }
       custom_attributes: { visible: true, usable: true }

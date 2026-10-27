@@ -1098,6 +1098,11 @@ fr:
         space_actions:
           common:
             edit: Création, édition et suppression
+          destination:
+            delete_all_destinations: Supprimer toutes les destinations
+            delete_all_visits: Supprimer toutes les visites
+          tags:
+            delete_visits_by_tags: Supprimer les visites par catégories
           operations:
             sync: Publication et synchronisation depuis le plan
             transmit: Envoi aux livreurs et destinations
@@ -1558,6 +1563,10 @@ fr:
       clear_confirm: >-
         Êtes-vous sûr de vouloir supprimer toutes les adresses ? Vos tournées
         existantes seront perdues.
+      clear_visits: Supprimer toutes les visites
+      clear_visits_confirm: >-
+        Êtes-vous sûr de vouloir supprimer toutes les visites ? Les adresses
+        seront conservées, mais vos tournées existantes seront perdues.
     form:
       ref_help: Référence libre
       detail_help: 'Complément d''adresse non géocodable, ex. numéro d''escalier'
@@ -1608,6 +1617,13 @@ fr:
       replace_no_help: >-
         Une mise à jour des adresses existantes (référence client inchangée) est
         faite et les nouveaux sont ajoutés à l'application.
+      replace_visits: Supprimer anciennes visites
+      replace_visits_help: >-
+        Efface toutes les visites existantes avant l'import. Les adresses sont
+        conservées ; les anciennes tournées seront perdues.
+      replace_visits_confirm: >-
+        Le fait de supprimer les visites affectera vos anciens plans de
+        tournées. Les adresses seront conservées. Êtes-vous sûr ?
       replace_yes: Supprimer anciennes adresses
       replace_yes_help: >-
         Efface et remplace toutes les anciennes adresses par celles de l'import.
