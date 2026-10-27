@@ -342,15 +342,6 @@ fr:
           send_sms: Envoyer SMS aux livreurs
           success: Envoyé aux livreurs avec succès
           fail: Échec lors de l'envoi
-      deliver_clear:
-        singular:
-          action: Réinitialiser les statuts
-          success: Les statuts ont été réinitialisés avec succès
-          fail: Échec de la réinitialisation
-        plural:
-          action: Réinitialiser les statuts
-          success: Les statuts ont été réinitialisés avec succès
-          fail: Échec de la réinitialisation
       praxedo_send:
         singular:
           action: Envoyer à Praxedo
