@@ -233,9 +233,11 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
     get :edit, params: { id: @vehicle_usage_set }
     assert_response :success
     assert_valid response
-    assert_select '.input-group-addon', minimum: 1
-    assert_select '#vehicle_usage_set_rest_type_input .form-check', 2
-    assert_select 'input.form-check-input[name=?]', 'vehicle_usage_set[rest_mode]', 2
+    assert_select 'body.cartoway-v2', 1
+    assert_select '.vehicle-usage-sets-index', 1
+    assert_select 'turbo-frame#form_sidebar form#vehicle-usage-set-form-sidebar', 1
+    assert_select 'form#vehicle-usage-set-form-sidebar .input-group-text', minimum: 1
+    assert_select 'input[type=radio][name="vehicle_usage_set[rest_mode]"]', 2
     assert_select '#vehicle_usage_set_rest_duration:not([disabled])'
     assert_select '#vehicle_usage_set_rest_lapse:not([disabled])'
     assert_select '#vehicle_usage_set_rest_lapse' do |nodes|
@@ -332,6 +334,15 @@ class VehicleUsageSetsControllerTest < ActionController::TestCase
   end
 
   test 'should duplicate vehicle_usage_set' do
+    assert_difference('VehicleUsageSet.count') do
+      patch :duplicate, params: { vehicle_usage_set_id: @vehicle_usage_set }
+    end
+
+    assert_redirected_to vehicle_usage_sets_path
+  end
+
+  test 'legacy duplicate redirects to the new vehicle_usage_set edit' do
+    enable_layout_legacy!
     assert_difference('VehicleUsageSet.count') do
       patch :duplicate, params: { vehicle_usage_set_id: @vehicle_usage_set }
     end

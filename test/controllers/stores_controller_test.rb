@@ -309,7 +309,13 @@ class StoresControllerTest < ActionController::TestCase
     assert_select '.alert.alert-danger[data-error=true]', 1
   end
 
-  test 'should display application layout on devise scope' do
+  test 'should display v2 application layout by default' do
+    get :edit, params: { id: @store }
+    assert_template layout: 'v2/layouts/application'
+  end
+
+  test 'should display legacy application layout when preference is legacy' do
+    enable_layout_legacy!
     get :edit, params: { id: @store }
     assert_template layout: 'application'
   end
