@@ -374,6 +374,7 @@ class V01::Destinations < Grape::API
         end
 
         if current_customer.destinations_count == ids.size
+          authorize!(:delete_all, Destination)
           current_customer.delete_all_destinations
         else
           Destination.where(id: ids).destroy_all
@@ -413,9 +414,8 @@ class V01::Destinations < Grape::API
     end
     delete do
       Destination.transaction do
-        authorize!(:destroy, Destination)
-
         if params[:ids] && !params[:ids].empty?
+          authorize!(:destroy, Destination)
           parsed_ids = []
           parsed_refs = []
 
@@ -445,11 +445,13 @@ class V01::Destinations < Grape::API
           error! V01::Status.code_response(:code_304), 304 if matching_count.zero?
 
           if current_customer.destinations_count == matching_count
+            authorize!(:delete_all, Destination)
             current_customer.delete_all_destinations
           else
             current_customer.delete_destinations(destinations_query.pluck(:id))
           end
         else
+          authorize!(:delete_all, Destination)
           current_customer.delete_all_destinations
         end
 

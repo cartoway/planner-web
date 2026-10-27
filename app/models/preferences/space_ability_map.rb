@@ -82,6 +82,18 @@ module Preferences
         ability.cannot :toggle, ::VehicleUsage
       end
 
+      unless user.space_action_usable?('destination', 'delete_all_destinations')
+        ability.cannot :delete_all, ::Destination
+      end
+
+      unless user.space_action_usable?('destination', 'delete_all_visits')
+        ability.cannot :delete_all, ::Visit
+      end
+
+      unless user.space_action_usable?('tags', 'delete_visits_by_tags')
+        ability.cannot :delete_by_tags, ::Visit
+      end
+
       apply_vehicle_configuration_access_gate!(ability, user)
     end
     private_class_method :apply_edit_space_rules!

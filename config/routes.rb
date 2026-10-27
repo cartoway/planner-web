@@ -135,6 +135,8 @@ Rails.application.routes.draw do
     end
   end
 
+  # Before resources :destinations so /destinations/visits is not captured as :id.
+  delete 'destinations/visits' => 'destinations#clear_visits', as: :destinations_visits
   resources :destinations do
     collection do
       get :map
