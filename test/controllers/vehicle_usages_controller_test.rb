@@ -24,12 +24,20 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     get :edit, params: { id: @vehicle_usage }
     assert_response :success
     assert_valid response
-    assert_select '.input-group-addon', minimum: 1
-    assert_select '#vehicle_usage_rest_type_input .form-check', 0
-    assert_select 'input.form-check-input[name=?]', 'vehicle_usage[rest_mode]', 0
+    assert_select 'body.cartoway-v2', 1
+    assert_select '.vehicle-usage-sets-index', 1
+    assert_select 'turbo-frame#form_sidebar form#vehicle-usage-form-sidebar', 1
+    assert_select 'form#vehicle-usage-form-sidebar .input-group-text', minimum: 1
     assert_select 'input[type=hidden][name=?][value=window]', 'vehicle_usage[rest_mode]', 1
     assert_select '#vehicle_usage_rest_type_input', text: /#{Regexp.escape(I18n.t('vehicle_usages.form.rest_type.window'))}/
     assert_select '#vehicle_usage_rest_type_input', text: /#{Regexp.escape(I18n.t('vehicle_usages.form.rest_type.locked_to_set'))}/
+  end
+
+  test 'legacy edit keeps bootstrap 3 input addons' do
+    enable_layout_legacy!
+    get :edit, params: { id: @vehicle_usage }
+    assert_response :success
+    assert_select '.input-group-addon', minimum: 1
   end
 
   test 'v2 edit html renders the list with the form inlined so the url is shareable' do
@@ -242,6 +250,13 @@ class VehicleUsagesControllerTest < ActionController::TestCase
   end
 
   test 'should disable vehicle usage' do
+    patch :toggle, params: { id: @vehicle_usage.id }
+    assert !@vehicle_usage.reload.active
+    assert_redirected_to vehicle_usage_sets_path
+  end
+
+  test 'legacy disable redirects to the collapsed usage set anchor' do
+    enable_layout_legacy!
     patch :toggle, params: { id: @vehicle_usage.id }
     assert !@vehicle_usage.reload.active
     assert_redirected_to vehicle_usage_sets_path + "#collapseUsageSet#{vehicle_usage_sets(:vehicle_usage_set_one).id}"
