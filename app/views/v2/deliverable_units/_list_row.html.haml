@@ -1,4 +1,7 @@
 -# locals: deliverable_unit, show_mutate:, can_mutate:, can_destroy:
+- show_mutate = local_assigns.fetch(:show_mutate) { current_user_space_action_visible?(:deliverable_units, :edit) }
+- can_mutate = local_assigns.fetch(:can_mutate) { current_user_space_action_usable?(:deliverable_units, :edit) }
+- can_destroy = local_assigns.fetch(:can_destroy) { can_mutate }
 - overload = deliverable_unit.default_optimization_overload_multiplier
 - overload_yes = !(overload == 0 || overload == -1)
 -# Always emit the same meta slots so columns stay aligned across cards (like VUS nested list).

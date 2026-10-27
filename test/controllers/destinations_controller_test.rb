@@ -67,7 +67,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_response :not_found
   end
 
-  test 'index defaults to legacy destinations list' do
+  test 'index uses legacy destinations list when preference is legacy' do
     enable_destinations_index_legacy!
     get :index
     assert_response :success
@@ -75,11 +75,7 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select '#destinations-map-layout', 0
   end
 
-  test 'index uses v2 when user preference is set' do
-    enable_destinations_index_legacy!
-    refute users(:user_one).reload.layout_v2?
-
-    enable_destinations_index_v2!
+  test 'index uses v2 by default' do
     assert users(:user_one).reload.destinations_index_v2?
     assert users(:user_one).reload.layout_v2?
 
