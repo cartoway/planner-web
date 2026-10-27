@@ -6,7 +6,7 @@ class Deliver < DeviceBase
       device: 'deliver',
       label: 'Cartoway Deliver',
       label_small: 'Deliver',
-      route_operations: [:send, :clear],
+      route_operations: [:send],
       has_sync: true,
       has_operations: true,
       help: true,
@@ -29,16 +29,6 @@ class Deliver < DeviceBase
     else
       RouteMailer.send_driver_route(customer, I18n.locale, email, route).deliver_now
     end
-  end
-
-  def clear_route(customer, route)
-    # Field status lives on Operations when Deliver unlocks has_operations.
-    return true if customer.device.operations_enabled?
-
-    route.start_route_data.assign_attributes status: nil, eta: nil
-    route.stop_route_data.assign_attributes status: nil, eta: nil
-    route.stops.each { |s| s.assign_attributes status: nil, eta: nil }
-    true
   end
 
   def set_vehicle_pos(customer, vehicle, data)

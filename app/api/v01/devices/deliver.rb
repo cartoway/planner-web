@@ -32,14 +32,6 @@ class V01::Devices::Deliver < Grape::API
           )
           present Array(routes).map(&:reload), with: V01::Entities::DeviceRouteLastSentAt
         end
-
-        def clear_sent!(routes)
-          list = Array(routes)
-          list.each do |route|
-            route.update_columns(last_sent_at: nil, last_sent_to: nil, updated_at: Time.current)
-          end
-          present list, with: V01::Entities::DeviceRouteLastSentAt
-        end
       end
 
       before do
@@ -77,31 +69,6 @@ class V01::Devices::Deliver < Grape::API
       post '/send_multiple' do
         operation = find_operation!
         transmit_routes!(operation, planned_routes(operation))
-      end
-
-      desc 'Clear last_sent on one operation route.',
-        detail: 'Clears last_sent_at/last_sent_to on the OperationRoute (does not push GPS devices).',
-        nickname: 'deviceDeliverClear',
-        success: V01::Status.success(:code_200, V01::Entities::DeviceRouteLastSentAt),
-        failure: V01::Status.failures
-      params do
-        requires :operation_route_id, type: Integer, desc: 'OperationRoute ID'
-      end
-      delete '/clear' do
-        clear_sent!(find_operation_route!)
-      end
-
-      desc 'Clear last_sent on all planned routes of an operation.',
-        detail: 'Clears last_sent_at/last_sent_to on planned OperationRoutes.',
-        nickname: 'deviceDeliverClearMultiple',
-        success: V01::Status.success(:code_200, V01::Entities::DeviceRouteLastSentAt),
-        failure: V01::Status.failures
-      params do
-        requires :operation_id, type: Integer, desc: 'Operation ID'
-      end
-      delete '/clear_multiple' do
-        operation = find_operation!
-        clear_sent!(operation.operation_routes.planned.to_a)
       end
     end
   end

@@ -335,15 +335,6 @@ en:
           send_sms: Send SMS to drivers
           success: Sent to driver successfully
           fail: Failed to send
-      deliver_clear:
-        singular:
-          action: Reset status
-          success: Status have been successfully reset
-          fail: Reset failed
-        plural:
-          action: Reset status
-          success: Status have been successfully reset
-          fail: Reset failed
       praxedo_send:
         singular:
           action: Send to Praxedo

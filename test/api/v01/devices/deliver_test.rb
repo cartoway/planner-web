@@ -48,17 +48,11 @@ class V01::Devices::DeliverTest < ActiveSupport::TestCase
     assert_equal 'email', @operation_route.reload.last_sent_to
   end
 
-  test 'clear and clear_multiple reset last_sent on operation routes' do
-    @operation_route.update_columns(last_sent_at: Time.current, last_sent_to: 'email')
-
+  test 'clear and clear_multiple endpoints are gone' do
     delete api('devices/deliver/clear', { customer_id: @customer.id, operation_route_id: @operation_route.id })
-    assert_equal 200, last_response.status, last_response.body
-    assert_nil @operation_route.reload.last_sent_at
-    assert_nil @operation_route.last_sent_to
+    assert_equal 404, last_response.status
 
-    @operation_route.update_columns(last_sent_at: Time.current, last_sent_to: 'email')
     delete api('devices/deliver/clear_multiple', customer_id: @customer.id), operation_id: @operation.id
-    assert_equal 200, last_response.status, last_response.body
-    assert_nil @operation_route.reload.last_sent_at
+    assert_equal 404, last_response.status
   end
 end
