@@ -345,6 +345,144 @@ class PlanningsControllerOperationsTest < ActionController::TestCase
     assert_no_match(/data-route-changes=/, @response.body)
   end
 
+  test 'edit disables create and sync buttons when sync action is not usable' do
+    open_op = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      name: 'Matin',
+      date: Date.current,
+      route_ids: [routes(:route_one_one).id]
+    )
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations']['actions']['segment_controls']['sync'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "no-sync-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_select 'button.planning-execution-new[disabled]'
+    assert_select ".planning-execution-sync[data-operation-id=#{open_op.id}][disabled]"
+    assert_select '#planning-operation-modal', count: 0
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'edit shows empty execution section when operations space is disabled' do
+    open_op = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      name: 'Matin',
+      date: Date.current,
+      route_ids: [routes(:route_one_one).id]
+    )
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations'] = {
+      'visible' => true,
+      'usable' => false,
+      'actions' => spaces['operations']['actions']
+    }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "ops-disabled-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_select '#planning-execution.disabled', 1
+    assert_select 'button.planning-execution-new[disabled]', 1
+    assert_select '#planning-execution-body', count: 0
+    assert_select '.planning-execution-card', count: 0
+    assert_includes @response.body, I18n.t('execution.view_forbidden')
+    assert_select '#planning-operation-modal', count: 0
+    assert_select ".planning-execution-sync[data-operation-id=#{open_op.id}]", count: 0
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'edit disables create and send button when transmit action is not usable' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations']['actions']['segment_controls']['transmit'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "no-transmit-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_select '#execution-publish-transmit-submit[disabled][data-keep-disabled]'
+    assert_select '#execution-publish-submit:not([disabled])'
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'edit hides create and sync buttons when sync action is not visible' do
+    open_op = Operations::PublishFromPlanning.call(
+      planning: @planning,
+      name: 'Matin',
+      date: Date.current,
+      route_ids: [routes(:route_one_one).id]
+    )
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations']['actions']['segment_controls']['sync'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "hide-sync-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_select 'button.planning-execution-new', count: 0
+    assert_select ".planning-execution-sync[data-operation-id=#{open_op.id}]", count: 0
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'edit hides create and send button when transmit action is not visible' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations']['actions']['segment_controls']['transmit'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "hide-transmit-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :edit, params: { id: @planning.id }
+
+    assert_response :success
+    assert_select '#execution-publish-transmit-submit', count: 0
+    assert_select '#execution-publish-submit', 1
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
   test 'data_header js includes execution freshness for open operations' do
     fresh = Operations::PublishFromPlanning.call(
       planning: @planning,

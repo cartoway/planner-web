@@ -1,16 +1,19 @@
 -# Cards + pagination — updated by search/pagination/columns without replacing the toolbar.
-- can_destroy_destinations = current_user_space_action_usable?(:destination, :edit)
+- show_mutate_destinations = current_user_space_action_visible?(:destination, :edit)
+- can_mutate_destinations = current_user_space_action_usable?(:destination, :edit)
+- can_destroy_destinations = can_mutate_destinations
 - list_columns = @destinations_list_columns || []
 = turbo_frame_tag 'destinations_list_body' do
   #destination_box.destinations-list-scroll
     .v2-index-cards.px-2{data: { v2__index_selection_target: 'root' }}
-      .v2-index-cards-select-bar
-        %label.mb-0.d-flex.align-items-center.gap-2
-          %input{type: 'checkbox', disabled: !can_destroy_destinations, data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }, title: t('all.verb.toggle_selection')}
-          %span= t('all.verb.select_all')
+      - if show_mutate_destinations
+        .v2-index-cards-select-bar
+          %label.mb-0.d-flex.align-items-center.gap-2
+            %input{type: 'checkbox', disabled: !can_destroy_destinations, data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }, title: t('all.verb.toggle_selection')}
+            %span= t('all.verb.select_all')
       - if @destinations.any?
         - @destinations.each do |destination|
-          = render 'v2/destinations/list_row', destination: destination, can_destroy_destinations: can_destroy_destinations, list_columns: list_columns
+          = render 'v2/destinations/list_row', destination: destination, show_mutate_destinations: show_mutate_destinations, can_mutate_destinations: can_mutate_destinations, can_destroy_destinations: can_destroy_destinations, list_columns: list_columns
       - else
         %p.v2-index-card-empty.text-muted.text-center.mb-0= t 'api_web.v01.destinations.index.none_destinations', default: 'Aucune destination trouvée'
 

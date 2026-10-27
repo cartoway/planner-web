@@ -170,6 +170,176 @@ class OperationsControllerTest < ActionController::TestCase
     customer.update!(devices: previous_devices)
   end
 
+  test 'show and index disable export when export action is not usable' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations']['actions']['segment_controls']['export'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "no-export-ui-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_includes response.body, I18n.t('operations.show.export')
+    assert_select '.operation-header-actions-desktop .dropdown-toggle[disabled]', minimum: 1
+    assert_select %(a[href="#{export_operation_path(@operation, format: :xlsx)}"]), count: 0
+
+    get :index
+    assert_response :success
+    assert_includes response.body, I18n.t('operations.show.export')
+    assert_select '.v2-index-card-secondary .dropdown-toggle[disabled]', minimum: 1
+    assert_select %(a[href="#{export_operation_path(@operation, format: :xlsx)}"]), count: 0
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'index disables destroy when destroy action is not usable' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations']['actions']['segment_controls']['destroy'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "no-destroy-ui-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :index
+    assert_response :success
+    assert_includes response.body, I18n.t('all.verb.destroy')
+    assert_select '.v2-index-card-secondary button.btn-danger[disabled]', minimum: 1
+    assert_select "#operation-destroy-#{@operation.id}", count: 0
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'index disables planning button when plannings space is not usable' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['plannings'] = {
+      'visible' => true,
+      'usable' => false,
+      'actions' => spaces['plannings']['actions']
+    }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "plannings-disabled-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :index
+    assert_response :success
+    assert_select '.v2-index-card-secondary button.btn-secondary[disabled]', minimum: 1
+    assert_select %(a.btn[href="#{edit_planning_path(@operation.planning)}"]), count: 0
+
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_select '.operation-header-actions-desktop button.btn-light[disabled]', text: /#{Regexp.escape(I18n.t('operations.show.planning'))}/, minimum: 1
+    assert_select %(a.btn[href="#{edit_planning_path(@operation.planning)}"]), count: 0
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'index hides planning button when plannings space is not visible' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['plannings'] = {
+      'visible' => false,
+      'usable' => false,
+      'actions' => spaces['plannings']['actions']
+    }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "plannings-hidden-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :index
+    assert_response :success
+    assert_select %(a.btn[href="#{edit_planning_path(@operation.planning)}"]), count: 0
+    assert_select '.v2-index-card-secondary button.btn-secondary[disabled]', count: 0
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'show and index hide export when export action is not visible' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations']['actions']['segment_controls']['export'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "hide-export-ui-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_not_includes response.body, I18n.t('operations.show.export')
+
+    get :index
+    assert_response :success
+    assert_not_includes response.body, I18n.t('operations.show.export')
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'index hides destroy when destroy action is not visible' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations']['actions']['segment_controls']['destroy'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "hide-destroy-ui-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :index
+    assert_response :success
+    assert_select '.v2-index-card-secondary button.btn-danger', count: 0
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'show hides send buttons when transmit action is not visible' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations']['actions']['segment_controls']['transmit'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "hide-transmit-ui-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :show, params: { id: @operation.id }
+    assert_response :success
+    assert_not_includes response.body, I18n.t('operations.show.send_drivers')
+    assert_not_includes response.body, I18n.t('plannings.edit.deliver_send.singular.transmit')
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
+  end
+
   test 'show exposes mobile panes and detail sheet chrome' do
     get :show, params: { id: @operation.id }
     assert_response :success
@@ -436,6 +606,31 @@ class OperationsControllerTest < ActionController::TestCase
     assert_not_includes response.body, I18n.t('plannings.edit.deliver_send.singular.transmit')
     assert_not_includes response.body, I18n.t('operations.show.send_drivers')
     assert_not_includes response.body, "data-channel='email'"
+  end
+
+  test 'show disables send buttons when transmit action is not usable' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations']['actions']['segment_controls']['transmit'] = { 'visible' => true, 'usable' => false }
+    role = Role.create!(
+      reseller: @reseller,
+      name: "no-transmit-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user = users(:user_one)
+    user.update!(role_id: role.id)
+
+    get :show, params: { id: @operation.id }
+
+    assert_response :success
+    assert_includes response.body, I18n.t('operations.show.send_drivers')
+    assert_select '#operation-send-buttons button[disabled]', minimum: 1
+    assert_select '.operation-tour-tools .dropdown-toggle[disabled]', minimum: 1
+    assert_select '#operation-send-drivers', count: 0
+    assert_select '#operation-route-send', count: 0
+  ensure
+    user&.update!(role_id: nil)
+    role&.destroy
   end
 
   test 'transmit emails the assigned drivers' do

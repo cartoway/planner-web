@@ -1080,7 +1080,7 @@ fr:
           Définit l’accès aux espaces, les droits par espace et les barres d’outils pour les utilisateurs auxquels ce rôle est assigné.
         spaces_title: Espaces (navigation)
         spaces_help: >-
-          La colonne de gauche accorde l’accès complet à l’espace. La colonne centrale l’affiche dans la navigation en consultation seule. La colonne de droite le masque.
+          La colonne de gauche accorde l’accès complet à l’espace. La colonne centrale l’affiche dans la navigation sans permettre l’accès. La colonne de droite le masque.
         space_actions_section_title: Permissions par espace
         space_actions_help: >-
           Pour chaque espace actif, la colonne de gauche autorise les actions listées. La colonne centrale les limite à la consultation lorsque c’est pertinent. La colonne de droite les masque.
@@ -4095,10 +4095,13 @@ fr:
         toggle_title: Colonnes
         reset_defaults: Valeurs par défaut
         hint: 'Ouvrez le menu, tapez pour filtrer, cochez des cases (max 5), ou réinitialisez les valeurs par défaut.'
+  spaces:
+    view_forbidden: Vous n’avez pas le droit de visualiser cet espace.
   execution:
     title: Opérations
     new: Nouvelle
     empty: Aucune opération pour ce planning
+    view_forbidden: Vous n’avez pas le droit de visualiser les opérations en cours.
     historized:
       one: '%{count} opération historisée'
       other: '%{count} opérations historisées'

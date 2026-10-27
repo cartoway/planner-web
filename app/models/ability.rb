@@ -20,8 +20,7 @@ class Ability
   include CanCan::Ability
   def initialize(user = nil)
     # Default CanCan aliases map :edit -> :update, so `cannot :update` blocks GET edit.
-    # Space permissions need GET edit (planning map, etc.) when a space is visible but not usable,
-    # while PATCH update stays denied via SpaceAbilityMap. Map :edit -> :read instead.
+    # Map :edit -> :read so space action denies on :update do not block GET edit (planning map, etc.).
     clear_aliased_actions
     alias_action :index, :show, to: :read
     alias_action :new, to: :create

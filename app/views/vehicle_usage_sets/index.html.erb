@@ -1,9 +1,11 @@
 <% javascript 'vehicle_usage_set' %>
 
 <% invisible_class = current_user.customer.vehicle_usage_sets.size > 1 ? '' : 'invisible' %>
-<% can_destroy_vehicle_config = current_user_space_action_usable?(:vehicle_usages, :edit) %>
-<% can_update_vehicle_usage = current_user_space_action_usable?(:vehicle_usages, :edit) %>
-<% can_create_vehicle_usage = current_user_space_action_usable?(:vehicle_usages, :edit) %>
+<% show_mutate_vehicle_usage = current_user_space_action_visible?(:vehicle_usages, :edit) %>
+<% can_mutate_vehicle_usage = current_user_space_action_usable?(:vehicle_usages, :edit) %>
+<% can_destroy_vehicle_config = can_mutate_vehicle_usage %>
+<% can_update_vehicle_usage = can_mutate_vehicle_usage %>
+<% can_create_vehicle_usage = can_mutate_vehicle_usage %>
 <% can_view_vehicle_usage = current_user_space_visible?(:vehicle_usages) %>
 
 <% content_for :title, t('.title') %>
@@ -20,8 +22,12 @@
 
 <div class="row row-top">
   <div class="col-md-6">
-    <% if current_user.customer.default_max_vehicle_usage_sets > 1 %>
-      <%= link_to new_vehicle_usage_set_path, disabled: current_user.customer.too_many_vehicle_usage_sets? || !can_create_vehicle_usage, class: 'btn btn-primary btn-sm' do %><i class="fa fa-plus fa-fw"></i> <%= t '.new' %><% end %>
+    <% if current_user.customer.default_max_vehicle_usage_sets > 1 && show_mutate_vehicle_usage %>
+      <% if current_user.customer.too_many_vehicle_usage_sets? || !can_create_vehicle_usage %>
+        <button type="button" class="btn btn-primary btn-sm" disabled><i class="fa fa-plus fa-fw"></i> <%= t '.new' %></button>
+      <% else %>
+        <%= link_to new_vehicle_usage_set_path, class: 'btn btn-primary btn-sm' do %><i class="fa fa-plus fa-fw"></i> <%= t '.new' %><% end %>
+      <% end %>
     <% end %>
   </div>
   <div class="col-md-6">
@@ -37,7 +43,7 @@
 <table id="accordion-vehicle-usage-sets" class="table table-striped table-hover">
   <thead>
     <tr>
-      <% if current_user.customer.default_max_vehicle_usage_sets > 1 %>
+      <% if current_user.customer.default_max_vehicle_usage_sets > 1 && show_mutate_vehicle_usage %>
         <th><button id="add" type="button" class="btn btn-default btn-xs <%= invisible_class %>" title="<%= t 'all.verb.toggle_selection' %>" <%= 'disabled' unless can_destroy_vehicle_config %>><i class="fa fa-check fa-fw"></i></button></th>
       <% end %>
       <th><%= t 'activerecord.attributes.vehicle_usage_set.name' %></th>
@@ -50,7 +56,7 @@
   <tbody class="accordion-group">
     <% @vehicle_usage_sets.each_with_index do |_v, i| vehicle_usage_set = @vehicle_usage_sets[i] %>
       <tr class="accordion-heading">
-        <% if current_user.customer.default_max_vehicle_usage_sets > 1 %>
+        <% if current_user.customer.default_max_vehicle_usage_sets > 1 && show_mutate_vehicle_usage %>
           <td><%= check_box_tag("vehicle_usage_sets[#{vehicle_usage_set.id}]", '1', false, class: "#{invisible_class} deleter-check", disabled: !can_destroy_vehicle_config, 'data-toggle' => 'disable-multiple-actions', 'data-target' => '#multiple-actions-vehicle-usage-sets') %></td>
         <% end %>
         <td>
@@ -74,17 +80,27 @@
 
         </td>
         <td class="text-right">
-          <% if current_user.customer.default_max_vehicle_usage_sets > 1 %>
-            <%= link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), disabled: current_user.customer.too_many_vehicle_usage_sets? || !current_user_space_action_usable?(:vehicle_usages, :edit), :class => 'btn btn-default btn-sm', method: :patch, title: t('all.verb.duplicate') do %><i class="fa fa-copy fa-fw"></i><% end %>
+          <% if show_mutate_vehicle_usage && current_user.customer.default_max_vehicle_usage_sets > 1 %>
+            <% if can_update_vehicle_usage && !current_user.customer.too_many_vehicle_usage_sets? %>
+              <%= link_to vehicle_usage_set_duplicate_path(vehicle_usage_set), :class => 'btn btn-default btn-sm', method: :patch, title: t('all.verb.duplicate') do %><i class="fa fa-copy fa-fw"></i><% end %>
+            <% else %>
+              <button type="button" class="btn btn-default btn-sm" title="<%= t('all.verb.duplicate') %>" disabled><i class="fa fa-copy fa-fw"></i></button>
+            <% end %>
           <% end %>
 
           <%= link_to vehicle_usage_set_path(vehicle_usage_set, format: :excel), :class => 'btn btn-default btn-sm' do %>
             <i class="fa fa-download fa-fw"></i>
           <% end %>
 
-          <%= link_to edit_vehicle_usage_set_path(vehicle_usage_set, back: true), :class => 'btn btn-primary btn-sm' ,title: t('all.verb.edit') do %><i class="fa fa-edit fa-fw"></i><% end %>
+          <% if show_mutate_vehicle_usage %>
+            <% if can_update_vehicle_usage %>
+              <%= link_to edit_vehicle_usage_set_path(vehicle_usage_set, back: true), :class => 'btn btn-primary btn-sm' ,title: t('all.verb.edit') do %><i class="fa fa-edit fa-fw"></i><% end %>
+            <% else %>
+              <button type="button" class="btn btn-primary btn-sm" title="<%= t('all.verb.edit') %>" disabled><i class="fa fa-edit fa-fw"></i></button>
+            <% end %>
+          <% end %>
 
-          <% if @vehicle_usage_sets.count > 1 %>
+          <% if show_mutate_vehicle_usage && @vehicle_usage_sets.count > 1 %>
             <% if can_destroy_vehicle_config %>
               <%= link_to vehicle_usage_set, class: 'btn btn-danger btn-sm', method: :delete, data: { confirm: t('all.verb.destroy_confirm') }, title: t('all.verb.destroy') do %>
                 <i class="fa fa-trash fa-fw"></i>
@@ -98,11 +114,12 @@
         </td>
       </tr>
       <tr class="vehicle_usages">
-        <td colspan="<%= current_user.customer.default_max_vehicle_usage_sets > 1 ? 6 : 5 %>">
+        <td colspan="<%= current_user.customer.default_max_vehicle_usage_sets > 1 && show_mutate_vehicle_usage ? 6 : 5 %>">
           <div id="collapseUsageSet<%= vehicle_usage_set.id %>" class="accordion-body collapse<% if @vehicle_usage_sets.count == 1 %> in<% end %>">
             <div class="accordion-inner">
               <%= render 'vehicle_usages/index',
                          vehicle_usage_set: vehicle_usage_set,
+                         show_mutate_vehicle_usage: show_mutate_vehicle_usage,
                          can_update_vehicle_usage: can_update_vehicle_usage,
                          can_view_vehicle_usage: can_view_vehicle_usage %>
             </div>
@@ -113,7 +130,7 @@
   </tbody>
 </table>
 
-<% if !@vehicle_usage_sets.empty? && current_user.customer.default_max_vehicle_usage_sets > 1 %>
+<% if show_mutate_vehicle_usage && !@vehicle_usage_sets.empty? && current_user.customer.default_max_vehicle_usage_sets > 1 %>
 <div id="multiple-actions-vehicle-usage-sets" class="row">
   <div class="col-md-12">
     <%= button_tag type: :submit, class: "btn btn-danger btn-sm btn-destroy #{invisible_class}", disabled: !can_destroy_vehicle_config, data: { confirm: t('all.verb.destroy_confirm') } do %><i class="fa fa-trash fa-fw"></i> <%= t('all.verb.destroy_selection') %><% end %>

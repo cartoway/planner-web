@@ -1,4 +1,5 @@
--# locals: vehicle_usage, vehicle_usage_set, can_update_vehicle_usage, can_view_vehicle_usage
+-# locals: vehicle_usage, vehicle_usage_set, show_mutate_vehicle_usage:, can_update_vehicle_usage, can_view_vehicle_usage
+- show_mutate_vehicle_usage = local_assigns.fetch(:show_mutate_vehicle_usage) { can_update_vehicle_usage }
 - toggle_icon = vehicle_usage.active ? 'fa-power-off' : 'fa-circle-notch'
 - toggle_label = vehicle_usage.active ? t('vehicle_usages.index.disable') : t('vehicle_usages.index.enable')
 - router_html = vehicle_usage_router(vehicle_usage)
@@ -46,10 +47,15 @@
             %span.v2-index-card-meta-label= "#{t('vehicle_usages.index.devices')} :"
             %span.v2-index-card-meta-value= devices_html
   .v2-index-card-actions
-    - if vehicle_usage.active && can_view_vehicle_usage
-      = link_to edit_vehicle_usage_path(vehicle_usage), class: 'btn btn-primary', title: t('all.verb.edit'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
-        %i.fa.fa-pencil.fa-fw
-        %span.vehicle-usage-btn-label= t('all.verb.edit')
+    - if vehicle_usage.active && can_view_vehicle_usage && show_mutate_vehicle_usage
+      - if can_update_vehicle_usage
+        = link_to edit_vehicle_usage_path(vehicle_usage), class: 'btn btn-primary', title: t('all.verb.edit'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+          %i.fa.fa-pencil.fa-fw
+          %span.vehicle-usage-btn-label= t('all.verb.edit')
+      - else
+        %button.btn.btn-primary{type: 'button', disabled: true, title: t('all.verb.edit')}
+          %i.fa.fa-pencil.fa-fw
+          %span.vehicle-usage-btn-label= t('all.verb.edit')
     - if can_update_vehicle_usage
       = link_to [:toggle, vehicle_usage], class: 'btn btn-light', title: toggle_label, data: { turbo_method: :patch, turbo_confirm: (t('vehicle_usages.index.disable_confirm') if vehicle_usage.active) } do
         %i.fa.fa-fw{class: toggle_icon}

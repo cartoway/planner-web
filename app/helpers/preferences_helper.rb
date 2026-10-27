@@ -108,14 +108,27 @@ module PreferencesHelper
     current_user.space_usable?(resource)
   end
 
+  # Space visible but not usable (admin "disabled" tier) → show menu entry disabled.
+  def current_user_space_disabled?(resource)
+    current_user_space_visible?(resource) && !current_user_space_usable?(resource)
+  end
+
+  def current_user_space_action_visible?(resource, action_id)
+    return true unless user_signed_in? && current_user.respond_to?(:space_action_visible?)
+
+    current_user.space_action_visible?(resource, action_id)
+  end
+
   def current_user_space_action_usable?(resource, action_id)
     return true unless user_signed_in? && current_user.respond_to?(:space_action_usable?)
 
     current_user.space_action_usable?(resource, action_id)
   end
 
+  # Action visible but not usable (admin "disabled" tier) → show control disabled.
+  # Action not visible (admin "hidden" tier) → omit control.
   def current_user_space_action_disabled?(resource, action_id)
-    current_user_space_visible?(resource) && !current_user_space_action_usable?(resource, action_id)
+    current_user_space_action_visible?(resource, action_id) && !current_user_space_action_usable?(resource, action_id)
   end
 
   # HTML form submit (create or update) for spaces with an :edit action.

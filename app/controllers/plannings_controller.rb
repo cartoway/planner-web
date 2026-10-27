@@ -386,7 +386,7 @@ class PlanningsController < ApplicationController
 
   def data_header
     json_data = JSON.parse(render_to_string(template: 'plannings/head_data.json.jbuilder'), symbolize_names: true)
-    if current_user.space_visible?(:operations) && @planning.customer.device.operations_enabled?
+    if current_user.space_usable?(:operations) && @planning.customer.device.operations_enabled?
       json_data[:execution_operations] =
         @planning.operations.open_status
                  .select(:id, :structure_fingerprint, :custom_attributes)

@@ -73,6 +73,25 @@ class PreferencesHelperTest < ActionView::TestCase
 
     assert current_user_space_visible?(:operations)
     assert_not current_user_space_usable?(:operations)
+    assert current_user_space_disabled?(:operations)
+    assert current_user_space_action_visible?(:operations, :export)
     assert current_user_space_action_disabled?(:operations, :export)
+  end
+
+  test 'space action helpers hide when action is not visible' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['operations']['actions']['segment_controls']['export'] = { 'visible' => false, 'usable' => false }
+    role = Role.create!(
+      reseller: @current_user.customer.reseller,
+      name: "helper-export-hidden-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    @current_user.update!(role_id: role.id)
+    @current_user.reload
+
+    assert_not current_user_space_action_visible?(:operations, :export)
+    assert_not current_user_space_action_usable?(:operations, :export)
+    assert_not current_user_space_action_disabled?(:operations, :export)
   end
 end

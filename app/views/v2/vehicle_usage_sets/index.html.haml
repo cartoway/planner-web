@@ -3,9 +3,11 @@
   = render "v2/layouts/form_sidebar_placeholder"
 - content_for :title, t('vehicle_usage_sets.index.title')
 - invisible_class = current_user.customer.vehicle_usage_sets.size > 1 ? '' : 'invisible'
-- can_destroy_vehicle_config = current_user_space_action_usable?(:vehicle_usages, :edit)
-- can_update_vehicle_usage = current_user_space_action_usable?(:vehicle_usages, :edit)
-- can_create_vehicle_usage = current_user_space_action_usable?(:vehicle_usages, :edit)
+- show_mutate_vehicle_usage = current_user_space_action_visible?(:vehicle_usages, :edit)
+- can_mutate_vehicle_usage = current_user_space_action_usable?(:vehicle_usages, :edit)
+- can_destroy_vehicle_config = can_mutate_vehicle_usage
+- can_update_vehicle_usage = can_mutate_vehicle_usage
+- can_create_vehicle_usage = can_mutate_vehicle_usage
 - can_view_vehicle_usage = current_user_space_visible?(:vehicle_usages)
 - show_set_checkbox = current_user.customer.default_max_vehicle_usage_sets > 1
 - sets_count = @vehicle_usage_sets.count
@@ -18,23 +20,23 @@
     .d-flex.justify-content-between.align-items-center.mb-3.flex-wrap.gap-2
       .d-flex.gap-2.align-items-center.flex-wrap
         %h1.mb-0.mt-0= t('vehicle_usage_sets.index.title')
-        - if show_set_checkbox
-          - if current_user.customer.too_many_vehicle_usage_sets?
+        - if show_set_checkbox && show_mutate_vehicle_usage
+          - if current_user.customer.too_many_vehicle_usage_sets? || !can_create_vehicle_usage
             %button.btn.btn-primary{
               type: 'button',
-              disabled: !can_create_vehicle_usage,
+              disabled: true,
               title: t('vehicle_usage_sets.index.new'),
-              data: {
+              data: (current_user.customer.too_many_vehicle_usage_sets? && can_create_vehicle_usage ? {
                 controller: 'v2--toast',
                 action: 'click->v2--toast#notify',
                 v2__toast_message_param: t('vehicle_usage_sets.index.over_max_limit', limit: current_user.customer.default_max_vehicle_usage_sets),
                 v2__toast_class_name_param: 'alert-warning'
-              }
+              } : {})
             }
               %i.fa.fa-plus.fa-fw
               %span.vehicle-usage-btn-label= t 'vehicle_usage_sets.index.new'
           - else
-            = link_to new_vehicle_usage_set_path, class: 'btn btn-primary', disabled: !can_create_vehicle_usage, title: t('vehicle_usage_sets.index.new'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+            = link_to new_vehicle_usage_set_path, class: 'btn btn-primary', title: t('vehicle_usage_sets.index.new'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
               %i.fa.fa-plus.fa-fw
               %span.vehicle-usage-btn-label= t 'vehicle_usage_sets.index.new'
           %button.btn.btn-outline-secondary{type: 'button', class: invisible_class, title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
@@ -55,11 +57,11 @@
       = render 'v2/vehicle_usage_sets/counts', sets_count: sets_count, vehicles_count: vehicles_count
   = form_tag vehicle_usage_sets_path, method: :delete, id: 'vehicle-usage-sets-destroy' do
     #accordion-vehicle-usage-sets.v2-index-cards.vehicle-usage-sets-cards.px-3.pb-3{data: { v2__index_selection_target: 'root' }}
-      - if show_set_checkbox
+      - if show_set_checkbox && show_mutate_vehicle_usage
         .v2-index-cards-select-bar
           %label.mb-0.d-flex.align-items-center.gap-2
             %input{type: 'checkbox', class: invisible_class, disabled: !can_destroy_vehicle_config, title: t('all.verb.toggle_selection'), data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }}
             %span= t('all.verb.select_all')
       - @vehicle_usage_sets.each_with_index do |vehicle_usage_set, i|
         - expanded = @expanded_vehicle_usage_set_id ? vehicle_usage_set.id == @expanded_vehicle_usage_set_id : i.zero?
-        = render 'v2/vehicle_usage_sets/set_block', vehicle_usage_set: vehicle_usage_set, index: i, expanded: expanded, show_set_checkbox: show_set_checkbox, invisible_class: invisible_class, can_destroy_vehicle_config: can_destroy_vehicle_config, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage, sets_count: sets_count
+        = render 'v2/vehicle_usage_sets/set_block', vehicle_usage_set: vehicle_usage_set, index: i, expanded: expanded, show_set_checkbox: show_set_checkbox, invisible_class: invisible_class, show_mutate_vehicle_usage: show_mutate_vehicle_usage, can_destroy_vehicle_config: can_destroy_vehicle_config, can_update_vehicle_usage: can_update_vehicle_usage, can_view_vehicle_usage: can_view_vehicle_usage, sets_count: sets_count
