@@ -3308,7 +3308,7 @@ en:
         label: Rest type
         window: Fixed rest
         regulatory: Cumulative rest
-        locked_to_set: Rest type can only be changed from the vehicle configuration.
+        locked_to_set: Cumulative rest can only be configured from the vehicle configuration.
         duration: Rest duration
         duration_placeholder: '0:45'
         lapse: 'Every'
@@ -3471,6 +3471,7 @@ en:
       none_column: None found column
       missing_name: '"name" of the default configuration missing'
       missing_time_window_start_end: begin or end time of the default configuration missing
+      regulatory_rest_must_be_identical: for cumulative rests, all configurations must be identical
       invalid_index: vehicle order must be a non-negative integer
       invalid_numeric_value: 'Invalid numeric value "%{value}".'
       check_custom_columns: Check your columns definition.
