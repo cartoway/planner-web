@@ -1,5 +1,6 @@
 <% require "#{Rails.application.root}/lib/localized_values.rb" %>
 <% options= {layout: :horizontal, html: { class: 'clear-passwords number-to-percentage form-horizontal'} } %>
+<% extended_class = "customer-form-extended#{' d-none' if current_user.admin?}" %>
 <%= bootstrap_form_for @customer, options do |f| %>
 
   <%= render 'shared/error_messages', model: @customer %>
@@ -41,6 +42,7 @@
 
   <%= render partial: 'profile_router_inputs', locals: { f: f } %>
 
+  <div class="<%= extended_class %>">
   <div id="router_options_traffic_input" class="<%= @customer.router.try(&:traffic?) ? '' : 'router-option-disabled' %>">
     <label class="col-md-offset-2 col-md-8" for="customer_router_options_traffic">
       <%= t('activerecord.attributes.customer.router_options_traffic') %>
@@ -287,6 +289,7 @@
 
   <%= f.text_field :visit_duration, {help: t('.visit_duration_help'), placeholder: t('all.unit.hour_minute_second'), value: @customer.visit_duration_time_with_seconds, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} %>
   <%= f.text_field :store_reload_duration, {help: t('.store_reload_duration_help'), placeholder: t('all.unit.hour_minute_second'), value: @customer.store_reload_duration_time_with_seconds, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw')} %>
+  </div>
 
   <%= f.text_field :default_country, required: true %>
   <%= render partial: 'shared/check_box', locals: { form: f, field: :with_state, label: t('activerecord.attributes.customer.with_state') } %>
@@ -402,48 +405,50 @@
     <%= f.text_field :vehicle_max_upper_bound, { help: t(".vehicle_max_upper_bound"), placeholder: t('all.unit.hour_minute'), value: @customer.vehicle_max_upper_bound_time || 0, append: content_tag('i', '', class: 'fa fa-repeat fa-fw')} %>
   </div>
 
-  <legend class="scheduler-border col-md-8"><%= t 'customers.form.map_markers.legend' %></legend>
-  <%= render partial: 'map_marker_defaults', locals: { model_class: :destination, grouped_icons: @destination_grouped_icons, default_icon: Planner::Application.config.destination_icon_default, default_size: Planner::Application.config.destination_icon_size_default, addon_icon: 'fa-location-pin' } %>
-  <%= render partial: 'map_marker_defaults', locals: { model_class: :store, grouped_icons: @store_grouped_icons, default_icon: Planner::Application.config.store_icon_default, default_size: Planner::Application.config.store_icon_size_default, addon_icon: 'fa-store' } %>
-  <%= render partial: 'map_marker_defaults', locals: { model_class: :rest, grouped_icons: @rest_grouped_icons, default_icon: Planner::Application.config.rest_icon_default, default_size: Planner::Application.config.rest_icon_size_default, addon_icon: 'fa-mug-saucer' } %>
+  <div class="<%= extended_class %>">
+    <legend class="scheduler-border col-md-8"><%= t 'customers.form.map_markers.legend' %></legend>
+    <%= render partial: 'map_marker_defaults', locals: { model_class: :destination, grouped_icons: @destination_grouped_icons, default_icon: Planner::Application.config.destination_icon_default, default_size: Planner::Application.config.destination_icon_size_default, addon_icon: 'fa-location-pin' } %>
+    <%= render partial: 'map_marker_defaults', locals: { model_class: :store, grouped_icons: @store_grouped_icons, default_icon: Planner::Application.config.store_icon_default, default_size: Planner::Application.config.store_icon_size_default, addon_icon: 'fa-store' } %>
+    <%= render partial: 'map_marker_defaults', locals: { model_class: :rest, grouped_icons: @rest_grouped_icons, default_icon: Planner::Application.config.rest_icon_default, default_size: Planner::Application.config.rest_icon_size_default, addon_icon: 'fa-mug-saucer' } %>
 
-  <legend class="scheduler-border col-md-8">
-    <%= t '.company.title' %>
-  </legend>
-  <div class="row">
-    <div class="col-md-offset-2 col-md-8">
-      <p class="help-block"><%= t('.company.help') %></p>
-    </div>
-  </div>
-  <%= f.text_field :company_name %>
-  <%= f.text_field :company_street, help: t('web.form.helpers.street') %>
-  <%= f.text_field :company_detail, help: t('destinations.form.detail_help') %>
-  <div id="customer_company_city_input" class="mb-3 row">
-    <label class="sr-only" for="customer_company_postalcode"><%= t('activerecord.attributes.customer.company_postalcode') %></label>
-    <label class="sr-only" for="customer_company_city"><%= t('activerecord.attributes.customer.company_city') %></label>
-    <label class="col-md-offset-2 col-md-8 field">
-      <%= t('activerecord.attributes.customer.company_postalcode') %>
-      / <%= t('activerecord.attributes.customer.company_city') %>
-    </label>
-    <div class="col-md-offset-2 col-md-8 field">
-      <div class="input-group">
-        <%= text_field :customer, :company_postalcode, maxlength: 17, class: 'form-control width_1_2' %>
-        <%= text_field :customer, :company_city, class: 'form-control width_1_2' %>
-        <span class="input-group-addon">
-          <i class="fa fa-map fa-fw"></i>
-        </span>
-      </div>
-    </div>
-  </div>
-  <%= f.text_field :company_phone, input_group: content_tag('i', '', class: 'fa fa-phone fa-fw') %>
-  <%= f.file_field :company_logo, help: t('.company.logo_help') %>
-  <% if @customer.company_logo.url %>
-    <div class="row mb-3">
+    <legend class="scheduler-border col-md-8">
+      <%= t '.company.title' %>
+    </legend>
+    <div class="row">
       <div class="col-md-offset-2 col-md-8">
-        <%= image_tag @customer.company_logo.url, alt: @customer.company_name.presence || @customer.name, style: 'max-height: 64px; max-width: 200px;' %>
+        <p class="help-block"><%= t('.company.help') %></p>
       </div>
     </div>
-  <% end %>
+    <%= f.text_field :company_name %>
+    <%= f.text_field :company_street, help: t('web.form.helpers.street') %>
+    <%= f.text_field :company_detail, help: t('destinations.form.detail_help') %>
+    <div id="customer_company_city_input" class="mb-3 row">
+      <label class="sr-only" for="customer_company_postalcode"><%= t('activerecord.attributes.customer.company_postalcode') %></label>
+      <label class="sr-only" for="customer_company_city"><%= t('activerecord.attributes.customer.company_city') %></label>
+      <label class="col-md-offset-2 col-md-8 field">
+        <%= t('activerecord.attributes.customer.company_postalcode') %>
+        / <%= t('activerecord.attributes.customer.company_city') %>
+      </label>
+      <div class="col-md-offset-2 col-md-8 field">
+        <div class="input-group">
+          <%= text_field :customer, :company_postalcode, maxlength: 17, class: 'form-control width_1_2' %>
+          <%= text_field :customer, :company_city, class: 'form-control width_1_2' %>
+          <span class="input-group-addon">
+            <i class="fa fa-map fa-fw"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+    <%= f.text_field :company_phone, input_group: content_tag('i', '', class: 'fa fa-phone fa-fw') %>
+    <%= f.file_field :company_logo, help: t('.company.logo_help') %>
+    <% if @customer.company_logo.url %>
+      <div class="row mb-3">
+        <div class="col-md-offset-2 col-md-8">
+          <%= image_tag @customer.company_logo.url, alt: @customer.company_name.presence || @customer.name, style: 'max-height: 64px; max-width: 200px;' %>
+        </div>
+      </div>
+    <% end %>
+  </div>
 
   <legend class="scheduler-border col-md-8">
     <%= t '.outputs' %>
@@ -460,7 +465,7 @@
   <% end %>
 
   <% if !@customer.device.enabled_definitions.empty? %>
-    <div id="devices_settings">
+    <div id="devices_settings" class="<%= extended_class %>">
       <% @customer.device.enabled_definitions.each do |key, definition| %>
         <% if definition[:forms].key?(:settings) %>
           <div id="<%= key %>_container" class="panel panel-default device">
@@ -532,7 +537,7 @@
     </div>
   <% end %>
 
-  <div class="panel panel-default accordion col-md-12 p0">
+  <div class="panel panel-default accordion col-md-12 p0 <%= extended_class %>">
     <div class="panel-heading">
       <h2 class="panel-title">
         <a class="accordion-toggle collapsed" data-toggle="collapse" data-parent="#accordion" href="#collapsePrint">

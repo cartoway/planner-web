@@ -5,7 +5,7 @@
 <h1><%= t '.title' %></h1>
 <div>
   <% if current_user.admin? %>
-    <ul class="nav nav-tabs" role="tablist" style="margin-bottom:30px;">
+    <ul class="nav nav-tabs customer-edit-tabs" role="tablist">
       <li role="general" class="active">
         <a href="#general" aria-controls="home" role="tab" data-toggle="tab">
           <i class="fa fa-cogs" aria-hidden="true"></i>
@@ -23,6 +23,9 @@
           <i class="fa fa-truck-field" aria-hidden="true"></i>
           <%= t '.vehicles.list' %>
         </a>
+      </li>
+      <li class="customer-form-extended-toggle-item">
+        <%= render 'extended_options_toggle' %>
       </li>
     </ul>
   <% end %>
