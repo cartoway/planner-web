@@ -400,7 +400,7 @@ body[data-controller*='-v2'] {
   .operation-stat {
     border: 1px solid var(--status-line);
     border-radius: .6rem;
-    padding: .55rem .7rem;
+    padding: .3rem .7rem;
     display: flex;
     gap: .55rem;
     align-items: center;
@@ -423,6 +423,11 @@ body[data-controller*='-v2'] {
     span {
       color: var(--status-muted);
       font-size: .75rem;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      overflow: hidden;
     }
 
     &.is-late i,

@@ -3,14 +3,16 @@
 - visible = units.select { |unit| unit[:delivery].to_f.positive? || unit[:pickup].to_f.positive? }
 - visible.each do |unit|
   - if unit[:delivery].to_f.positive?
+    - delivery_label = "#{unit[:label]} · #{t('operations.show.deliveries')}"
     .operation-stat{data: { quantity_unit: unit[:id], quantity_kind: 'delivery' }}
       %i.fa.fa-fw{class: unit[:icon]}
       %div
         %strong{data: { quantity_value: true }}= "#{fmt.call(unit[:delivered])} / #{fmt.call(unit[:delivery])}"
-        %span= "#{unit[:label]} · #{t('operations.show.deliveries')}"
+        %span{title: delivery_label}= delivery_label
   - if unit[:pickup].to_f.positive?
+    - pickup_label = "#{unit[:label]} · #{t('operations.show.pickups')}"
     .operation-stat{data: { quantity_unit: unit[:id], quantity_kind: 'pickup' }}
       %i.fa.fa-fw{class: unit[:icon]}
       %div
         %strong{data: { quantity_value: true }}= "#{fmt.call(unit[:collected])} / #{fmt.call(unit[:pickup])}"
-        %span= "#{unit[:label]} · #{t('operations.show.pickups')}"
+        %span{title: pickup_label}= pickup_label
