@@ -36,6 +36,9 @@ class OperationsControllerTest < ActionController::TestCase
     assert_select '#count.primary.data-info'
     assert_includes response.body, I18n.t('execution.open_tracking')
     assert_includes response.body, 'v2-list-filters'
+    assert_includes response.body, 'v2--debounced-input'
+    assert_includes response.body, 'data-v2--debounced-input-preserve-focus-value="true"'
+    assert_includes response.body, 'data-v2--debounced-input-delay-value="500"'
     assert_includes response.body, 'typed-confirm'
     assert_includes response.body, 'btn-danger'
     assert_not_includes response.body, 'operations-index-table'

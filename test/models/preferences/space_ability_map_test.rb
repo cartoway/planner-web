@@ -108,4 +108,16 @@ class PreferencesSpaceAbilityMapTest < ActiveSupport::TestCase
     ability = Ability.new(@user)
     assert ability.cannot?(:export, Operation)
   end
+
+  test 'tags without delete_destinations_by_tags denies delete_by_tags on Destination' do
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    controls = spaces['tags']['actions']['segment_controls']
+    controls['delete_destinations_by_tags'] = { 'visible' => true, 'usable' => false }
+
+    assign_role_with_spaces!(@user, spaces)
+
+    ability = Ability.new(@user)
+    assert ability.cannot?(:delete_by_tags, Destination)
+    assert ability.can?(:delete_by_tags, Visit)
+  end
 end

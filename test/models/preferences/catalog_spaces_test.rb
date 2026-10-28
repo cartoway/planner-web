@@ -9,6 +9,7 @@ class PreferencesCatalogSpacesTest < ActiveSupport::TestCase
     assert out['plannings']['visible']
     assert_not out['plannings']['usable']
     assert_includes out['operations']['actions']['segments'], 'export'
+    assert_includes out['tags']['actions']['segments'], 'delete_destinations_by_tags'
   end
 
   test 'merge_spaces_with_params maps active disabled and hidden access tiers' do

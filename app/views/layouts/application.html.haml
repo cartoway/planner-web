@@ -198,74 +198,93 @@
                             %i.fa.fa-circle-nodes.fa-fw
                             = zoning.name
 
-              - if current_user_space_visible?(:destination)
+              - if current_user_space_visible?(:destination) || current_user_space_visible?(:tags)
                 - destination_usable = current_user_space_usable?(:destination)
-                %li#menu-destination.menu-list-item{ class: ('disabled' unless destination_usable) }
-                  - if destination_usable
+                - tags_usable = current_user_space_usable?(:tags)
+                - destinations_menu_usable = destination_usable || tags_usable
+                %li#menu-destination.menu-list-item{ class: ('disabled' unless destinations_menu_usable) }
+                  - if destinations_menu_usable
                     %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#destinationsCollpase'}
                       .d-flex.align-items-center.justify-content-center
                         %i.fa.fa-map-marker.fa-fw
                         .hidden-menu.menu_label
                           = t 'destinations.menu.destinations'
                     %ul#destinationsCollpase.accordion-menu.menu-content.collapse.hidden-menu
-                      - if current_user_space_action_visible?(:destination, :edit)
-                        - can_mutate_destination = current_user_space_action_usable?(:destination, :edit) && !current_user.customer.too_many_destinations?
-                        %li{ class: ('disabled' unless can_mutate_destination) }
-                          - if can_mutate_destination
-                            = link_to new_destination_path do
-                              %i.fa.fa-plus.fa-fw
-                              = t 'all.verb.new'
+                      - if current_user_space_visible?(:destination)
+                        - if current_user_space_action_visible?(:destination, :edit)
+                          - can_mutate_destination = current_user_space_action_usable?(:destination, :edit) && !current_user.customer.too_many_destinations?
+                          %li{ class: ('disabled' unless can_mutate_destination) }
+                            - if can_mutate_destination
+                              = link_to new_destination_path do
+                                %i.fa.fa-plus.fa-fw
+                                = t 'all.verb.new'
+                            - else
+                              %a{href: '#'}
+                                %i.fa.fa-plus.fa-fw
+                                = t 'all.verb.new'
+                        %li{ class: ('disabled' unless destination_usable) }
+                          - if destination_usable
+                            = link_to destinations_path, data: { turbolinks: false } do
+                              %i.fa.fa-map-marker.fa-fw
+                              = t 'all.verb.list'
                           - else
                             %a{href: '#'}
-                              %i.fa.fa-plus.fa-fw
-                              = t 'all.verb.new'
-                      %li
-                        = link_to destinations_path, data: { turbolinks: false } do
-                          %i.fa.fa-map-marker.fa-fw
-                          = t 'all.verb.list'
-                      %li.divider
+                              %i.fa.fa-map-marker.fa-fw
+                              = t 'all.verb.list'
+                        %li.divider
                       - if current_user_space_visible?(:tags)
-                        %li{ class: ("disabled" unless current_user_space_usable?(:tags)) }
-                          = link_to tags_path, disabled: !current_user_space_usable?(:tags) do
-                            %i.fa.fa-tags.fa-fw
-                            = t 'destinations.menu.tags'
+                        %li{ class: ("disabled" unless tags_usable) }
+                          - if tags_usable
+                            = link_to tags_path do
+                              %i.fa.fa-tags.fa-fw
+                              = t 'destinations.menu.tags'
+                          - else
+                            %a{href: '#'}
+                              %i.fa.fa-tags.fa-fw
+                              = t 'destinations.menu.tags'
                         %li.divider
-                      - if current_user_space_action_visible?(:destination, :edit)
-                        %li{ class: ("disabled" unless current_user_space_action_usable?(:destination, :edit)) }
-                          - if current_user_space_action_usable?(:destination, :edit)
-                            = link_to destination_import_path do
-                              %i.fa.fa-upload.fa-fw
-                              = t 'destinations.menu.import'
+                      - if current_user_space_visible?(:destination)
+                        - if current_user_space_action_visible?(:destination, :edit)
+                          %li{ class: ("disabled" unless current_user_space_action_usable?(:destination, :edit)) }
+                            - if current_user_space_action_usable?(:destination, :edit)
+                              = link_to destination_import_path do
+                                %i.fa.fa-upload.fa-fw
+                                = t 'destinations.menu.import'
+                            - else
+                              %a{href: '#'}
+                                %i.fa.fa-upload.fa-fw
+                                = t 'destinations.menu.import'
+                        %li{ class: ('disabled' unless destination_usable) }
+                          - if destination_usable
+                            = link_to destinations_path({format: :excel}) do
+                              %i.fa.fa-download.fa-fw
+                              = t 'destinations.menu.export_spreadsheet_standard'
                           - else
                             %a{href: '#'}
-                              %i.fa.fa-upload.fa-fw
-                              = t 'destinations.menu.import'
-                      %li
-                        = link_to destinations_path({format: :excel}) do
-                          %i.fa.fa-download.fa-fw
-                          = t 'destinations.menu.export_spreadsheet_standard'
-                      - if current_user_space_action_visible?(:destination, :delete_all_visits) || current_user_space_action_visible?(:destination, :delete_all_destinations)
-                        %li.divider
-                      - if current_user_space_action_visible?(:destination, :delete_all_destinations)
-                        %li{ class: ("disabled" unless current_user_space_action_usable?(:destination, :delete_all_destinations)) }
-                          - if current_user_space_action_usable?(:destination, :delete_all_destinations)
-                            = link_to destinations_path, method: :delete, data: { confirm: t('destinations.menu.clear_confirm') } do
-                              %i.fa.fa-trash.fa-fw
-                              = t 'destinations.menu.clear'
-                          - else
-                            %a{href: '#'}
-                              %i.fa.fa-trash.fa-fw
-                              = t 'destinations.menu.clear'
-                      - if current_user_space_action_visible?(:destination, :delete_all_visits)
-                        %li{ class: ("disabled" unless current_user_space_action_usable?(:destination, :delete_all_visits)) }
-                          - if current_user_space_action_usable?(:destination, :delete_all_visits)
-                            = link_to destinations_visits_path, method: :delete, data: { confirm: t('destinations.menu.clear_visits_confirm') } do
-                              %i.fa.fa-trash.fa-fw
-                              = t 'destinations.menu.clear_visits'
-                          - else
-                            %a{href: '#'}
-                              %i.fa.fa-trash.fa-fw
-                              = t 'destinations.menu.clear_visits'
+                              %i.fa.fa-download.fa-fw
+                              = t 'destinations.menu.export_spreadsheet_standard'
+                        - if current_user_space_action_visible?(:destination, :delete_all_visits) || current_user_space_action_visible?(:destination, :delete_all_destinations)
+                          %li.divider
+                        - if current_user_space_action_visible?(:destination, :delete_all_destinations)
+                          %li{ class: ("disabled" unless current_user_space_action_usable?(:destination, :delete_all_destinations)) }
+                            - if current_user_space_action_usable?(:destination, :delete_all_destinations)
+                              = link_to destinations_path, method: :delete, data: { confirm: t('destinations.menu.clear_confirm') } do
+                                %i.fa.fa-trash.fa-fw
+                                = t 'destinations.menu.clear'
+                            - else
+                              %a{href: '#'}
+                                %i.fa.fa-trash.fa-fw
+                                = t 'destinations.menu.clear'
+                        - if current_user_space_action_visible?(:destination, :delete_all_visits)
+                          %li{ class: ("disabled" unless current_user_space_action_usable?(:destination, :delete_all_visits)) }
+                            - if current_user_space_action_usable?(:destination, :delete_all_visits)
+                              = link_to destinations_visits_path, method: :delete, data: { confirm: t('destinations.menu.clear_visits_confirm') } do
+                                %i.fa.fa-trash.fa-fw
+                                = t 'destinations.menu.clear_visits'
+                            - else
+                              %a{href: '#'}
+                                %i.fa.fa-trash.fa-fw
+                                = t 'destinations.menu.clear_visits'
                   - else
                     %a.menu-section{href: "#"}
                       .d-flex.align-items-center.justify-content-center
@@ -273,49 +292,57 @@
                         .hidden-menu.menu_label
                           = t 'destinations.menu.destinations'
               - if current_user_space_visible?(:vehicle_usages) || current_user_space_visible?(:deliverable_units) || current_user_space_visible?(:stores)
-                %li.pannel.panel-default.menu-list-item
-                  %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#vehiclesCollpase'}
-                    .d-flex.align-items-center.justify-content-center
-                      %i.fa.fa-truck-field.fa-fw
-                      .hidden-menu.menu_label
-                        = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
-                  %ul#vehiclesCollpase.accordion-menu.menu-content.collapse.hidden-menu
-                    - if current_user_space_visible?(:vehicle_usages)
-                      %li{ class: ("disabled" unless current_user_space_usable?(:vehicle_usages)) }
-                        = link_to vehicle_usage_sets_path, disabled: !current_user_space_usable?(:vehicle_usages) do
-                          %i.fa.fa-truck-field.fa-fw
-                          = t 'all.verb.list'
-                      - if current_user_space_action_visible?(:vehicle_usages, :edit)
-                        %li{ class: ("disabled" unless current_user_space_action_usable?(:vehicle_usages, :edit)) }
-                          - if current_user_space_action_usable?(:vehicle_usages, :edit)
-                            = link_to import_vehicle_usage_sets_path do
-                              %i.fa.fa-upload.fa-fw
-                              = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
-                          - else
-                            %a{href: '#'}
-                              %i.fa.fa-upload.fa-fw
-                              = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
-                      %li.divider
-                    - if current_user_space_visible?(:deliverable_units)
-                      %li{ class: ("disabled" unless current_user_space_usable?(:deliverable_units)) }
-                        = link_to deliverable_units_path, disabled: !current_user_space_usable?(:deliverable_units) do
-                          %i.fa.fa-dumpster.fa-fw
-                          = t 'vehicle_usage_sets.menu.deliverable_units'
-                    - if current_user_space_visible?(:stores)
-                      %li{ class: ("disabled" unless current_user_space_usable?(:stores)) }
-                        = link_to stores_path, disabled: !current_user_space_usable?(:stores) do
-                          %i.fa.fa-store.fa-fw
-                          = t 'destinations.menu.stores'
-                      - if current_user_space_action_visible?(:stores, :edit)
-                        %li{ class: ("disabled" unless current_user_space_action_usable?(:stores, :edit)) }
-                          - if current_user_space_action_usable?(:stores, :edit)
-                            = link_to store_import_path do
-                              %i.fa.fa-upload.fa-fw
-                              = t 'destinations.menu.import_stores'
-                          - else
-                            %a{href: '#'}
-                              %i.fa.fa-upload.fa-fw
-                              = t 'destinations.menu.import_stores'
+                - fleet_usable = current_user_space_usable?(:vehicle_usages) || current_user_space_usable?(:deliverable_units) || current_user_space_usable?(:stores)
+                %li.pannel.panel-default.menu-list-item{ class: ('disabled' unless fleet_usable) }
+                  - if fleet_usable
+                    %a.menu-section{'data-toggle': "collapse", 'data-parent': '#accordion-menu', href: '#vehiclesCollpase'}
+                      .d-flex.align-items-center.justify-content-center
+                        %i.fa.fa-truck-field.fa-fw
+                        .hidden-menu.menu_label
+                          = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
+                    %ul#vehiclesCollpase.accordion-menu.menu-content.collapse.hidden-menu
+                      - if current_user_space_visible?(:vehicle_usages)
+                        %li{ class: ("disabled" unless current_user_space_usable?(:vehicle_usages)) }
+                          = link_to vehicle_usage_sets_path, disabled: !current_user_space_usable?(:vehicle_usages) do
+                            %i.fa.fa-truck-field.fa-fw
+                            = t 'all.verb.list'
+                        - if current_user_space_action_visible?(:vehicle_usages, :edit)
+                          %li{ class: ("disabled" unless current_user_space_action_usable?(:vehicle_usages, :edit)) }
+                            - if current_user_space_action_usable?(:vehicle_usages, :edit)
+                              = link_to import_vehicle_usage_sets_path do
+                                %i.fa.fa-upload.fa-fw
+                                = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
+                            - else
+                              %a{href: '#'}
+                                %i.fa.fa-upload.fa-fw
+                                = t 'vehicle_usage_sets.menu.import_vehicle_usage_sets'
+                        %li.divider
+                      - if current_user_space_visible?(:deliverable_units)
+                        %li{ class: ("disabled" unless current_user_space_usable?(:deliverable_units)) }
+                          = link_to deliverable_units_path, disabled: !current_user_space_usable?(:deliverable_units) do
+                            %i.fa.fa-dumpster.fa-fw
+                            = t 'vehicle_usage_sets.menu.deliverable_units'
+                      - if current_user_space_visible?(:stores)
+                        %li{ class: ("disabled" unless current_user_space_usable?(:stores)) }
+                          = link_to stores_path, disabled: !current_user_space_usable?(:stores) do
+                            %i.fa.fa-store.fa-fw
+                            = t 'destinations.menu.stores'
+                        - if current_user_space_action_visible?(:stores, :edit)
+                          %li{ class: ("disabled" unless current_user_space_action_usable?(:stores, :edit)) }
+                            - if current_user_space_action_usable?(:stores, :edit)
+                              = link_to store_import_path do
+                                %i.fa.fa-upload.fa-fw
+                                = t 'destinations.menu.import_stores'
+                            - else
+                              %a{href: '#'}
+                                %i.fa.fa-upload.fa-fw
+                                = t 'destinations.menu.import_stores'
+                  - else
+                    %a.menu-section{href: "#"}
+                      .d-flex.align-items-center.justify-content-center
+                        %i.fa.fa-truck-field.fa-fw
+                        .hidden-menu.menu_label
+                          = t 'vehicle_usage_sets.menu.vehicle_usage_sets'
         #menu-settings-dock
           .divider.solid
           %li#menu-settings-burger.menu-section.menu-list-item.menu-section-burger

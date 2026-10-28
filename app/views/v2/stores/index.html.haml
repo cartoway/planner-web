@@ -37,7 +37,7 @@
         .destinations-search-wrapper
           .destinations-search-input.form-control
             .destinations-search-clause
-              = text_field_tag :stores_filter, nil, id: 'stores-filter', type: 'search', autocomplete: 'off', placeholder: t('all.verb.filter'), class: 'form-control-plaintext', 'aria-label': t('all.verb.filter'), data: { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }
+              = render 'v2/shared/index_filter_field', name: :stores_filter, id: 'stores-filter', class: 'form-control-plaintext'
             %i.fa.fa-magnifying-glass.destinations-search-icon{"aria-hidden": "true"}
     = form_tag stores_path, method: :delete, id: 'stores-destroy' do
       .destinations-list-toolbar.d-flex.justify-content-between.align-items-center.mb-2.px-3.pt-3.pb-2.flex-wrap.gap-2
@@ -51,7 +51,7 @@
               %button.btn.btn-primary{type: 'button', disabled: true, title: t('stores.index.new')}
                 %i.fa.fa-plus.fa-fw
                 %span.destinations-toolbar-label= t 'stores.index.new'
-            %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
+            %button.btn.btn-outline-secondary{type: 'button', disabled: !can_mutate, title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
               %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
               %span.destinations-toolbar-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
             %button.btn.btn-danger.destinations-bulk-delete{

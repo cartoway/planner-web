@@ -1077,6 +1077,7 @@ en:
             delete_all_visits: Delete all visits
           tags:
             delete_visits_by_tags: Delete visits by tags
+            delete_destinations_by_tags: Delete destinations by tags
           operations:
             sync: Publish and sync from planning
             transmit: Send to drivers and destinations
