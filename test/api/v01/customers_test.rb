@@ -9,8 +9,6 @@ class V01::CustomerTest < ActiveSupport::TestCase
 
   setup do
     @customer = customers(:customer_one)
-    # Leftover open operations from other tests break PublishFromPlanning and can
-    # make customer.duplicate fail inside transaction_without_selects.
     Operation.where(customer_id: @customer.id).delete_all
   end
 
@@ -260,11 +258,15 @@ class V01::CustomerTest < ActiveSupport::TestCase
   end
 
   test 'should duplicate customer' do
+    duplicate = nil
     assert_difference('Customer.count', +1) do
       patch api_admin(@customer.id.to_s + '/duplicate')
-      assert_equal Customer.last.id, JSON.parse(last_response.body, symbolize_names: true)[:id], last_response.body
       assert last_response.ok?, last_response.body
+      duplicate = Customer.find(JSON.parse(last_response.body, symbolize_names: true)[:id])
+      assert_equal duplicate.id, JSON.parse(last_response.body, symbolize_names: true)[:id]
     end
+  ensure
+    duplicate&.destroy!
   end
 
   test 'should not duplicate customer' do
@@ -278,15 +280,20 @@ class V01::CustomerTest < ActiveSupport::TestCase
   end
 
   test 'Should duplicate customer without users' do
+    duplicate = nil
     assert_difference 'Customer.count', +1 do
       assert_no_difference 'User.count' do
         patch api_admin(@customer.id.to_s + '/duplicate', 'json', {'exclude_users' => true})
         assert last_response.ok?, last_response.body
+        duplicate = Customer.find(JSON.parse(last_response.body, symbolize_names: true)[:id])
       end
     end
+  ensure
+    duplicate&.destroy!
   end
 
   test 'duplicate customer should keep vehicle tags' do
+    duplicate = nil
     assert_difference('Customer.count', +1) do
       @customer.vehicles.each{ |vehicle|
         vehicle.tags |= [@customer.tags.first]
@@ -294,11 +301,14 @@ class V01::CustomerTest < ActiveSupport::TestCase
       }
       patch api_admin(@customer.id.to_s + '/duplicate')
       assert last_response.ok?, last_response.body
-      Customer.last.vehicles.each.with_index{ |vehicle, index|
+      duplicate = Customer.find(JSON.parse(last_response.body, symbolize_names: true)[:id])
+      duplicate.vehicles.each.with_index{ |vehicle, index|
         assert vehicle.tags.any?, @customer.vehicles[index].tags.map(&:label)
         assert_equal vehicle.tags.map(&:label), @customer.vehicles[index].tags.map(&:label)
       }
     end
+  ensure
+    duplicate&.destroy!
   end
 
   test 'should update advanced options' do
