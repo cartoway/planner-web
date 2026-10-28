@@ -3,6 +3,9 @@
 <% content_for :title, t('.title') %>
 
 <h1><%= t '.title' %></h1>
+<div class="clearfix mb-3">
+  <div class="pull-right"><%= render 'extended_options_toggle' %></div>
+</div>
 
 <%= render 'form' %>
 
