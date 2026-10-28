@@ -2,9 +2,8 @@
 -# Planning edit stays available via planning_toolbar, not space :edit.
 .v2-index-card{id: dom_id(planning), data: { v2__table_filter_target: 'row' }}
   .v2-index-card-main
-    - if show_mutate
-      .v2-index-card-select
-        = check_box_tag "plannings[#{planning.id}]", planning.id, false, disabled: !can_destroy, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
+    .v2-index-card-select
+      = check_box_tag "plannings[#{planning.id}]", planning.id, false, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
     .v2-index-card-body
       .v2-index-card-header
         %h2.v2-index-card-title= planning.name

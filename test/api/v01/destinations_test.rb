@@ -1117,6 +1117,29 @@ class V01::DestinationsTest < ActiveSupport::TestCase
     assert Destination.exists?(destination_bar.id)
   end
 
+  test 'DELETE by_tags returns 403 when delete_destinations_by_tags is not usable' do
+    u = users(:user_one)
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['tags']['actions']['segment_controls']['delete_destinations_by_tags'] = {
+      'visible' => true, 'usable' => false
+    }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "api-no-delete-dest-by-tags-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    u.update!(role_id: role.id)
+
+    assert_no_difference('Destination.count') do
+      delete api('by_tags', tag_ids: tags(:tag_one).id)
+      assert_equal 403, last_response.status, last_response.body
+    end
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+  end
+
   test 'should destroy destinations having a single matching tag' do
     tag_foo = @customer.tags.create!(label: 'Foo', ref: 'foo')
     tag_bar = @customer.tags.create!(label: 'Bar', ref: 'bar')

@@ -32,7 +32,7 @@ module Preferences
         'destination' => %w[edit delete_all_destinations delete_all_visits],
         'vehicle_usages' => %w[edit],
         'stores' => %w[edit],
-        'tags' => %w[edit delete_visits_by_tags],
+        'tags' => %w[edit delete_visits_by_tags delete_destinations_by_tags],
         'customer' => %w[edit],
         'deliverable_units' => %w[edit],
         'custom_attributes' => %w[edit],
