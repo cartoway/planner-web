@@ -2,20 +2,21 @@
 - if @planning.persisted?
   - options[:remote] = true
   - options[:html] = { 'data-turbolinks': false, autocomplete: 'off' }
+- can_edit_planning = current_user_planning_form_submit_enabled?(@planning)
 = bootstrap_form_for @planning, options do |f|
   .d-flex.justify-content-start.align-items-end
     - if @planning.customer.enable_references
       .col
         - if @planning.id
-          = f.text_field :ref, { placeholder: t('activerecord.attributes.planning.ref_help'), label_class: 'hidden' }
+          = f.text_field :ref, { placeholder: t('activerecord.attributes.planning.ref_help'), label_class: 'hidden', disabled: !can_edit_planning }
         - else
-          = f.text_field :ref do
+          = f.text_field :ref, disabled: !can_edit_planning do
             %p.help-block= t('activerecord.attributes.planning.ref_help')
     .col
-      = f.text_field :name, required: true, placeholder: "#{t('activerecord.attributes.planning.name')},", label_class: 'hidden'
+      = f.text_field :name, required: true, placeholder: "#{t('activerecord.attributes.planning.name')},", label_class: 'hidden', disabled: !can_edit_planning
     .col
       - date_placeholder = l(Date.current + @planning.customer.operation_date_offset_default, format: :datepicker)
-      = f.text_field :date, { placeholder: date_placeholder, value: (@planning.date && l(@planning.date, format: :datepicker)), input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'}), label_class: 'hidden'}
+      = f.text_field :date, { placeholder: date_placeholder, value: (@planning.date && l(@planning.date, format: :datepicker)), input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'}), label_class: 'hidden', disabled: !can_edit_planning}
     - if @planning.new_record?
       = zoning_select f, @planning, t('plannings.edit.zonings.label')
     = render 'plannings/operations/planning_dashboard'
@@ -23,4 +24,4 @@
       = render 'plannings/operations/planning_states'
       = render 'plannings/operations/duplicate'
     .col
-      = f.submit row_class: '', col_class: '', disabled: !current_user_planning_form_submit_enabled?(@planning)
+      = f.submit row_class: '', col_class: '', disabled: !can_edit_planning

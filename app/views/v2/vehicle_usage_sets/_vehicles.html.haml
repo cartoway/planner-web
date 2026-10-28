@@ -3,8 +3,8 @@
 .vehicle-usages-list
   .vehicle-usages-toolbar.d-flex.justify-content-between.align-items-center.gap-2.mb-2
     .d-flex.align-items-center.gap-2
-      - if can_update_vehicle_usage
-        %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'click->v2--vehicle-usage-sets-index#toggleVehicleSelect', select_label: t('all.verb.select'), cancel_label: t('all.verb.cancel') }}
+      - if show_mutate_vehicle_usage
+        %button.btn.btn-outline-secondary{type: 'button', disabled: !can_update_vehicle_usage, title: t('all.verb.select'), data: { action: 'click->v2--vehicle-usage-sets-index#toggleVehicleSelect', select_label: t('all.verb.select'), cancel_label: t('all.verb.cancel') }}
           %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
           %span.vehicle-usage-btn-label{data: { vehicle_select_label: true }}= t('all.verb.select')
     - if can_update_vehicle_usage

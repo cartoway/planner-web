@@ -1103,6 +1103,7 @@ fr:
             delete_all_visits: Supprimer toutes les visites
           tags:
             delete_visits_by_tags: Supprimer les visites par catégories
+            delete_destinations_by_tags: Supprimer les destinations par catégories
           operations:
             sync: Publication et synchronisation depuis le plan
             transmit: Envoi aux livreurs et destinations

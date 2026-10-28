@@ -350,7 +350,7 @@ class V01::Destinations < Grape::API
     end
     delete 'by_tags' do
       raise Exceptions::JobInProgressError if current_customer.blocking_job
-      authorize!(:destroy, Destination)
+      authorize!(:delete_by_tags, Destination)
 
       Destination.transaction do
         tag_ids = filter_tag_ids_belong_to_customer(params[:tag_ids], current_customer)

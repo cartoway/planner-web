@@ -629,6 +629,7 @@ body:has(#operation-map-layout) {
     left: 0;
     top: 0;
     bottom: 0;
+    min-width: 30vw;
     width: max-content;
     z-index: 2;
     background: var(--bs-body-bg);
