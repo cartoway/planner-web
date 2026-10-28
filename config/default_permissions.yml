@@ -114,10 +114,11 @@ test:
         visible: true
         usable: true
         actions:
-          segments: [edit, delete_visits_by_tags]
+          segments: [edit, delete_visits_by_tags, delete_destinations_by_tags]
           segment_controls:
             edit: { visible: true, usable: true }
             delete_visits_by_tags: { visible: true, usable: true }
+            delete_destinations_by_tags: { visible: true, usable: true }
       customer: { visible: true, usable: true }
       deliverable_units: { visible: true, usable: true }
       custom_attributes: { visible: true, usable: true }

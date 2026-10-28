@@ -1,14 +1,15 @@
 - options = {layout: :horizontal}
+- can_edit_planning = current_user_planning_form_submit_enabled?(@planning)
 = bootstrap_form_for @planning, options do |f|
   = render 'shared/error_messages', model: @planning
   %div
     - if @planning.customer.enable_references
       - if @planning.id
-        = f.text_field :ref, t('activerecord.attributes.planning.ref')
+        = f.text_field :ref, t('activerecord.attributes.planning.ref'), disabled: !can_edit_planning
       - else
-        = f.text_field :ref, help: t('.ref_help')
+        = f.text_field :ref, help: t('.ref_help'), disabled: !can_edit_planning
   %div
-    = f.text_field :name, required: true
+    = f.text_field :name, required: true, disabled: !can_edit_planning
   - vus_manage = @manage_planning.nil? || @manage_planning[:manage_vehicle_usage_set]
   - vus_disable = @manage_planning && @manage_planning[:disable_vehicle_usage_set]
   - if @planning.customer.vehicle_usage_sets.size > 1
@@ -21,7 +22,7 @@
     = f.hidden_field :vehicle_usage_set_id, value: @planning.customer.vehicle_usage_sets[0].id
   %div
     - date_placeholder = l(Date.current + @planning.customer.operation_date_offset_default, format: :datepicker)
-    = f.text_field :date, { placeholder: date_placeholder, value: (@planning.date && l(@planning.date, format: :datepicker)), input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'})}
+    = f.text_field :date, { placeholder: date_placeholder, value: (@planning.date && l(@planning.date, format: :datepicker)), input_group: content_tag('i', '', {class: 'fa fa-calendar fa-fw'}), disabled: !can_edit_planning}
   - if (@planning.id && !@planning.tags.empty?) || !@planning.id
     .col-md-offset-2.col-md-8.field
       %label.control-label{:for => "speed_multiplier"}
@@ -39,4 +40,4 @@
           %p.help-block= t '.tags_help'
   - if @planning.new_record?
     = zoning_select f, @planning, label: t('plannings.edit.zonings.label'), control_col: 'col-md-offset-2 col-md-8 field', label_class: 'col-md-offset-2 col-md-8 field'
-  = f.submit disabled: !current_user_planning_form_submit_enabled?(@planning)
+  = f.submit disabled: !can_edit_planning

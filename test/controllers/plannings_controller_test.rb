@@ -86,7 +86,7 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_select %(#planningsCollpase li##{ActionView::RecordIdentifier.dom_id(@planning, :menu)}), 1
     assert_select 'form#plannings-destroy[data-turbo-frame="_top"]', 1
     assert_select '#plannings.v2-index-cards button[data-controller~="confirm-click"][data-confirm-click-url-value]', minimum: 1
-    assert_select '.plannings-toolbar button[data-controller~="confirm-click"][data-confirm-click-form-value="plannings-destroy"]', 1
+    assert_select '.plannings-toolbar button[data-controller~="confirm-click"][data-confirm-click-form-value="plannings-destroy"][data-v2--table-selection-target=bulk]', 1
     assert_select '[data-controller*="v2--index-selection"]', 1
     assert_select '.plannings-toolbar button[data-action*="v2--index-selection#toggle"] .fa-check-square', 1
 
@@ -2336,6 +2336,37 @@ class PlanningsControllerTest < ActionController::TestCase
 
     get :edit, params: { id: @planning }
     assert_response :success
+    assert_select 'input#planning_name[disabled]'
+    assert_select 'input#planning_date[disabled]'
+    assert_select 'input#planning_ref[disabled]' if user.customer.enable_references
+  ensure
+    user.update!(role_id: nil)
+    role&.destroy
+  end
+
+  test 'index keeps destroy bulk inert when plannings edit action is not usable' do
+    enable_layout_v2!
+    user = users(:user_one)
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['plannings'] = Preferences::Catalog::Spaces.default_space_entry(
+      'plannings', visible: true, usable: true, actions_all_usable: false
+    )
+    role = Role.create!(
+      reseller: user.customer.reseller,
+      name: "plannings-destroy-inert-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    user.update!(role_id: role.id)
+    sign_in user
+
+    get :index
+    assert_response :success
+    # Selection stays available for compare/export; destroy must not become a bulk target.
+    assert_select '.plannings-toolbar button[data-action="v2--index-selection#toggle"]:not([disabled])', 1
+    assert_select '.plannings-toolbar button.btn-danger[disabled]', 1
+    assert_select '.plannings-toolbar button.btn-danger[data-v2--table-selection-target=bulk]', 0
+    assert_select '.plannings-toolbar button.btn-danger[data-controller~="confirm-click"]', 0
   ensure
     user.update!(role_id: nil)
     role&.destroy

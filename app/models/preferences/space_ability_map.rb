@@ -94,6 +94,10 @@ module Preferences
         ability.cannot :delete_by_tags, ::Visit
       end
 
+      unless user.space_action_usable?('tags', 'delete_destinations_by_tags')
+        ability.cannot :delete_by_tags, ::Destination
+      end
+
       apply_vehicle_configuration_access_gate!(ability, user)
     end
     private_class_method :apply_edit_space_rules!

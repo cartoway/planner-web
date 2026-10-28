@@ -4,6 +4,7 @@
 # - destination.delete_all_destinations ← destination.edit
 # - destination.delete_all_visits ← hidden
 # - tags.delete_visits_by_tags ← tags.edit
+# - tags.delete_destinations_by_tags ← tags.edit
 class BackfillDestinationBulkDeleteSpaceActions < ActiveRecord::Migration[6.1]
   def up
     Role.find_each do |role|
@@ -16,7 +17,9 @@ class BackfillDestinationBulkDeleteSpaceActions < ActiveRecord::Migration[6.1]
       end
 
       if (edit = spaces.dig('tags', 'actions', 'segment_controls', 'edit'))
-        spaces['tags']['actions']['segment_controls']['delete_visits_by_tags'] = edit.deep_dup
+        controls = spaces['tags']['actions']['segment_controls']
+        controls['delete_visits_by_tags'] = edit.deep_dup
+        controls['delete_destinations_by_tags'] = edit.deep_dup
       end
 
       role.update_columns(spaces: spaces, updated_at: Time.current)
@@ -27,7 +30,7 @@ class BackfillDestinationBulkDeleteSpaceActions < ActiveRecord::Migration[6.1]
     Role.find_each do |role|
       spaces = Preferences::Catalog.normalize_spaces(role.spaces)
       spaces.dig('destination', 'actions', 'segment_controls')&.except!('delete_all_destinations', 'delete_all_visits')
-      spaces.dig('tags', 'actions', 'segment_controls')&.except!('delete_visits_by_tags')
+      spaces.dig('tags', 'actions', 'segment_controls')&.except!('delete_visits_by_tags', 'delete_destinations_by_tags')
       role.update_columns(spaces: spaces, updated_at: Time.current)
     end
   end

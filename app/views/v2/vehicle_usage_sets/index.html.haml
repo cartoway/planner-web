@@ -39,7 +39,7 @@
             = link_to new_vehicle_usage_set_path, class: 'btn btn-primary', title: t('vehicle_usage_sets.index.new'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
               %i.fa.fa-plus.fa-fw
               %span.vehicle-usage-btn-label= t 'vehicle_usage_sets.index.new'
-          %button.btn.btn-outline-secondary{type: 'button', class: invisible_class, title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
+          %button.btn.btn-outline-secondary{type: 'button', class: invisible_class, disabled: !can_destroy_vehicle_config, title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
             %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
             %span.vehicle-usage-btn-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
           %button{
