@@ -29,12 +29,12 @@
         = f.form_group :destinations, { label: {text: t('.destinations') }} do
           = f.radio_button :replace, 0, checked: !@import_csv.replace, label: t('.replace_no'), label_class: ''
           %p.help-block= t('.replace_no_help')
-          - if can_delete_all_visits
-            = f.radio_button :replace, 'visits', checked: @import_csv.replace_visits?, label: t('.replace_visits')
-            %p.help-block= t('.replace_visits_help')
           - if can_delete_all_destinations
             = f.radio_button :replace, 1, checked: @import_csv.replace_destinations?, label: t('.replace_yes')
             %p.help-block= t('.replace_yes_help')
+          - if can_delete_all_visits
+            = f.radio_button :replace, 'visits', checked: @import_csv.replace_visits?, label: t('.replace_visits')
+            %p.help-block= t('.replace_visits_help')
         = render partial: 'shared/check_box', locals: { form: f, field: :delete_plannings, label: t('.delete_plannings'), help: t('.delete_plannings_help') }
         - if current_user.customer.vehicle_usage_sets.size > 1
           = f.collection_select :vehicle_usage_set_id, current_user.customer.vehicle_usage_sets, :id, :name, { include_blank: true, label: t('activerecord.models.vehicle_usage_set'), help: t('.vehicle_usage_set_help') }, { control_class: 'form-control', disabled: !can_import_destinations }
@@ -95,12 +95,12 @@
             = f.toggles t '.destinations' do
               = f.radio_button :replace, t('.replace_no'), 0, checked: !@import_tomtom.replace
               %p.help-block= t '.replace_no_help'
-              - if can_delete_all_visits
-                = f.radio_button :replace, t('.replace_visits'), 'visits', checked: @import_tomtom.replace_visits?
-                %p.help-block= t '.replace_visits_help'
               - if can_delete_all_destinations
                 = f.radio_button :replace, t('.replace_yes'), 1, checked: @import_tomtom.replace_destinations?
                 %p.help-block= t '.replace_yes_help'
+              - if can_delete_all_visits
+                = f.radio_button :replace, t('.replace_visits'), 'visits', checked: @import_tomtom.replace_visits?
+                %p.help-block= t '.replace_visits_help'
             = f.actions do
               = f.submit t('all.verb.import'), { disabled: !can_import_destinations }, 'fa-upload'
 
