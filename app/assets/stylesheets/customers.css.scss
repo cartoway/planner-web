@@ -30,6 +30,14 @@
     color: $grey-color;
   }
 
+  .customer-edit-tabs {
+    display: flex;
+    margin-bottom: 30px;
+
+    > li { float: none; }
+    .customer-form-extended-toggle-item { margin-left: auto; align-self: center; }
+  }
+
   .router-option-disabled {
     display: none;
   }

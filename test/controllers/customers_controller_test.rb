@@ -30,6 +30,33 @@ class CustomersControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'admin edit hides client sections behind extended options toggle' do
+    sign_in users(:user_admin)
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select '#customer-form-extended-toggle'
+    assert_select '.customer-form-extended.d-none', minimum: 1
+    assert_select '#customer_company_city_input'
+    assert_select '.customer-form-extended #customer_company_city_input'
+    assert_select '#customer_destination_icon'
+    assert_select '.customer-form-extended #customer_destination_icon'
+    assert_select '#router_options_motorway_input'
+    assert_select '.customer-form-extended #router_options_motorway_input'
+    # Profile/router stay outside extended sections
+    assert_select '#customer_router_input'
+    assert_select '.customer-form-extended #customer_router_input', count: 0
+    assert_select '.customer-form-extended #customer_router', count: 0
+  end
+
+  test 'non admin edit shows client sections without extended options toggle' do
+    sign_in users(:user_one)
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select '#customer-form-extended-toggle', count: 0
+    assert_select '.customer-form-extended.d-none', count: 0
+    assert_select '#customer_company_city_input'
+  end
+
   test 'admin edit shows suivi section when operations device is enabled' do
     sign_in users(:user_admin)
     get :edit, params: { id: @customer }

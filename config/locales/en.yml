@@ -1252,6 +1252,7 @@ en:
       outputs: Outputs
       limits: Limits
       options: Options
+      extended_options: Extended options
       suivi: Tracking
       enable_proofs_help: >-
         Allows storing photos and signatures from the mobile view and via the API.
