@@ -243,16 +243,6 @@
                           = t 'destinations.menu.export_spreadsheet_standard'
                       - if current_user_space_action_visible?(:destination, :delete_all_visits) || current_user_space_action_visible?(:destination, :delete_all_destinations)
                         %li.divider
-                      - if current_user_space_action_visible?(:destination, :delete_all_visits)
-                        %li{ class: ("disabled" unless current_user_space_action_usable?(:destination, :delete_all_visits)) }
-                          - if current_user_space_action_usable?(:destination, :delete_all_visits)
-                            = link_to destinations_visits_path, data: { turbo_method: :delete, turbo_confirm: t('destinations.menu.clear_visits_confirm') } do
-                              %i.fa.fa-trash.fa-fw
-                              = t 'destinations.menu.clear_visits'
-                          - else
-                            %a{href: '#', data: { turbo: false }}
-                              %i.fa.fa-trash.fa-fw
-                              = t 'destinations.menu.clear_visits'
                       - if current_user_space_action_visible?(:destination, :delete_all_destinations)
                         %li{ class: ("disabled" unless current_user_space_action_usable?(:destination, :delete_all_destinations)) }
                           - if current_user_space_action_usable?(:destination, :delete_all_destinations)
@@ -263,6 +253,16 @@
                             %a{href: '#', data: { turbo: false }}
                               %i.fa.fa-trash.fa-fw
                               = t 'destinations.menu.clear'
+                      - if current_user_space_action_visible?(:destination, :delete_all_visits)
+                        %li{ class: ("disabled" unless current_user_space_action_usable?(:destination, :delete_all_visits)) }
+                          - if current_user_space_action_usable?(:destination, :delete_all_visits)
+                            = link_to destinations_visits_path, data: { turbo_method: :delete, turbo_confirm: t('destinations.menu.clear_visits_confirm') } do
+                              %i.fa.fa-trash.fa-fw
+                              = t 'destinations.menu.clear_visits'
+                          - else
+                            %a{href: '#', data: { turbo: false }}
+                              %i.fa.fa-trash.fa-fw
+                              = t 'destinations.menu.clear_visits'
                   - else
                     %a.menu-section{href: "#", data: { turbo: false }}
                       .d-flex.align-items-center.justify-content-center
