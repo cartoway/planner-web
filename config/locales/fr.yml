@@ -3428,7 +3428,7 @@ fr:
         label: Type de pause
         window: Pause fixée
         regulatory: Pause par cumul
-        locked_to_set: Le type de pause se définit uniquement sur la configuration de la flotte.
+        locked_to_set: La pause par cumul se définit uniquement sur la configuration de la flotte.
         duration: Durée de pause
         duration_placeholder: '0:45'
         lapse: Toutes les
@@ -3601,6 +3601,7 @@ fr:
       none_column: Aucune colonne trouvée
       missing_name: « nom » de la configuration par défaut manquant
       missing_time_window_start_end: heure de début ou de fin de la configuration par défaut manquantes
+      regulatory_rest_must_be_identical: pour les pauses par cumul, toutes les configurations doivent être identiques
       invalid_index: l'ordre du véhicule doit être un entier positif ou nul
       invalid_numeric_value: 'valeur numérique « %{value} » invalide.'
       check_custom_columns: Vérifiez votre définition des colonnes à importer.

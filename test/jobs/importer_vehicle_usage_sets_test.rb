@@ -292,4 +292,51 @@ class ImporterVehicleUsageSetsTest < ActionController::TestCase
     assert_equal ['Véhicule 2', 'Véhicule 1'], ordered_names
     assert_equal [0, 1], vehicle_usage_set.vehicle_usages.map(&:index)
   end
+
+  test 'should apply identical cumulative rests to the vehicle usage set' do
+    csv = <<~CSV
+      nom véhicule,horaire début,horaire fin,durée de repos,intervalle de travail
+      Véhicule 1,08:00,18:00,00:45,06:00
+      Véhicule 2,08:00,18:00,00:45,06:00
+    CSV
+
+    Tempfile.create(['import_vehicle_usage_sets_identical_regulatory_rest', '.csv']) do |file|
+      file.write(csv)
+      file.rewind
+      upload = Rack::Test::UploadedFile.new(file.path, 'text/csv')
+
+      imported_data = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: upload).import
+
+      assert imported_data
+      vehicle_usage_set = @customer.vehicle_usage_sets.last
+      assert_equal 45.minutes.to_i, vehicle_usage_set.rest_duration
+      assert_equal 6.hours.to_i, vehicle_usage_set.rest_lapse
+      vehicle_usage_set.vehicle_usages.each do |vehicle_usage|
+        assert_nil vehicle_usage.rest_duration
+        assert_nil vehicle_usage.rest_lapse
+        assert vehicle_usage.regulatory_rest?
+      end
+    end
+  end
+
+  test 'should reject diverging cumulative rests with an explicit message' do
+    csv = <<~CSV
+      nom véhicule,horaire début,horaire fin,durée de repos,intervalle de travail
+      Véhicule 1,08:00,18:00,00:45,06:00
+      Véhicule 2,08:00,18:00,00:45,05:00
+    CSV
+
+    Tempfile.create(['import_vehicle_usage_sets_diverging_regulatory_rest', '.csv']) do |file|
+      file.write(csv)
+      file.rewind
+      upload = Rack::Test::UploadedFile.new(file.path, 'text/csv')
+
+      importer = ImportCsv.new(importer: ImporterVehicleUsageSets.new(@customer), replace_vehicles: true, file: upload)
+
+      assert_not importer.import
+      expected = I18n.t('vehicle_usage_sets.import.regulatory_rest_must_be_identical')
+      assert_includes importer.errors[:base].join.downcase, expected.downcase
+      assert_not_includes importer.errors[:base].join, I18n.t('activerecord.errors.models.vehicle_usage.missing_rest_window')
+    end
+  end
 end
