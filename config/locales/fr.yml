@@ -1278,6 +1278,7 @@ fr:
       outputs: Diffusion des tournées
       limits: Limites
       options: Options
+      extended_options: Options étendues
       suivi: Suivi
       enable_proofs_help: >-
         Permet de stocker des photos et signatures sur la vue mobile et via l’API.

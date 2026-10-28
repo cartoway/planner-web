@@ -1,0 +1,12 @@
+<% if current_user.admin? %>
+  <div class="form-check form-switch customer-form-extended-toggle pr-3">
+    <input type="checkbox"
+           class="form-check-input"
+           id="customer-form-extended-toggle"
+           role="switch"
+           aria-controls="general">
+    <label class="form-check-label" for="customer-form-extended-toggle">
+      <%= t('customers.form.extended_options') %>
+    </label>
+  </div>
+<% end %>

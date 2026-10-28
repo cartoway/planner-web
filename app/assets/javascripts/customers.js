@@ -151,6 +151,10 @@ const customers_edit = function (params) {
     }
   }
 
+  $('#customer-form-extended-toggle').on('change', function () {
+    $('.customer-form-extended').toggleClass('d-none', !this.checked);
+  });
+
   /* Speed Multiplier */
   $('form.number-to-percentage').submit(function (e) {
     $.each($(e.target).find('input[type=\'number\'].number-to-percentage'), function (i, element) {
