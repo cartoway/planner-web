@@ -412,37 +412,25 @@ class VehicleUsageTest < ActiveSupport::TestCase
     assert_equal 0, vehicle_usage.routes.sum{ |route| route.stops.count{ |stop| stop.is_a?(StopRest) } }
   end
 
-  test 'changing rest lapse on a vehicle usage marks associated routes outdated' do
+  test 'vehicle usage ignores regulatory rest overrides and inherits from the set' do
     vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
-    enable_regulatory_rest!(vehicle_usage, lapse: 6.hours.to_i)
+    enable_regulatory_rest!(vehicle_usage, duration: 30.minutes.to_i, lapse: 8.hours.to_i)
     vehicle_usage.reload
-    route = vehicle_usage.routes.take
-    route.update!(outdated: false)
 
-    vehicle_usage.update!(rest_lapse: 5.hours.to_i, rest_duration: 45.minutes.to_i)
+    vehicle_usage.update!(rest_duration: 45.minutes.to_i, rest_lapse: 6.hours.to_i)
 
-    assert route.reload.outdated
-  end
-
-  test 'changing regulatory rest params keeps existing rests' do
-    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
-    enable_regulatory_rest!(vehicle_usage, lapse: 6.hours.to_i)
     vehicle_usage.reload
-    route = vehicle_usage.routes.take
-    route.add_rest
-    route.save!
-    assert_equal 1, route.stops.count{ |stop| stop.is_a?(StopRest) }
-
-    vehicle_usage.update!(rest_lapse: 5.hours.to_i, rest_duration: 45.minutes.to_i)
-
-    assert_equal 1, route.reload.stops.count{ |stop| stop.is_a?(StopRest) }
+    assert_nil vehicle_usage.rest_duration
+    assert_nil vehicle_usage.rest_lapse
+    assert_equal 30.minutes.to_i, vehicle_usage.default_rest_duration
+    assert_equal 8.hours.to_i, vehicle_usage.default_rest_lapse
+    assert vehicle_usage.regulatory_rest?
   end
 
   test 'regulatory rest does not require a time window' do
     vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
     enable_regulatory_rest!(vehicle_usage)
     vehicle_usage.reload
-    vehicle_usage.update!(rest_duration: 45.minutes.to_i, rest_lapse: 6.hours.to_i)
 
     assert vehicle_usage.valid?
     assert vehicle_usage.regulatory_rest?
@@ -450,7 +438,7 @@ class VehicleUsageTest < ActiveSupport::TestCase
     assert_equal 0, vehicle_usage.routes.sum{ |route| route.stops.count{ |stop| stop.is_a?(StopRest) } }
   end
 
-  test 'regulatory rest inherits lapse from the vehicle usage set' do
+  test 'regulatory rest inherits duration and lapse from the vehicle usage set' do
     vehicle_usage = vehicle_usages(:vehicle_usage_one_three)
     enable_regulatory_rest!(vehicle_usage)
 
@@ -459,15 +447,7 @@ class VehicleUsageTest < ActiveSupport::TestCase
     assert_equal 45.minutes.to_i, vehicle_usage.default_rest_duration
     assert_equal 6.hours.to_i, vehicle_usage.default_rest_lapse
     assert_equal vehicle_usage.vehicle_usage_set.rest_lapse_time, vehicle_usage.default_rest_lapse_time
+    assert_nil vehicle_usage.rest_duration
     assert_nil vehicle_usage.rest_lapse
-  end
-
-  test 'regulatory rest duration must be smaller than lapse' do
-    vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
-    enable_regulatory_rest!(vehicle_usage)
-    vehicle_usage.reload
-    vehicle_usage.assign_attributes(rest_duration: 6.hours.to_i, rest_lapse: 6.hours.to_i)
-    assert_not vehicle_usage.valid?
-    assert_includes vehicle_usage.errors.attribute_names, :rest_duration
   end
 end

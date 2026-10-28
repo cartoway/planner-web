@@ -500,16 +500,15 @@ class VehicleUsage < ApplicationRecord
   end
 
   def normalize_rest_type
-    # Rest type is chosen on the vehicle usage set, not on the usage.
+    # Cumulative rest is configured on the vehicle usage set only.
     self.rest_mode = regulatory_rest_intent? ? 'regulatory' : 'window'
     if rest_mode == 'regulatory'
       self.rest_start = nil
       self.rest_stop = nil
       self.store_rest_id = nil
-      self.rest_lapse = nil unless rest_lapse.to_i.positive?
-    else
-      self.rest_lapse = nil
+      self.rest_duration = nil
     end
+    self.rest_lapse = nil
   end
 
   def regulatory_rest_intent?

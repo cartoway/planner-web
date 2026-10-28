@@ -28,7 +28,7 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_select '.vehicle-usage-sets-index', 1
     assert_select 'turbo-frame#form_sidebar form#vehicle-usage-form-sidebar', 1
     assert_select 'form#vehicle-usage-form-sidebar .input-group-text', minimum: 1
-    assert_select 'input[type=hidden][name=?][value=window]', 'vehicle_usage[rest_mode]', 1
+    assert_select 'input[name=?]', 'vehicle_usage[rest_mode]', 0
     assert_select '#vehicle_usage_rest_type_input', text: /#{Regexp.escape(I18n.t('vehicle_usages.form.rest_type.window'))}/
     assert_select '#vehicle_usage_rest_type_input', text: /#{Regexp.escape(I18n.t('vehicle_usages.form.rest_type.locked_to_set'))}/
   end
@@ -66,12 +66,11 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_select 'form#vehicle-usage-form-sidebar .col-md-10.offset-md-1', minimum: 1
     assert_select '#vehicle_usage_time_window_start_time_window_end_input.fleet-split .input-group', 2
     assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--time-fields"]', 1
-    assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--rest-type-fields"]', 1
+    assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--rest-type-fields"]', 0
     assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--router-options"]', 1
     assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--number-to-percentage"]', 1
     assert_select 'form#vehicle-usage-form-sidebar[data-controller~="v2--vehicle-devices"]', 1
     assert_select 'script[src*="vehicle_usage"]', 0
-    assert_select 'form#vehicle-usage-form-sidebar[data-v2--rest-type-fields-prefix-value="vehicle_usage"]', 1
     assert_select 'input#vehicle_usage_vehicle_color[type=color][name="vehicle_usage[vehicle][color]"]', 1
     assert_select 'select[name="vehicle_usage[vehicle][color]"]', 0
     assert_select '#router_options_traffic_input.router-option-disabled', 1
@@ -228,16 +227,30 @@ class VehicleUsagesControllerTest < ActionController::TestCase
     assert_not @vehicle_usage.regulatory_rest?
   end
 
-  test 'should update vehicle_usage with regulatory rest lapse' do
+  test 'should ignore regulatory rest params on vehicle_usage' do
     enable_regulatory_rest!(@vehicle_usage, duration: 30.minutes.to_i, lapse: 8.hours.to_i)
 
     patch :update, params: { id: @vehicle_usage, vehicle_usage: { rest_duration: '00:45', rest_lapse: '06:00' }}
     assert_redirected_to edit_vehicle_usage_path(@vehicle_usage)
     @vehicle_usage.reload
-    assert_equal 45.minutes.to_i, @vehicle_usage.rest_duration
-    assert_equal 6.hours.to_i, @vehicle_usage.rest_lapse
+    assert_nil @vehicle_usage.rest_duration
+    assert_nil @vehicle_usage.rest_lapse
+    assert_equal 30.minutes.to_i, @vehicle_usage.default_rest_duration
+    assert_equal 8.hours.to_i, @vehicle_usage.default_rest_lapse
     assert_nil @vehicle_usage.rest_start
     assert_nil @vehicle_usage.rest_stop
+  end
+
+  test 'should show regulatory rest as read-only on vehicle_usage edit' do
+    enable_regulatory_rest!(@vehicle_usage, duration: 45.minutes.to_i, lapse: 6.hours.to_i)
+
+    get :edit, params: { id: @vehicle_usage }
+    assert_response :success
+    assert_select 'input#vehicle_usage_rest_duration[disabled][value="00:45"]', 1
+    assert_select 'input#vehicle_usage_rest_lapse[disabled][value="06:00"]', 1
+    assert_select '#vehicle_usage_rest_start', 0
+    assert_select 'input[name="vehicle_usage[rest_duration]"]', 0
+    assert_select 'input[name="vehicle_usage[rest_lapse]"]', 0
   end
 
   test 'should not update vehicle_usage' do

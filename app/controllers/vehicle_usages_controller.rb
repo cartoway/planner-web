@@ -141,8 +141,6 @@ class VehicleUsagesController < ApplicationController
       :rest_start,
       :rest_stop,
       :rest_duration,
-      :rest_lapse,
-      :rest_mode,
       :store_rest_id,
       :service_time_start,
       :service_time_end,
