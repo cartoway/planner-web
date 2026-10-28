@@ -618,20 +618,31 @@ export const RoutesLayer = L.FeatureGroup.extend({
   },
 
   // True when the route must stay off the map (DB hidden or eye-slash in sidebar).
+  // Prefer the sidebar eye icon when present — options.routes.hidden can lag after a toggle.
+  // Keep in sync with routeHiddenOnMap in test/javascript/routes_layers_hidden_visibility_test.mjs
   _routeHiddenOnMap: function(routeId, routes) {
+    if (typeof document !== 'undefined') {
+      var toggleIcon = document.querySelector(
+        '.route[data-route-id="' + routeId + '"] .toggle i'
+      );
+      if (toggleIcon) {
+        return toggleIcon.classList.contains('fa-eye-slash');
+      }
+    }
     var list = routes || this.options.routes || [];
     for (var i = 0; i < list.length; i++) {
       if (String(list[i].route_id) === String(routeId) && list[i].hidden) {
         return true;
       }
     }
-    if (typeof document !== 'undefined') {
-      var icon = document.querySelector(
-        '.route[data-route-id="' + routeId + '"] .toggle i.fa-eye-slash'
-      );
-      if (icon) return true;
-    }
     return false;
+  },
+
+  // Drop eye-hidden ids from a selector selection before painting the map.
+  filterVisibleRouteIds: function(routeIds, routes) {
+    return (routeIds || []).filter(function(routeId) {
+      return !this._routeHiddenOnMap(routeId, routes);
+    }.bind(this));
   },
 
   refreshRoutes: function(routeIds, routes, geojson) {
@@ -660,7 +671,19 @@ export const RoutesLayer = L.FeatureGroup.extend({
 
   showAllRoutes: function(options, callback) {
     this.hideAllRoutes();
-    this._loadAll(options, callback);
+    this._loadAll(options, function() {
+      // _loadAll paints every route; drop eye/DB-hidden ones again.
+      var list = this.options.routes || [];
+      var hiddenIds = list.filter(function(route) {
+        return this._routeHiddenOnMap(route.route_id, list);
+      }.bind(this)).map(function(route) { return route.route_id; });
+      if (hiddenIds.length) {
+        this.hideRoutes(hiddenIds);
+      }
+      if (typeof callback === 'function') {
+        callback.apply(this, arguments);
+      }
+    }.bind(this));
   },
 
   showClusters: function() {
