@@ -240,8 +240,6 @@ class CustomersController < ApplicationController
         :max_destinations,
         :max_vehicle_usage_sets,
         :stops_preload_limit,
-        :enable_orders,
-        :enable_references,
         :enable_global_optimization,
         :enable_vehicle_position,
         :vehicle_position_retention_days,
