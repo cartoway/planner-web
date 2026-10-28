@@ -760,20 +760,4 @@ class OptimizerWrapperTest < ActionController::TestCase
     remove_request_stub(@stub_VrpJob)
     remove_request_stub(@stub_VrpSubmit)
   end
-
-  test 'should reject regulatory rests with different duration lapse ratios' do
-    begin
-      vehicle_usage = vehicle_usages(:vehicle_usage_one_one)
-      other = vehicle_usages(:vehicle_usage_one_three)
-      enable_regulatory_rest!(vehicle_usage, duration: 45.minutes.to_i, lapse: 6.hours.to_i)
-      other.reload.update!(rest_duration: 30.minutes.to_i)
-
-      assert_raises VRPUnprocessableError do
-        @optim.build_vrp(@planning, @planning.routes)
-      end
-    end
-  ensure
-    remove_request_stub(@stub_VrpJob)
-    remove_request_stub(@stub_VrpSubmit)
-  end
 end

@@ -260,6 +260,7 @@ class ImporterVehicleUsageSets < ImporterBase
     unless @common_configuration[:time_window_start] && @common_configuration[:time_window_end]
       @common_configuration[:time_window_start] = @common_configuration[:time_window_end] = nil
     end
+    ensure_identical_regulatory_rest!
     if @common_configuration[:rest_duration] && @common_configuration[:rest_lapse] && !@common_configuration[:rest_start] && !@common_configuration[:rest_stop]
       # Keep a shared regulatory rest (duration + lapse, no time window)
     elsif @common_configuration[:rest_start] && @common_configuration[:rest_stop] && @common_configuration[:rest_duration]
@@ -318,6 +319,21 @@ class ImporterVehicleUsageSets < ImporterBase
       @vehicle_usage_set.reorder_vehicle_usages!(ordered_ids) unless current_order == ordered_ids
     else
       @imported_vehicle_usages_in_order.each_with_index { |vehicle_usage, position| vehicle_usage.index = position }
+    end
+  end
+
+  # Cumulative rest can only live on the vehicle usage set: every imported vehicle
+  # must share the same duration + lapse, or the import is rejected.
+  def ensure_identical_regulatory_rest!
+    configs = @imported_vehicle_usages_in_order.map { |vehicle_usage|
+      next unless vehicle_usage.rest_lapse.to_i.positive?
+
+      [vehicle_usage.rest_duration.to_i, vehicle_usage.rest_lapse.to_i]
+    }
+    return if configs.none?
+
+    if configs.any?(&:nil?) || configs.uniq.size > 1
+      raise ImportBaseError.new(I18n.t('vehicle_usage_sets.import.regulatory_rest_must_be_identical'))
     end
   end
 
