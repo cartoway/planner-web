@@ -2390,6 +2390,15 @@ export const plannings_edit = function(params) {
       checkLockAndActive();
     };
     var successToggle = function(data) {
+      // Sync hidden before showAllRoutes so its post-load filter uses fresh state.
+      $.each(data, function(_index, route) {
+        $.each(routes, function(_i, r) {
+          if (r.route_id == route.id) {
+            r.hidden = !!route.hidden;
+          }
+        });
+      });
+      syncRoutesLayerOptions();
       if (selection == 'all' || selection == 'reverse') {
         routesLayer.showAllRoutes();
       } else if (selection == 'none') {
@@ -3266,6 +3275,12 @@ export const plannings_edit = function(params) {
       return isNaN(parsedId) ? null : parsedId;
     }).filter(function(id) { return id !== null; });
 
+    // Eye-hidden routes stay checked in the selector but must stay off the map
+    // (refreshRouteSelectorFromSummary → setValues would otherwise re-show them after move/activate).
+    if (routesLayer && typeof routesLayer.filterVisibleRouteIds === 'function') {
+      selectedRouteIds = routesLayer.filterVisibleRouteIds(selectedRouteIds);
+    }
+
     var displayedRouteIds = Object.keys(routesLayer.clustersByRoute).map(function(id) { return parseInt(id, 10); })
       .concat(Object.keys(routesLayer.layersByRoute).map(function(id) { return parseInt(id, 10); }));
 
@@ -3476,6 +3491,13 @@ export const plannings_edit = function(params) {
         url: '/api/0.1/plannings/' + planning_id + '/routes/' + id + '.json',
         success: function(data) {
           var $initializedSortables = li.filter('.ui-sortable');
+          // Keep in-memory hidden in sync so refreshRoutes / filterVisibleRouteIds stay accurate.
+          $.each(routes, function(_i, route) {
+            if (String(route.route_id) === String(id)) {
+              route.hidden = hidden;
+            }
+          });
+          syncRoutesLayerOptions();
           if (hidden) {
             i.removeClass("fa-eye").addClass("fa-eye-slash");
             routesLayer.hideRoutes([id]);
