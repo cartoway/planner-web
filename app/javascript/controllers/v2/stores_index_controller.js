@@ -150,10 +150,9 @@ export default class extends Controller {
     })
     document.addEventListener('turbo:frame-load', this._onTurboFrameLoad, { signal })
     document.addEventListener('turbo:before-stream-render', this._onBeforeStreamRender, { signal })
-    this.element.addEventListener('input', (e) => {
-      if (e.target && e.target.closest && e.target.closest('[data-v2--table-filter-target="input"]')) {
-        requestAnimationFrame(() => this._syncHiddenGeojsonPins())
-      }
+    // Sync map pins after chunked table-filter finishes (not on each keystroke).
+    this.element.addEventListener('v2--table-filter:filtered', () => {
+      this._syncHiddenGeojsonPins()
     }, { signal })
   }
 
