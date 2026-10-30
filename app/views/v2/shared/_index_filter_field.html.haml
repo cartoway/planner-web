@@ -1,13 +1,12 @@
--# Shared client-side index filter input (pairs with v2--table-filter + v2--debounced-input).
--# locals: name: (required), value:, id:, placeholder:, class:, debounce_ms: 500, input_html: {}
+-# Shared client-side index filter input (pairs with v2--table-filter).
+-# locals: name: (required), value:, id:, placeholder:, class:, input_html: {}
 - name = local_assigns.fetch(:name)
 - value = local_assigns[:value]
 - id = local_assigns[:id]
 - placeholder = local_assigns.fetch(:placeholder, t('all.verb.filter'))
 - css_class = local_assigns.fetch(:class, 'form-control form-control-sm')
-- debounce_ms = local_assigns.fetch(:debounce_ms, 500)
 - input_html = local_assigns.fetch(:input_html, {})
-- filter_data = { controller: 'v2--debounced-input', v2__debounced_input_delay_value: debounce_ms, v2__table_filter_target: 'input', action: 'input->v2--debounced-input#queue keydown.enter->v2--debounced-input#flush v2--debounced-input:flush->v2--table-filter#filter' }.merge(input_html[:data] || {})
+- filter_data = { v2__table_filter_target: 'input', action: 'input->v2--table-filter#filter' }.merge(input_html[:data] || {})
 - opts = input_html.except(:data).merge(type: input_html.fetch(:type, 'search'), placeholder: placeholder, class: css_class, autocomplete: input_html.fetch(:autocomplete, 'off'), 'aria-label': input_html.fetch(:'aria-label', placeholder), data: filter_data)
 - opts[:id] = id if id.present?
 = text_field_tag name, value, opts
