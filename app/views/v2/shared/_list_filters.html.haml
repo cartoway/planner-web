@@ -1,4 +1,5 @@
 -# Shared GET list filters toolbar (search + optional date + status chips).
+-# Prefer results_frame so the search field stays outside the Turbo replace.
 -# locals:
 -#   url: (required)
 -#   q:, date:, status:
@@ -6,6 +7,7 @@
 -#   chips: [{ value:, label: }] — empty value = "all"
 -#   show_date: true
 -#   debounce_ms: 500
+-#   results_frame: — turbo-frame id to update (keeps the input responsive)
 - url = local_assigns.fetch(:url)
 - q = local_assigns[:q]
 - date = local_assigns[:date]
@@ -18,14 +20,21 @@
 - show_date = local_assigns.fetch(:show_date, true)
 - debounce_ms = local_assigns.fetch(:debounce_ms, 500)
 - search_id = local_assigns.fetch(:search_id, 'v2-list-filters-search')
+- results_frame = local_assigns[:results_frame]
+- form_data = { v2__list_filters_target: 'form' }
+- if results_frame.present?
+  - form_data[:turbo_frame] = results_frame
+  - form_data[:turbo_action] = 'advance'
 .v2-list-filters{data: { controller: 'v2--list-filters', action: 'v2--debounced-input:flush->v2--list-filters#submitNow' }}
-  = form_with url: url, method: :get, local: true, class: 'v2-list-filters-form', data: { v2__list_filters_target: 'form' } do
+  = form_with url: url, method: :get, local: true, class: 'v2-list-filters-form', data: form_data do
+    - if chips.any?
+      = hidden_field_tag status_name, status, data: { v2__list_filters_target: 'status' }
     .d-flex.flex-wrap.align-items-center.gap-2.mb-2
       .v2-list-filters-search.flex-grow-1
         .input-group.input-group-sm
           %span.input-group-text
             %i.fa.fa-search.fa-fw
-          = text_field_tag search_name, q, id: search_id, class: 'form-control', placeholder: search_placeholder, autocomplete: 'off', data: { controller: 'v2--debounced-input', v2__debounced_input_delay_value: debounce_ms, v2__debounced_input_preserve_focus_value: true, v2__list_filters_target: 'search', action: 'input->v2--debounced-input#queue keydown.enter->v2--debounced-input#flush' }
+          = text_field_tag search_name, q, id: search_id, class: 'form-control', placeholder: search_placeholder, autocomplete: 'off', data: { controller: 'v2--debounced-input', v2__debounced_input_delay_value: debounce_ms, v2__list_filters_target: 'search', action: 'input->v2--debounced-input#queue keydown.enter->v2--debounced-input#flush' }
       - if show_date
         = date_field_tag date_name, date, class: 'form-control form-control-sm v2-list-filters-date', data: { action: 'change->v2--list-filters#submitNow' }
     - if chips.any?
@@ -33,4 +42,4 @@
         - chips.each do |chip|
           - value = chip[:value].to_s
           - active = status == value
-          %button.btn{type: 'submit', name: status_name, value: value, class: (active ? 'btn-primary' : 'btn-outline-secondary')}= chip[:label]
+          %button.btn{type: 'button', class: (active ? 'btn-primary' : 'btn-outline-secondary'), data: { value: value, action: 'click->v2--list-filters#pickChip' }}= chip[:label]
