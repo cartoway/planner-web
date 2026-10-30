@@ -607,6 +607,18 @@ turbo-frame[busy]:has(form[aria-busy="true"])::after {
   display: none;
 }
 
+// List filters: search field must stay usable while the results frame reloads.
+form.v2-list-filters-form[aria-busy="true"] {
+  pointer-events: auto;
+  min-height: 0;
+}
+
+form.v2-list-filters-form[aria-busy="true"]::before,
+form.v2-list-filters-form[aria-busy="true"]::after {
+  content: none;
+  display: none;
+}
+
 @keyframes turbo-busy-spinner {
   to { transform: rotate(360deg); }
 }
