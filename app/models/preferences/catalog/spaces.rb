@@ -97,6 +97,9 @@ module Preferences
         allowed.each do |id|
           if controls_in[id].nil?
             # Opt-in: hide clear-all-visits until explicitly enabled (migration seeds the same).
+            # Missing keys only: seed from the current space tier. Do not rewrite stored controls
+            # when the space is disabled/hidden — runtime gates via space_action_usable_in? /
+            # UserPreferences#space_action_* (space visible/usable AND action controls).
             if key == 'destination' && id == 'delete_all_visits'
               vis = false
               use = false
@@ -108,13 +111,6 @@ module Preferences
             c = controls_in[id].is_a?(Hash) ? controls_in[id].stringify_keys : {}
             vis = Core.truthy?(c.fetch('visible', NORMALIZE_ACTION_VISIBLE_DEFAULT))
             use = Core.truthy?(c.fetch('usable', NORMALIZE_ACTION_USABLE_DEFAULT))
-          end
-          if !space_visible
-            vis = false
-            use = false
-          elsif !space_usable
-            use = false
-            vis = true
           end
           segment_controls[id] = { 'visible' => vis, 'usable' => use && vis }
         end
