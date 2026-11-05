@@ -45,8 +45,6 @@ module Operations
 
       stop = source.dup
       stop.custom_attributes = merged_stop_attributes(source)
-      # Operation cursor is authoritative once the stop is treated in the field.
-      stop.status_updated_at = @operation_stop.status_updated_at if @operation_stop.status_updated_at.present?
 
       {
         operation_stop: @operation_stop,

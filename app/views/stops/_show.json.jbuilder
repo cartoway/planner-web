@@ -46,14 +46,6 @@ when StopVisit
   json.revenue visit.revenue.round(2) if visit.revenue
   json.prefered_currency t("all.unit.currency_symbol.#{current_user.prefered_currency}")
   visit_stop_tags_present_json!(json, visit)
-  if stop.status
-    json.status t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
-    json.status_code stop.status.downcase
-    json.status_updated_at l(stop.status_updated_at, format: :hour_minute)
-  end
-  if stop.route.last_sent_to && stop.status && stop.eta
-    (json.eta_formated l(stop.eta, format: :hour_minute)) if stop.eta
-  end
   duration = stop.duration_time_with_seconds
   destination_duration = stop.destination_duration_time_with_seconds
 
@@ -85,12 +77,6 @@ when StopStore
     json.store_reload_id stop.store_reload.id
     json.color stop.default_color
     (json.error true) if !stop.store_reload.store.position?
-    if (store_status = stop.route_data&.status || stop.status)
-      json.status t("plannings.edit.stop_store_status.#{store_status.downcase}", default: store_status)
-      json.status_code store_status.downcase
-      json.eta_formated l(stop.route_data.eta, format: :hour_minute) if stop.route_data&.eta
-      json.status_updated_at l(stop.status_updated_at, format: :hour_minute) if stop.status_updated_at
-    end
   end
   json.route_data do
     json.id stop.route_data.id

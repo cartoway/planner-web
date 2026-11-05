@@ -4020,8 +4020,6 @@ fr:
       visit_duration: Durée de visite
       tags: Catégories destination
       tags_visit: Catégories visite
-      eta: ETA
-      status: Statut
     destinations_list_columns:
       name: Nom
       street: Voie

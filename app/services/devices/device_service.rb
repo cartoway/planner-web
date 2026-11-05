@@ -28,13 +28,10 @@ class DeviceService
 
   def send_route(route, options = {})
     service.send_route customer, route, options
-    route.set_send_to(@service.definition[:label_small]) # TODO: set_send_to already performed in devices_api.rb
-    route.last_sent_at
   end
 
   def clear_route(route)
     service.clear_route customer, route
-    route.clear_sent_to
   end
 
   def service_name_id

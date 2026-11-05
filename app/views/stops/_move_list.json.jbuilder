@@ -53,9 +53,5 @@ json.stops stops do |stop|
     # Hash { id, quantity, icon, label } for deliverable units
     json.quantities visit_quantities(visit, stop.route.vehicle_usage_id && stop.route.vehicle_usage.vehicle)
   end
-  if stop.status
-    json.status t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
-    json.status_code stop.status.downcase
-  end
   json.duration l(Time.at(stop.duration).utc, format: :hour_minute_second) if stop.duration > 0
 end.compact

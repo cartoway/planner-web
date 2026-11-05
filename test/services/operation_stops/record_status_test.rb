@@ -26,7 +26,7 @@ class RecordStatusTest < ActiveSupport::TestCase
     assert_equal %w[planned started delivered], @stop.operation_stop_status_events.order(:recorded_at).pluck(:status)
     assert_equal 'delivered', @stop.status
     assert_equal t2, @stop.status_updated_at
-    assert_nil @stop.stop.reload.status
+    refute_includes Stop.column_names, 'status'
   end
 
   test 'records status reset in the timeline and clears the cursor' do

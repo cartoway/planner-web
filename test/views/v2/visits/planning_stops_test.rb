@@ -38,8 +38,6 @@ class VisitPlanningStopsPartialTest < ActionView::TestCase
   end
 
   test 'does not show delivery note or stop attachments (owned by operations)' do
-    stop = stops(:stop_one_one)
-    stop.update_columns(status: 'delivered')
     visit = visits(:visit_one)
     render partial: 'v2/visits/planning_stops', locals: { visit: visit }
 
@@ -47,13 +45,10 @@ class VisitPlanningStopsPartialTest < ActionView::TestCase
     assert_select '.related-item-photos-toggle', 0
   end
 
-  test 'shows stop status as a colored badge' do
-    stop = stops(:stop_one_one)
-    stop.update_columns(status: 'delivered')
+  test 'does not show execution status badge' do
     visit = visits(:visit_one)
     render partial: 'v2/visits/planning_stops', locals: { visit: visit }
 
-    assert_select '.related-item-status.badge.stop-status-delivered',
-                  text: I18n.t('plannings.edit.stop_status.delivered')
+    assert_select '.related-item-status', 0
   end
 end

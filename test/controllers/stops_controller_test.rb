@@ -347,7 +347,6 @@ class StopsControllerTest < ActionController::TestCase
 
   # Tests for update action
   test 'planning stop update ignores status' do
-    @stop.update!(status: 'intransit')
     operation = publish_operation!(planning: @planning)
     operation_stop = operation.operation_stops.find_by!(stop_id: @stop.id)
 
@@ -362,7 +361,6 @@ class StopsControllerTest < ActionController::TestCase
     }
 
     assert_response :success
-    assert_equal 'intransit', @stop.reload.status
     assert_nil operation_stop.reload.status
     assert_equal 0, operation_stop.operation_stop_status_events.count
   ensure
@@ -370,7 +368,6 @@ class StopsControllerTest < ActionController::TestCase
   end
 
   test 'should update stop with custom attributes' do
-    @stop.update!(status: 'intransit')
     patch :update, params: {
       id: @stop,
       driver_token: @vehicle.driver_token,
@@ -382,7 +379,6 @@ class StopsControllerTest < ActionController::TestCase
     assert_response :success
     assert_equal({ 'success' => true }, JSON.parse(response.body))
     @stop.reload
-    assert_equal 'intransit', @stop.status
     assert_equal 'custom_value', @stop.custom_attributes['custom_field']
   end
 
