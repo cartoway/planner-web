@@ -23,7 +23,7 @@ class V01::Entities::OperationRoute < Grape::Entity
   expose :arrival_status, documentation: { type: String }
   expose :arrival_eta, documentation: { type: DateTime }
   expose :arrival_status_updated_at, documentation: { type: DateTime }
-  expose :last_sent_at, documentation: { type: DateTime, desc: 'Last time this operation route was sent to a device. Distinct from planning route last_sent_at.' }
-  expose :last_sent_to, documentation: { type: String, desc: 'Device/provider of last send (e.g. deliver).' }
+  expose :last_sent_at, documentation: { type: DateTime, desc: 'Last time this operation route was sent to a device/email/SMS.' }
+  expose :last_sent_to, documentation: { type: String, desc: 'Device/provider of last send (e.g. deliver, email, sms).' }
   expose :operation_stops, using: V01::Entities::OperationStop, documentation: { is_array: true, desc: 'Stops snapshot. Included when Operation is presented with type=:full.' }, if: ->(_route, options) { options[:type] == :full }
 end

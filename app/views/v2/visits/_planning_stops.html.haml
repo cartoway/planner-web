@@ -28,15 +28,6 @@
                     - days = number_of_days(stop.time)
                     - if days
                       = "(+#{days})"
-                - status = visit_stop_status_label(stop)
-                - status_code = visit_stop_status_code(stop)
-                - if status && status_code
-                  %span.badge.related-item-status{class: "stop-status-#{status_code}"}
-                    = status
-                - if stop.status_updated_at
-                  %span.text-muted
-                    ·
-                    = l(stop.status_updated_at, format: :hour_minute)
             .d-flex.gap-1.flex-shrink-0
               = link_to edit_planning_path(planning, stop_id: stop.id, route_id: stop.route_id),
                 class: 'btn btn-light',

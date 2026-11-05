@@ -4,7 +4,7 @@
       - stops.each do |stop|
         - title_col_class = local_assigns[:hide_hover_tools] ? 'col-xs-8 col-md-8' : 'col-xs-4 col-md-4'
         %li.d-fake-flex.align-items-center.list-group-item{class: (stop[:error] ? 'ui-state-error' : nil)}
-          .row.stop-row.d-flex.flex-wrap.align-items-center{class: (stop[:status] ? "row-status-#{stop[:status_code]}" : nil)}
+          .row.stop-row.d-flex.flex-wrap.align-items-center
             .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
               .col-xs-2.d-flex.justify-content-center.align-items-center.extract-inactive-stops-checkbox
                 - checkbox_data = { 'route-id': stop[:route_id] }
@@ -18,7 +18,6 @@
                     %i.fa.fa-lock.fa-fw.text-warning.extract-inactive-stops-locked-indicator{ title: t('plannings.edit.stop_locked_indicator_title') }
                   - else
                     %span.number.stop-label.label{class: (stop[:color_force] ? 'color_force' : '' ) + (stop[:active] ? '' : ' inactive' ), style: "background-color: #{ stop[:active] ? stop[:color] : 'transparent' };"}
-                      %span{ class: ['stop-status', (stop[:status] ? "stop-status-#{stop[:status_code]}" : nil)].compact.join(' '), title: [stop[:status], (stop[:eta_formated] ? " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}" : nil)].compact.join, style: (stop[:status] ? nil : 'display: none;') }
                       = stop[:number] || stop[:stop_index]
                 .col-xs-7
                   .stop-info{class: "#{stop[:active] ? 'primary' : 'info'} #{('danger' if stop[:error])}"}
@@ -46,10 +45,6 @@
                 - title = sd_line
                 - if stop[:index_visit]
                   - title += " # #{stop[:index_visit]}"
-                - if stop[:status]
-                  - title += " - #{stop[:status]}"
-                - if stop[:eta_formated]
-                  - title += " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}"
                 %span.name{ title: title }
                   = sd_line
                 - if local_assigns[:show_route_name] && stop[:route_name].present?

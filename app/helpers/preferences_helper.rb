@@ -174,11 +174,6 @@ module PreferencesHelper
   end
 
   def stop_list_field_part(stop, field_id)
-    val = ::Preferences::Catalog.stop_list_field_value(stop, field_id)
-    return nil if val.blank?
-
-    return "#{I18n.t('plannings.edit.popup.eta')} #{val}" if field_id.to_s == 'eta'
-
-    val
+    ::Preferences::Catalog.stop_list_field_value(stop, field_id).presence
   end
 end

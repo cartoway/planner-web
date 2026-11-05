@@ -120,10 +120,6 @@ class RouteSidebarSerializer
     data[:time_window_start] = vehicle_usage&.default_time_window_start_time
     data[:max_reload] = vehicle_usage&.default_max_reload if vehicle_usage
     data[:optimized_at_formatted] = @route.optimized_at && @view_helpers.l(@route.optimized_at)
-    unless customer.device.operations_enabled?
-      data[:last_sent_at_formatted] = @route.last_sent_at && @view_helpers.l(@route.last_sent_at)
-      data[:last_sent_to] = @route.last_sent_to
-    end
     data[:contact_email] = vehicle&.contact_email if vehicle&.contact_email.present?
     data[:route_error] = route_error?
     merge_route_errors!(data)
@@ -240,9 +236,6 @@ class RouteSidebarSerializer
       show_marker: @route.map_marker?(stop),
       active: stop.active,
       error: stop_error?(stop),
-      status: stop.status && I18n.t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status),
-      status_code: stop.status&.downcase,
-      eta_formated: stop.eta && @view_helpers.l(stop.eta, format: :hour_minute),
       time: stop.time && stop.time_time,
       time_day: stop.time && @view_helpers.number_of_days(stop.time),
       wait_time: stop.wait_time && stop.wait_time > 60 ? format('%<hours>i:%<minutes>02i', hours: stop.wait_time / 3600, minutes: stop.wait_time / 60 % 60) : nil,
@@ -316,12 +309,9 @@ class RouteSidebarSerializer
         geocoded: stop.store_reload&.store&.position?,
         error: !stop.store_reload&.store&.position?,
         departure: stop.time && stop.store_reload ? @view_helpers.time_over_day(stop.time.to_i + stop.store_reload.default_duration.to_i) : nil,
-        departure_day: stop.time && stop.store_reload ? @view_helpers.number_of_days(stop.time.to_i + stop.store_reload.default_duration.to_i) : nil,
-        status_updated_at: stop.status_updated_at && @view_helpers.l(stop.status_updated_at, format: :hour_minute)
+        departure_day: stop.time && stop.store_reload ? @view_helpers.number_of_days(stop.time.to_i + stop.store_reload.default_duration.to_i) : nil
       },
-      route_data: serialize_route_data(rd, sub_tour: true),
-      status: (rd&.status || stop.status) && I18n.t("plannings.edit.stop_store_status.#{(rd&.status || stop.status).downcase}", default: rd&.status || stop.status),
-      status_code: (rd&.status || stop.status)&.downcase
+      route_data: serialize_route_data(rd, sub_tour: true)
     )
   end
 
@@ -345,10 +335,6 @@ class RouteSidebarSerializer
       icon: store.icon,
       icon_size: store.icon_size,
       departure: route_data&.start_time,
-      status: @route.start_route_data&.status && I18n.t("plannings.edit.stop_status.#{@route.start_route_data.status.downcase}", default: @route.start_route_data.status.downcase),
-      status_code: @route.start_route_data&.status&.downcase,
-      eta_formated: @route.start_route_data&.eta && @view_helpers.l(@route.start_route_data.eta, format: :hour_minute),
-      eta: @route.start_route_data&.eta,
       time: route_data&.start && route_data.start_time,
       time_day: route_data&.start && @view_helpers.number_of_days(route_data.start),
       route_data: serialize_route_data(@route.start_route_data, vehicle: vehicle),
@@ -375,10 +361,6 @@ class RouteSidebarSerializer
       no_path: @route.stop_no_path,
       icon: store.icon,
       icon_size: store.icon_size,
-      eta_formated: @route.stop_route_data&.eta && @view_helpers.l(@route.stop_route_data.eta, format: :hour_minute),
-      eta: @route.stop_route_data&.eta,
-      status: @route.stop_route_data&.status && I18n.t("plannings.edit.stop_status.#{@route.stop_route_data.status.downcase}", default: @route.stop_route_data.status.downcase),
-      status_code: @route.stop_route_data&.status&.downcase,
       time: @route.route_data&.end && @route.route_data.end_time,
       time_day: @route.end && @view_helpers.number_of_days(@route.end),
       stop_out_of_drive_time: @route.stop_out_of_drive_time,
@@ -400,8 +382,6 @@ class RouteSidebarSerializer
       id: route_data.id,
       route_id: @route.id,
       vehicle_id: vehicle&.id,
-      status: route_data.status,
-      eta: route_data.eta,
       emission: route_data.emission,
       cost_distance: route_data.cost_distance,
       cost_fixed: route_data.cost_fixed,

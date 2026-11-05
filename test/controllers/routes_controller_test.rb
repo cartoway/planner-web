@@ -159,24 +159,19 @@ class RoutesControllerTest < ActionController::TestCase
                "destination_duration should be nil for StopStore but got #{stop_store_row[destination_duration_index]}"
   end
 
-  test 'should not update route status via update' do
+  test 'should update route ref via update' do
     route = routes(:route_one_one)
-    original_status = route.start_route_data.status
 
     patch :update, params: {
       id: route,
       route: {
         hidden: route.hidden,
         locked: route.locked,
-        ref: route.ref,
-        start_route_data: {
-          status: 'completed'
-        }
+        ref: 'updated-ref'
       }
     }
 
     assert_redirected_to route_path(assigns(:route))
-    route.reload
-    assert_equal original_status, route.start_route_data.status, 'status should not be updated via update'
+    assert_equal 'updated-ref', route.reload.ref
   end
 end

@@ -30,12 +30,10 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
     assert_nil stop.stop_snapshot['status_updated_at']
   end
 
-  test 'to_history_stops uses operation status not planning live status' do
+  test 'to_history_stops uses operation stop status' do
     operation = publish_operation!(planning: @planning, date: '2026-09-30', name: 'Map', allow_past: true)
     route = operation.operation_routes.planned.first
     stop = route.operation_stops.find { |row| row.kind == 'visit' }
-    live = stop.stop
-    live.update_columns(status: 'planning-live', status_updated_at: 2.days.ago) if live
 
     at = Time.zone.parse('2026-09-30 14:00:00')
     stop.update_columns(status: 'delivered', status_updated_at: at, eta: at)

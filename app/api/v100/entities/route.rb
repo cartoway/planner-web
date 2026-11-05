@@ -27,8 +27,6 @@ class V100::Entities::Route < V100::Entities::RouteProperties
   expose(:stop_distance, documentation: { type: Float, desc: 'Distance between the vehicle\'s store_stop and last stop.' })
   expose(:stop_drive_time, documentation: { type: Integer, desc: 'Time in seconds between the vehicle\'s store_stop and last stop.' })
   expose(:updated_at, documentation: { type: DateTime, desc: 'Last Updated At.'})
-  expose(:last_sent_to, documentation: { type: String, desc: 'Type GPS Device of Last Sent.'})
-  expose(:last_sent_at, documentation: { type: DateTime, desc: 'Last Time Sent To External GPS Device.'})
   expose(:optimized_at, documentation: { type: DateTime, desc: 'Last optimized at.'})
   expose(:out_of_max_ride_distance, documentation: { type: 'Boolean' })
   expose(:out_of_max_ride_duration, documentation: { type: 'Boolean' })

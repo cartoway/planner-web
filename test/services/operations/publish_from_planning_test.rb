@@ -275,7 +275,6 @@ class PublishFromPlanningTest < ActiveSupport::TestCase
     photo = owned.document_items.find { |item| item[:kind] == 'photo' }
     assert_includes photo[:url], '/stop_photos/'
     assert_empty other.document_items
-    assert_nil planning_stop.reload.status
   ensure
     owned&.photos&.purge
     owned&.signature&.purge if owned&.signature&.attached?

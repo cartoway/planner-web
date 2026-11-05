@@ -7,8 +7,6 @@ class V100::Entities::RouteStatus < Grape::Entity
 
   expose(:id, documentation: { type: Integer })
   expose(:vehicle_usage_id, documentation: { type: Integer })
-  expose(:last_sent_to, documentation: { type: String, desc: 'Type GPS Device of Last Sent.'})
-  expose(:last_sent_at, documentation: { type: DateTime, desc: 'Last Time Sent To External GPS Device.'})
   expose(:quantities, using: V100::Entities::DeliverableUnitQuantity, documentation: { type: V100::Entities::DeliverableUnitQuantity, is_array: true, param_type: 'form' }) { |m|
     convert_pickups_deliveries_to_quantities(m.pickups, m.deliveries)
   }

@@ -1050,14 +1050,13 @@ class Planning < ApplicationRecord
 
     routes_with_vehicle.each_with_index{ |r, i|
       r.optimized_at = Time.now.utc
-      r.last_sent_to = r.last_sent_at = nil
     }
     solution
   end
 
   def outdate_drained_routes(route_ids)
     self.routes.where(id: route_ids).each{ |route|
-      route.optimized_at = route.last_sent_to = route.last_sent_at = nil
+      route.optimized_at = nil
       route.outdated = true
       route.save!
     }

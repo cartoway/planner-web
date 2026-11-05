@@ -30,7 +30,7 @@
 - attribute_sources = visit_cas.map { |ca| [ca, @visit] } + filled_cas.map { |ca| [ca, @stop] }
 - attribute_sources.sort_by! { |ca, _| [ca.object_type_before_type_cast, ca.name] }
 - attribute_lines = attribute_sources.map { |ca, object| { header: ca.name, value: delivery_note_custom_attribute_value(ca, object) } }
-- validated_at = @operation_stop&.status_updated_at.presence || @stop.status_updated_at
+- validated_at = @operation_stop&.status_updated_at
 
 .delivery-note
   = button_tag type: 'button', class: 'btn btn-primary btn-print hidden-print', onclick: 'window.print()' do
