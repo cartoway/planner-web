@@ -88,6 +88,17 @@ class DeliveryTrackingTest < ActionController::TestCase
     assert_not_includes response.body, I18n.t('delivery_trackings.chips.intransit')
   end
 
+  test 'public page shows cancelled when destination visits left the operation' do
+    @tracking.visit_stops.each(&:destroy!)
+    get :show, params: { token: @tracking.token }
+    assert_response :success
+    assert_select '.delivery-tracking-chip.is-cancelled', text: I18n.t('delivery_trackings.chips.cancelled')
+    assert_select '.delivery-tracking-eta-value', text: I18n.t('delivery_trackings.cancelled.title')
+    assert_select '.delivery-tracking-eta-updated', text: I18n.t('delivery_trackings.cancelled.body')
+    # "Suivi" alone matches the page title ("Suivi de livraison"); assert on the timeline list.
+    assert_select '.delivery-tracking-timeline', count: 0
+  end
+
   test 'destination snapshot includes email' do
     destination = destinations(:destination_one)
     destination.update!(email: 'client@example.com', phone_number: '0600000000')

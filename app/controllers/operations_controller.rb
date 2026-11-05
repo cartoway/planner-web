@@ -389,8 +389,7 @@ class OperationsController < ApplicationController
   end
 
   def destination_trackings_for_send
-    OperationDeliveryTracking.ensure_for!(@operation)
-    trackings = @operation.operation_delivery_trackings.with_destination.to_a
+    trackings = OperationDeliveryTracking.for_send(@operation).to_a
     OperationDeliveryTracking.preload_visit_stops!(trackings)
     trackings
   end

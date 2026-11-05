@@ -11,7 +11,7 @@ module Operations
       messaging = SendDriverSms.messaging_service(customer)
       template = customer.sms_template || I18n.t('notifications.sms.alert_plan')
       date = operation.date || Time.zone.today
-      list = Array(trackings || operation.operation_delivery_trackings.with_destination)
+      list = Array(trackings || OperationDeliveryTracking.for_send(operation))
       OperationDeliveryTracking.preload_visit_stops!(list)
 
       list.count { |tracking|
@@ -42,7 +42,7 @@ module Operations
       stop&.destination_snapshot&.[]('phone_number').presence || tracking.destination&.phone_number
     end
 
-    # Timeline-only: do not move the operational status cursor.
+    # Timeline event + transmit cursor (last_sent_*) for the send modals.
     def self.record_notification!(stop, channel:, to:)
       return unless stop
 
@@ -54,6 +54,7 @@ module Operations
         update_cursor: false,
         payload: { 'channel' => channel, 'to' => to }
       )
+      stop.mark_sent!(channel)
     end
 
     def self.replacements(stop, date, url)

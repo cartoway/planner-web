@@ -4048,6 +4048,7 @@ en:
       channel_email: Email
       channel_sms: SMS
       channel_none: Do not send
+      include_already_sent: Include already notified contacts
     statuses:
       in_progress: In progress
       historized: Historized
@@ -4308,6 +4309,9 @@ en:
     expired:
       title: Link expired
       body: This tracking link is no longer available.
+    cancelled:
+      title: Delivery cancelled
+      body: This delivery is no longer planned.
     chips:
       planned: Planned
       loading: Loading
@@ -4318,6 +4322,7 @@ en:
       failed: Failed
       missed: Not delivered
       exception: Issue
+      cancelled: Cancelled
     timeline:
       loading: Depot loading
       departed: Depot departure

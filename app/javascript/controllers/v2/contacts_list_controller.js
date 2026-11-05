@@ -1,9 +1,14 @@
 // Copyright © Cartoway
-// Shared contact rows: edit (unlock/lock), channel apply-all, drag-swap.
+// Shared contact rows: edit (unlock/lock), channel apply-all, drag-swap,
+// already-sent include toggle (default: skip rows already notified).
 import { Controller } from '@hotwired/stimulus'
+import {
+  channelForAlreadySentRow,
+  effectiveAlreadySent
+} from 'lib/contacts_already_sent'
 
 export default class extends Controller {
-  static targets = ['row', 'globalChannel', 'field']
+  static targets = ['row', 'globalChannel', 'field', 'includeAlreadySent']
   static values = { allowReorder: { type: Boolean, default: false } }
 
   connect () {
@@ -29,11 +34,54 @@ export default class extends Controller {
   applyGlobalChannel () {
     if (!this.hasGlobalChannelTarget) return
     const value = this.globalChannelTarget.value
+    const includeAlreadySent = this.includeAlreadySentEnabled()
     this.rowTargets.forEach((row) => {
       if (row.hidden || row.classList.contains('d-none')) return
+      if (this.rowAlreadySent(row) && !includeAlreadySent) return
       const select = row.querySelector('[data-contacts-channel]')
       if (select) select.value = value
     })
+    this.refreshGroupCounts()
+  }
+
+  toggleIncludeAlreadySent () {
+    const include = this.includeAlreadySentEnabled()
+    this.rowTargets.forEach((row) => {
+      if (!this.rowAlreadySent(row)) return
+      this.setRowChannel(row, channelForAlreadySentRow({
+        alreadySent: true,
+        includeAlreadySent: include,
+        defaultChannel: row.dataset.contactsDefaultChannel
+      }))
+    })
+    this.refreshGroupCounts()
+  }
+
+  // Editing email/phone clears "already sent" for that row (contact no longer matches last transmit).
+  markContactChanged (event) {
+    const row = event.currentTarget.closest('[data-v2--contacts-list-target="row"]')
+    if (!row || row.dataset.contactsSent !== 'true') return
+
+    const email = row.querySelector('[data-contacts-field="email"]')?.value
+    const phone = row.querySelector('[data-contacts-field="phone"]')?.value
+    const alreadySent = effectiveAlreadySent({
+      wasSent: true,
+      originalEmail: row.dataset.contactsOriginalEmail,
+      originalPhone: row.dataset.contactsOriginalPhone,
+      email,
+      phone
+    })
+    row.dataset.contactsAlreadySent = alreadySent ? 'true' : 'false'
+
+    if (alreadySent) {
+      this.setRowChannel(row, channelForAlreadySentRow({
+        alreadySent: true,
+        includeAlreadySent: this.includeAlreadySentEnabled(),
+        defaultChannel: row.dataset.contactsDefaultChannel
+      }))
+    } else if (this.rowChannel(row) === 'none') {
+      this.setRowChannel(row, row.dataset.contactsDefaultChannel || 'none')
+    }
     this.refreshGroupCounts()
   }
 
@@ -94,6 +142,23 @@ export default class extends Controller {
   }
 
   // --- private ---
+
+  includeAlreadySentEnabled () {
+    return this.hasIncludeAlreadySentTarget && this.includeAlreadySentTarget.checked
+  }
+
+  rowAlreadySent (row) {
+    return row.dataset.contactsAlreadySent === 'true'
+  }
+
+  rowChannel (row) {
+    return row.querySelector('[data-contacts-channel]')?.value || 'none'
+  }
+
+  setRowChannel (row, channel) {
+    const select = row.querySelector('[data-contacts-channel]')
+    if (select) select.value = channel
+  }
 
   onPointerDown (event) {
     const unlocked = this.element.querySelector('[data-contacts-lockable]:not([disabled])')
@@ -171,6 +236,10 @@ export default class extends Controller {
       inputB.value = tmp
       this.lockInput(inputA)
       this.lockInput(inputB)
+    })
+    ;[rowA, rowB].forEach((row) => {
+      if (row.dataset.contactsSent !== 'true') return
+      this.markContactChanged({ currentTarget: row.querySelector('[data-contacts-field="email"]') || row })
     })
     this.refreshGroupCounts()
   }
