@@ -55,7 +55,6 @@ module V01::Devices
         Route.transaction do
           planning_route = planning_route_for!(operation_route)
           service.send_route(planning_route, options)
-          planning_route.save!
           operation_route.mark_sent!(device_send_label)
         end
       end
@@ -67,7 +66,6 @@ module V01::Devices
       Route.transaction do
         planning_route = planning_route_for!(operation_route)
         service.clear_route(planning_route)
-        planning_route.save!
         operation_route.update_columns(last_sent_at: nil, last_sent_to: nil, updated_at: Time.current)
         present operation_route, with: V01::Entities::DeviceRouteLastSentAt
       end
@@ -83,7 +81,6 @@ module V01::Devices
         Route.transaction do
           planning_route = planning_route_for!(operation_route)
           service.clear_route(planning_route)
-          planning_route.save!
           operation_route.update_columns(last_sent_at: nil, last_sent_to: nil, updated_at: Time.current)
         end
       end

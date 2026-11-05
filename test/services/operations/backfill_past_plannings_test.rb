@@ -9,7 +9,6 @@ class BackfillPastPlanningsTest < ActiveSupport::TestCase
     Operation.where(customer_id: @planning.customer_id).delete_all
     @planning.update_columns(date: Date.new(2015, 10, 10))
     @stop = stops(:stop_one_one)
-    @stop.update_columns(status: 'delivered', status_updated_at: Time.zone.parse('2015-10-10 10:00'))
     # Legacy Stop ActiveStorage rows (model no longer has attachments); backfill copies them.
     blob = ActiveStorage::Blob.create_and_upload!(
       io: File.open(Rails.root.join('test/fixtures/files/stop_photo.jpg')),
@@ -29,24 +28,22 @@ class BackfillPastPlanningsTest < ActiveSupport::TestCase
     @legacy_attachment&.blob&.purge
   end
 
-  test 'a past planning with stop status becomes one historized operation' do
+  test 'a past planning with stop proofs becomes one historized operation' do
     Operations::BackfillFromPastPlannings.call
 
     operation = Operation.find_by!(planning_id: @planning.id, date: Date.new(2015, 10, 10))
     assert_equal 'historized', operation.status
     assert operation.custom_attributes['_backfill']
     operation_stop = operation.operation_stops.find_by!(stop_id: @stop.id)
-    assert_equal 'delivered', operation_stop.status
+    assert_nil operation_stop.status
     assert operation_stop.destination_snapshot.key?('email')
-    assert_equal 1, operation_stop.operation_stop_status_events.where(source: 'migration').count
+    assert_empty operation_stop.operation_stop_status_events.where(source: 'migration')
     assert operation_stop.photos.attached?
     assert ActiveStorage::Attachment.exists?(record_type: 'Stop', record_id: @stop.id, name: 'photos')
-    assert_equal 'delivered', @stop.status
 
     Operations::BackfillFromPastPlannings.revert
     assert_nil Operation.find_by(planning_id: @planning.id)
     assert ActiveStorage::Attachment.exists?(record_type: 'Stop', record_id: @stop.id, name: 'photos')
-    assert_equal 'delivered', @stop.status
   ensure
     operation_stop&.photos&.purge
   end

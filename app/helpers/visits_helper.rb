@@ -53,16 +53,6 @@ module VisitsHelper
     stop.route.vehicle_usage&.vehicle&.color.presence || '#ffffff'
   end
 
-  def visit_stop_status_label(stop)
-    return if stop.status.blank?
-
-    t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
-  end
-
-  def visit_stop_status_code(stop)
-    stop.status&.downcase.presence
-  end
-
   def visit_stop_visit_custom_attributes(visit)
     attrs = visit.destination.customer.custom_attributes
     attrs.loaded? ? attrs.select(&:stop_visit?) : attrs.for_stop_visit.to_a

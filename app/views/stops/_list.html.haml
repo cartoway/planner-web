@@ -20,7 +20,7 @@
       - store_color = stop[:route_data]&.[](:color)
       - sub_tour_index +=1
       %li.li-store.d-fake-flex.align-items-center.list-group-item.pr-5{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-store-reload-id": stop[:store_reload_id], "data-origin-route-id": route[:route_id], "data-sub-tour-index": sub_tour_index, style: "box-shadow: inset 4px 0px 0px 0px var(--box-shadow-color); --box-shadow-color: #{store_color || route_color};" }
-        .row.store-row.d-flex.flex-wrap.align-items-center{class: ("row-status-#{stop[:status_code]}" if stop[:status])}
+        .row.store-row.d-flex.flex-wrap.align-items-center
           .col-xs-6.col-md-4.d-flex.justify-content-between.align-items-center
             .col-xs-2.d-flex.align-items-center.justify-content-center
               %i.fa.fa-fw{class: (stop[:icon] ? stop[:icon] : 'fa-store'), style: "color: #{store_color || route_color || 'black'};"}
@@ -51,7 +51,6 @@
               %span.name{title: sd_line}
                 = sd_line
           .col-xs-4.col-md-4.d-flex.justify-content-end.align-items-center
-            - eta_statement = " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}" if stop[:eta_formated]
             .btn-group.pull-right.stop-tools
               - route_depot_view_disabled = @manage_planning[:disable_route_view]
               - route_depot_paint_disabled = @manage_planning[:disable_route_paint]
@@ -78,10 +77,10 @@
               %a.marker.btn.btn-default.btn-xs{href: "#", title: t("plannings.edit.marker_help")}
                 %i.fa.fa-map-marker
       %li.li-store.d-fake-flex.align-items-center.list-group-item.route-data-container{class: ("ui-state-error" if stop[:error]),data: { stop_id: stop[:stop_id], route_data_id: stop[:route_data]&.[](:id), sub_tour_index: sub_tour_index, origin_route_id: route[:route_id] }.compact, style: "box-shadow: inset 4px 0px 0px 0px var(--box-shadow-color); --box-shadow-color: #{store_color || route_color};"}
-        = render partial: 'shared/store_route_data', locals: { route_data: stop[:route_data], status_code: stop[:status_code] }
+        = render partial: 'shared/store_route_data', locals: { route_data: stop[:route_data] }
     - if stop[:rest]
       %li.d-fake-flex.align-items-center.list-group-item.pr-5{class: ("ui-state-error" if stop[:error]), "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-store-id": stop[:store_id], "data-origin-route-id": route[:route_id] }
-        .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("row-status-#{stop[:status_code]}" if stop[:status])}
+        .row.stop-row.d-flex.flex-wrap.align-items-center
           .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
             .col-xs-2.d-flex.justify-content-center.align-items-center
               - stop_active_disabled = !@manage_planning[:manage_organize] || !@manage_planning[:manage_stop_active] || @manage_planning[:disable_stop_active]
@@ -117,10 +116,6 @@
               - title = sd_line
               - if stop[:index_visit]
                 - title += " # #{stop[:index_visit]}"
-              - if stop[:status]
-                - title += " - #{stop[:status]}"
-              - if stop[:eta_formated]
-                - title += " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}"
               %span.name{title: title}
                 %i.fa.fa-fw{class: (route[:regulatory_rest] ? 'fa-circle-pause' : 'fa-coffee')}
                 = sd_line
@@ -140,7 +135,7 @@
     - if stop[:destination] && stop[:visits]
       - visit_li_classes = [("ui-state-error" if stop[:error]), ("stop-visit-locked" if stop[:locked] && route[:vehicle_usage_id])].compact.join(' ')
       %li.d-fake-flex.align-items-center.list-group-item.pr-5{class: visit_li_classes.presence, "data-stop-id": stop[:stop_id], "data-stop-index": stop[:stop_index], "data-origin-route-id": route[:route_id], "data-sub-tour-index": sub_tour_index}
-        .row.stop-row.d-flex.flex-wrap.align-items-center{class: ("row-status-#{stop[:status_code]}" if stop[:status])}
+        .row.stop-row.d-flex.flex-wrap.align-items-center
           .col-xs-6.col-md-4.d-flex.justify-content-center.align-items-center
             .col-xs-2.d-flex.justify-content-center.align-items-center
               - stop_active_disabled = !@manage_planning[:manage_organize] || !@manage_planning[:manage_stop_active] || @manage_planning[:disable_stop_active]
@@ -190,10 +185,6 @@
               - title = sd_line
               - if stop[:index_visit]
                 - title += " # #{stop[:index_visit]}"
-              - if stop[:status]
-                - title += " - #{stop[:status]}"
-              - if stop[:eta_formated]
-                - title += " - #{t('plannings.edit.popup.eta')} #{stop[:eta_formated]}"
               - if stop[:locked] && route[:vehicle_usage_id]
                 - title += " — #{t('plannings.edit.stop_locked_indicator_title')}"
               %span.name{title: title}

@@ -3580,7 +3580,7 @@ export const plannings_edit = function(params) {
 
     $p.on('click.planningRouteDelegate', '.route .send_sms', sendSMS);
 
-    $p.on('click.planningRouteDelegate', '.route .active_all, .route .active_reverse, .route .active_none, .route .active_status, .route .reverse_order', function() {
+    $p.on('click.planningRouteDelegate', '.route .active_all, .route .active_reverse, .route .active_none, .route .reverse_order', function() {
       var route_id = $(this).closest('[data-route-id]').attr('data-route-id');
       if (!route_id) return false;
 

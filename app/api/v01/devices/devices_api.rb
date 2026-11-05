@@ -74,8 +74,6 @@ class V01::Devices::DevicesApi < Grape::API
           planning_route = planning_route_for!(operation_route)
           Route.transaction do
             device.send_route(@current_customer, planning_route, params.slice(:type))
-            planning_route.set_send_to(device.definition[:label_small])
-            planning_route.save!
             operation_route.mark_sent!(device.definition[:label_small])
             present operation_route, with: V01::Entities::DeviceRouteLastSentAt
           end
