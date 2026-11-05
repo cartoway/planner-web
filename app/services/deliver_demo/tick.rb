@@ -59,6 +59,9 @@ module DeliverDemo
       return [cursor, true] if cursor['done']
 
       cursor = ensure_departure!(route, cursor)
+      # Departure depot needs its own wall-clock ticks (atstore → finished) before driving.
+      return [cursor, false] unless cursor['departed']
+
       stop_index = cursor['stop_index'].to_i
       stop = stops[stop_index]
       return finish_route!(route, cursor, legs, stops) unless stop
@@ -159,23 +162,72 @@ module DeliverDemo
       ]
     end
 
+    # Mobile start depot: atstore → finished (one status per wall-clock tick).
     def ensure_departure!(route, cursor)
       return cursor if cursor['departed']
 
-      at = planned_time(route.route_snapshot['start']) || planned_time(FALLBACK_START_SECONDS)
-      route.update!(
-        departure_status: 'finished',
-        departure_status_updated_at: at
-      )
-      cursor.merge('departed' => true, 'stop_index' => 0, 'step' => 0, 'phase' => 'drive')
+      start_at = planned_time(route.route_snapshot['start']) || planned_time(FALLBACK_START_SECONDS)
+      phase = cursor['depot_departure_phase'].presence || 'atstore'
+
+      case phase
+      when 'atstore'
+        set_depot_status!(route, 'departure', 'atstore', start_at)
+        cursor.merge('depot_departure_phase' => 'finished')
+      when 'finished'
+        stash_depot_loading!(route, 'departure')
+        set_depot_status!(route, 'departure', 'finished', start_at + DEFAULT_SERVICE_SECONDS)
+        cursor.merge(
+          'departed' => true,
+          'depot_departure_phase' => 'done',
+          'stop_index' => 0,
+          'step' => 0,
+          'phase' => 'drive'
+        )
+      else
+        cursor.merge('departed' => true, 'stop_index' => 0, 'step' => 0, 'phase' => 'drive')
+      end
     end
 
+    # Mobile return depot: intransit → atstore → finished. Skip when the route has no end store.
     def finish_route!(route, cursor, legs, stops)
       last_leg = legs[[stops.size - 1, 0].max] || []
       record_position!(route, last_leg, 1.0, stops, [stops.size - 1, 0].max, cursor) if last_leg.size >= 2
-      at = planned_time(route.route_snapshot['end']) || planned_time(FALLBACK_END_SECONDS)
-      route.update!(arrival_status: 'finished', arrival_status_updated_at: at) if route.arrival_status != 'finished'
-      [cursor.merge('done' => true, 'phase' => 'done'), true]
+
+      if route.vehicle_usage_snapshot['store_stop'].blank?
+        return [cursor.merge('done' => true, 'phase' => 'done'), true]
+      end
+
+      end_at = planned_time(route.route_snapshot['end']) || planned_time(FALLBACK_END_SECONDS)
+      phase = cursor['depot_arrival_phase'].presence || 'intransit'
+
+      case phase
+      when 'intransit'
+        set_depot_status!(route, 'arrival', 'intransit', end_at - DEFAULT_SERVICE_SECONDS)
+        [cursor.merge('depot_arrival_phase' => 'atstore'), false]
+      when 'atstore'
+        set_depot_status!(route, 'arrival', 'atstore', end_at)
+        [cursor.merge('depot_arrival_phase' => 'finished'), false]
+      else
+        stash_depot_loading!(route, 'arrival')
+        set_depot_status!(route, 'arrival', 'finished', end_at + DEFAULT_SERVICE_SECONDS)
+        [cursor.merge('done' => true, 'phase' => 'done', 'depot_arrival_phase' => 'done'), true]
+      end
+    end
+
+    def set_depot_status!(route, leg, status, at)
+      return if route.public_send("#{leg}_status").to_s.downcase == status.to_s.downcase
+
+      route.update!("#{leg}_status" => status, "#{leg}_status_updated_at" => at)
+    end
+
+    def stash_depot_loading!(route, leg)
+      return unless route.public_send("#{leg}_status").to_s.downcase == 'atstore'
+
+      updated_at = route.public_send("#{leg}_status_updated_at")
+      return if updated_at.blank?
+
+      attrs = (route.custom_attributes || {}).merge("_#{leg}_loading_at" => updated_at.iso8601)
+      route.update_columns(custom_attributes: attrs)
     end
 
     def record_position!(route, leg, ratio, stops, stop_index, cursor)
