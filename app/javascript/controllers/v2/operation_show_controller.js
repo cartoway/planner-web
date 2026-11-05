@@ -249,10 +249,16 @@ export default class extends Controller {
     this.element.querySelectorAll('details.operation-tour .operation-stop-row').forEach((row) => {
       const phase = row.dataset.phase
       const label = (row.dataset.label || row.textContent || '').toLowerCase()
-      const phaseOk = this.phase === 'all' || phase === 'depot' || phase === this.phase
-      const queryOk = !this.query || label.includes(this.query)
-      row.classList.toggle('is-hidden', !(phaseOk && queryOk))
+      row.classList.toggle('is-hidden', !this._matchesStopFilter(phase, label))
     })
+    this._syncStopClusters()
+  }
+
+  // Same rules for the stop list and map markers (depots always stay visible).
+  _matchesStopFilter (phase, label) {
+    const phaseOk = this.phase === 'all' || phase === 'depot' || phase === this.phase
+    const queryOk = !this.query || String(label || '').toLowerCase().includes(this.query)
+    return phaseOk && queryOk
   }
 
   _focusRoute (details) {
@@ -1438,22 +1444,15 @@ export default class extends Controller {
   }
 
   _paintStopPhase (stopId, phase) {
-    let storeLike = false
-    let tourColor = null
     ;(this.geojson?.features || []).forEach((feature) => {
       if (!feature.properties || String(feature.properties.operation_stop_id) !== String(stopId)) return
       feature.properties.phase = phase
       const treated = phase === 'delivered' || phase === 'failed' || phase === 'exception'
       feature.properties.treated = treated
       feature.properties.opacity = treated ? OPACITY_MIN : OPACITY_MAX
-      storeLike = feature.properties.kind === 'store' || feature.properties.kind === 'depot'
-      tourColor = feature.properties.color
     })
     const disc = document.querySelector(`[data-stop-id="${stopId}"]`)
-    if (!disc) return
-    // Store reloads keep the tour color; visits follow phase colours.
-    if (storeLike) disc.style.setProperty('--dm-flat', tourColor || '#888888')
-    else if (PHASE_COLORS[phase]) disc.style.setProperty('--dm-flat', PHASE_COLORS[phase])
+    if (disc && PHASE_COLORS[phase]) disc.style.setProperty('--dm-flat', PHASE_COLORS[phase])
   }
 
   _splitPositionsFromGeojson () {
@@ -1571,6 +1570,7 @@ export default class extends Controller {
       const props = feature.properties || {}
       if (props.geometry_kind === 'vehicle' || props.geometry_kind === 'positions') return
       if (props.kind === 'depot' || hidden.has(String(props.operation_route_id))) return
+      if (!this._matchesStopFilter(props.phase, props.label)) return
       const id = props.operation_stop_id != null
         ? `stop-${props.operation_stop_id}`
         : `depot-${props.operation_route_id}-${props.depot_role || 'point'}`
@@ -1611,10 +1611,11 @@ export default class extends Controller {
     const disc = document.createElement('div')
     fillDestinationMarker(disc, { name: props.label, anchored: true })
     if (stopId) disc.dataset.stopId = stopId
-    if (storeLike) {
+    if (props.kind === 'depot') {
       disc.classList.add('is-depot')
-      disc.style.setProperty('--dm-flat', props.color || '#888888')
+      this._paintDepotDisc(disc, [props.status])
     } else {
+      if (storeLike) disc.classList.add('is-depot')
       disc.style.setProperty('--dm-flat', PHASE_COLORS[phase] || props.color || '#3366cc')
       if (phase) this._paintMarker(disc, phase)
     }
@@ -1729,29 +1730,81 @@ export default class extends Controller {
     el.style.height = `${diameter}px`
   }
 
+  // One map pin per physical depot; colour from every visible departure/return there.
   _syncDepotMarkers () {
     this._clearDepotMarkers()
     const maplibregl = window.maplibregl
     if (!maplibregl || !this.map) return
     const hidden = this._concealedRouteIds()
-    this._depotMarkers = (this.geojson?.features || []).filter((feature) => {
+    const places = new Map()
+    ;(this.geojson?.features || []).forEach((feature) => {
       const props = feature.properties || {}
-      return feature.geometry && feature.geometry.type === 'Point' && props.kind === 'depot' && !hidden.has(String(props.operation_route_id))
-    }).map((feature) => {
-      const props = feature.properties || {}
+      if (!feature.geometry || feature.geometry.type !== 'Point' || props.kind !== 'depot') return
+      if (hidden.has(String(props.operation_route_id))) return
+      const coords = feature.geometry.coordinates
+      const key = `${Number(coords[0]).toFixed(5)},${Number(coords[1]).toFixed(5)}`
+      const place = places.get(key) || { coords, label: props.label, statuses: [] }
+      if (props.label) place.label = props.label
+      place.statuses.push(props.status)
+      places.set(key, place)
+    })
+    this._depotMarkers = [...places.values()].map((place) => {
       const el = document.createElement('div')
       el.className = 'operation-stop-marker'
       const disc = document.createElement('div')
-      fillDestinationMarker(disc, { name: props.label, anchored: true })
+      fillDestinationMarker(disc, { name: place.label, anchored: true })
       disc.classList.add('is-depot')
-      if (props.returns_complete) {
-        disc.classList.add('is-returned')
-      } else {
-        disc.style.setProperty('--dm-flat', props.color || '#888888')
-      }
+      this._paintDepotDisc(disc, place.statuses)
       el.appendChild(disc)
-      return new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(feature.geometry.coordinates).addTo(this.map)
+      return new maplibregl.Marker({ element: el, anchor: 'center' }).setLngLat(place.coords).addTo(this.map)
     })
+  }
+
+  // Solid colour when every leg shares a phase; otherwise a proportional conic pie.
+  _paintDepotDisc (disc, statuses) {
+    disc.classList.remove('is-returned')
+    disc.style.removeProperty('--dm-flat')
+    disc.style.removeProperty('background')
+    const paint = this._depotStatusPaint(statuses)
+    if (!paint) return
+    if (paint.solid === 'delivered') {
+      disc.classList.add('is-returned')
+      return
+    }
+    if (paint.solid) {
+      disc.style.setProperty('--dm-flat', PHASE_COLORS[paint.solid])
+      return
+    }
+    disc.style.background = paint.conic
+  }
+
+  _depotPhaseFromStatus (status) {
+    const code = String(status || '').toLowerCase()
+    if (code === 'rejected' || code === 'undelivered') return 'failed'
+    if (code === 'exception') return 'exception'
+    if (code === 'delivered' || code === 'finished') return 'delivered'
+    if (code === 'intransit' || code === 'atstore' || code === 'inprocessing' || code === 'started') return 'current'
+    return 'upcoming'
+  }
+
+  _depotStatusPaint (statuses) {
+    const order = ['failed', 'exception', 'late', 'current', 'upcoming', 'delivered']
+    const counts = Object.fromEntries(order.map((phase) => [phase, 0]))
+    ;(statuses || []).forEach((status) => {
+      counts[this._depotPhaseFromStatus(status)] += 1
+    })
+    const total = order.reduce((sum, phase) => sum + counts[phase], 0)
+    if (!total) return null
+    const present = order.filter((phase) => counts[phase] > 0)
+    if (present.length === 1) return { solid: present[0] }
+    let cursor = 0
+    const parts = present.map((phase) => {
+      const start = (cursor / total) * 360
+      cursor += counts[phase]
+      const end = (cursor / total) * 360
+      return `${PHASE_COLORS[phase]} ${start}deg ${end}deg`
+    })
+    return { conic: `conic-gradient(${parts.join(', ')})` }
   }
 
   _clearDepotMarkers () {

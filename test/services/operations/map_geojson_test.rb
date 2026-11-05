@@ -93,7 +93,7 @@ class OperationsMapGeojsonTest < ActiveSupport::TestCase
     assert_equal @operation_route.vehicle_color, point[:properties][:color]
   end
 
-  test 'a depot place turns complete only when every existing return there is finished' do
+  test 'a depot place turns complete only when every departure and return there is finished' do
     routes = @operation.operation_routes.active_sync.to_a
     without_end = routes.first
     without_end.update_columns(vehicle_usage_snapshot: without_end.vehicle_usage_snapshot.merge('store_stop' => {}), arrival_status: nil)
@@ -106,15 +106,16 @@ class OperationsMapGeojsonTest < ActiveSupport::TestCase
     assert ends.none? { |feature| feature.dig(:properties, :operation_route_id) == without_end.id }
     assert ends.none? { |feature| feature.dig(:properties, :returns_complete) }
 
-    returning.each { |route| route.update_columns(arrival_status: 'delivered') }
+    returning.each { |route| route.update_columns(arrival_status: 'delivered', departure_status: 'finished') }
+    without_end.update_columns(departure_status: 'finished')
     geojson = Operations::MapGeojson.call(operation: @operation, routes: routes.map(&:reload))
-    ends = geojson[:features].select { |feature| feature.dig(:properties, :depot_role) == 'end' }
-    assert ends.none? { |feature| feature.dig(:properties, :returns_complete) }
+    place = geojson[:features].select { |feature| feature.dig(:properties, :kind) == 'depot' }
+    assert place.none? { |feature| feature.dig(:properties, :returns_complete) }
 
     returning.each { |route| route.update_columns(arrival_status: 'finished') }
     geojson = Operations::MapGeojson.call(operation: @operation, routes: routes.map(&:reload))
-    ends = geojson[:features].select { |feature| feature.dig(:properties, :depot_role) == 'end' }
-    assert ends.all? { |feature| feature.dig(:properties, :returns_complete) }
+    place = geojson[:features].select { |feature| feature.dig(:properties, :kind) == 'depot' }
+    assert place.all? { |feature| feature.dig(:properties, :returns_complete) }
   end
 
   test 'rest without store has no map point and keeps the pause label' do
