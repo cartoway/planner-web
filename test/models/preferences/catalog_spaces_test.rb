@@ -77,4 +77,55 @@ class PreferencesCatalogSpacesTest < ActiveSupport::TestCase
     assert Preferences::Catalog::Spaces.space_action_usable_in?(spaces['plannings'], 'edit')
     assert_not Preferences::Catalog::Spaces.space_action_usable_in?(spaces['destination'], 'edit')
   end
+
+  test 'disabling or hiding a space keeps stored action controls but blocks usable_in?' do
+    seed = Preferences::Catalog.merge_spaces_with_params(
+      Preferences::Catalog.default_spaces,
+      {
+        'spaces_active' => %w[operations],
+        'spaces_actions' => {
+          'operations' => {
+            'active' => %w[sync export],
+            'disabled' => %w[transmit],
+            'hidden' => %w[destroy]
+          }
+        }
+      }
+    )
+    stored = seed['operations']['actions']['segment_controls'].deep_dup
+
+    disabled = Preferences::Catalog.merge_spaces_with_params(
+      seed,
+      { 'spaces_active' => [], 'spaces_disabled' => %w[operations] }
+    )
+    assert_equal stored, disabled['operations']['actions']['segment_controls']
+    assert disabled['operations']['visible']
+    assert_not disabled['operations']['usable']
+    assert_not Preferences::Catalog::Spaces.space_action_usable_in?(disabled['operations'], 'sync')
+
+    hidden = Preferences::Catalog.merge_spaces_with_params(
+      seed,
+      { 'spaces_active' => [], 'spaces_disabled' => [] }
+    )
+    assert_equal stored, hidden['operations']['actions']['segment_controls']
+    assert_not hidden['operations']['visible']
+    assert_not Preferences::Catalog::Spaces.space_action_usable_in?(hidden['operations'], 'sync')
+
+    reenabled = Preferences::Catalog.merge_spaces_with_params(
+      disabled,
+      {
+        'spaces_active' => %w[operations],
+        'spaces_actions' => {
+          'operations' => {
+            'active' => %w[sync export],
+            'disabled' => %w[transmit],
+            'hidden' => %w[destroy]
+          }
+        }
+      }
+    )
+    assert_equal stored, reenabled['operations']['actions']['segment_controls']
+    assert Preferences::Catalog::Spaces.space_action_usable_in?(reenabled['operations'], 'sync')
+    assert_not Preferences::Catalog::Spaces.space_action_usable_in?(reenabled['operations'], 'destroy')
+  end
 end
