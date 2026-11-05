@@ -47,7 +47,8 @@ class DeliverDemoTickTest < ActiveSupport::TestCase
   end
 
   test 'tick records a position on the first stop multipolyline with planned positioned_at' do
-    cursors, done = DeliverDemo::Tick.call(operation: @operation, cursors: {})
+    cursors = depart_depot!(@operation, @route)
+    cursors, done = DeliverDemo::Tick.call(operation: @operation, cursors: cursors)
     refute done
 
     position = @route.vehicle_positions.order(:id).last
@@ -71,13 +72,38 @@ class DeliverDemoTickTest < ActiveSupport::TestCase
     assert_equal 'intransit', visit.reload.status if visit
   end
 
+  test 'tick steps departure and arrival depot statuses like mobile' do
+    assert @route.vehicle_usage_snapshot['store_start'].present?
+    assert @route.vehicle_usage_snapshot['store_stop'].present?
+
+    cursors = {}
+    cursors, = DeliverDemo::Tick.call(operation: @operation, cursors: cursors)
+    assert_equal 'atstore', @route.reload.departure_status
+    assert_nil @route.arrival_status
+
+    cursors, = DeliverDemo::Tick.call(operation: @operation, cursors: cursors)
+    assert_equal 'finished', @route.reload.departure_status
+    assert @route.custom_attributes['_departure_loading_at'].present?
+    visit = @stops.find(&:visit?)
+    assert_equal 'intransit', visit.reload.status if visit
+
+    done = false
+    200.times do
+      cursors, done = DeliverDemo::Tick.call(operation: @operation, cursors: cursors)
+      break if done
+    end
+    assert done
+    assert_equal 'finished', @route.reload.arrival_status
+    assert @route.custom_attributes['_arrival_loading_at'].present?
+  end
+
   test 'tick stays on the current stop multipolyline until the stop is treated' do
     first_stop = @stops.first
     first_leg = @route.route_snapshot['tracks'].find { |t| t['stop_index'] == first_stop.index }['coordinates'].flatten(1)
     lngs = first_leg.map(&:first)
     lats = first_leg.map(&:last)
 
-    cursors = {}
+    cursors = depart_depot!(@operation, @route)
     DeliverDemo::Tick::STEPS_PER_LEG.times do
       cursors, = DeliverDemo::Tick.call(operation: @operation, cursors: cursors)
       position = @route.vehicle_positions.order(:id).last
@@ -123,7 +149,7 @@ class DeliverDemoTickTest < ActiveSupport::TestCase
   end
 
   test 'tick emits several position updates before treating the first stop' do
-    cursors = {}
+    cursors = depart_depot!(@operation, @route)
     positions_before_treated = 0
     DeliverDemo::Tick::STEPS_PER_LEG.times do
       cursors, = DeliverDemo::Tick.call(operation: @operation, cursors: cursors)
@@ -170,7 +196,8 @@ class DeliverDemoTickTest < ActiveSupport::TestCase
     }
     @route.update_columns(route_snapshot: @route.route_snapshot.merge('tracks' => tracks))
 
-    cursors, = DeliverDemo::Tick.call(operation: @operation, cursors: {})
+    cursors = depart_depot!(@operation, @route)
+    cursors, = DeliverDemo::Tick.call(operation: @operation, cursors: cursors)
 
     assert visit.reload.treated?, 'zero-length leg should treat the stop in one tick'
     assert_equal 'delivered', visit.status if visit.visit?
@@ -247,5 +274,17 @@ class DeliverDemoTickTest < ActiveSupport::TestCase
     assert reload_stop.operation_stop_status_events.exists?(status: 'atstore')
     assert reload_stop.operation_stop_status_events.exists?(status: 'finished')
     refute reload_stop.operation_stop_status_events.exists?(status: 'delivered')
+  end
+
+  private
+
+  # Departure depot spends two wall-clock ticks (atstore → finished) before driving.
+  def depart_depot!(operation, route, cursors = {})
+    2.times do
+      cursors, = DeliverDemo::Tick.call(operation: operation, cursors: cursors)
+      break if cursors.dig(route.id.to_s, 'departed')
+    end
+    assert_equal 'finished', route.reload.departure_status
+    cursors
   end
 end

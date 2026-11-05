@@ -53,15 +53,19 @@ module DeliverDemo
         stop_ids = @operation.operation_stops.pluck(:id)
         OperationStopStatusEvent.where(operation_stop_id: stop_ids).delete_all if stop_ids.any?
         @operation.operation_stops.update_all(status: nil, eta: nil, status_updated_at: nil, updated_at: Time.current)
-        @operation.operation_routes.update_all(
-          departure_status: nil,
-          departure_status_updated_at: nil,
-          departure_eta: nil,
-          arrival_status: nil,
-          arrival_status_updated_at: nil,
-          arrival_eta: nil,
-          updated_at: Time.current
-        )
+        @operation.operation_routes.find_each do |route|
+          attrs = (route.custom_attributes || {}).except('_departure_loading_at', '_arrival_loading_at')
+          route.update_columns(
+            departure_status: nil,
+            departure_status_updated_at: nil,
+            departure_eta: nil,
+            arrival_status: nil,
+            arrival_status_updated_at: nil,
+            arrival_eta: nil,
+            custom_attributes: attrs,
+            updated_at: Time.current
+          )
+        end
       end
       broadcast_refresh
       @operation.reload
