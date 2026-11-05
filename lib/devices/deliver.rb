@@ -43,13 +43,12 @@ class Deliver < DeviceBase
     }
   end
 
-  # Planning stop status is no longer the Deliver source of truth; use Operations API.
+  # Planning stop status/eta is no longer the Deliver source of truth; use Operations API.
   def fetch_stops(_customer = nil, _date = nil, _planning = nil)
     []
   end
 
-  def transfer_stops(customer, route, stop_id)
-    stop = route.stops.find(stop_id)
-    stop.update(route_idstatus: nil, eta: nil)
+  def transfer_stops(_customer, _route, _stop_id)
+    # no-op: execution ETA lives on operation_stops
   end
 end

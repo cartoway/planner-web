@@ -96,7 +96,6 @@ class RouteSidebarSerializerTest < ActionController::TestCase
 
   test 'as_hash omits planning stop status filters' do
     route = routes(:route_one_one)
-    stops(:stop_one_one).update_column(:status, 'delivered')
 
     hash = RouteSidebarSerializer.new(
       route: route,
@@ -108,6 +107,12 @@ class RouteSidebarSerializerTest < ActionController::TestCase
     refute hash.key?(:status_any)
     refute hash.key?(:status_present)
     refute hash.key?(:status_all)
+    hash[:stops].to_a.each do |stop|
+      refute stop.key?(:status)
+      refute stop.key?(:status_code)
+    end
+    refute hash[:store_start]&.key?(:status)
+    refute hash[:store_stop]&.key?(:status)
   end
 
   test 'as_hash with stops omits proofs and delivery note (owned by operation stops)' do

@@ -1199,14 +1199,10 @@ class Route < ApplicationRecord
   end
 
   def active(action)
-    stops.each{ |stop|
-      if [:reverse, :all, :none].include?(action)
-        stop.active = action == :reverse ? !stop.active : action == :all
-      elsif [:status_any, :status_none].include?(action)
-        stop.active = action == :status_none ? stop.status.nil? : !!stop.status
-      else
-        stop.active = stop.status && stop.status.downcase == action.to_s
-      end
+    return true unless [:reverse, :all, :none].include?(action)
+
+    stops.each { |stop|
+      stop.active = action == :reverse ? !stop.active : action == :all
     }
     self.outdated = true
     true
@@ -1297,7 +1293,6 @@ class Route < ApplicationRecord
   def outdated=(value)
     if vehicle_usage? && !value.nil?
       self.optimized_at = nil unless in_optimization_context?
-      self.last_sent_to = self.last_sent_at = nil
     end
     super(value)
   end
@@ -1308,15 +1303,6 @@ class Route < ApplicationRecord
 
   def changed?
     @stops_updated || @vehicle_color_changed || super
-  end
-
-  def set_send_to(name)
-    self.last_sent_to = name
-    self.last_sent_at = Time.now.utc
-  end
-
-  def clear_sent_to
-    self.last_sent_to = self.last_sent_at = nil
   end
 
   def default_color
@@ -1536,11 +1522,6 @@ class Route < ApplicationRecord
   def speed_average(unit = 'km')
     converter = (unit == 'km') ? 3.6 : 2.237
     ((self.distance / (self.drive_time | 1)) * converter).round
-  end
-
-  def clear_eta_data
-    self.start_route_data.eta = nil
-    self.stop_route_data.eta = nil
   end
 
   # Update geojson colors for a given sub-tour route_data without recomputing the route

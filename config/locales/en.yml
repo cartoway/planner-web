@@ -3875,8 +3875,6 @@ en:
       visit_duration: Visit duration
       tags: Destination tags
       tags_visit: Visit tags
-      eta: ETA
-      status: Status
     destinations_list_columns:
       name: Name
       street: Street

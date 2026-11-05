@@ -1268,9 +1268,6 @@ class PlanningsController < ApplicationController
       :out_of_max_reload,
       :out_of_relation,
       :out_of_skill,
-      :status,
-      :status_updated_at,
-      :eta,
 
       :ref,
       :name,

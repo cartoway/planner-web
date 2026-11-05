@@ -34,36 +34,35 @@ class History
   end
 
   def self.matching_operation_ids(hourly, planning_id, at)
-    at_sql = ActiveRecord::Base.connection.quote(at.utc.strftime('%Y-%m-%d %H:%M:%S'))
-    sql = <<~SQL
-      SELECT operations.id
-      FROM operations
-      JOIN customers ON customers.id = operations.customer_id
-      WHERE operations.status = 'in_progress'
-        AND (#{planning_id || 'NULL'} IS NULL OR operations.planning_id = #{planning_id || 'NULL'})
-        AND (#{hourly ? 'FALSE' : 'TRUE'} OR
-          date_trunc('day', operations.date) + (date_trunc('day', operations.date) -
-            date_trunc('day', operations.date) AT TIME ZONE (
-              SELECT
-                pg_timezone_names.name
-              FROM
-                users
-                JOIN pg_timezone_names ON
-                  pg_timezone_names.name LIKE '%/' || time_zone
-              WHERE
-                users.customer_id = customers.id
-              ORDER BY
-                users.id,
-                pg_timezone_names.name
-              LIMIT 1
-            )
-          ) +
-          (customers.history_cron_hour || ' hours')::interval <= date_trunc('hour', #{at_sql}::timestamp)
-        )
-    SQL
-    ActiveRecord::Base.connection.select_values(sql).map(&:to_i)
+    scope = Operation.where(status: 'in_progress')
+    scope = scope.where(planning_id: planning_id) if planning_id
+    return scope.pluck(:id) unless hourly
+
+    # Resolve via ActiveSupport::TimeZone — PG aliases like US/Hawaii disappear with tzdata updates.
+    hour_at = at.utc.change(min: 0, sec: 0)
+    zone_by_customer_id = customer_time_zones(scope.distinct.pluck(:customer_id))
+    scope.includes(:customer).filter_map { |operation|
+      cron_hour = operation.customer.history_cron_hour
+      next unless cron_hour
+
+      zone = zone_by_customer_id[operation.customer_id] || ActiveSupport::TimeZone['UTC']
+      date = operation.date.to_date
+      deadline = zone.local(date.year, date.month, date.day, cron_hour)
+      operation.id if deadline <= hour_at
+    }
   end
   private_class_method :matching_operation_ids
+
+  def self.customer_time_zones(customer_ids)
+    return {} if customer_ids.empty?
+
+    User.where(customer_id: customer_ids).order(:id).each_with_object({}) { |user, zones|
+      next if zones.key?(user.customer_id)
+
+      zones[user.customer_id] = ActiveSupport::TimeZone[user.time_zone] || ActiveSupport::TimeZone['UTC']
+    }
+  end
+  private_class_method :customer_time_zones
 
   def self.replace_today_rows!(rows, planning_id, at)
     planning_ids = rows.map { |row| row[:planning_id] }.uniq

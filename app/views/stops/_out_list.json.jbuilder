@@ -14,26 +14,6 @@ if route.vehicle_usage_id
   end
   json.vehicle_id route.vehicle_usage.vehicle.id
 
-  if @with_stops && @with_devices
-    status_uniq = route.stops.map{ |stop|
-      if stop.status
-        {
-          code: stop.status.downcase,
-          status: t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
-        }
-      end
-    }.uniq.compact
-    json.status_all do
-      # FIXME: to avoid refreshing select active stops, combined here with hardcoded status
-      json.array! status_uniq | [:planned, :intransit, :started, :finished, :delivered, :exception, :rejected, :undelivered].map{ |status|
-        {
-          code: status.to_s.downcase,
-          status: t("plannings.edit.stop_status.#{status}")
-        }
-      }
-    end
-    json.status_any status_uniq.size > 0 || route.planning.customer.device.available_stop_status?
-  end
 end
 json.with_stops @with_stops
 if @with_stops
@@ -93,10 +73,6 @@ if @with_stops
       else
         # Hash { id, quantity, icon, label } for deliverable units
         json.quantities visit_quantities(visit, route.vehicle_usage_id && route.vehicle_usage.vehicle)
-      end
-      if stop.status
-        json.status t("plannings.edit.stop_status.#{stop.status.downcase}", default: stop.status)
-        json.status_code stop.status.downcase
       end
     end
     json.duration l(Time.at(stop.duration).utc, format: :hour_minute_second) if stop.duration > 0

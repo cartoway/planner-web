@@ -11,7 +11,7 @@ class PlanningsControllerTest < ActionController::TestCase
     request.host = @reseller.host
     @planning = plannings(:planning_one)
     @stop = stops(:stop_one_one)
-    @export_settings_params = { columns: 'planning_ref|planning_name|planning_date|route|ref_vehicle|index|stop_type|active|wait_time|time|distance|drive_time|out_of_window|out_of_capacity|out_of_drive_time|out_of_force_position|out_of_work_time|out_of_max_distance|out_of_max_ride_distance|out_of_max_ride_duration|status|status_updated_at|eta|ref|name|street|detail|postalcode|city|country|lat|lng|comment|phone_number|email|tags|ref_visit|destination_duration|duration|time_window_start_1|time_window_end_1|time_window_start_2|time_window_end_2|priority|revenue|force_position|tag_visits|quantity1',
+    @export_settings_params = { columns: 'planning_ref|planning_name|planning_date|route|ref_vehicle|index|stop_type|active|wait_time|time|distance|drive_time|out_of_window|out_of_capacity|out_of_drive_time|out_of_force_position|out_of_work_time|out_of_max_distance|out_of_max_ride_distance|out_of_max_ride_duration|ref|name|street|detail|postalcode|city|country|lat|lng|comment|phone_number|email|tags|ref_visit|destination_duration|duration|time_window_start_1|time_window_end_1|time_window_start_2|time_window_end_2|priority|revenue|force_position|tag_visits|quantity1',
                                 skips: '',
                                 stops: 'out-of-route|store|rest|inactive'}
     sign_in users(:user_one)
@@ -889,8 +889,9 @@ class PlanningsControllerTest < ActionController::TestCase
     get :show, params: { id: @planning, format: :csv }
     assert_response :success
     # Stop visit/store custom attributes are no longer exported on planning CSV (OperationStop only).
-    assert_equal 'r1,planning1,10/10/2014,,,,visite,,,,,,,,,,,,,,,,,,,,,a,unaffected_one,MyString,MyString,MyString,MyString,,1.5,1.5,MyString,MyString,,tag1,a,,00:01:00,10:00,11:00,,,,,neutre,tag1,,hidden on mobile,visible on mobile,,', response.body.split("\n")[1]
-    assert_equal 'r1,planning1,10/10/2014,route_one,001,1,visite,1,,,00:00,1.1,,,,,,,,,,,,,,,,b,destination_one,Rue des Lilas,MyString,33200,Bordeau,,49.1857,-0.3735,MyString,MyString,,,b,,00:05:33,10:00,11:00,,,4,,neutre,tag1,P1/P2,hidden on mobile,visible on mobile,,', response.body.split("\n").find { |l| l.include?('route_one,001,1,visite') }
+    # Planning stop status/eta columns were dropped with execution dual-write removal.
+    assert_equal 'r1,planning1,10/10/2014,,,,visite,,,,,,,,,,,,,,,,,,a,unaffected_one,MyString,MyString,MyString,MyString,,1.5,1.5,MyString,MyString,,tag1,a,,00:01:00,10:00,11:00,,,,,neutre,tag1,,hidden on mobile,visible on mobile,,', response.body.split("\n")[1]
+    assert_equal 'r1,planning1,10/10/2014,route_one,001,1,visite,1,,,00:00,1.1,,,,,,,,,,,,,b,destination_one,Rue des Lilas,MyString,33200,Bordeau,,49.1857,-0.3735,MyString,MyString,,,b,,00:05:33,10:00,11:00,,,4,,neutre,tag1,P1/P2,hidden on mobile,visible on mobile,,', response.body.split("\n").find { |l| l.include?('route_one,001,1,visite') }
   end
 
   test 'should export destination email in planning csv' do
@@ -917,7 +918,7 @@ class PlanningsControllerTest < ActionController::TestCase
 
     get :show, params: { id: @planning, format: :csv, **@export_settings_params }
     assert_response :success
-    assert_equal 'r1,planning1,10/10/2015,vehicle      ,003,0,site,,,07:00,0,0,,,,,,,,,,,,b,store 1,MyString,,75001,MyString,,46.5686,0.35462,,,,,,,,,,,,,,,,', response.body.split("\n")[2]
+    assert_equal 'r1,planning1,10/10/2015,vehicle      ,003,0,site,,,07:00,0,0,,,,,,,,,b,store 1,MyString,,75001,MyString,,46.5686,0.35462,,,,,,,,,,,,,,,,', response.body.split("\n")[2]
   end
 
   test 'should show planning as csv with ordered columns' do

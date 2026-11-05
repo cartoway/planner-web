@@ -48,8 +48,6 @@ class V01::Entities::Route < V01::Entities::RouteProperties
   expose(:stop_distance, documentation: { type: Float, desc: 'Distance in meters between the vehicle store_stop and last stop.' })
   expose(:stop_drive_time, documentation: { type: Integer, desc: 'Drive time in seconds between the vehicle store_stop and last stop. Null when that leg has no path.' })
   expose(:updated_at, documentation: { type: DateTime, desc: 'Last Updated At.'})
-  expose(:last_sent_to, documentation: { type: String, desc: 'Type GPS Device of Last Sent.'})
-  expose(:last_sent_at, documentation: { type: DateTime, desc: 'Last Time Sent To External GPS Device.'})
   expose(:optimized_at, documentation: { type: DateTime, desc: 'Last optimized at.'})
   expose(:out_of_max_ride_distance, documentation: { type: 'Boolean', desc: 'True when at least one leg exceeds max_ride_distance.' })
   expose(:out_of_max_ride_duration, documentation: { type: 'Boolean', desc: 'True when at least one leg exceeds max_ride_duration.' })
@@ -99,8 +97,6 @@ class V01::Entities::RouteStatus < Grape::Entity
 
   expose(:id, documentation: { type: Integer, desc: 'Internal identifier.', example: 20 })
   expose(:vehicle_usage_id, documentation: { type: Integer, desc: 'Vehicle usage driving this route. Null on the unassigned route.' })
-  expose(:last_sent_to, documentation: { type: String, desc: 'Type GPS Device of Last Sent.'})
-  expose(:last_sent_at, documentation: { type: DateTime, desc: 'Last Time Sent To External GPS Device.'})
   expose(:out_of_max_ride_distance, documentation: { type: 'Boolean', desc: 'True when at least one leg exceeds max_ride_distance.' })
   expose(:out_of_max_ride_duration, documentation: { type: 'Boolean', desc: 'True when at least one leg exceeds max_ride_duration.' })
   expose(:size_active, documentation: { type: Integer, desc: 'Count of active stops on the main route_data.' })

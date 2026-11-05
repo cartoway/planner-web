@@ -6,12 +6,13 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
   test 'normalize_zone caps active at three and keeps order' do
     z = {
       'active' => %w[name ref street],
-      'hidden' => ['status']
+      'hidden' => ['comment']
     }
     out = Preferences::Catalog::StopList.normalize_zone(z)
     assert_equal %w[name ref street], out['active']
-    assert_includes out['hidden'], 'eta'
-    assert_includes out['hidden'], 'status'
+    assert_includes out['hidden'], 'comment'
+    assert_not_includes out['hidden'], 'eta'
+    assert_not_includes out['hidden'], 'status'
   end
 
   test 'normalize_zone defaults when empty active' do
@@ -23,11 +24,12 @@ class Preferences::Catalog::StopListTest < ActiveSupport::TestCase
   end
 
   test 'field_value maps stop hash keys' do
-    stop = { name: 'A', ref: 'R1', eta_formated: '10:00', status: 'ok' }
+    stop = { name: 'A', ref: 'R1', street: '1 rue' }
     assert_equal 'A', Preferences::Catalog::StopList.field_value(stop, 'name')
     assert_equal 'R1', Preferences::Catalog::StopList.field_value(stop, 'ref')
-    assert_equal '10:00', Preferences::Catalog::StopList.field_value(stop, 'eta')
-    assert_equal 'ok', Preferences::Catalog::StopList.field_value(stop, 'status')
+    assert_equal '1 rue', Preferences::Catalog::StopList.field_value(stop, 'street')
+    assert_nil Preferences::Catalog::StopList.field_value(stop, 'eta')
+    assert_nil Preferences::Catalog::StopList.field_value(stop, 'status')
   end
 
   test 'field_value maps visit and destination fields from JSON-shaped hash' do

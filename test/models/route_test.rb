@@ -16,6 +16,14 @@ class RouteTest < ActiveSupport::TestCase
     assert_not route.save, 'Saved without required fields'
   end
 
+  # Transmit cursor lives on operation_routes after ops migration (no dual-write on planning routes).
+  test 'planning routes do not carry last_sent columns' do
+    refute_includes Route.column_names, 'last_sent_at'
+    refute_includes Route.column_names, 'last_sent_to'
+    assert_includes OperationRoute.column_names, 'last_sent_at'
+    assert_includes OperationRoute.column_names, 'last_sent_to'
+  end
+
   test 'max_loads returns per deliverable unit peaks from route_data baseline and stop loads' do
     route = routes(:route_one_one)
     route.compute_saved!
@@ -427,9 +435,10 @@ class RouteTest < ActiveSupport::TestCase
     route.stops[0].active = false
     route.compute_saved!
     assert_equal 3, route.size_active
+    # Status-based filters were removed with planning dual-write; unknown actions are ignored.
     route.active(:foo_bar)
     route.compute_saved!
-    assert_equal 0, route.size_active
+    assert_equal 3, route.size_active
   end
 
   test 'size_active_destinations is zero when no active visit stops' do
