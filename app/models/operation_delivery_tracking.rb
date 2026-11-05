@@ -58,18 +58,32 @@ class OperationDeliveryTracking < ApplicationRecord
     operation.date.end_of_day + TTL_AFTER_DATE
   end
 
+  # Destination ids still present on executable visit stops (active sync + active).
+  def self.executable_destination_ids(operation)
+    operation.operation_stops
+             .executable
+             .where(kind: 'visit')
+             .pluck(:destination_id, Arel.sql("destination_snapshot->>'id'"))
+             .flat_map { |destination_id, snapshot_id|
+               [destination_id, snapshot_id.presence&.to_i].select { |id| id.to_i.positive? }
+             }
+             .uniq
+  end
+
+  # Trackings for destinations still in the operation (stale rows from removed stops stay in DB for old links).
+  def self.for_send(operation)
+    ensure_for!(operation)
+    ids = executable_destination_ids(operation)
+    return none if ids.empty?
+
+    where(operation_id: operation.id, destination_id: ids).with_destination
+  end
+
   def self.ensure_for!(operation)
     return unless connection.table_exists?(table_name)
 
     # where(kind:), not scope :visits: has_many :through relations do not always delegate it.
-    destination_ids = operation.operation_stops
-                               .executable
-                               .where(kind: 'visit')
-                               .pluck(:destination_id, Arel.sql("destination_snapshot->>'id'"))
-                               .flat_map { |destination_id, snapshot_id|
-                                 [destination_id, snapshot_id.presence&.to_i].select { |id| id.to_i.positive? }
-                               }
-                               .uniq
+    destination_ids = executable_destination_ids(operation)
     return if destination_ids.empty?
 
     existing = where(operation_id: operation.id, destination_id: destination_ids).pluck(:destination_id).to_set

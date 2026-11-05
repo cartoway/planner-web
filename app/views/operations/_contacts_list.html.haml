@@ -7,17 +7,25 @@
 - email_key = mode == :destinations ? 'email' : 'contact_email'
 - phone_key = 'phone_number'
 - groups = local_assigns[:groups].presence || [{ label: nil, rows: Array(rows) }]
+- flat_rows = groups.flat_map { |group| Array(group[:rows]) }
 - count_channel = channels.first || :email
+- has_already_sent = flat_rows.any? { |row| row[:already_sent] }
 .contacts-list{data: { controller: 'v2--contacts-list', v2__contacts_list_allow_reorder_value: allow_reorder }}
-  - if show_channels
+  - if show_channels || has_already_sent
     .row.g-2.align-items-center.mb-2
-      .col-auto.ms-auto.pe-2
-        .input-group.input-group-sm
-          %span.input-group-text= t('operations.contacts.channel_all')
-          %select.form-select{data: { v2__contacts_list_target: 'globalChannel', action: 'change->v2--contacts-list#applyGlobalChannel' }}
-            - channels.each do |channel|
-              %option{value: channel}= t("operations.contacts.channel_#{channel}")
-            %option{value: 'none'}= t('operations.contacts.channel_none')
+      - if has_already_sent
+        .col-auto
+          .form-check.form-switch.mb-0
+            %input.form-check-input{type: 'checkbox', id: "contacts-include-already-sent-#{param_namespace}", data: { v2__contacts_list_target: 'includeAlreadySent', action: 'change->v2--contacts-list#toggleIncludeAlreadySent' }}
+            %label.form-check-label{for: "contacts-include-already-sent-#{param_namespace}"}= t('operations.contacts.include_already_sent')
+      - if show_channels
+        .col-auto.ms-auto.pe-2
+          .input-group.input-group-sm
+            %span.input-group-text= t('operations.contacts.channel_all')
+            %select.form-select{data: { v2__contacts_list_target: 'globalChannel', action: 'change->v2--contacts-list#applyGlobalChannel' }}
+              - channels.each do |channel|
+                %option{value: channel}= t("operations.contacts.channel_#{channel}")
+              %option{value: 'none'}= t('operations.contacts.channel_none')
   - use_accordion = groups.size > 1 || groups.any? { |group| group[:label].present? }
   - if use_accordion
     .v2-collapse-stack.v2-collapse-stack--bordered

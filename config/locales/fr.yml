@@ -4193,6 +4193,7 @@ fr:
       channel_email: E-mail
       channel_sms: SMS
       channel_none: Ne pas envoyer
+      include_already_sent: Inclure les contacts déjà notifiés
     statuses:
       in_progress: En cours
       historized: Historisée
@@ -4453,6 +4454,9 @@ fr:
     expired:
       title: Lien expiré
       body: Ce lien de suivi n’est plus disponible.
+    cancelled:
+      title: Livraison annulée
+      body: Cette livraison n’est plus planifiée.
     chips:
       planned: Planifiée
       loading: Chargement
@@ -4463,6 +4467,7 @@ fr:
       failed: Échec
       missed: Non livrée
       exception: Anomalie
+      cancelled: Annulée
     timeline:
       loading: Chargement dépôt
       departed: Départ dépôt
