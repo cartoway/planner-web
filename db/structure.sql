@@ -897,6 +897,8 @@ CREATE TABLE public.operation_stops (
     created_at timestamp(6) without time zone NOT NULL,
     updated_at timestamp(6) without time zone NOT NULL,
     actual_quantities jsonb DEFAULT '{}'::jsonb NOT NULL,
+    last_sent_at timestamp without time zone,
+    last_sent_to character varying,
     CONSTRAINT operation_stops_kind_check CHECK (((kind)::text = ANY (ARRAY[('visit'::character varying)::text, ('rest'::character varying)::text, ('store'::character varying)::text]))),
     CONSTRAINT operation_stops_visit_kind_check CHECK ((((kind)::text <> 'visit'::text) OR (visit_snapshot <> '{}'::jsonb)))
 );
@@ -5088,6 +5090,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20261022120000'),
 ('20261027140000'),
 ('20261027150000'),
-('20261105073008');
+('20261105073008'),
+('20261105090914');
 
 

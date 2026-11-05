@@ -61,7 +61,8 @@ module OperationsHelper
         label: route.ref.presence || route.vehicle_name,
         sublabel: t('operations.show.last_sent', at: (route.last_sent_at ? l(route.last_sent_at, format: :short) : '—')),
         email: email,
-        phone: phone
+        phone: phone,
+        already_sent: route.last_sent_at.present?
       }
     end
   end
@@ -86,7 +87,8 @@ module OperationsHelper
         label: tracking.destination&.name.presence || tracking.destination_id,
         sublabel: tracking.destination&.street,
         email: destination_tracking_email(tracking),
-        phone: destination_tracking_phone(tracking)
+        phone: destination_tracking_phone(tracking),
+        already_sent: stop&.last_sent_at.present?
       }
     end
 

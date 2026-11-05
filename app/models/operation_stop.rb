@@ -104,6 +104,10 @@ class OperationStop < ApplicationRecord
     kind == 'visit'
   end
 
+  def mark_sent!(channel)
+    update_columns(last_sent_at: Time.current, last_sent_to: channel, updated_at: Time.current)
+  end
+
   def clock_label(seconds)
     return if seconds.blank?
 

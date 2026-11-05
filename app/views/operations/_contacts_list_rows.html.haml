@@ -3,9 +3,11 @@
   - row_id = row[:id]
   - email_val = row[:email].to_s
   - phone_val = row[:phone].to_s
-  - channel_val = (row[:channel].presence || default_contact_channel(email_val, phone_val, channels)).to_s
+  - default_channel = (row[:channel].presence || default_contact_channel(email_val, phone_val, channels)).to_s
+  - already_sent = row[:already_sent].present?
+  - channel_val = already_sent ? 'none' : default_channel
   - visible = row.fetch(:visible, true)
-  .contacts-list-row.row.g-2.align-items-center.mb-2{class: ('d-none' unless visible), data: { v2__contacts_list_target: 'row', row_id: row_id, route_id: row[:route_id] || row_id, action: (allow_reorder ? 'dragover->v2--contacts-list#dragOver drop->v2--contacts-list#drop' : nil) }}
+  .contacts-list-row.row.g-2.align-items-center.mb-2{class: ('d-none' unless visible), data: { v2__contacts_list_target: 'row', row_id: row_id, route_id: row[:route_id] || row_id, contacts_sent: (already_sent ? 'true' : nil), contacts_already_sent: (already_sent ? 'true' : 'false'), contacts_default_channel: default_channel, contacts_original_email: email_val, contacts_original_phone: phone_val, action: (allow_reorder ? 'dragover->v2--contacts-list#dragOver drop->v2--contacts-list#drop' : nil) }}
     .col-12.col-md-3.pe-2
       %strong= row[:label]
       - if row[:sublabel].present?
@@ -18,14 +20,14 @@
       .input-group.input-group-sm
         %span.input-group-text
           %i.fa.fa-envelope
-        = text_field_tag "#{param_namespace}[#{row_id}][#{email_key}]", email_val, class: 'form-control', autocomplete: 'off', disabled: true, data: { contacts_field: 'email', contacts_lockable: true, action: 'blur->v2--contacts-list#lockField', v2__contacts_list_target: 'field' }
+        = text_field_tag "#{param_namespace}[#{row_id}][#{email_key}]", email_val, class: 'form-control', autocomplete: 'off', disabled: true, data: { contacts_field: 'email', contacts_lockable: true, action: 'input->v2--contacts-list#markContactChanged blur->v2--contacts-list#lockField', v2__contacts_list_target: 'field' }
         %button.btn.btn-light{type: 'button', aria: { label: t('operations.contacts.edit') }, data: { action: 'v2--contacts-list#unlock', contacts_edit: true }}
           %i.fa.fa-pencil
     .col-12.col-md.pe-2
       .input-group.input-group-sm
         %span.input-group-text
           %i.fa.fa-phone
-        = text_field_tag "#{param_namespace}[#{row_id}][#{phone_key}]", phone_val, class: 'form-control', autocomplete: 'off', disabled: true, data: { contacts_field: 'phone', contacts_lockable: true, action: 'blur->v2--contacts-list#lockField', v2__contacts_list_target: 'field' }
+        = text_field_tag "#{param_namespace}[#{row_id}][#{phone_key}]", phone_val, class: 'form-control', autocomplete: 'off', disabled: true, data: { contacts_field: 'phone', contacts_lockable: true, action: 'input->v2--contacts-list#markContactChanged blur->v2--contacts-list#lockField', v2__contacts_list_target: 'field' }
         %button.btn.btn-light{type: 'button', aria: { label: t('operations.contacts.edit') }, data: { action: 'v2--contacts-list#unlock', contacts_edit: true }}
           %i.fa.fa-pencil
     - if show_channels

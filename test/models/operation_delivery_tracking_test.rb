@@ -32,6 +32,22 @@ class OperationDeliveryTrackingTest < ActiveSupport::TestCase
     assert_equal 0, OperationDeliveryTracking.where(operation_id: operation.id).count
   end
 
+  test 'for_send excludes trackings whose destination left the operation' do
+    operation = publish_operation!(planning: @planning)
+    OperationDeliveryTracking.ensure_for!(operation)
+    stale_destination_id = (operation.operation_delivery_trackings.pluck(:destination_id).max || 0) + 9_001
+    OperationDeliveryTracking.create!(
+      operation: operation,
+      destination_id: stale_destination_id,
+      token: SecureRandom.urlsafe_base64(24),
+      expires_at: OperationDeliveryTracking.expires_at_for(operation)
+    )
+
+    send_ids = OperationDeliveryTracking.for_send(operation).pluck(:destination_id)
+    assert_not_includes send_ids, stale_destination_id
+    assert_operator send_ids.size, :>, 0
+  end
+
   test 'preload_visit_stops! loads all destination stops in a constant number of queries' do
     operation = publish_operation!(planning: @planning)
     trackings = operation.operation_delivery_trackings.with_destination.to_a

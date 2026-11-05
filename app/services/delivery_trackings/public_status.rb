@@ -49,6 +49,11 @@ module DeliveryTrackings
       @tracking.expired?
     end
 
+    # Destination no longer has an executable visit on the operation (deplanned / cancelled).
+    def cancelled?
+      @stops.empty?
+    end
+
     private
 
     def build_visit(stop)

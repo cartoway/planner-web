@@ -86,6 +86,8 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     assert_equal 'dest@example.com', event.payload['to']
     stop.reload
     assert_equal 'intransit', stop.status
+    assert stop.last_sent_at
+    assert_equal 'email', stop.last_sent_to
   end
 
   test 'send destination sms builds content with shortened url' do
@@ -146,7 +148,10 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     event = stop.operation_stop_status_events.order(:id).last
     assert_equal 'sms_sent', event.status
     assert_equal '0601020304', event.payload['to']
-    assert_equal 'intransit', stop.reload.status
+    stop.reload
+    assert_equal 'intransit', stop.status
+    assert stop.last_sent_at
+    assert_equal 'sms', stop.last_sent_to
   end
 
   test 'destination sms is skipped when enable_sms_destination is false' do

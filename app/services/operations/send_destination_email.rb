@@ -10,7 +10,7 @@ module Operations
 
       locale = mail_locale(customer)
       date = operation.date || Time.zone.today
-      list = Array(trackings || operation.operation_delivery_trackings.with_destination)
+      list = Array(trackings || OperationDeliveryTracking.for_send(operation))
       OperationDeliveryTracking.preload_visit_stops!(list)
 
       I18n.with_locale(locale) do
