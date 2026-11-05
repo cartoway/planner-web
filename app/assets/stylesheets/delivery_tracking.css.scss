@@ -83,7 +83,8 @@
 }
 
 .delivery-tracking-chip.is-failed,
-.delivery-tracking-chip.is-missed {
+.delivery-tracking-chip.is-missed,
+.delivery-tracking-chip.is-cancelled {
   background: #c62828;
   border-color: #c62828;
 }

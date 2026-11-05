@@ -11,7 +11,12 @@
         %span.delivery-tracking-shipper= @view.shipper_name
         %span.delivery-tracking-tagline= t('delivery_trackings.show.title')
 
-  - if @current
+  - if @view.cancelled?
+    %span.delivery-tracking-chip.is-cancelled= t('delivery_trackings.chips.cancelled')
+    .delivery-tracking-eta-card.is-alert
+      .delivery-tracking-eta-value= t('delivery_trackings.cancelled.title')
+      .delivery-tracking-eta-updated= t('delivery_trackings.cancelled.body')
+  - elsif @current
     %span.delivery-tracking-chip{class: "is-#{@current.chip_key}"}= @current.chip
 
     - if @current.eta_window.present?
@@ -53,5 +58,5 @@
           - if visit.eta_window.present?
             .text-muted.small= visit.eta_window
 
-- unless @terminal
+- unless @terminal || @view.cancelled?
   = turbo_stream_from @tracking.turbo_stream_name
