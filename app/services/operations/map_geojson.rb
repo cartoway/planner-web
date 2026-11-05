@@ -63,19 +63,15 @@ module Operations
       end
     end
 
-    # A place turns complete when every existing end depot there is finished.
-    # A depot is never delivered. Routes without an end depot are not part of that check.
+    # One place aggregates every departure/return there; complete only when all are finished.
+    # Routes without an end depot simply contribute fewer legs to that place.
     def paint_depot_returns(features)
       depots = features.select { |feature| feature.dig(:properties, :kind) == 'depot' }
-      complete = depots.select { |feature| feature.dig(:properties, :depot_role) == 'end' }
-                       .group_by { |feature| depot_key(feature) }
-      complete.each do |key, ends|
-        done = ends.all? { |feature| feature.dig(:properties, :status).to_s.downcase == 'finished' }
+      depots.group_by { |feature| depot_key(feature) }.each_value do |place|
+        done = place.all? { |feature| feature.dig(:properties, :status).to_s.downcase == 'finished' }
         next unless done
 
-        depots.each do |feature|
-          feature[:properties][:returns_complete] = true if depot_key(feature) == key
-        end
+        place.each { |feature| feature[:properties][:returns_complete] = true }
       end
     end
 
