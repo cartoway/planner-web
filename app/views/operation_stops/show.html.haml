@@ -126,8 +126,12 @@
             - t("plannings.edit.stop_store_status.#{status_key}", default: t("plannings.edit.stop_status.#{status_key}", default: event.status))
           - else
             - t("plannings.edit.stop_status.#{status_key}", default: event.status)
+          - position = event.position
           %li{class: ["is-#{status_key}", ('is-latest' if index.zero?)]}
             %span.operation-timeline-label= label
+            - if position
+              %button.operation-timeline-position.btn.btn-link.p-0{type: 'button', title: t('operations.show.status_position'), 'aria-label': t('operations.show.status_position'), data: { action: 'click->v2--operation-show#centerStatusPosition', lat: position[:lat], lng: position[:lng], stop_id: @operation_stop.id }}
+                %i.fa.fa-location-dot
             %time= @operation_stop.clock_on_operation_day(event.recorded_at)
         - if @operation_stop.operation_stop_status_events.empty?
           %li.is-empty= t('operations.show.no_status_history')
