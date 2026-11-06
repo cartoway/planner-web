@@ -26,6 +26,7 @@ class OperationRoute < ApplicationRecord
       :vehicle,
       :vehicle_positions,
       operation_stops: [
+        :operation_stop_status_events,
         { photos_attachments: :blob },
         { signature_attachment: :blob }
       ]

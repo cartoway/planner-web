@@ -10,6 +10,8 @@ module DeliverDemo
     JITTER_SECONDS = 5 * 60
     # Urban smartphone GPS CEP (metres) — large enough to peek past the vehicle pin at street zoom.
     DEMO_ACCURACY_METERS = 40.0
+    # Status-event GPS is near the vehicle pin, not glued to the destination marker.
+    STATUS_POSITION_JITTER_METERS = 25.0
     FALLBACK_START_SECONDS = 8 * 3600
     FALLBACK_END_SECONDS = 18 * 3600
 
@@ -279,14 +281,38 @@ module DeliverDemo
     def record_stop_finish!(stop, stops, stop_index, cursor)
       return if OperationStop::TREATED_STATUSES.include?(stop.status.to_s.downcase)
 
+      status = finish_status_for(stop)
       desired = actual_finish(stop, offset_seconds(cursor, stop_index))
       OperationStops::RecordStatus.call(
         operation_stop: stop,
-        status: finish_status_for(stop),
+        status: status,
         recorded_at: monotonic_recorded_at(stop, desired),
         eta: next_eta(stops, stop_index, cursor),
-        source: 'demo'
+        source: 'demo',
+        payload: status_position_payload(stop, status)
       )
+    end
+
+    # Optional GPS on delivered (same shape as mobile): vehicle coords with a few metres of jitter.
+    def status_position_payload(stop, status)
+      return {} unless OperationStopStatusEvent::POSITION_STATUSES.include?(status.to_s)
+
+      position = stop.operation_route.latest_position
+      lat = (position&.lat.presence || stop.lat).presence
+      lng = (position&.lng.presence || stop.lng).presence
+      return {} if lat.blank? || lng.blank?
+
+      jlat, jlng = jittered_coords(lat.to_f, lng.to_f, STATUS_POSITION_JITTER_METERS)
+      { 'lat' => jlat, 'lng' => jlng }
+    end
+
+    def jittered_coords(lat, lng, meters)
+      angle = rand * 2 * Math::PI
+      dist = meters * (0.5 + rand * 0.5)
+      dlat = (dist * Math.cos(angle)) / 111_320.0
+      cos_lat = Math.cos(lat * Math::PI / 180.0)
+      dlng = cos_lat.abs < 1e-6 ? 0.0 : (dist * Math.sin(angle)) / (111_320.0 * cos_lat)
+      [lat + dlat, lng + dlng]
     end
 
     # RecordStatus ignores events older than status_updated_at — keep demo times moving forward

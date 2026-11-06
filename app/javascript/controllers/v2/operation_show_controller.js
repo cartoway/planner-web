@@ -9,7 +9,7 @@ import {
 } from 'maplibre/destination_markers'
 import { pickLayers, resolveMapStyle, styleForBaseLayer, basesNeedStyleSwitch, applyOverlays } from 'maplibre/raster_layers'
 import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_control'
-import { GeocoderIControl } from 'maplibre/geocoder_control'
+import { GeocoderIControl, createFocusGeocoderElement } from 'maplibre/geocoder_control'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
@@ -349,6 +349,7 @@ export default class extends Controller {
     if (this.hasDetailBackdropTarget) this.detailBackdropTarget.classList.remove('is-visible')
     this.element.querySelectorAll('.operation-stop-row.is-selected').forEach((item) => item.classList.remove('is-selected'))
     this._activeStopId = null
+    this._clearStatusPositionMarker()
     this._paintActiveStop()
     this._resizeMap()
   }
@@ -403,6 +404,7 @@ export default class extends Controller {
 
   _teardownMap () {
     this._clearStopMarkers()
+    this._clearStatusPositionMarker()
     if (this._geocoderControl && typeof this._geocoderControl.clearFocusMarker === 'function') {
       this._geocoderControl.clearFocusMarker()
     }
@@ -573,6 +575,7 @@ export default class extends Controller {
     if (!Number.isFinite(lng) || !Number.isFinite(lat)) return
     const opensForm = button.dataset.turboFrame === 'form_sidebar'
     this._pendingCenter = { lng, lat, stopId: button.dataset.stopId }
+    this._clearStatusPositionMarker()
     this._flyToStop(this._pendingCenter)
     if (!opensForm) return
     const refresh = () => this._flyToStop(this._pendingCenter)
@@ -581,6 +584,47 @@ export default class extends Controller {
       document.removeEventListener('turbo:frame-load', onFrame)
       window.setTimeout(refresh, 260)
     })
+  }
+
+  // Timeline GPS pin: fly to the status fix and pulse a focus marker on that exact point.
+  centerStatusPosition (event) {
+    event.preventDefault()
+    event.stopPropagation()
+    const button = event.currentTarget
+    const lng = parseFloat(button.dataset.lng)
+    const lat = parseFloat(button.dataset.lat)
+    if (!Number.isFinite(lng) || !Number.isFinite(lat)) return
+    if (button.dataset.stopId) {
+      this._activeStopId = button.dataset.stopId
+      this._paintActiveStop()
+      this._syncStopClusters()
+    }
+    this._showStatusPositionMarker([lng, lat])
+    if (!this.map) return
+    if (this._geocoderControl && typeof this._geocoderControl.clearFocusMarker === 'function') {
+      this._geocoderControl.clearFocusMarker()
+    }
+    if (this.hasBodyTarget) this.setMobilePane({ currentTarget: { dataset: { pane: 'map' } } })
+    const zoom = Math.max(this.map.getZoom(), 16)
+    this._clearMapPadding()
+    this.map.flyTo({ center: [lng, lat], zoom, padding: this._mapPadding(), duration: 500 })
+  }
+
+  _showStatusPositionMarker (lngLat) {
+    this._clearStatusPositionMarker()
+    const maplibregl = window.maplibregl || getMaplibre()
+    if (!maplibregl || !this.map) return
+    const el = createFocusGeocoderElement()
+    el.classList.add('operation-status-position-marker')
+    this._statusPositionMarker = new maplibregl.Marker({ element: el, anchor: 'center' })
+      .setLngLat(lngLat)
+      .addTo(this.map)
+  }
+
+  _clearStatusPositionMarker () {
+    if (!this._statusPositionMarker) return
+    try { this._statusPositionMarker.remove() } catch (_) { /* ignore */ }
+    this._statusPositionMarker = null
   }
 
   toggleRoute (event) {
@@ -1831,6 +1875,7 @@ export default class extends Controller {
     if (this._geocoderControl && typeof this._geocoderControl.clearFocusMarker === 'function') {
       this._geocoderControl.clearFocusMarker()
     }
+    this._clearStatusPositionMarker()
     this._activeStopId = stopId
     this._paintActiveStop()
     this._syncStopClusters()

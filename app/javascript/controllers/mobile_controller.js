@@ -8,6 +8,8 @@ const CONFIRM_DISARM_AFTER = 4000
 const PHOTO_DB = 'planner-mobile-photos'
 const PHOTO_STORE = 'pending'
 const PHOTO_CONFIRM_READY = '<i class="fa fa-check fa-fw" aria-hidden="true"></i>'
+const STATUS_POSITION_STATUSES = new Set(['delivered', 'exception', 'undelivered'])
+const GEO_OPTIONS = { enableHighAccuracy: true, maximumAge: 30_000, timeout: 20_000 }
 
 function escapeAttr (value) {
   return String(value)
@@ -126,7 +128,7 @@ export default class extends Controller {
         if (this._dead || this.expiredValue || this.isGoneError(error)) return
         this.queuePosition(body)
       })
-    }, () => {}, { enableHighAccuracy: true, maximumAge: 30_000, timeout: 20_000 })
+    }, () => {}, GEO_OPTIONS)
   }
 
   // GPS points bound to another mobile URL must not keep PATCHing after navigation.
@@ -316,7 +318,26 @@ export default class extends Controller {
     const reset = panel.querySelector('.stop-status-reset')
     if (reset) reset.classList.toggle('d-none', !selected || selected === 'transferred')
     this.updateQuickStatus(panel, selected)
-    this.submitForm(form)
+    this.submitStatusForm(form, selected)
+  }
+
+  // Best-effort GPS for terminal delivery statuses; never block the status write.
+  submitStatusForm (form, status) {
+    if (!STATUS_POSITION_STATUSES.has(status) || !navigator.geolocation) {
+      this.submitForm(form)
+      return
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        if (this._dead) return
+        this.submitForm(form, {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        })
+      },
+      () => { if (!this._dead) this.submitForm(form) },
+      GEO_OPTIONS
+    )
   }
 
   updateQuickStatus (panel, selected) {
@@ -430,10 +451,14 @@ export default class extends Controller {
     if (button.dataset.originalHtml) button.innerHTML = button.dataset.originalHtml
   }
 
-  submitForm (form) {
+  submitForm (form, coords) {
     const url = form.action
     const formData = new FormData(form)
     if (url.includes('/stops/')) formData.append('stop[status_updated_at]', new Date().toISOString())
+    if (coords && Number.isFinite(coords.lat) && Number.isFinite(coords.lng)) {
+      formData.append('operation_stop[lat]', String(coords.lat))
+      formData.append('operation_stop[lng]', String(coords.lng))
+    }
     const payload = {}
     formData.forEach((value, key) => { payload[key] = value })
     if (!navigator.onLine) {
