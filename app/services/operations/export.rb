@@ -11,7 +11,7 @@ module Operations
       route_ref vehicle_name driver_email driver_phone
       route_distance route_drive_time route_duration
       stop_index stop_kind stop_status destination_ref visit_ref name street postalcode city country phone email detail comment
-      lat lng
+      lat lng status_lat status_lng
       planned_arrival planned_departure actual_arrival actual_departure delay_minutes time_windows
       stop_distance stop_drive_time stop_wait_time
       quantities photos signature delivery_note
@@ -347,6 +347,7 @@ module Operations
         place['comment'],
         place['lat'],
         place['lng'],
+        *export_status_position(stop),
         xlsx_clock(stop.planned_arrival_at),
         xlsx_clock(stop.planned_departure_at),
         xlsx_clock(stop.actual_arrival_at),
@@ -386,6 +387,8 @@ module Operations
         nil,
         depot[:lat] || place['lat'],
         depot[:lng] || place['lng'],
+        nil,
+        nil,
         role == 'end' ? xlsx_clock(planned_at) : nil,
         role == 'start' ? xlsx_clock(planned_at) : nil,
         role == 'end' ? xlsx_clock(actual_at) : nil,
@@ -448,6 +451,15 @@ module Operations
 
     def export_stop_status(stop)
       stop.status_label.presence || stop.status.presence || I18n.t('plannings.edit.stop_status.none')
+    end
+
+    # Latest delivered/exception/undelivered event that carries a GPS fix.
+    def export_status_position(stop)
+      event = stop.operation_stop_status_events
+                  .select { |e| OperationStopStatusEvent::POSITION_STATUSES.include?(e.status.to_s) && e.position }
+                  .max_by(&:recorded_at)
+      position = event&.position
+      [position&.dig(:lat), position&.dig(:lng)]
     end
 
     def export_depot_status(route, status)

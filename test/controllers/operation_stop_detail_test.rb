@@ -33,6 +33,20 @@ class OperationStopDetailTest < ActionController::TestCase
     assert_includes response.body, 'fa-envelope'
   end
 
+  test 'timeline shows a map pin when the status event has a GPS position' do
+    event = @stop.operation_stop_status_events.order(:id).last
+    event.update_columns(payload: { 'lat' => 48.8566, 'lng' => 2.3522 })
+
+    get :show, params: { id: @stop.id }
+
+    assert_response :success
+    assert_includes response.body, 'operation-timeline-position'
+    assert_includes response.body, 'fa-location-dot'
+    assert_match(/data-lat=['"]48\.8566['"]/, response.body)
+    assert_match(/data-lng=['"]2\.3522['"]/, response.body)
+    assert_includes response.body, 'v2--operation-show#centerStatusPosition'
+  end
+
   test 'actual time and status history show the full date when off the operation day' do
     Time.use_zone('Hawaii') do
       # Update via the association the clock reads (setup may have cached another Operation instance).

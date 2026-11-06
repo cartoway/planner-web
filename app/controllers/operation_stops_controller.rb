@@ -64,14 +64,15 @@ class OperationStopsController < ApplicationController
     save_actual_quantities(raw)
     if raw.key?(:status) || raw.key?('status')
       recorded_at = raw[:status_updated_at].presence || Time.current.iso8601
+      status = raw[:status]
       OperationStops::RecordStatus.call(
         operation_stop: @operation_stop,
-        status: raw[:status],
+        status: status,
         eta: raw[:eta],
         recorded_at: recorded_at,
         source: 'mobile',
         actor_ref: current_vehicle.id.to_s,
-        payload: {}
+        payload: status_position_payload(status, raw)
       )
     end
     merge_custom_attributes(@operation_stop, raw[:custom_attributes])
@@ -88,6 +89,16 @@ class OperationStopsController < ApplicationController
   end
 
   private
+
+  def status_position_payload(status, raw)
+    return {} unless OperationStopStatusEvent::POSITION_STATUSES.include?(status.to_s)
+
+    lat_f = Float(raw[:lat], exception: false)
+    lng_f = Float(raw[:lng], exception: false)
+    return {} unless lat_f && lng_f
+
+    { 'lat' => lat_f, 'lng' => lng_f }
+  end
 
   def save_actual_quantities(raw)
     incoming = raw[:actual_quantities] || raw['actual_quantities']
@@ -137,6 +148,6 @@ class OperationStopsController < ApplicationController
   end
 
   def stop_params
-    params.require(:operation_stop).permit(:status, :status_updated_at, :eta)
+    params.require(:operation_stop).permit(:status, :status_updated_at, :eta, :lat, :lng)
   end
 end

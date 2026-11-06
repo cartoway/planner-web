@@ -265,6 +265,46 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
     assert_equal 2, stop.operation_stop_status_events.count
   end
 
+  test 'driver delivered status stores optional GPS in the event payload' do
+    stop = @operation_route.operation_stops.find_by!(visit_id: visits(:visit_one).id)
+    patch "/operation_stops/#{stop.id}?driver_token=#{@vehicle.driver_token}",
+          {
+            operation_stop: {
+              status: 'delivered',
+              status_updated_at: Time.current.iso8601,
+              lat: '48.8566',
+              lng: '2.3522'
+            }
+          },
+          'HTTP_ACCEPT' => 'application/json'
+
+    assert_equal 200, last_response.status
+    event = stop.reload.operation_stop_status_events.order(:id).last
+    assert_equal 'delivered', event.status
+    assert_equal({ 'lat' => 48.8566, 'lng' => 2.3522 }, event.payload)
+    assert_equal({ lat: 48.8566, lng: 2.3522 }, event.position)
+  end
+
+  test 'driver intransit status ignores GPS coords' do
+    stop = @operation_route.operation_stops.find_by!(visit_id: visits(:visit_one).id)
+    patch "/operation_stops/#{stop.id}?driver_token=#{@vehicle.driver_token}",
+          {
+            operation_stop: {
+              status: 'intransit',
+              status_updated_at: Time.current.iso8601,
+              lat: '48.8566',
+              lng: '2.3522'
+            }
+          },
+          'HTTP_ACCEPT' => 'application/json'
+
+    assert_equal 200, last_response.status
+    event = stop.reload.operation_stop_status_events.order(:id).last
+    assert_equal 'intransit', event.status
+    assert_equal({}, event.payload)
+    assert_nil event.position
+  end
+
   test 'shortened mobile url targets the operation route' do
     shortener = mock
     shortener.expects(:shorten).with { |url|
