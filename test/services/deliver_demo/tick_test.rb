@@ -129,6 +129,15 @@ class DeliverDemoTickTest < ActiveSupport::TestCase
       assert_equal 'delivered', finished.status
       refute finished.operation_stop_status_events.exists?(status: 'started')
       assert finished.operation_stop_status_events.exists?(status: 'intransit')
+      finish_event = finished.operation_stop_status_events.order(:id).to_a.reverse.find { |e| e.status == 'delivered' }
+      position = finish_event.position
+      assert position, 'expected delivered event to carry a GPS position'
+      vehicle = @route.vehicle_positions.order(:id).last
+      assert vehicle
+      # Within ~50 m of the vehicle pin (jitter is 12.5–25 m).
+      assert_in_delta vehicle.lat, position[:lat], 0.0005
+      assert_in_delta vehicle.lng, position[:lng], 0.0005
+      refute_equal [vehicle.lat, vehicle.lng], [position[:lat], position[:lng]]
     end
 
     Time.use_zone('Paris') do

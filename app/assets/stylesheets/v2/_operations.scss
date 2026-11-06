@@ -422,6 +422,11 @@ tr.is-past { color: #6b7280; }
     overflow: visible !important;
   }
 
+  .maplibregl-marker:has(.operation-status-position-marker) {
+    z-index: 25 !important;
+    overflow: visible !important;
+  }
+
   .destinations-marker-pin-placeholder,
   .teritorio-unfolded-cluster { overflow: visible; }
 
@@ -568,6 +573,14 @@ tr.is-past { color: #6b7280; }
       margin-left: auto;
       color: #6b7280;
       font-variant-numeric: tabular-nums;
+    }
+
+    .operation-timeline-position {
+      color: #6b7280;
+      line-height: 1;
+      flex: 0 0 auto;
+
+      &:hover, &:focus-visible { color: #25417c; }
     }
 
     &.is-delivered::before, &.is-finished::before { background: #1f9d55; }

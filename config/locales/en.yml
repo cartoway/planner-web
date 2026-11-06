@@ -4127,6 +4127,8 @@ en:
         comment: Comment
         lat: Latitude
         lng: Longitude
+        status_lat: Status latitude
+        status_lng: Status longitude
         planned_arrival: Planned arrival
         planned_departure: Planned departure
         actual_arrival: Actual arrival
@@ -4209,6 +4211,7 @@ en:
       documents: Documents
       no_status_history: No status changes
       status_reset: Status reset
+      status_position: View status GPS position
       status_transferred: 'Transferred · %{from} → %{to}'
       open: Open
       close: Close

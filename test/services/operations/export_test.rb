@@ -66,6 +66,8 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes sheet, I18n.t('operations.export.columns.operation_name')
     assert_includes sheet, I18n.t('operations.export.columns.vehicle_name')
     assert_includes sheet, I18n.t('operations.export.columns.stop_status')
+    assert_includes sheet, I18n.t('operations.export.columns.status_lat')
+    assert_includes sheet, I18n.t('operations.export.columns.status_lng')
     assert_includes sheet, I18n.t('operations.export.columns.planned_arrival')
     assert_includes sheet, I18n.t('operations.export.columns.delay_minutes')
     assert_includes sheet, @operation.name
@@ -76,6 +78,22 @@ class OperationsExportTest < ActiveSupport::TestCase
     refute_includes Operations::Export::CSV_HEADERS, 'route_index'
     refute_includes sheet, '>delivered<'
     assert_includes sheet, @stop.index.to_s
+  end
+
+  test 'xlsx includes status GPS from the latest positioned event' do
+    OperationStops::RecordStatus.call(
+      operation_stop: @stop,
+      status: 'delivered',
+      recorded_at: Time.zone.parse('2026-09-25 11:05'),
+      source: 'mobile',
+      payload: { 'lat' => 48.8566, 'lng' => 2.3522 }
+    )
+
+    sheet = xlsx_sheet_xml(Operations::Export.new(@operation.reload).to_xlsx)
+    assert_includes sheet, I18n.t('operations.export.columns.status_lat')
+    assert_includes sheet, I18n.t('operations.export.columns.status_lng')
+    assert_includes sheet, '>48.8566<'
+    assert_includes sheet, '>2.3522<'
   end
 
   test 'xlsx and html use without-status label when stop has no status' do
