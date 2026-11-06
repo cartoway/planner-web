@@ -1364,9 +1364,6 @@ export default class extends Controller {
       progress.textContent = text
     }
     this._paintSegments(tour.querySelector('.operation-tour-segments'), board)
-    if (!payload.started) return
-    const groups = this.element.querySelectorAll('.operation-group')
-    if (groups[0] && tour.parentElement !== groups[0]) groups[0].appendChild(tour)
   }
 
   _paintSegments (bar, counts) {

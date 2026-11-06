@@ -204,13 +204,6 @@ tr.is-past { color: #6b7280; }
   transform: translateY(-50%);
 }
 
-.operation-group h2 {
-  letter-spacing: .04em;
-  text-transform: uppercase;
-  color: var(--op-muted);
-  margin: .4rem 0;
-}
-
 .operation-tour {
   border: 1px solid var(--status-line);
   border-left: 4px solid var(--operation-tour-color, #888888);
