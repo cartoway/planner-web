@@ -2,21 +2,82 @@
 
 ## V111.0.0
   ### Added
+  - Operations: day-of-delivery execution layer, separate from planning.
+    Planning keeps the tour plan; an Operation is a dated snapshot (routes/stops) that owns status, ETA, proofs, driver send, mobile, telematics, and recipient tracking — replacing planning-side stop status, send/clear, and mobile v1.
+    Requires Deliver `has_operations`.
+    - Publish / sync / close / cancel from planning; card index and mobile-friendly show; vehicle-colored tour borders; status/quantity headers; map markers filtered by status; GPS accuracy halo
+    - Planning sidebar execution card with progress, on-demand sync preview, and badges
+    - Sync modal aligned with route edits; reject past operation dates
+    - Board: stop search (name, ref, street, city), status chips including en-route
+    - Publish / transmit: editable contact lists, per-route email or SMS choice
+    - Driver mobile views using operation snapshots
+    - Optional GPS on delivered / exception / undelivered
+    - Public delivery tracking for recipients (contact, delayed departure before leave, status timeline)
+    - Delivery note when planned and actual quantities diverge
+    - Deliver demo simulation
+    - Export as XLSX (translated headers, stop custom attributes, depot rows, unlabeled stops) and ZIP (WeasyPrint PDFs, per-stop media folders)
+    - Live vehicle position and stop status on show via Turbo Streams
+    - Historized ops: Postgres write guard (12h offline grace for mobile flushes); hide send-to-driver on closed tours
+    - API 0.1: publish/sync/close/cancel, list/show/map/search, route status/position/transfer, stop status/quantities/media
   - API-web: sign in with header `Api-Key` (same as REST) or a short-lived `embed_token` (`POST /api/0.1/embed_tokens`; query, `Embed-Token`, or `Authorization: Bearer`). Optional `origin` sets CSP `frame-ancestors`.
+    - Postman / Insomnia examples for embed-token auth
   - REST API: OpenAPI 3.0 at `GET /api/0.1/openapi.json` and `GET /api/100/openapi.json` (`?scope=happy_path` is the getting-started flow; `?scope=core` drops admin and devices; operations tagged `happy_path` / `core` / `admin` / `devices`)
   - API 0.1: `GET /jobs` and `GET /jobs/:id` with `status` running/queued/working/failed/succeeded/killed (last job remembered on the customer, including while queued or working)
   - API 0.1 and 100: optional pagination on `GET /destinations` (`page` / `per_page` envelope)
-  - API 0.1 Operations (requires Deliver `has_operations`): publish/sync/close/cancel, list/show/map/search, route status/position/transfer, stop status/quantities/media
+  - Destination email: Grape API, CSV import/export, planning/route spreadsheet columns; shown on stop popups and operation fiches
+  - Destination notifications: approach SMS `{URL}` tracking link; `{QUANTITIES}` with unit labels; `{VEHICLE_NAME}` / `{PHONE_NUMBER}`; email/SMS recorded on the stop timeline without changing status
+  - Customer SMS: separate mail vs SMS toggles; configurable `sms_sender_name` (3–11 alphanumeric characters)
+  - Regulatory rests: cumulative driving-time breaks on vehicle usages / sets, auto-placed on routes, locked to the set
+  - Roles: space permissions (view / form / actions per resource) replace the forms/operations matrix; separate `planning_toolbar` permissions
+    - Space-gated bulk actions: clear-all-visits, delete destinations by tags
+  - Layout v2 enabled by default for new and existing users (classic still available via preference)
+    - v2 card indexes for plannings (stat compare), operations in the left menu, fleet stores, deliverable units, dense vehicle-usage-set cards
+    - Debounced list filters, primary count badges, visit totals on destination cards, Maskito time/duration fields
+  - Customer tracking options under Suivi; GPS position retention (`vehicle_position_retention_days`) and OperationStop proof retention (`proof_retention_days`)
+  - Optional RustFS (S3-compatible) object storage in Docker / devcontainer
+  - Docker / ops: PostgreSQL 18 (`postgis/postgis:18-3.6`); Delayed Job split into `common` and `optimizer` workers (`DELAYED_JOB_REPLICAS` / `DELAYED_JOB_OPTIMIZER_REPLICAS`); SMTP from environment; Superset 5
 
   ### Changed
   - Planning optimizer dialog: hide cancel until the job is transmitted to the solver, and when it has failed
+  - Optimizer: a failed job no longer blocks the planning; the customer keeps the last job per type (`blocking_job` rejects conflicting writes)
   - REST API 0.1: unify error bodies: `{ message, status }` (import HTTP 422 may add `errors`)
+  - REST docs: clarify API 0.1 vs 100, hide deprecated aliases, document `enable_store_stops` and vehicle usage `active`
+  - Driver send/clear goes through Operations instead of planning routes
+  - Planning: execution panel above global tools; removed route status filters and obsolete unassigned/active stop filters
+  - Route `cost_time`: includes arrival service time, excludes rest duration; clear cost stats when vehicle usage rates are removed
+  - Regulatory rests kept when only regulatory parameters change; `service_time_start` sent as rest `initial_offset` to optimizer-api
+  - Customer form: shared ETA gaps under Notifications; mail/SMS enable toggles admin-only; client settings behind admin extended-options; `enable_references` removed from the customer form (admin API unchanged)
+  - UI and CanCan gated by role space permissions
+  - Destination import rolls back the whole transaction on failure; duplicating a customer copies operations and enforces vehicle usage set limits
+  - v2 Turbo: keep page CSS and form-sidebar history across `#main`; network failures as bottom-right toasts
+  - Stricter email-list validation (vehicles/destinations); reject consecutive dots in local/domain parts
+  - Brevo tags via `X-SIB-API` instead of `X-Mailin-Tag`
+
+  ### Fixed
+  - Planning:
+    - eye-hidden routes stay off the map after move or stop activation
+    - lasso no longer disappears on form save
+    - waiting cursor no longer stuck after optimization
+    - move-stops modal validate after Turbolinks save
+    - refresh when opening edit while an optimization finishes
+    - stale map traces after overlapping route GeoJSON loads
+    - out-of-route highlight; synchronize / rests / polyline edge cases
+  - Destinations v2: GeoJSON on DISTINCT search scopes; responsive filters while reloading; counters stay in sync
+  - v2 fleet/store CSV import errors; spreadsheet column reorder persisted on export; sidebar back/forward and shareable `/new`
+  - Connection email no longer resent on every save of unconfirmed users
+  - API: `store_reloads` and `default_capacity` no longer silently dropped
+  - WebView GPS sentinels no longer overflow Postgres doubles
 
   ### Breaking
   - REST planning routes/stops no longer expose field `status` / `status_code` / ETA (use `/api/0.1/operations` instead)
   - Removed `PATCH /api/0.1/plannings/:id/update_stops_status`
   - Removed Cartoway Field device (`fleet` / `fleet_demo`), its API endpoints, reporting UI, and `DEVICE_FLEET_ADMIN_API_KEY`
   - Telematics stop status (TomTom, Praxedo, …) writes to Operations (`POST /operations/:id/fetch_device_status`); removed planning `fetch_stops_status` / web `update_stops_status`
+  - Planning no longer sends tours to drivers: removed planning send/clear and planning mobile v1; driver links and mobile v2 require an open operation route
+  - Delivery proofs and stop custom attributes live on operation stops only (removed from planning popups, destination form, and planning/route spreadsheet export)
+  - Dropped Deliver email/SMS clear endpoints
+  - Cartoway Deliver (`has_operations`) required again for Operations API and UI
+  - Docker PostgreSQL 18: data volume path is `/var/lib/postgresql` (not `…/data`); migrate or recreate existing `pg_data` volumes on upgrade
 
 ## v110.0.4
   ### Fixed
