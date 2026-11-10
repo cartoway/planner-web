@@ -30,6 +30,19 @@
   color: var(--bs-secondary-color);
 }
 
+// Geocoding accuracy bars still use BS3 status class names (forms + destinations list).
+.progress-bar.progress-bar-success {
+  background-color: var(--bs-success);
+}
+
+.progress-bar.progress-bar-warning {
+  background-color: var(--bs-warning);
+}
+
+.progress-bar.progress-bar-danger {
+  background-color: var(--bs-danger);
+}
+
 .table-condensed {
   font-size: 0.875rem;
 }

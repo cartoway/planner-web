@@ -384,6 +384,14 @@ class DestinationsControllerTest < ActionController::TestCase
     assert_select '#geocoding_result_free.row label.col-form-label.fw-bold[for="displayed-geocoding-result"]', 1
   end
 
+  test 'v2 edit sidebar geocoding progress bar keeps BS3 status class for accuracy color' do
+    @destination.update_columns(geocoding_accuracy: 0.92, geocoding_level: Destination::GEOCODING_LEVEL[:house])
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @destination.id }
+    assert_response :success
+    assert_select '#geocoding-progress.progress .progress-bar.progress-bar-success', 1
+  end
+
   test 'v2 edit sidebar wires non-blocking geocoding prompt when form is mutable' do
     @request.headers['Turbo-Frame'] = 'form_sidebar'
     get :edit, params: { id: @destination.id }
