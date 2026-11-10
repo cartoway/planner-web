@@ -70,6 +70,15 @@ class StoresControllerTest < ActionController::TestCase
     assert_select 'aside.form-sidebar .form-sidebar-chrome button.btn-close', 1
   end
 
+  test 'v2 edit sidebar geocoding progress bar keeps BS3 status class for accuracy color' do
+    enable_layout_v2!
+    @store.update_columns(geocoding_accuracy: 0.92, geocoding_level: Store::GEOCODING_LEVEL[:house])
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @store }
+    assert_response :success
+    assert_select '#geocoding-progress.progress .progress-bar.progress-bar-success', 1
+  end
+
   test 'edit responds with form_sidebar fragment when requested via Turbo Frame' do
     enable_layout_v2!
     @request.headers['Turbo-Frame'] = 'form_sidebar'
