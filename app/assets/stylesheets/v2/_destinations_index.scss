@@ -413,20 +413,9 @@
   }
 
   // Compact bar next to the quality icon (override Bootstrap .progress width: 100%).
+  // Status colors: see v2/application.scss BS3 progress-bar-* compat.
   .destinations-list-geocoding-progress.progress {
     width: 12rem !important;
-
-    .progress-bar-success {
-      background-color: #5cb85c;
-    }
-
-    .progress-bar-warning {
-      background-color: #f0ad4e;
-    }
-
-    .progress-bar-danger {
-      background-color: #d9534f;
-    }
 
     .progress-bar span {
       font-size: 9px;
