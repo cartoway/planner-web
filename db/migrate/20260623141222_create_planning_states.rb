@@ -40,9 +40,10 @@ class CreatePlanningStates < ActiveRecord::Migration[6.1]
   def enable_planning_operations_for_roles!
     Role.reset_column_information
     Role.find_each do |role|
-      next unless role.operations.is_a?(Hash)
+      raw = role[:operations]
+      next unless raw.is_a?(Hash)
 
-      ops = role.operations.deep_dup.deep_stringify_keys
+      ops = raw.deep_dup.deep_stringify_keys
       planning = (ops['planning'] || {}).deep_dup
       controls = (planning['segment_controls'] || {}).stringify_keys
       segments = Array(planning['segments']).map(&:to_s)
@@ -57,16 +58,17 @@ class CreatePlanningStates < ActiveRecord::Migration[6.1]
       planning['segment_controls'] = controls
       ops['planning'] = planning
 
-      role.update_columns(operations: Preferences::Catalog.normalize_operations(ops))
+      role.update_columns(operations: Preferences::Catalog.normalize_planning_toolbar(ops))
     end
   end
 
   def disable_planning_operations_for_roles!
     Role.reset_column_information
     Role.find_each do |role|
-      next unless role.operations.is_a?(Hash)
+      raw = role[:operations]
+      next unless raw.is_a?(Hash)
 
-      ops = role.operations.deep_dup.deep_stringify_keys
+      ops = raw.deep_dup.deep_stringify_keys
       planning = ops['planning']
       next unless planning.is_a?(Hash)
 
@@ -77,7 +79,7 @@ class CreatePlanningStates < ActiveRecord::Migration[6.1]
       planning['segment_controls'] = controls
       ops['planning'] = planning
 
-      role.update_columns(operations: Preferences::Catalog.normalize_operations(ops))
+      role.update_columns(operations: Preferences::Catalog.normalize_planning_toolbar(ops))
     end
   end
 
