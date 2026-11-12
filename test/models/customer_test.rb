@@ -581,6 +581,23 @@ class CustomerTest < ActiveSupport::TestCase
     Operation.where(customer_id: @customer.id).delete_all
   end
 
+  test 'duplicate skips operations when the association was not preloaded' do
+    # Simulates a Marshal dump from a host whose for_duplication did not include operations.
+    publish_operation!(planning: plannings(:planning_one))
+    customer = Customer.for_duplication.find(@customer.id)
+    customer.association(:operations).reset
+    assert_not customer.association(:operations).loaded?
+
+    duplicate = nil
+    assert_no_difference('Operation.count') do
+      duplicate = customer.duplicate
+    end
+    assert_empty duplicate.operations
+  ensure
+    duplicate&.destroy!
+    Operation.where(customer_id: @customer.id).delete_all
+  end
+
   test 'should cascade delete destination, visits, stops' do
     without_loading Stop do
       without_loading Visit do
