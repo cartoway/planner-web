@@ -20,14 +20,33 @@
 
 class CreateDefaultPermissionRolesForResellers < ActiveRecord::Migration[6.1]
   def up
+    Role.reset_column_information
+    default_ref = Role.default_permissions_role_ref
+    icon = Role.default_new_reseller_role_icon
+    name = I18n.t('admin.roles.default_permissions_role_name', default: 'Default permissions')
+    operations = Preferences::Catalog.baseline_role_planning_toolbar_json
+    now = Time.current
+
     say_with_time 'Creating default permission role for each reseller' do
       Reseller.find_each do |reseller|
-        Role.create_default_permissions_role_for!(reseller)
+        next if Role.exists?(reseller_id: reseller.id, ref: default_ref)
+
+        Role.insert!(
+          {
+            reseller_id: reseller.id,
+            name: name,
+            ref: default_ref,
+            icon: icon,
+            operations: operations,
+            forms: {},
+            created_at: now,
+            updated_at: now
+          }
+        )
       end
     end
 
     say_with_time 'Assigning default role to users with no role' do
-      default_ref = Role.default_permissions_role_ref
       User.where(role_id: nil).includes(:customer).find_each do |user|
         # Match User#role_matches_customer_reseller: role must belong to the same reseller as the customer.
         reseller_id = user.customer_id.present? ? user.customer&.reseller_id : user.reseller_id
@@ -44,7 +63,6 @@ class CreateDefaultPermissionRolesForResellers < ActiveRecord::Migration[6.1]
 
     say_with_time 'Backfill resellers.default_role_id from system default role' do
       Reseller.reset_column_information
-      default_ref = Role.default_permissions_role_ref
       Reseller.find_each do |reseller|
         role_id = Role.where(reseller_id: reseller.id, ref: default_ref).pick(:id)
         reseller.update_column(:default_role_id, role_id) if role_id
