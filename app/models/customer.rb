@@ -608,7 +608,7 @@ class Customer < ApplicationRecord
       }
       StoreReloadVehicleUsage.import_in_batches(new_store_reload_vehicle_usage_attributes, validate: false) if new_store_reload_vehicle_usage_attributes.any?
 
-      old_operations = self.operations.to_a
+      old_operations = association(:operations).loaded? ? operations.to_a : []
       new_operation_attributes = old_operations.map { |operation|
         attrs = operation.import_attributes.except('id', 'demo_job_id')
         attrs['customer_id'] = customer_id
