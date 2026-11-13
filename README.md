@@ -129,6 +129,14 @@ Setup assets:
 ## Launch tests
 
     rake test
+    rake test:backend    # models, API, controllers without assert_select, …
+    rake test:frontend   # views, helpers, assert_select, Lookbook, …
+
+Prefer `planner-dev-test` / `planner-dev-test backend|frontend` when the test DB is the Docker `db` service.
+
+`test:backend` / `test:frontend` write SimpleCov under `coverage/backend` and `coverage/frontend` (no 84% check). Merge and enforce the threshold with:
+
+    rake coverage:collate
 
 If you focus one test only or for any other good reasons, you don't want to check i18n and coverage:
 

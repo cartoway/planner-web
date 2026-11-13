@@ -1,4 +1,4 @@
-$('#planning-send-sms-drivers-modal' ).html("<%= j(render partial: 'plannings/send_sms_drivers.html.haml', locals: local_assigns) %>");
+$('#planning-send-sms-drivers-modal' ).html("<%= j(render partial: 'plannings/send_sms_drivers', formats: [:html], locals: local_assigns) %>");
 var locals = <%= local_assigns.to_json.html_safe %>;
 
 $(".phone-number-override-button").off('click').on('click', function() {

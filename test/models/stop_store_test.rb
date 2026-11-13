@@ -39,7 +39,7 @@ class StopStoreTest < ActiveSupport::TestCase
 
     @store_reload.update!(ref: nil)
     assert_equal @store.ref, @stop_store.ref
-    assert_equal @store_reload.ref, @stop_store.ref_visit
+    assert_nil @stop_store.ref_visit
   end
 
   test 'should return position from store' do

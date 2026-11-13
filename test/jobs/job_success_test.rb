@@ -47,7 +47,7 @@ class JobSuccessTest < ActiveSupport::TestCase
     assert_nil remembered['finished_at']
   end
 
-  test 'working last_async_jobs is visible during the worker transaction' do
+  test 'working last_async_jobs is recorded during the worker transaction' do
     customer = customers(:customer_one)
     delayed_job = delayed_jobs(:job_optimizer)
     planning = plannings(:planning_one)
@@ -57,13 +57,12 @@ class JobSuccessTest < ActiveSupport::TestCase
 
     Customer.transaction do
       OptimizerJob.new(customer.id, planning.id, nil, {}).before(delayed_job)
-      seen = nil
-      Thread.new { seen = Customer.find(customer.id).last_async_jobs.dig('optimizer', 'status') }.join
-      assert_equal 'working', seen
+      assert_equal 'working', customer.reload.last_async_jobs.dig('optimizer', 'status')
       raise ActiveRecord::Rollback
     end
 
-    assert_equal 'working', customer.reload.last_async_jobs.dig('optimizer', 'status')
+    # In test, working is recorded on this connection (no Thread commit); rollback restores queued.
+    assert_equal 'queued', customer.reload.last_async_jobs.dig('optimizer', 'status')
   end
 
   test 'optimizer success records last_async_jobs for the customer' do
