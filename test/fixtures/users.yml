@@ -1,6 +1,9 @@
 # Read about fixtures at http://api.rubyonrails.org/classes/ActiveRecord/Fixtures.html
 
 user_admin:
+  account: account_admin
+  status: active
+  relationship: employee
   email: admin@plop.com
   ref:
   encrypted_password: <%= User.new.send(:password_digest, '123456789') %>
@@ -15,6 +18,10 @@ user_admin:
   filter_planning_route_data: false
 
 user_one:
+  account: account_one
+  role: role_catalog
+  status: active
+  relationship: employee
   email: u1@plop.com
   ref: ref1
   encrypted_password: <%= User.new.send(:password_digest, '123456789') %>
@@ -29,6 +36,10 @@ user_one:
   filter_planning_route_data: false
 
 user_two:
+  account: account_two
+  role: role_catalog
+  status: active
+  relationship: employee
   email: u2@plop.com
   ref: ref2
   encrypted_password: <%= User.new.send(:password_digest, '123456789') %>
@@ -43,6 +54,10 @@ user_two:
   filter_planning_route_data: false
 
 user_three:
+  account: account_three
+  role: role_catalog_two
+  status: active
+  relationship: employee
   email: u3@plop.com
   ref: ref3
   encrypted_password: <%= User.new.send(:password_digest, '123456789') %>
@@ -57,6 +72,10 @@ user_three:
   filter_planning_route_data: false
 
 unconfirmed_user:
+  account: account_unconfirmed
+  role: role_catalog
+  status: active
+  relationship: employee
   email: unconfirmed@example.com
   encrypted_password: <%= User.new.send(:password_digest, '123456789') %>
   customer: customer_one

@@ -67,8 +67,11 @@ class V01::Users < Grape::API
     end
     get do
       if @current_user.admin?
-        users = User.for_reseller_id(@current_user.reseller_id) + User.from_customers_for_reseller_id(@current_user.reseller.id)
-        users.select! { |u| u.email == params[:email] } if params[:email]
+        users = User.for_reseller(@current_user.reseller_id)
+        if params[:email]
+          wanted = params[:email].to_s.strip.downcase
+          users = users.select { |u| (u.account&.email || u.email).to_s.downcase == wanted }
+        end
       else
         users = @current_customer.users.load
       end
@@ -85,7 +88,7 @@ class V01::Users < Grape::API
     get ':id' do
       id = ParseIdsRefs.read(params[:id])
       if @current_user.admin?
-        user = (User.for_reseller_id(@current_user.reseller_id).where(id) + User.from_customers_for_reseller_id(@current_user.reseller_id).where(id)).first
+        user = User.for_reseller(@current_user.reseller_id).where(id).first
         if user
           present user, with: V01::Entities::User
         else
@@ -107,9 +110,16 @@ class V01::Users < Grape::API
     post do
       if @current_user.admin?
         customer = @current_user.reseller.customers.where(id: params[:customer_id]).first!
-        user = customer.users.build(user_params)
+        existing = Account.lookup_email(params[:email])
+        if existing
+          user = customer.users.build(user_params.except(:password, :email))
+          user.account = existing
+          user.email = existing.email
+        else
+          user = customer.users.build(user_params)
+          assign_user_password!(user)
+        end
         assign_reseller_default_role!(user, @current_user.reseller)
-        assign_user_password!(user)
         user.send_email = 1
         user.save!
 
@@ -128,8 +138,10 @@ class V01::Users < Grape::API
       use :request_user
     end
     put ':id' do
-      id = ParseIdsRefs.read(params[:id])
-      user = (User.for_reseller_id(@current_user.reseller_id).where(id) + User.from_customers_for_reseller_id(@current_user.reseller_id).where(id)).first
+      user = User.for_reseller(@current_user.reseller_id)
+                 .where(ParseIdsRefs.where_clause([params[:id]], table_name: User.table_name))
+                 .first
+      error! V01::Status.code_response(:code_404), 404 unless user
       user.update! user_params
       present user, with: V01::Entities::User
     end
@@ -145,7 +157,7 @@ class V01::Users < Grape::API
     delete ':id' do
       if @current_user.admin?
         id = ParseIdsRefs.read(params[:id])
-        user = (User.for_reseller_id(@current_user.reseller_id).where(id) + User.from_customers_for_reseller_id(@current_user.reseller_id).where(id)).first
+        user = User.for_reseller(@current_user.reseller_id).where(id).first
         user.destroy!
         status 204
       else
@@ -164,7 +176,7 @@ class V01::Users < Grape::API
     delete do
       if @current_user.admin?
         User.transaction do
-          (User.for_reseller_id(@current_user.reseller_id) + User.from_customers_for_reseller_id(@current_user.reseller_id)).select{ |user|
+          User.for_reseller(@current_user.reseller_id).select { |user|
             params[:ids].any?{ |s| ParseIdsRefs.match(s, user) }
           }.each(&:destroy)
         end

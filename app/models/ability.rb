@@ -30,6 +30,7 @@ class Ability
     if user
       if user.admin?
         can :manage, Customer, reseller_id: user.reseller_id
+        can :manage, Account
         can [:index, :new, :create, :import, :upload_dump], Customer
         can :manage, User, customer: {reseller_id: user.reseller_id}
         can [:index, :new, :create, :send_email], User

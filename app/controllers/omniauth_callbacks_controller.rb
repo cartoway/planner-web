@@ -27,16 +27,15 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
       identity = Identity.find_by(provider: auth.provider, uid: auth.uid)
 
       if identity
-        # User exists, sign them in
-        sign_in_and_redirect identity.user, event: :authentication
+        user = identity.account&.web_sign_in_user || identity.user
+        sign_in_and_redirect user, event: :authentication
         set_flash_message(:notice, :success, kind: t('all.providers.' + auth.provider)) if is_navigational_format?
       else
-        # Try to find user by email
-        user = User.find_by(email: auth.info.email)
+        account = Account.lookup_email(auth.info.email)
+        user = account&.web_sign_in_user
 
         if user
-          # Link the account to existing user
-          user.identities.create!(provider: auth.provider, uid: auth.uid)
+          user.identities.create!(provider: auth.provider, uid: auth.uid, account: account)
           sign_in_and_redirect user, event: :authentication
           set_flash_message(:notice, :success, kind: t('all.providers.' + auth.provider)) if is_navigational_format?
         else
@@ -64,6 +63,7 @@ class OmniauthCallbacksController < Devise::OmniauthCallbacksController
     end
 
     identity = current_user.identities.find_or_initialize_by(provider: auth.provider, uid: auth.uid)
+    identity.account = current_user.account if current_user.account
 
     if identity.save
       redirect_to edit_user_path(current_user), notice: t('devise.omniauth_callbacks.account_linked', provider: t('all.providers.' + auth.provider))

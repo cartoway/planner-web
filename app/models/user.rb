@@ -22,8 +22,10 @@ class User < ApplicationRecord
 
   default_scope { order(Arel.sql('LOWER(email)')) }
 
-  nilify_blanks
+  nilify_blanks except: [:email]
   auto_strip_attributes :url_click2call
+
+  include AccountMembership
 
   belongs_to :reseller, optional: true
   belongs_to :customer, optional: true # Admin has no customer
@@ -58,6 +60,13 @@ class User < ApplicationRecord
 
   scope :for_reseller_id, ->(reseller_id) { where(reseller_id: reseller_id) }
   scope :from_customers_for_reseller_id, ->(reseller_id) { joins(:customer).where(customers: {reseller_id: reseller_id}) }
+  # Reseller-admin users + memberships on that reseller's customers (single query).
+  scope :for_reseller, lambda { |reseller_id|
+    left_joins(:customer).where(
+      'users.reseller_id = :rid OR customers.reseller_id = :rid',
+      rid: reseller_id
+    )
+  }
 
   def self.unities
     [
@@ -124,7 +133,10 @@ class User < ApplicationRecord
   end
 
   def set_time_zone
-    set_default_time_zone if self.time_zone.blank?
+    # nil inherits accounts.time_zone. A blank string still gets the historical default.
+    return if time_zone.nil? && account&.time_zone.present?
+
+    set_default_time_zone if time_zone.blank?
   end
 
   def assign_defaults

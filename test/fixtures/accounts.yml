@@ -1,0 +1,40 @@
+# frozen_string_literal: true
+
+account_admin:
+  uid: 11111111-1111-4111-8111-111111111111
+  email: admin@plop.com
+  encrypted_password: <%= User.new.send(:password_digest, '123456789') %>
+  time_zone: Hawaii
+  sign_in_count: 0
+  confirmed_at: <%= 1.week.ago %>
+
+account_one:
+  uid: 22222222-2222-4222-8222-222222222222
+  email: u1@plop.com
+  encrypted_password: <%= User.new.send(:password_digest, '123456789') %>
+  time_zone: Hawaii
+  sign_in_count: 0
+  confirmed_at: <%= 1.week.ago %>
+
+account_two:
+  uid: 33333333-3333-4333-8333-333333333333
+  email: u2@plop.com
+  encrypted_password: <%= User.new.send(:password_digest, '123456789') %>
+  time_zone: Hawaii
+  sign_in_count: 0
+  confirmed_at: <%= 1.week.ago %>
+
+account_three:
+  uid: 44444444-4444-4444-8444-444444444444
+  email: u3@plop.com
+  encrypted_password: <%= User.new.send(:password_digest, '123456789') %>
+  time_zone: Hawaii
+  sign_in_count: 0
+  confirmed_at: <%= 1.week.ago %>
+
+account_unconfirmed:
+  uid: 55555555-5555-4555-8555-555555555555
+  email: unconfirmed@example.com
+  encrypted_password: <%= User.new.send(:password_digest, '123456789') %>
+  time_zone: Hawaii
+  sign_in_count: 0
