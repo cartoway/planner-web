@@ -1,7 +1,8 @@
-# Reseller system role: stable Role#ref and optional explicit permissions (YAML → normalize_*).
+# Reseller system roles: stable Role#ref and optional explicit permissions (YAML → normalize_*).
 #
 # default_role.planning_toolbar / default_role.spaces — optional YAML override.
 #   null or omit → built-in normalize_*({}) fallbacks.
+# default_driver_role — Deliver-only seed (web spaces closed, operations_mobile usable).
 #
 default: &default
   default_role:
@@ -52,6 +53,10 @@ default: &default
       deliverable_units: { visible: true, usable: true }
       custom_attributes: { visible: true, usable: true }
       operations: { visible: true, usable: true }
+
+  default_driver_role:
+    ref: default_driver
+    icon: fa-dolly
 
 development:
   <<: *default

@@ -7,10 +7,10 @@ class ResellerTest < ActiveSupport::TestCase
     @reseller = resellers(:reseller_one)
   end
 
-  test 'creates default permissions role on create' do
+  test 'creates default permissions and driver roles on create' do
     host = "reseller-test-#{SecureRandom.hex(6)}.example.test"
     reseller = Reseller.create!(host: host, name: 'New reseller for role test')
-    assert_equal 1, reseller.reload.roles.count
+    assert_equal 2, reseller.reload.roles.count
 
     role = reseller.roles.find_by!(ref: Role.default_permissions_role_ref)
     assert_equal Role.default_permissions_role_ref, role.ref
@@ -25,8 +25,17 @@ class ResellerTest < ActiveSupport::TestCase
       Preferences::Catalog.baseline_role_spaces_json,
       role.spaces
     )
+
+    driver = reseller.roles.find_by!(ref: Role.default_driver_role_ref)
+    assert_equal driver.id, reseller.default_driver_role_id
+    assert_equal 'Default driver', driver.name
+    assert_equal Role.default_driver_role_icon, driver.icon
+    assert driver.spaces['operations_mobile']['usable']
+    refute Preferences::Catalog::WEB_SPACE_KEYS.any? { |key| driver.spaces.dig(key, 'usable') }
+    assert_equal OperationsMobile.driver_default['capabilities'], driver.operations_mobile['capabilities']
+
     reseller_id = reseller.id
-    assert_difference(-> { Role.where(reseller_id: reseller_id).count }, -1) do
+    assert_difference(-> { Role.where(reseller_id: reseller_id).count }, -2) do
       reseller.destroy!
     end
   end
@@ -34,30 +43,31 @@ class ResellerTest < ActiveSupport::TestCase
   test 'create_default_permissions_role_for! is idempotent' do
     host = "reseller-idem-#{SecureRandom.hex(6)}.example.test"
     reseller = Reseller.create!(host: host, name: 'Idempotent role test')
-    assert_equal 1, reseller.reload.roles.count
+    assert_equal 2, reseller.reload.roles.count
 
     reseller.reload
 
     assert_no_difference(-> { reseller.roles.count }) do
       Role.create_default_permissions_role_for!(reseller)
+      Role.create_default_driver_role_for!(reseller)
     end
 
     reseller_id = reseller.id
-    assert_difference(-> { Role.where(reseller_id: reseller_id).count }, -1) do
+    assert_difference(-> { Role.where(reseller_id: reseller_id).count }, -2) do
       reseller.destroy!
     end
   end
 
-  test 'create_default_permissions_role callback stays idempotent when invoked twice' do
+  test 'create_default_system_roles callback stays idempotent when invoked twice' do
     host = "reseller-dup-cb-#{SecureRandom.hex(6)}.example.test"
     reseller = Reseller.create!(host: host, name: 'Duplicate callback test')
-    assert_equal 1, reseller.reload.roles.count
+    assert_equal 2, reseller.reload.roles.count
 
     assert_no_difference(-> { reseller.roles.count }) do
-      reseller.send(:create_default_permissions_role)
+      reseller.send(:create_default_system_roles)
     end
 
-    assert_equal 1, reseller.reload.roles.count
+    assert_equal 2, reseller.reload.roles.count
     reseller.destroy!
   end
 
@@ -87,7 +97,7 @@ class ResellerTest < ActiveSupport::TestCase
     host = "reseller-seed-role-#{SecureRandom.hex(6)}.example.test"
     reseller = Reseller.create!(host: host, name: 'Extra role reseller')
 
-    assert_equal 1, reseller.roles.count
+    assert_equal 2, reseller.roles.count
 
     Role.create!(
       reseller: reseller,
@@ -97,7 +107,7 @@ class ResellerTest < ActiveSupport::TestCase
       spaces: Preferences::Catalog.normalize_spaces(Preferences::Catalog.no_role_spaces_seed_hash)
     )
 
-    assert_equal 2, reseller.roles.count
+    assert_equal 3, reseller.roles.count
   end
 
   test 'should call invalidate cache after update' do

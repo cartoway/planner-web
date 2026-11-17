@@ -14,6 +14,7 @@ require_relative '../lib/after_commit_wrapper'
 require_relative '../lib/rack_x_robots_tag'
 require_relative '../lib/mail_tag_headers'
 require_relative '../lib/smtp_env_settings'
+require_relative '../lib/rack_attack_config'
 
 # Allows config.action_mailer.smtp_provider = :brevo (ESP tag headers).
 ActionMailer::Base.class_attribute :smtp_provider, default: nil

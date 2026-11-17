@@ -22,16 +22,18 @@ class Reseller < ApplicationRecord
   has_many :roles, dependent: :destroy
   # Column remains default_role_id; name cannot be :default_role (conflicts with ActiveRecord::Base#default_role).
   belongs_to :new_user_default_role, class_name: 'Role', foreign_key: :default_role_id, optional: true
+  belongs_to :default_driver_role, class_name: 'Role', optional: true
   belongs_to :default_profile, class_name: 'Profile', optional: true
   belongs_to :default_router, class_name: 'Router', optional: true
 
-  after_commit :create_default_permissions_role, on: :create
+  after_commit :create_default_system_roles, on: :create
 
   nilify_blanks
   auto_strip_attributes :host, :name, :welcome_url, :help_url, :contact_url, :website_url
   validates :host, presence: true
   validates :name, presence: true
   validate :new_user_default_role_belongs_to_reseller
+  validate :default_driver_role_belongs_to_reseller
   validate :default_profile_and_router_pair
   validate :default_router_in_default_profile
 
@@ -71,20 +73,24 @@ class Reseller < ApplicationRecord
 
   private
 
-  def create_default_permissions_role
-    return if @_default_permissions_role_seeded
+  def create_default_system_roles
+    return if @_default_system_roles_seeded
 
     succeeded = false
     begin
-      @_default_permissions_role_seeded = true
-      role = Role.create_default_permissions_role_for!(self)
-      update_column(:default_role_id, role.id) if role.present? && default_role_id != role.id
-      # A newly created reseller must only carry the system default role; remove any extras
-      # (duplicate callbacks, orphan rows, or mis-association) without touching other resellers.
-      Role.where(reseller_id: id).where.not(id: role.id).delete_all
+      @_default_system_roles_seeded = true
+      permissions = Role.create_default_permissions_role_for!(self)
+      driver = Role.create_default_driver_role_for!(self)
+      updates = {}
+      updates[:default_role_id] = permissions.id if permissions && default_role_id != permissions.id
+      updates[:default_driver_role_id] = driver.id if driver && default_driver_role_id != driver.id
+      update_columns(updates) if updates.any?
+      # Keep only the two system roles on first create (drop callback/orphan extras).
+      keep_ids = [permissions&.id, driver&.id].compact
+      Role.where(reseller_id: id).where.not(id: keep_ids).delete_all if keep_ids.any?
       succeeded = true
     ensure
-      @_default_permissions_role_seeded = false unless succeeded
+      @_default_system_roles_seeded = false unless succeeded
     end
   end
 
@@ -93,6 +99,13 @@ class Reseller < ApplicationRecord
     return if new_user_default_role&.reseller_id == id
 
     errors.add(:default_role_id, :invalid)
+  end
+
+  def default_driver_role_belongs_to_reseller
+    return if default_driver_role_id.blank?
+    return if default_driver_role&.reseller_id == id
+
+    errors.add(:default_driver_role_id, :invalid)
   end
 
   def default_profile_and_router_pair

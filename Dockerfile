@@ -50,6 +50,10 @@ COPY vendor/ vendor/
 COPY app/ app/
 COPY public/ public/
 
+# Config overrides live under docker/ (database.yml, production.rb,
+# development.rb, rack_attack.yml) and are bind-mounted by compose — see
+# docker-compose.yml / .devcontainer/docker-compose.yml.
+
 RUN bundle exec rake i18n:js:export
 
 # Webpack is the slowest / hungriest step; keep it separate from sprockets and swagger.

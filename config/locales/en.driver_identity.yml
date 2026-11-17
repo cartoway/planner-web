@@ -1,0 +1,86 @@
+# Copyright © Cartoway
+en:
+  admin:
+    accounts:
+      index:
+        title: Accounts
+        new: New account
+        count_help: Number of accounts
+        none: No accounts found
+        spaces:
+          one: linked space
+          other: linked spaces
+      count:
+        one: account
+        other: accounts
+      new:
+        title: New account
+        title_existing: Add an existing account
+      edit:
+        title: Account
+      form:
+        email: Email
+        name: Name
+        phone: Phone
+        locale: Locale
+        time_zone: Time zone
+        customer: Customer
+        role: Role
+        role_blank: Default role
+        existing_account: Existing account
+        existing_account_blank: Choose an existing account
+        attach: Add to customer
+        back_to_customer: Back to customer
+        email_taken: An account with this email already exists. Use “Add an existing account”.
+        send_email: Send the invitation email
+        send_email_confirm: Send the invitation email?
+        memberships: Memberships
+        status: Status
+        relationship: Relationship
+        add_membership: Add a membership
+        detach: Detach
+        devices: Devices
+        revoke: Revoke
+        reauthorize: Authorize again
+        revoked: Revoked
+        anonymize: Anonymize
+        anonymized: Anonymized
+        refused: Not allowed
+        no_email: No email
+        duplicate_membership: This membership already exists
+      relationships:
+        employee: Employee
+        independent: Independent
+        subcontractor_staff: Subcontractor
+    roles:
+      operations_mobile:
+        title: Mobile operations
+        capabilities_title: Authorizations
+        help: >-
+          Optional Deliver authorizations. Assigned routes are always available once the Mobile operations space is active.
+        capabilities:
+          routes:
+            read_all: View all routes
+            start: Start a route
+          stops:
+            status_write: Update stop status
+            quantities_edit: Edit stop quantities
+            proofs: Submit proofs
+            transfer: Transfer stops
+            reorder: Reorder stops
+  customers:
+    index:
+      count:
+        one: customer
+        other: customers
+  activerecord:
+    models:
+      account:
+        one: Account
+        other: Accounts
+    attributes:
+      customer:
+        operations_mobile: Enable Deliver v2
+        default_driver_role_id: Default driver role
+      reseller:
+        default_driver_role_id: Default driver role

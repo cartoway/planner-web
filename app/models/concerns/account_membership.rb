@@ -101,17 +101,16 @@ module AccountMembership # rubocop:disable Metrics/ModuleLength
   def mobile_capabilities
     return OperationsMobile.none if role_id.blank?
 
-    OperationsMobile.read(role&.operations_mobile)
+    OperationsMobile.read(role&.operations_mobile, access_usable: space_usable?('operations_mobile'))
   end
 
   def revoke_web_credentials!
-    updates = {
+    update_columns(
       remember_created_at: nil,
       reset_password_token: nil,
-      reset_password_sent_at: nil
-    }
-    updates[:session_token] = SecureRandom.hex(16) if has_attribute?(:session_token)
-    update_columns(updates)
+      reset_password_sent_at: nil,
+      session_token: SecureRandom.hex(16)
+    )
     account&.update_columns(
       remember_created_at: nil,
       reset_password_token: nil,
@@ -136,7 +135,7 @@ module AccountMembership # rubocop:disable Metrics/ModuleLength
 
   def authenticatable_salt
     salt = super
-    token = has_attribute?(:session_token) ? self[:session_token] : nil
+    token = self[:session_token]
     token.present? ? "#{salt}#{token}" : salt
   end
 

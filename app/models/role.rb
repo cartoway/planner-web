@@ -34,6 +34,8 @@ class Role < ApplicationRecord
 
   before_validation :nilify_blank_ref
   before_validation :normalize_planning_toolbar_and_spaces_json
+  before_validation :normalize_operations_mobile
+  validate :operations_mobile_schema
 
   # Idempotent: returns existing or newly created system default role for this reseller.
   # with_lock on the reseller serializes find+create (no TOCTOU between find_by and create!).
@@ -41,14 +43,38 @@ class Role < ApplicationRecord
     ref = default_permissions_role_ref
     reseller.with_lock do
       existing = Role.find_by(reseller_id: reseller.id, ref: ref)
-      existing ||=
-        reseller.roles.create!(
-          name: I18n.t('admin.roles.default_permissions_role_name', default: 'Default permissions'),
-          ref: ref,
-          icon: default_new_reseller_role_icon,
-          planning_toolbar: default_new_reseller_role_planning_toolbar_json,
-          spaces: default_new_reseller_role_spaces_json
-        )
+      next existing if existing
+
+      attrs = {
+        name: I18n.t('admin.roles.default_permissions_role_name', default: 'Default permissions'),
+        ref: ref,
+        icon: default_new_reseller_role_icon,
+        planning_toolbar: default_new_reseller_role_planning_toolbar_json,
+        spaces: default_new_reseller_role_spaces_json,
+        operations_mobile: OperationsMobile.solo_default
+      }
+      reseller.roles.create!(attrs)
+    end
+  rescue ActiveRecord::RecordNotUnique
+    Role.find_by!(reseller_id: reseller.id, ref: ref)
+  end
+
+  # Idempotent Deliver-only system role (web spaces closed, operations_mobile usable).
+  def self.create_default_driver_role_for!(reseller)
+    ref = default_driver_role_ref
+    reseller.with_lock do
+      existing = Role.find_by(reseller_id: reseller.id, ref: ref)
+      next existing if existing
+
+      attrs = {
+        name: 'Default driver',
+        ref: ref,
+        icon: default_driver_role_icon,
+        planning_toolbar: Preferences::Catalog.normalize_planning_toolbar({}),
+        spaces: default_driver_role_spaces_json,
+        operations_mobile: OperationsMobile.driver_default
+      }
+      reseller.roles.create!(attrs)
     end
   rescue ActiveRecord::RecordNotUnique
     Role.find_by!(reseller_id: reseller.id, ref: ref)
@@ -64,15 +90,42 @@ class Role < ApplicationRecord
       raw.to_s.strip
     end
 
+    def default_driver_role_ref
+      raw = default_driver_role_yaml_hash['ref']
+      if raw.nil? || raw.to_s.strip.empty?
+        raise ArgumentError, I18n.t('activerecord.errors.models.role.default_driver_role_config_missing_ref')
+      end
+
+      raw.to_s.strip
+    end
+
     def default_new_reseller_role_icon
       raw = default_role_yaml_hash['icon']
       FontAwesome.normalized_fa_icon_token(raw)
+    end
+
+    def default_driver_role_icon
+      raw = default_driver_role_yaml_hash['icon']
+      FontAwesome.normalized_fa_icon_token(raw.presence || 'fa-dolly')
+    end
+
+    def default_driver_role_spaces_json
+      Preferences::Catalog.normalize_spaces(
+        Preferences::Catalog::WEB_SPACE_KEYS.index_with { |_k| { 'visible' => false, 'usable' => false } }.merge(
+          'operations_mobile' => { 'visible' => true, 'usable' => true }
+        )
+      )
     end
 
     private
 
     def default_role_yaml_hash
       dr = Preferences::Catalog::ConfigSeeds.roles_hash['default_role']
+      dr.is_a?(Hash) ? dr : {}
+    end
+
+    def default_driver_role_yaml_hash
+      dr = Preferences::Catalog::ConfigSeeds.roles_hash['default_driver_role']
       dr.is_a?(Hash) ? dr : {}
     end
 
@@ -106,5 +159,15 @@ class Role < ApplicationRecord
   def normalize_planning_toolbar_and_spaces_json
     self.planning_toolbar = Preferences::Catalog.normalize_planning_toolbar(read_planning_toolbar_hash)
     self.spaces = Preferences::Catalog.normalize_spaces(read_spaces_hash)
+  end
+
+  def normalize_operations_mobile
+    self.operations_mobile = OperationsMobile.coerce(operations_mobile)
+  end
+
+  def operations_mobile_schema
+    return if OperationsMobile.errors_for(operations_mobile).empty?
+
+    errors.add(:operations_mobile, :invalid)
   end
 end

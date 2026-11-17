@@ -46,8 +46,11 @@ x-web: &web
     SMTP_DEFAULT_FROM: ${SMTP_DEFAULT_FROM:-root@localhost}
     SMTP_DELIVERY_METHOD: ${SMTP_DELIVERY_METHOD:-smtp}
   volumes:
-    - ../config/database.yml.docker:/srv/app/config/database.yml
+    # Config overrides from docker/ (and .devcontainer/production.rb).
+    - ../docker/database.yml:/srv/app/config/database.yml
     - ../.devcontainer/production.rb:/srv/app/config/environments/production.rb
+    - ../docker/development.rb:/srv/app/config/environments/development.rb
+    - ../docker/rack_attack.yml:/srv/app/config/rack_attack.yml
     - ../docker/uploads:/srv/app/public/uploads
     - ../docker/storage:/srv/app/storage
     - ../public/lookbook-visual-regression:/srv/app/public/lookbook-visual-regression
@@ -141,8 +144,10 @@ services:
     entrypoint: []
     command: ["bash", "/srv/app/.devcontainer/run-lookbook-vrt-export-on-start.sh"]
     volumes:
-      - ../config/database.yml.docker:/srv/app/config/database.yml
+      - ../docker/database.yml:/srv/app/config/database.yml
       - ../.devcontainer/production.rb:/srv/app/config/environments/production.rb
+      - ../docker/development.rb:/srv/app/config/environments/development.rb
+      - ../docker/rack_attack.yml:/srv/app/config/rack_attack.yml
       - ../docker/uploads:/srv/app/public/uploads
       - ../docker/storage:/srv/app/storage
       - ../public/lookbook-visual-regression:/srv/app/public/lookbook-visual-regression

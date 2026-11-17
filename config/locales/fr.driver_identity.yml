@@ -1,0 +1,86 @@
+# Copyright © Cartoway
+fr:
+  admin:
+    accounts:
+      index:
+        title: Comptes
+        new: Nouveau compte
+        count_help: Nombre de comptes
+        none: Aucun compte trouvé
+        spaces:
+          one: espace lié
+          other: espaces liés
+      count:
+        one: compte
+        other: comptes
+      new:
+        title: Nouveau compte
+        title_existing: Ajouter un compte existant
+      edit:
+        title: Compte
+      form:
+        email: E-mail
+        name: Nom
+        phone: Téléphone
+        locale: Langue
+        time_zone: Fuseau horaire
+        customer: Client
+        role: Rôle
+        role_blank: Rôle par défaut
+        existing_account: Compte existant
+        existing_account_blank: Choisissez un compte existant
+        attach: Ajouter au client
+        back_to_customer: Retour au client
+        email_taken: Un compte existe déjà avec cet e-mail. Utilisez « Ajouter un compte existant ».
+        send_email: Envoyer le courriel d’invitation
+        send_email_confirm: Envoyer le courriel d’invitation ?
+        memberships: Adhésions
+        status: Statut
+        relationship: Relation
+        add_membership: Ajouter une adhésion
+        detach: Détacher
+        devices: Appareils
+        revoke: Révoquer
+        reauthorize: Autoriser à nouveau
+        revoked: Révoqué
+        anonymize: Anonymiser
+        anonymized: Anonymisé
+        refused: Non autorisé
+        no_email: Pas d’e-mail
+        duplicate_membership: Cette adhésion existe déjà
+      relationships:
+        employee: Salarié
+        independent: Indépendant
+        subcontractor_staff: Sous-traitant
+    roles:
+      operations_mobile:
+        title: Opérations mobiles
+        capabilities_title: Autorisations
+        help: >-
+          Autorisations Deliver optionnelles. Les tournées assignées sont toujours accessibles dès que l’espace Opérations mobiles est actif.
+        capabilities:
+          routes:
+            read_all: Voir toutes les tournées
+            start: Démarrer une tournée
+          stops:
+            status_write: Mettre à jour le statut d’un arrêt
+            quantities_edit: Modifier les quantités d’un arrêt
+            proofs: Transmettre des preuves
+            transfer: Transférer des arrêts
+            reorder: Réordonner les arrêts
+  customers:
+    index:
+      count:
+        one: client
+        other: clients
+  activerecord:
+    models:
+      account:
+        one: Compte
+        other: Comptes
+    attributes:
+      customer:
+        operations_mobile: Activer Deliver v2
+        default_driver_role_id: Rôle chauffeur par défaut
+      reseller:
+        default_driver_role_id: Rôle chauffeur par défaut

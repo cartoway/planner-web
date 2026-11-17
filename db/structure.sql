@@ -575,7 +575,8 @@ CREATE TABLE public.customers (
     company_logo character varying,
     recipient_template text,
     delivery_tracking_eta_gap_before integer DEFAULT 5 NOT NULL,
-    delivery_tracking_eta_gap_after integer DEFAULT 15 NOT NULL
+    delivery_tracking_eta_gap_after integer DEFAULT 15 NOT NULL,
+    default_driver_role_id bigint
 );
 
 
@@ -1370,7 +1371,8 @@ CREATE TABLE public.resellers (
     planning_dashboard_url character varying,
     default_role_id bigint,
     default_profile_id bigint,
-    default_router_id bigint
+    default_router_id bigint,
+    default_driver_role_id bigint
 );
 
 
@@ -3930,10 +3932,24 @@ CREATE INDEX index_resellers_on_default_role_id ON public.resellers USING btree 
 
 
 --
+-- Name: index_resellers_on_default_driver_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_resellers_on_default_driver_role_id ON public.resellers USING btree (default_driver_role_id);
+
+
+--
 -- Name: index_resellers_on_default_router_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_resellers_on_default_router_id ON public.resellers USING btree (default_router_id);
+
+
+--
+-- Name: index_customers_on_default_driver_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_customers_on_default_driver_role_id ON public.customers USING btree (default_driver_role_id);
 
 
 --
@@ -4854,6 +4870,22 @@ ALTER TABLE ONLY public.resellers
 
 
 --
+-- Name: resellers fk_rails_default_driver_role; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resellers
+    ADD CONSTRAINT fk_rails_reseller_default_driver_role FOREIGN KEY (default_driver_role_id) REFERENCES public.roles(id) ON DELETE SET NULL;
+
+
+--
+-- Name: customers fk_rails_customer_default_driver_role; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.customers
+    ADD CONSTRAINT fk_rails_customer_default_driver_role FOREIGN KEY (default_driver_role_id) REFERENCES public.roles(id) ON DELETE SET NULL;
+
+
+--
 -- Name: active_storage_variant_records fk_rails_993965df05; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -5553,6 +5585,7 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20261113180200'),
 ('20261113180300'),
 ('20261113180400'),
-('20261113180500');
+('20261113180500'),
+('20261118110000');
 
 

@@ -32,6 +32,7 @@ config/initializers/dev.rb
 docker/uploads/
 docker/**/__pycache__/
 docker/*.rb
+docker/*.yml
 docker/dumps/*.pg_dump.gz
 /.devcontainer/data/*
 

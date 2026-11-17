@@ -1,0 +1,58 @@
+# Copyright © Cartoway
+he:
+  admin:
+    accounts:
+      index:
+        title: חשבונות
+        new: חשבון חדש
+        count_help: מספר החשבונות
+      count:
+        one: חשבון
+        other: חשבונות
+      new:
+        title: חשבון חדש
+      edit:
+        title: חשבון
+      form:
+        email: דוא״ל
+        phone: טלפון
+        locale: שפה
+        time_zone: אזור זמן
+        customer: לקוח
+        role: תפקיד
+        role_blank: תפקיד ברירת מחדל
+        send_email: שליחת דוא״ל הזמנה
+        memberships: חברויות
+        status: סטטוס
+        relationship: קשר
+        add_membership: הוספת חברות
+        detach: ניתוק
+        devices: מכשירים
+        revoke: ביטול
+        reauthorize: אישור מחדש
+        revoked: מבוטל
+        anonymize: אנונימיזציה
+        anonymized: אנונימי
+        refused: לא מורשה
+        no_email: אין דוא״ל
+        duplicate_membership: החברות כבר קיימת
+      relationships:
+        employee: עובד
+        independent: עצמאי
+        subcontractor_staff: קבלן משנה
+    roles:
+      operations_mobile:
+        title: פעולות ניידות
+  customers:
+    index:
+      count:
+        one: לקוח
+        other: לקוחות
+  activerecord:
+    models:
+      account:
+        one: חשבון
+        other: חשבונות
+    attributes:
+      customer:
+        operations_mobile: פעולות ניידות

@@ -39,6 +39,7 @@ class Customer < ApplicationRecord
   belongs_to :reseller
   belongs_to :profile
   belongs_to :router
+  belongs_to :default_driver_role, class_name: 'Role', optional: true
   belongs_to :job_destination_geocoding, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
   belongs_to :job_store_geocoding, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
   belongs_to :job_optimizer, class_name: 'Delayed::Backend::ActiveRecord::Job', dependent: :destroy, optional: true
@@ -147,6 +148,7 @@ class Customer < ApplicationRecord
             length: { in: 3..11 },
             format: { with: /\A[A-Za-z0-9]+\z/, message: :invalid_sms_format },
             allow_blank: true
+  validate :default_driver_role_belongs_to_reseller
 
   after_initialize :assign_defaults, :update_max_vehicles, if: :new_record?
   after_initialize :assign_device
@@ -691,6 +693,13 @@ class Customer < ApplicationRecord
     end
   end
 
+  # Customer override wins; otherwise reseller default driver role.
+  def effective_default_driver_role
+    return default_driver_role if default_driver_role_id.present? && default_driver_role&.reseller_id == reseller_id
+
+    reseller&.default_driver_role
+  end
+
   def default_position
     store = stores.find{ |s| !s.lat.nil? && !s.lng.nil? }
     # store ? [store.lat, store.lng] : [I18n.t('stores.default.lat'), I18n.t('stores.default.lng')]
@@ -1007,6 +1016,13 @@ class Customer < ApplicationRecord
     return true if profile && profile.routers.exists?(router_id)
     errors.add(:router, I18n.t('activerecord.errors.models.router.unauthorized'))
     false
+  end
+
+  def default_driver_role_belongs_to_reseller
+    return if default_driver_role_id.blank?
+    return if default_driver_role&.reseller_id == reseller_id
+
+    errors.add(:default_driver_role_id, :invalid)
   end
 
   def role_id_for_duplicated_user(user, reseller_role_ids, fallback_role_id)

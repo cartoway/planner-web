@@ -30,7 +30,7 @@ class ApiRootDef < Grape::API
   end
 
   rescue_from(:all) { |error|
-    logger.error(error)
+    Rails.logger.error(error)
     raise error
   }
 

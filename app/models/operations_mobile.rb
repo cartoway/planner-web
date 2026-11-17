@@ -19,10 +19,10 @@
 #
 
 # Closed list of mobile capabilities (operations-mobile.schema.json v1).
-# A blank document means every capability is none. Absent keys mean none.
+# Access gate lives in Role.spaces['operations_mobile']; this JSON is capabilities only.
+# routes.read_assigned is implied whenever the space is usable (not admin-configurable).
 class OperationsMobile
   CAPABILITIES = %w[
-    routes.read_assigned
     routes.read_all
     routes.start
     stops.status_write
@@ -30,37 +30,25 @@ class OperationsMobile
     stops.proofs
     stops.transfer
     stops.reorder
-    catalog.read
-    catalog.edit
-    history.read
-    planning.edit
-    tracking.share
   ].freeze
+  IMPLIED_WHEN_ACCESS = { 'routes.read_assigned' => 'usable' }.freeze
   LEVELS = %w[none visible usable].freeze
-  ACCESS = %w[none usable].freeze
 
   def self.none
-    { 'version' => 1, 'access' => 'none', 'capabilities' => {} }
+    { 'version' => 1, 'capabilities' => {} }
   end
 
   def self.driver_default
     {
       'version' => 1,
-      'access' => 'usable',
       'capabilities' => {
-        'routes.read_assigned' => 'usable',
         'routes.read_all' => 'none',
         'routes.start' => 'usable',
         'stops.status_write' => 'usable',
         'stops.quantities_edit' => 'usable',
         'stops.proofs' => 'usable',
         'stops.transfer' => 'none',
-        'stops.reorder' => 'none',
-        'catalog.read' => 'none',
-        'catalog.edit' => 'none',
-        'history.read' => 'none',
-        'planning.edit' => 'none',
-        'tracking.share' => 'usable'
+        'stops.reorder' => 'none'
       }
     }
   end
@@ -68,30 +56,46 @@ class OperationsMobile
   def self.solo_default
     {
       'version' => 1,
-      'access' => 'usable',
       'capabilities' => CAPABILITIES.index_with { 'usable' }
     }
+  end
+
+  # Build a capabilities document from admin form params (usable / visible arrays).
+  def self.from_form(usable:, visible:)
+    usable_keys = Array(usable).map(&:to_s) & CAPABILITIES
+    visible_keys = (Array(visible).map(&:to_s) & CAPABILITIES) - usable_keys
+    caps = CAPABILITIES.index_with do |key|
+      if usable_keys.include?(key)
+        'usable'
+      elsif visible_keys.include?(key)
+        'visible'
+      else
+        'none'
+      end
+    end
+    { 'version' => 1, 'capabilities' => caps }
   end
 
   def self.coerce(value)
     hash = stringify(value)
     return none if hash.blank?
 
-    hash
+    caps = hash['capabilities']
+    caps = {} unless caps.is_a?(Hash)
+    { 'version' => 1, 'capabilities' => caps.slice(*CAPABILITIES) }
   end
 
-  def self.read(value)
+  def self.read(value, access_usable: false)
     hash = stringify(value)
     return none if hash.blank? || hash['version'].blank?
 
-    hash
+    caps = hash['capabilities']
+    caps = caps.is_a?(Hash) ? caps.slice(*CAPABILITIES) : {}
+    caps = caps.merge(IMPLIED_WHEN_ACCESS) if access_usable
+    hash.merge('capabilities' => caps).except('access')
   end
 
-  def self.access_usable?(value)
-    read(value)['access'] == 'usable'
-  end
-
-  # Split capabilities into usable / visible / none (Active / Disabled / Hidden in the UI).
+  # Split configurable capabilities into usable / visible / none (Active / Disabled / Hidden).
   def self.capability_three_way_split(value)
     caps = read(value)['capabilities']
     caps = {} unless caps.is_a?(Hash)
@@ -114,7 +118,6 @@ class OperationsMobile
 
     errors = []
     errors << 'version' unless hash['version'] == 1
-    errors << 'access' unless ACCESS.include?(hash['access'])
     caps = hash['capabilities']
     unless caps.is_a?(Hash)
       errors << 'capabilities'
@@ -123,7 +126,7 @@ class OperationsMobile
     unknown = caps.keys - CAPABILITIES
     errors << 'unknown' if unknown.any?
     errors << 'level' if caps.any? { |_, level| !LEVELS.include?(level) }
-    errors << 'extra' if (hash.keys - %w[version access capabilities]).any?
+    errors << 'extra' if (hash.keys - %w[version capabilities]).any?
     errors
   end
 
