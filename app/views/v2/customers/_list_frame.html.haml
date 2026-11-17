@@ -1,0 +1,34 @@
+-# Copyright © Cartoway
+-# V2 customers index list + pagination — Turbo Frame partial updates (see customers#index).
+-# Counts live inside the frame so server-side search refreshes totals with the list.
+= turbo_frame_tag 'customers_list', data: { per_page: @pagination[:per_page], page: @pagination[:page], controller: 'v2--table-selection v2--index-selection', v2__index_selection_select_label_value: t('all.verb.select'), v2__index_selection_cancel_label_value: t('all.verb.cancel') } do
+  .px-3.pt-3
+    = render 'v2/customers/list_count'
+  = form_tag customers_path, method: :delete, id: 'customers-destroy' do
+    .destinations-list-toolbar.d-flex.justify-content-between.align-items-center.mb-2.px-3.pt-2.pb-2.flex-wrap.gap-2
+      .destinations-list-toolbar-actions.d-flex.gap-1.align-items-center.flex-wrap
+        = link_to new_customer_path, class: 'btn btn-primary', title: t('customers.index.new'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+          %i.fa.fa-plus.fa-fw
+          %span.destinations-toolbar-label= t('customers.index.new')
+        = link_to import_customers_path, class: 'btn btn-outline-secondary', title: t('customers.index.import'), data: { turbo: false } do
+          %i.fa.fa-upload.fa-fw
+          %span.destinations-toolbar-label= t('customers.index.import')
+        %button.btn.btn-outline-secondary{type: 'button', title: t('all.verb.select'), data: { action: 'v2--index-selection#toggle' }}
+          %i.fa.fa-check-square.fa-fw{"aria-hidden": "true"}
+          %span.destinations-toolbar-label{data: { v2__index_selection_target: 'toggleLabel' }}= t('all.verb.select')
+        %button.btn.btn-danger.destinations-bulk-delete{type: 'button', disabled: true, title: t('all.verb.destroy_selection'), data: confirm_click_destroy_data(group: 'customers-destroy', form: 'customers-destroy').merge(v2__table_selection_target: 'bulk')}
+          %i.fa.fa-trash.fa-fw
+          %span.destinations-toolbar-label= t('all.verb.destroy_selection')
+      .destinations-list-toolbar-meta.d-flex.gap-1.align-items-center.flex-wrap.ms-auto
+        .dropdown
+          %button.btn.btn-light.dropdown-toggle{type: 'button', data: { 'bs-toggle': 'dropdown' }, 'aria-expanded': 'false', title: t('all.misc.per_page')}
+            %i.fa.fa-list-ol.fa-fw
+            %span.destinations-toolbar-label= "#{@pagination[:per_page]} #{t('all.misc.per_page')}"
+          %ul.dropdown-menu.dropdown-menu-end
+            - customers_index_per_page_options.each do |option|
+              %li
+                = link_to customers_path(customers_index_params(page: 1, per_page: option)),
+                  class: "dropdown-item#{' active' if @pagination[:per_page] == option}",
+                  data: { turbo_frame: 'customers_list', turbo_action: 'advance', per_page: option } do
+                  = "#{option} #{t('all.misc.per_page')}"
+    = render 'v2/customers/list_body'

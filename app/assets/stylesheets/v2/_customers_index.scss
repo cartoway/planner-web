@@ -1,0 +1,32 @@
+// Copyright © Cartoway
+// Customers index card extras (map chrome reuses destinations_index layout).
+
+.customer-card-comment {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.35;
+  word-break: break-word;
+
+  .customer-card-comment__label {
+    margin-right: 0.25rem;
+  }
+}
+
+#customers-map-layout {
+  .customers-map-legend {
+    z-index: 1;
+    pointer-events: none;
+    // left is set in JS to the center of the visible map band (beside the list).
+  }
+}
+
+// Same breakpoint as destinations/stores: list pane hides the map (and its legend) on mobile only.
+// Desktop keeps is-mobile-pane-list as the default class but still shows the map behind the sidebar.
+@media (max-width: 991.98px) {
+  #customers-map-layout.is-mobile-pane-list .customers-map-legend {
+    display: none;
+  }
+}
+
+
+

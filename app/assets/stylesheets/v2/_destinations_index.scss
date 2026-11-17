@@ -576,7 +576,9 @@
 // Use :has(map root) — body data-controller/action can lag behind turbo-frame#main.
 body:has(#destinations-map-layout),
 body:has(#stores-map-layout),
-body:has(#operation-map-layout) {
+body:has(#customers-map-layout),
+body:has(#operation-map-layout),
+body:has(#accounts-index-layout) {
   .main {
     overflow: hidden;
   }
@@ -596,7 +598,9 @@ body:has(#operation-map-layout) {
 
 #destinations-map-layout,
 #stores-map-layout,
-#operation-map-layout {
+#customers-map-layout,
+#operation-map-layout,
+#accounts-index-layout {
   position: relative;
   height: 100%;
   min-height: 100vh;
@@ -682,9 +686,13 @@ body:has(#operation-map-layout) {
       z-index: 1;
     }
 
-    // turbo-frame wraps list + toolbar; it must be a flex column so #destination_box flex:1 gets a bounded height and scrolls.
+    // turbo-frame / destroy form wraps list + toolbar; flex column so the list box flex:1 gets a bounded height and scrolls.
     form#stores-destroy,
-    turbo-frame#destinations_list {
+    form#customers-destroy,
+    form#accounts-destroy,
+    turbo-frame#destinations_list,
+    turbo-frame#customers_list,
+    turbo-frame#accounts_list {
       display: flex;
       flex-direction: column;
       flex: 1 1 auto;
@@ -698,8 +706,9 @@ body:has(#operation-map-layout) {
         flex-shrink: 0;
       }
 
-      // Nested body frame — keep the flex height chain to #destination_box.
-      turbo-frame#destinations_list_body {
+      // Nested body frame — keep the flex height chain to the list scroll box.
+      turbo-frame#destinations_list_body,
+      turbo-frame#customers_list_body {
         display: flex;
         flex-direction: column;
         flex: 1 1 auto;
@@ -709,8 +718,11 @@ body:has(#operation-map-layout) {
       }
     }
 
+
     #destination_box.destinations-list-scroll,
-    #store_box.destinations-list-scroll {
+    #store_box.destinations-list-scroll,
+    #customer_box.destinations-list-scroll,
+    #account_box.destinations-list-scroll {
       flex: 1;
       min-height: 0;
       min-width: 0;
@@ -999,9 +1011,22 @@ body:has(#operation-map-layout) {
   }
 }
 
+// Admin accounts: list-only panel (no map). Same absolute sidebar + min-height:100vh
+// chain as destinations/customers — that pins height so #account_box can overflow-y.
+#accounts-index-layout {
+  > .destinations-sidebar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-shadow: none;
+  }
+}
+
 // Compact list toolbar + hide bulk delete until selection mode.
 #destinations-map-layout,
-#stores-map-layout {
+#stores-map-layout,
+#customers-map-layout,
+#accounts-index-layout {
   .destinations-list-toolbar {
     gap: .35rem .5rem;
   }
@@ -1023,10 +1048,11 @@ body:has(#operation-map-layout) {
   }
 }
 
-// Mobile Liste / Carte panes (destinations + stores indexes).
+// Mobile Liste / Carte panes (destinations + stores + customers indexes).
 @media (max-width: 991.98px) {
   #destinations-map-layout,
-  #stores-map-layout {
+  #stores-map-layout,
+  #customers-map-layout {
     // Fit under the shared v2 mobile topbar (scaffolds).
     min-height: 0;
     height: 100%;

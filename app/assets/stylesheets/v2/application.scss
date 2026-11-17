@@ -12,11 +12,13 @@
 @import "v2/destinations_index";
 @import "v2/vehicle_usage_sets";
 @import "v2/form_sidebar_form";
+@import "v2/customers_index";
 @import "v2/delivery_note";
 @import "v2/index_cards";
 @import "v2/operations";
 @import "v2/collapse_toggle";
 @import "v2/related_list";
+@import "v2/workspace_chip";
 
 // Bootstrap 3 → 5 compatibility
 .form-group {
@@ -311,6 +313,30 @@
       border: none;
     }
 
+    // Circular icon-only control (same hit area as sidebar .btn-close).
+    .btn-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: inherit;
+      line-height: 1;
+      text-decoration: none;
+      opacity: 1;
+      box-sizing: border-box;
+
+      &:hover,
+      &:focus-visible {
+        background: rgba(var(--bs-body-color-rgb, 33, 37, 41), 0.08);
+        color: inherit;
+      }
+    }
+
     .form-sidebar-inner {
       flex: 1 1 auto;
       min-height: 0;
@@ -342,6 +368,14 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+    }
+
+    // Customer sidebar wraps tabs + form; let the whole panel scroll.
+    turbo-frame#form_sidebar > .customer-form-sidebar {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
     turbo-frame#form_sidebar > form,

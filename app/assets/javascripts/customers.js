@@ -368,6 +368,16 @@ const customers_edit = function (params) {
     $('#customer_devices_' + key + '_enable').on('change', syncSuiviSection);
   });
   syncSuiviSection();
+
+  var syncOperationsMobile = function() {
+    var $checkbox = $('input[type="checkbox"]#customer_operations_mobile');
+    if (!$checkbox.length) return;
+    var deliverOn = $('input[type="checkbox"]#customer_devices_deliver_enable').is(':checked');
+    $checkbox.prop('disabled', !deliverOn);
+    if (!deliverOn) $checkbox.prop('checked', false);
+  };
+  $(document).on('change', 'input[type="checkbox"]#customer_devices_deliver_enable', syncOperationsMobile);
+  syncOperationsMobile();
 };
 
 var customerProfileId = function() {

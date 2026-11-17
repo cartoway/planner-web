@@ -1,0 +1,122 @@
+-# Copyright © Cartoway
+- dashboard_url = analytic_url_for(customer, :customer_dashboard_url)
+- extra_dashboard_url = analytic_url_for(customer, :extra_dashboard_url)
+- audience_url = analytic_url_for(customer, :customer_audience_url)
+- behavior_url = analytic_url_for(customer, :customer_behavior_url)
+- expired = customer.end_subscription && customer.end_subscription < Time.now
+- ending_soon = customer.end_subscription && customer.end_subscription < Time.now + 30.days && customer.end_subscription > Time.now
+- users = customer.users.sort_by { |user| user.email.to_s.downcase }
+- not_connected = users.any? && users.all? { |user| user.confirmed_at.nil? }
+- last_sign_in = users.filter_map(&:current_sign_in_at).max
+- over_plannings = Rails.configuration.max_plannings_default && Rails.configuration.max_plannings_default <= customer.plannings_count
+- store = customer.stores[0]
+- has_position = store&.lat.present? && store&.lng.present?
+.v2-index-card.store-row.destinations-index-card{id: dom_id(customer), class: ('text-muted' if expired), data: { customer_id: customer.id, lat: store&.lat, lng: store&.lng }}
+  .v2-index-card-main
+    .v2-index-card-select
+      = check_box_tag "customers[#{customer.id}]", '1', false, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
+    .v2-index-card-body
+      .v2-index-card-header.destinations-card-header
+        .destinations-card-identity
+          - if customer.ref.present?
+            %span.destinations-card-ref{title: Customer.human_attribute_name(:ref)}= customer.ref
+          %h2.v2-index-card-title.destinations-card-name= customer.name
+        .v2-index-card-badges
+          - if customer.test
+            %span.badge.text-bg-secondary= Customer.human_attribute_name(:test)
+          - if customer.operations_mobile?
+            %span.badge.text-bg-primary= Customer.human_attribute_name(:operations_mobile)
+        .v2-index-card-actions.destinations-card-actions
+          %button.btn.btn-light.customers-row-center{type: 'button', disabled: !has_position, title: t('destinations.index.center_view_help'), 'aria-label': t('destinations.index.center_view_help')}
+            %i.fa.fa-expand.fa-fw
+          - if users.any? && !expired
+
+            .dropdown
+              %button.btn.btn-outline-secondary.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, title: t('activerecord.models.users', count: users.size), aria: { expanded: false, haspopup: true }}
+                %i.fa.fa-users.fa-fw
+                = users.size
+              %ul.dropdown-menu.dropdown-menu-end.customer-users-dropdown{id: "customerUsersDropdown#{customer.id}", role: 'menu'}
+                - users.each do |user|
+                  %li
+                    .customer-users-dropdown__row
+                      %span.customer-users-dropdown__role{title: user.role&.name}= admin_user_role_display(user)
+                      %span.customer-users-dropdown__email= user.email
+                      -# link_to: button_to would nest a <form> inside customers-destroy and submit DELETE instead.
+                      = link_to handoff_workspace_path(user_id: user.id), class: 'btn btn-outline-secondary btn-sm customer-users-dropdown__connect', title: t('customers.edit.user.connect_as'), data: { turbo_method: :post, turbo_frame: '_top' } do
+                        %i.fa.fa-arrow-right-to-bracket.fa-fw
+                        %span.visually-hidden= t('customers.edit.user.connect_as')
+          - if dashboard_url
+            = link_to dashboard_url, target: '_blank', class: 'btn btn-outline-secondary', title: t('customers.form.customer_dashboard_url_help'), rel: 'noopener' do
+              %i.fa.fa-chart-line.fa-fw
+          - if extra_dashboard_url
+            = link_to extra_dashboard_url, target: '_blank', class: 'btn btn-outline-secondary', title: t('customers.form.extra_dashboard_url_help'), rel: 'noopener' do
+              %i.fa.fa-chart-column.fa-fw
+          - if audience_url
+            = link_to audience_url, target: '_blank', class: 'btn btn-outline-secondary', title: t('customers.form.audience_url_help'), rel: 'noopener' do
+              %i.fa.fa-chart-bar.fa-fw
+          - if behavior_url
+            = link_to behavior_url, target: '_blank', class: 'btn btn-outline-secondary', title: t('customers.form.behavior_url_help'), rel: 'noopener' do
+              %i.fa.fa-chart-pie.fa-fw
+          = link_to duplicate_customer_path(customer), class: 'btn btn-outline-secondary', title: t('all.verb.duplicate'), data: { turbo_method: :patch, turbo_confirm: t('all.verb.destroy_confirm') } do
+            %i.fa.fa-copy.fa-fw
+          = link_to export_customer_path(customer), class: 'btn btn-outline-secondary', title: t('all.verb.export.button'), data: { turbo: false } do
+            %i.fa.fa-download.fa-fw
+          = link_to edit_customer_path(customer), class: 'btn btn-primary', title: t('all.verb.edit'), 'aria-label': t('all.verb.edit'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+            %i.fa.fa-pencil.fa-fw
+          %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy'), 'aria-label': t('all.verb.destroy'), data: confirm_click_destroy_data(group: 'customers-destroy', url: customer_path(customer))}
+            %i.fa.fa-trash.fa-fw
+      %p.destinations-card-address.mb-1
+        = customer.profile&.name
+        · #{customer.router&.translated_name}
+      %p.destinations-card-address.mb-1
+        = l(customer.created_at, format: :date)
+        %i.fa.fa-arrow-right.fa-fw
+        - if customer.end_subscription
+          = l(customer.end_subscription)
+          - if ending_soon
+            %i.fa.fa-bell.text-warning{title: t('customers.index.created_end_subscription')}
+        - else
+          ∞
+      .customer-card-counters-row
+        .customer-card-counters
+          %span.customer-card-counters__item{title: Customer.human_attribute_name(:max_vehicles)}
+            %i.fa.fa-truck-field.fa-fw{"aria-hidden": "true"}
+            %span.customer-card-counters__value= customer.max_vehicles
+            %span.customer-card-counters__label= t('activerecord.models.vehicles', count: customer.max_vehicles)
+          %span.customer-card-counters__item{title: t('destinations.index.destinations_count_help')}
+            %i.fa.fa-map-marker.fa-fw{"aria-hidden": "true"}
+            %span.customer-card-counters__value= customer.destinations_count
+            %span.customer-card-counters__label= t('activerecord.models.destinations', count: customer.destinations_count)
+          %span.customer-card-counters__item{title: t('destinations.index.visits_count_help')}
+            %i.fa.fa-calendar-check.fa-fw{"aria-hidden": "true"}
+            %span.customer-card-counters__value= customer.visits_count
+            %span.customer-card-counters__label= t('activerecord.models.visits', count: customer.visits_count)
+          %span.customer-card-counters__item{title: t('plannings.index.plannings_count_help'), class: ('text-danger' if over_plannings)}
+            %i.fa.fa-map-location.fa-fw{"aria-hidden": "true"}
+            %span.customer-card-counters__value{class: ('fw-bold' if over_plannings)}= customer.plannings_count
+            %span.customer-card-counters__label= t('activerecord.models.plannings', count: customer.plannings_count)
+        - if current_user.admin?
+          = link_to refresh_counters_customer_path(customer), class: 'btn btn-link btn-sm customer-card-counters__refresh', title: t('customers.index.refresh_counters'), data: { turbo_method: :patch } do
+            %i.fa.fa-arrows-rotate.fa-fw{"aria-hidden": "true"}
+            %span.visually-hidden= t('customers.index.refresh_counters')
+      %p.destinations-card-address.mb-1
+        - if users.empty?
+          %span{title: t('customers.index.status_no_user')}
+            %i.fa.fa-user-gear.fa-fw
+            %i.fa.fa-triangle-exclamation.text-warning
+        - elsif not_connected && last_sign_in.nil?
+          %span{title: t('customers.index.status_no_sign_in_user')}
+            %i.fa.fa-user-gear.fa-fw
+            %i.fa.fa-hourglass-half.fa-fw
+        - elsif last_sign_in && last_sign_in < Time.now - 61.days
+          %span{title: t('customers.index.status_inactive_user')}
+            %i.fa.fa-user-gear.fa-fw
+            Zz (#{l last_sign_in.to_date})
+      - if customer.description.present?
+        %p.customer-card-comment.text-muted.mb-1
+          %span.customer-card-comment__label= t('customers.index.comment_label')
+          %span.customer-card-comment__value= customer.description
+
+      - [customer.job_optimizer, customer.job_destination_geocoding, customer.job_store_geocoding, customer.job_destination_import].compact.each do |job|
+        %p.mb-0= job.id
+      = render 'customers/last_async_jobs', customer: customer

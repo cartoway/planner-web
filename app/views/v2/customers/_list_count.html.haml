@@ -1,0 +1,11 @@
+-# Copyright © Cartoway
+-# Admin customers header: hors-test / total for clients and vehicles.
+.destinations-sidebar-counts
+  #count.primary.data-info{title: t('customers.index.customers_count_help')}
+    %i.fa.fa-user-gear.fa-fw{"aria-hidden": "true"}
+    %span.destinations-list-count-numbers= "#{@customers_count} / #{@total_count}"
+    %span.destinations-toolbar-label= t('customers.index.count_total', count: @total_count)
+  #count-vehicles.primary.data-info{title: t('customers.index.vehicles_count_help')}
+    %i.fa.fa-truck-field.fa-fw{"aria-hidden": "true"}
+    %span.destinations-list-count-numbers= "#{@vehicles_no_test_count} / #{@vehicles_count}"
+    %span.destinations-toolbar-label= t('customers.index.vehicles_count_total', count: @vehicles_count)

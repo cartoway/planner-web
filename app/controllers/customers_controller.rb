@@ -28,23 +28,43 @@ class CustomersController < ApplicationController
 
   include V01::Devices::DeviceHelpers
   include PlanningToolbarPermissions
+  include V2Layout
 
   def index
     respond_to do |format|
       format.html do
-        @customers = current_user.reseller.customers.includes_deps
+        load_customers_index
+        next unless current_user.admin?
+
+        if turbo_frame_request? && turbo_frame_request_id == 'customers_list'
+          render partial: 'v2/customers/list_frame', layout: false
+        else
+          render_page 'v2/customers/index'
+        end
       end
       format.json do
-        @customers = current_user.reseller.customers.includes_stores
+        per_page = customers_index_per_page
+        filtered = apply_customers_search(current_user.reseller.customers)
+        ids = filtered.order(:name, :id).pluck(:id)
+        @customer_pages = ids.each_with_index.to_h { |id, idx| [id, (idx / per_page) + 1] }
+        @customers = filtered.includes_stores.order(:name, :id)
       end
     end
   end
 
   def new
     @customer = current_user.reseller.customers.build
+    return unless current_user.admin?
+
+    render_admin_form_or_list('new_sidebar', 'v2/customers/index', customers_path) { load_customers_index }
   end
 
-  def edit; end
+  def edit
+    return unless current_user.admin?
+
+    @customer_sidebar_tab = params[:sidebar_tab].presence || 'general'
+    render_admin_form_or_list('edit_sidebar', 'v2/customers/index', customers_path) { load_customers_index }
+  end
 
   def create
     @customer = current_user.reseller.customers.build(customer_params)
@@ -70,12 +90,29 @@ class CustomersController < ApplicationController
 
   def destroy
     @customer.destroy
-    redirect_to customers_path, notice: t('.success')
+    respond_to do |format|
+      format.turbo_stream do
+        render_streams(
+          stream_remove(@customer),
+          stream_index_count(
+            count: customers_index_count,
+            help: t('customers.index.no_test'),
+            model_key: 'customers.index.count',
+            icon: 'fa-user-gear'
+          ),
+          close_sidebar: false
+        )
+      end
+      format.html { redirect_to customers_path, status: :see_other, notice: t('.success') }
+    end
   end
 
   def destroy_multiple
     current_user.reseller.customers.find(params[:customers].keys).each(&:destroy) if params[:customers]
-    redirect_to customers_path, notice: t('.success')
+    respond_to do |format|
+      format.turbo_stream { redirect_to customers_path, status: :see_other }
+      format.html { redirect_to customers_path, status: :see_other, notice: t('.success') }
+    end
   end
 
   def delete_vehicle
@@ -89,6 +126,23 @@ class CustomersController < ApplicationController
     @customer = Customer.for_duplication.find(@customer.id)
     @customer.duplicate.save! validate: Planner::Application.config.validate_during_duplication
     redirect_to [:customers], notice: t('.success')
+  end
+
+  def refresh_counters
+    raise CanCan::AccessDenied unless current_user.admin?
+
+    @customer.refresh_counters!
+    @customer = current_user.reseller.customers.includes_deps.includes(:stores).find(@customer.id)
+    respond_to do |format|
+      format.turbo_stream do
+        render turbo_stream: turbo_stream.replace(
+          helpers.dom_id(@customer),
+          partial: 'v2/customers/list_row',
+          locals: { customer: @customer }
+        )
+      end
+      format.html { redirect_to customers_path, notice: t('.success') }
+    end
   end
 
   def export
@@ -164,6 +218,45 @@ class CustomersController < ApplicationController
   end
 
   private
+
+  def load_customers_index
+    reseller = current_user.reseller
+    filtered = apply_customers_search(reseller.customers)
+    @total_count = filtered.count
+    @customers_count = filtered.where(test: false).count
+    vehicles_scope = Vehicle.for_reseller_id(reseller.id)
+    @vehicles_count = vehicles_scope.count
+    @vehicles_no_test_count = vehicles_scope.where(customers: { test: false }).count
+
+    per_page = customers_index_per_page
+    page = [params[:page].to_i, 1].max
+    if params[:highlight_customer_id].present? && params[:q].blank?
+      highlight_page = CustomerListPage.for(
+        reseller: reseller,
+        customer_id: params[:highlight_customer_id],
+        per_page: per_page
+      )
+      page = highlight_page if highlight_page
+    end
+    max_page = [(@total_count.to_f / per_page).ceil, 1].max
+    page = max_page if page > max_page
+    @customers = filtered.includes_deps.includes(:stores).order(:name, :id).offset((page - 1) * per_page).limit(per_page).to_a
+    @pagination = { page: page, per_page: per_page, total: @total_count }
+  end
+
+  def apply_customers_search(scope)
+    scope.search_by_name_or_ref(params[:q])
+  end
+
+  def customers_index_per_page
+    allowed = CustomersHelper::CUSTOMERS_INDEX_PER_PAGE_OPTIONS
+    raw = params[:per_page].presence&.to_i
+    allowed.include?(raw) ? raw : 50
+  end
+
+  def customers_index_count
+    apply_customers_search(current_user.reseller.customers.where(test: false)).count
+  end
 
   # Import upload: role must belong to current reseller; otherwise use reseller default_role_id.
   def validated_import_user_role_id

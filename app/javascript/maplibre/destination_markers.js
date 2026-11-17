@@ -35,11 +35,21 @@ export function teritorioClusterOptions (extra = {}) {
   }
 }
 
-export function fillDestinationMarker (element, { name, anchored = false } = {}) {
+const MARKER_STATUS_COLORS = {
+  active: '#558800',
+  test: '#0077A3',
+  inactive: '#707070'
+}
+
+export function fillDestinationMarker (element, { name, anchored = false, status = null, color = null } = {}) {
   element.className = anchored ? 'destinations-marker destinations-marker--anchored' : 'destinations-marker'
   element.setAttribute('role', 'button')
   if (name) element.setAttribute('aria-label', name)
   else element.removeAttribute('aria-label')
+
+  const flat = color || MARKER_STATUS_COLORS[status]
+  if (flat) element.style.setProperty('--dm-flat', flat)
+  else element.style.removeProperty('--dm-flat')
 
   element.replaceChildren()
 
@@ -59,6 +69,7 @@ export function fillDestinationMarker (element, { name, anchored = false } = {})
   element.appendChild(pin)
   return element
 }
+
 
 export function createDestinationMarkerElement (label) {
   const el = document.createElement('div')

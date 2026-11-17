@@ -1,0 +1,19 @@
+-# Copyright © Cartoway
+-# Server-side index search (debounced GET → results turbo-frame). Keeps the chrome of index_filter_field.
+-# locals: url:, frame:, q:, input_id:, per_page: (optional), input_name: ('q'), form_id: (optional)
+- url = local_assigns.fetch(:url)
+- frame = local_assigns.fetch(:frame)
+- q = local_assigns[:q]
+- input_id = local_assigns.fetch(:input_id)
+- input_name = local_assigns.fetch(:input_name, 'q')
+- per_page = local_assigns[:per_page]
+- form_id = local_assigns[:form_id]
+.form-group{id: form_id, data: { controller: 'v2--list-filters', action: 'v2--debounced-input:flush->v2--list-filters#submitNow' }}
+  = form_with url: url, method: :get, local: true, data: { v2__list_filters_target: 'form', turbo_frame: frame, turbo_action: 'advance' } do
+    - if per_page.present?
+      = hidden_field_tag :per_page, per_page
+    .destinations-search-wrapper
+      .destinations-search-input.form-control
+        .destinations-search-clause
+          = text_field_tag input_name, q, id: input_id, class: 'form-control-plaintext', type: 'search', placeholder: t('all.verb.filter'), autocomplete: 'off', 'aria-label': t('all.verb.filter'), data: { controller: 'v2--debounced-input', v2__debounced_input_delay_value: 500, v2__list_filters_target: 'search', action: 'input->v2--debounced-input#queue keydown.enter->v2--debounced-input#flush' }
+        %i.fa.fa-magnifying-glass.destinations-search-icon{"aria-hidden": "true"}
