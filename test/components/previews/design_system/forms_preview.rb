@@ -16,6 +16,10 @@ module DesignSystem
       render_with_template
     end
 
+    def extended_options
+      render_with_template
+    end
+
     def selects_and_textareas
       render_with_template
     end

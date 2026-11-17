@@ -24,8 +24,11 @@ module Preferences
     module Spaces # rubocop:disable Metrics/ModuleLength
       SPACE_KEYS = %w[
         plannings destination vehicle_usages stores tags customer
-        deliverable_units custom_attributes operations
+        deliverable_units custom_attributes operations operations_mobile
       ].freeze
+
+      # operations_mobile gates Deliver (not the web Planner shell).
+      WEB_SPACE_KEYS = (SPACE_KEYS - %w[operations_mobile]).freeze
 
       SPACE_ACTIONS = {
         'plannings' => %w[edit],
@@ -36,7 +39,8 @@ module Preferences
         'customer' => %w[edit],
         'deliverable_units' => %w[edit],
         'custom_attributes' => %w[edit],
-        'operations' => %w[sync transmit destroy export]
+        'operations' => %w[sync transmit destroy export],
+        'operations_mobile' => []
       }.freeze
 
       NORMALIZE_SPACE_VISIBLE_DEFAULT = true

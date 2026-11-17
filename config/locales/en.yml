@@ -397,6 +397,7 @@ en:
         extra_dashboard_url: Extra Dashboard URL
         planning_dashboard_url: Planning's Dashboard URL
         default_role_id: Default role for new users
+        default_driver_role_id: Default driver role
         default_profile_id: Default profile for new customers
         default_router_id: Default router for new customers
       role:
@@ -848,6 +849,8 @@ en:
           icon_unknown: is not in font-awesome icons list
           default_role_config_missing_ref: >-
             The default role configuration must contain a reference. (Contact your administrator)
+          default_driver_role_config_missing_ref: >-
+            The default driver role configuration must contain a reference. (Contact your administrator)
         optimization_time:
           must_be_greater_than_minimal_time: must be greater than minimal time
         router:
@@ -974,6 +977,8 @@ en:
         application_name_help: Reseller Website name
         default_role_help: >-
           Preselected role when an administrator creates a user. Leave blank for no default.
+        default_driver_role_help: >-
+          Role assigned to new drivers (Deliver). Overridable per customer. Leave blank for no default.
         default_profile_router_label: Default profile and router for new customers
         default_profile_router_blank: No default profile / router
         default_profile_router_help: >-
@@ -1055,6 +1060,8 @@ en:
         spaces_title: Spaces (navigation)
         spaces_help: >-
           The left column grants full access to the space. The middle column shows it in navigation without allowing access. The right column hides it.
+        spaces_channel_help: >-
+          Web spaces (everything except Mobile operations) open Planner sign-in: one visible or active space is enough. Mobile operations opens Deliver; alone, with every web space hidden, the account stays driver-only and cannot sign in to Planner. A planner can also be a driver by combining both.
         space_actions_section_title: Per-space permissions
         space_actions_help: >-
           For each active space, the left column allows the listed actions. The middle column shows them as read-only where applicable. The right column hides them.
@@ -1255,6 +1262,10 @@ en:
       options: Options
       extended_options: Extended options
       suivi: Tracking
+      operations_mobile_help: Requires Cartoway Deliver to be enabled.
+      default_driver_role_blank: Use reseller default
+      default_driver_role_help: >-
+        Role assigned to new drivers for this customer. Leave blank to use the reseller default.
       enable_proofs_help: >-
         Allows storing photos and signatures from the mobile view and via the API.
       optimization_parameters: Optimization settings

@@ -9,6 +9,40 @@
   flex-wrap: wrap;
   gap: 1.25rem;
   margin: 0.5rem 0;
+  max-width: 100%;
+  min-width: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+// Narrow sidebars: stack Active / Disabled / Hidden as full-width bands.
+// Also force-stack 3-col boards in the form sidebar (panel is too narrow for a row).
+.transfer-list.transfer-list--stacked,
+.form-sidebar-form .transfer-list.transfer-list--3-cols {
+  flex-direction: column;
+  flex-wrap: nowrap;
+  gap: .75rem;
+
+  .transfer-list-zone {
+    flex: 0 0 auto;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .transfer-list-items.item-list {
+    max-height: min(22vh, 160px);
+    min-height: 72px;
+  }
+
+  .transfer-list-item.draggable-item {
+    flex-shrink: 1;
+    max-width: 100%;
+  }
+
+  .transfer-list-item .item-text {
+    overflow-wrap: anywhere;
+  }
 }
 
 .transfer-list-zone {

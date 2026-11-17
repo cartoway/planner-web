@@ -40,7 +40,7 @@ class Admin::CustomersControllerTest < ActionController::TestCase
     get :edit, params: { id: @customer }
     assert_response :success
     assert_select '.last-async-jobs', text: /optimizer#42/
-    assert_select '.last-async-jobs .label', text: 'succeeded'
+    assert_select '.last-async-jobs .badge', text: 'succeeded'
   end
 
   test 'admin index shows last_async_jobs' do
@@ -58,12 +58,12 @@ class Admin::CustomersControllerTest < ActionController::TestCase
     assert_select '.last-async-jobs', text: /destination_geocoding#99/
   end
 
-  test 'should render map marker icon selectpickers on edit' do
+  test 'should render map marker icon selects on edit' do
     get :edit, params: { id: @customer }
     assert_response :success
-    assert_select 'select.selectpicker[name=?]', 'customer[destination_icon]'
-    assert_select 'select.selectpicker[name=?]', 'customer[store_icon]'
-    assert_select 'select.selectpicker[name=?]', 'customer[rest_icon]'
+    %w[destination store rest].each do |kind|
+      assert_select %(select[name="customer[#{kind}_icon]"][data-controller="v2--tom-select"]), 1
+    end
     assert_select '#customer_destination_icon_input'
     assert_select '#customer_store_icon_input'
     assert_select '#customer_rest_icon_input'
@@ -250,6 +250,36 @@ class Admin::CustomersControllerTest < ActionController::TestCase
     @customer.reload
     assert_equal ['pyvrp'], @customer.solver_priority
     assert_equal import_options['import'], @customer.advanced_options['import']
+  end
+
+  test 'index is v2 even when the layout preference is legacy' do
+    enable_layout_legacy!(users(:user_admin))
+    get :index
+    assert_response :success
+    assert_select 'body.cartoway-v2', 1
+    assert_select '.v2-index-card.destinations-index-card', minimum: 1
+    assert_select '#count', 1
+    assert_select 'table', 0
+    assert_select '.panel', 0
+    assert_select '.btn-default', 0
+  end
+
+  test 'turbo frame edit returns only the sidebar' do
+    @request.headers['Turbo-Frame'] = 'form_sidebar'
+    get :edit, params: { id: @customer }
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select 'body.cartoway-v2', 0
+    assert_select '#customer_name', 1
+  end
+
+  test 'destroy as turbo stream removes the card and refreshes the count' do
+    assert_difference 'Customer.count', -1 do
+      delete :destroy, params: { id: @customer }, format: :turbo_stream
+    end
+    assert_response :success
+    assert_match(/turbo-stream action="remove"/, response.body)
+    assert_match(/id=['"]count['"]/, response.body)
   end
 
 end

@@ -21,6 +21,25 @@
 module Admin::UsersHelper
   include Admin::RolesHelper
 
+  ACCOUNTS_INDEX_PER_PAGE_OPTIONS = [25, 50, 100].freeze
+
+  def accounts_index_per_page_options
+    ACCOUNTS_INDEX_PER_PAGE_OPTIONS
+  end
+
+  def accounts_index_per_page
+    raw = params[:per_page].presence&.to_i
+    ACCOUNTS_INDEX_PER_PAGE_OPTIONS.include?(raw) ? raw : 50
+  end
+
+  def accounts_index_params(overrides = {})
+    {
+      page: params[:page],
+      per_page: params[:per_page].presence,
+      q: params[:q].presence
+    }.compact.merge(overrides)
+  end
+
   # Options for role select with bootstrap-select HTML (icon + name), same idea as admin/roles icon field.
   def admin_user_role_select_options(roles)
     roles.map do |role|
@@ -56,5 +75,9 @@ module Admin::UsersHelper
     return content_tag(:span, "\u2014", class: 'text-muted') if role.blank?
 
     content_tag(:span, role_icon(role), title: role.name, class: 'admin-user-role-icon')
+  end
+
+  def admin_user_relationship_options
+    User::RELATIONSHIPS.map { |value| [t("admin.accounts.relationships.#{value}"), value] }
   end
 end

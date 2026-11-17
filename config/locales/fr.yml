@@ -403,6 +403,7 @@ fr:
         extra_dashboard_url: URL du tableau de bord extra du compte
         planning_dashboard_url: URL du tableau de bord de planification
         default_role_id: Rôle par défaut pour les nouveaux utilisateurs
+        default_driver_role_id: Rôle chauffeur par défaut
         default_profile_id: Profil par défaut pour les nouveaux clients
         default_router_id: Routeur par défaut pour les nouveaux clients
       role:
@@ -860,6 +861,8 @@ fr:
           icon_unknown: n'est pas une icône font-awesome autorisée
           default_role_config_missing_ref: >-
             La configuration du rôle par défaut doit contenir une référence. (Contactez votre administrateur)
+          default_driver_role_config_missing_ref: >-
+            La configuration du rôle chauffeur par défaut doit contenir une référence. (Contactez votre administrateur)
         optimization_time:
           must_be_greater_than_minimal_time: doit être supérieur à la durée minimale
         router:
@@ -993,6 +996,9 @@ fr:
         default_role_help: >-
           Rôle présélectionné lorsqu’un administrateur crée un utilisateur.
           Laisser vide pour aucun défaut.
+        default_driver_role_help: >-
+          Rôle attribué aux nouveaux chauffeurs (Deliver). Surchargeable par client.
+          Laisser vide pour aucun défaut.
         default_profile_router_label: Profil et routeur par défaut pour les nouveaux clients
         default_profile_router_blank: Aucun profil / routeur par défaut
         default_profile_router_help: >-
@@ -1081,6 +1087,8 @@ fr:
         spaces_title: Espaces (navigation)
         spaces_help: >-
           La colonne de gauche accorde l’accès complet à l’espace. La colonne centrale l’affiche dans la navigation sans permettre l’accès. La colonne de droite le masque.
+        spaces_channel_help: >-
+          Les espaces web (hors Opérations mobiles) ouvrent la connexion à Planner : un espace visible ou actif suffit. Opérations mobiles ouvre Deliver ; seul, avec tous les espaces web masqués, le compte reste chauffeur et ne peut pas se connecter à Planner. Un planificateur peut aussi être chauffeur en cumulant les deux.
         space_actions_section_title: Permissions par espace
         space_actions_help: >-
           Pour chaque espace actif, la colonne de gauche autorise les actions listées. La colonne centrale les limite à la consultation lorsque c’est pertinent. La colonne de droite les masque.
@@ -1281,6 +1289,10 @@ fr:
       options: Options
       extended_options: Options étendues
       suivi: Suivi
+      operations_mobile_help: Nécessite que Cartoway Deliver soit activé.
+      default_driver_role_blank: Utiliser le défaut revendeur
+      default_driver_role_help: >-
+        Rôle attribué aux nouveaux chauffeurs de ce client. Laisser vide pour utiliser le défaut revendeur.
       enable_proofs_help: >-
         Permet de stocker des photos et signatures sur la vue mobile et via l’API.
       optimization_parameters: Paramètres d'optimisation

@@ -1,0 +1,23 @@
+-# Copyright © Cartoway
+.v2-index-card.store-row.destinations-index-card{id: dom_id(role)}
+  .v2-index-card-main
+    .v2-index-card-select
+      = check_box_tag "roles[#{role.id}]", '1', false, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
+    .v2-index-card-body
+      .v2-index-card-header.destinations-card-header
+        .destinations-card-identity
+          - if role.ref.present?
+            %span.destinations-card-ref= role.ref
+          %h2.v2-index-card-title.destinations-card-name.d-inline-flex.align-items-center.gap-2
+            %span.role-list-icon= role_icon(role)
+            = role.name
+        .v2-index-card-actions.destinations-card-actions
+          = link_to duplicate_admin_role_path(role), class: 'btn btn-outline-secondary', title: t('all.verb.duplicate'), data: { turbo_method: :post } do
+            %i.fa.fa-copy.fa-fw
+          = link_to edit_admin_role_path(role), class: 'btn btn-primary', title: t('all.verb.edit'), 'aria-label': t('all.verb.edit'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+            %i.fa.fa-pencil.fa-fw
+          %button.btn.btn-danger{type: 'button', title: t('all.verb.destroy'), 'aria-label': t('all.verb.destroy'), data: confirm_click_destroy_data(group: 'roles-destroy', url: admin_role_path(role))}
+            %i.fa.fa-trash.fa-fw
+      %p.destinations-card-address.mb-1
+        = t('admin.roles.index.users_count')
+        = user_count

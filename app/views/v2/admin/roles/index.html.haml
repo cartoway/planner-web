@@ -1,0 +1,11 @@
+-# Copyright © Cartoway
+- content_for :form_sidebar do
+  = render "v2/layouts/form_sidebar_placeholder"
+- content_for :title, t('admin.roles.index.title')
+#roles-index-layout
+  .destinations-sidebar.slide-panel.slide-panel--from-left
+    .destinations-sidebar-header
+      .destinations-sidebar-title-row
+        %h1.mb-0.mt-0= t('admin.roles.index.title')
+      = render 'v2/shared/index_server_filter', url: admin_roles_path, frame: 'roles_list', q: params[:q], input_id: 'roles-filter', form_id: 'roles-search-form'
+    = render 'v2/admin/roles/list_frame'

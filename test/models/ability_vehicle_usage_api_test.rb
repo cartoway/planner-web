@@ -25,6 +25,7 @@ class AbilityVehicleUsageApiTest < ActiveSupport::TestCase
     cfg['no_role'] = no_role
     Rails.application.config.default_permissions_config = cfg
 
+    @user.update!(role_id: nil)
     @user.reload
     assert_nil @user.role_id
 

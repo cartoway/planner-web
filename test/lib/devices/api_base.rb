@@ -18,11 +18,14 @@ module ApiBase
   end
 
   def last_sent_payload(operation_route)
+    # The API stamps these in the membership zone (then restores UTC). A time
+    # already loaded in UTC keeps its own zone, so convert explicitly.
+    sent_at = operation_route.last_sent_at&.in_time_zone(users(:user_one).time_zone)
     {
       'id' => operation_route.id,
       'last_sent_to' => operation_route.last_sent_to,
-      'last_sent_at' => operation_route.last_sent_at&.iso8601(3),
-      'last_sent_at_formatted' => operation_route.last_sent_at && I18n.l(operation_route.last_sent_at)
+      'last_sent_at' => sent_at&.iso8601(3),
+      'last_sent_at_formatted' => sent_at && I18n.l(sent_at)
     }
   end
 

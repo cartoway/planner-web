@@ -1,0 +1,9 @@
+-# Copyright © Cartoway
+-# locals: target:, title:, collapsed: true, heading: :h2
+- collapsed = local_assigns.fetch(:collapsed, true)
+- heading_tag = local_assigns.fetch(:heading, :h2)
+.customer-form-accordion-header.mb-2
+  = content_tag heading_tag, class: 'h6 mb-0' do
+    %button.v2-collapse-toggle.accordion-toggle.customer-form-accordion-toggle.text-decoration-none{type: 'button', class: ('collapsed' if collapsed), data: { bs_toggle: 'collapse', bs_target: "##{target}" }, 'aria-expanded': (collapsed ? 'false' : 'true'), 'aria-controls': target}
+      %i.fa.fa-chevron-right.fa-fw.accordion-chevron{'aria-hidden': 'true'}
+      %span.v2-collapse-toggle-label= title

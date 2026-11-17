@@ -33,6 +33,7 @@ module Preferences
     PLANNING_TOOLBAR_GROUPS_ROUTE = PlanningToolbar::GROUPS_ROUTE
     PLANNING_TOOLBAR_GROUPS_STOP = PlanningToolbar::GROUPS_STOP
     SPACE_KEYS = Spaces::SPACE_KEYS
+    WEB_SPACE_KEYS = Spaces::WEB_SPACE_KEYS
     SPACE_ACTIONS = Spaces::SPACE_ACTIONS
     DEFAULT_BOOL = Core::DEFAULT_BOOL
 
@@ -112,6 +113,13 @@ module Preferences
       def no_role_spaces_seed_hash
         raw = ConfigSeeds.no_role_spaces_raw
         raw.nil? ? {} : (raw.is_a?(Hash) ? raw.stringify_keys : {})
+      end
+
+      # A membership with no role sees no Planner space.
+      def closed_spaces
+        Spaces::SPACE_KEYS.index_with do |key|
+          Spaces.default_space_entry(key, visible: false, usable: false, actions_all_usable: false)
+        end
       end
 
       def normalize_zone(zone_hash, allowed_ids)

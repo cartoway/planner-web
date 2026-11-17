@@ -1,0 +1,31 @@
+-# Copyright © Cartoway
+-# Checkbox/switch with label on the same row (avoids horizontal form_group split under full-bleed).
+- opts = (local_assigns[:options] || {})
+- help_text = local_assigns[:help]
+- switch = opts.fetch(:switch, true)
+- check_classes = ['form-check', ('form-switch' if switch), opts[:control_col].presence].compact.join(' ')
+- if local_assigns.key?(:field)
+  - object_name = form.object_name
+  - box_id = "#{object_name}_#{field}"
+  - checked = if opts.key?(:checked)
+    - opts[:checked]
+  - elsif form.object.respond_to?(field)
+    - !!form.object.public_send(field)
+  - else
+    - false
+  .mb-3.customer-form-check
+    = hidden_field_tag "#{object_name}[#{field}]", '0', id: nil
+    %div{class: check_classes}
+      = check_box_tag "#{object_name}[#{field}]", '1', checked, class: 'form-check-input', id: box_id, disabled: opts[:disabled]
+      = label_tag box_id, label, class: 'form-check-label'
+    - if help_text.present?
+      %small.form-text.text-muted= help_text
+- else
+  - box_id = name.to_s.gsub(/[^a-zA-Z0-9]+/, '_').gsub(/_+/, '_').gsub(/\A_|_\z/, '')
+  .mb-3.customer-form-check
+    = hidden_field_tag name, '0', id: nil
+    %div{class: check_classes}
+      = check_box_tag name, '1', local_assigns[:checked], class: 'form-check-input', id: box_id, disabled: opts[:disabled]
+      = label_tag box_id, label, class: 'form-check-label'
+    - if help_text.present?
+      %small.form-text.text-muted= help_text

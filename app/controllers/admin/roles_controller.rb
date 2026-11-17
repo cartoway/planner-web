@@ -19,6 +19,7 @@
 #
 class Admin::RolesController < ApplicationController
   include LinkBack
+  include V2Layout
 
   before_action :set_reseller
   before_action :set_role, only: %i[edit update destroy]
@@ -26,13 +27,12 @@ class Admin::RolesController < ApplicationController
 
   def index
     authorize! :manage, Role
-    @roles = @reseller.roles.order(:name)
-    @user_counts_by_role_id =
-      if @reseller.roles.exists?
-        User.where(role_id: @reseller.roles.select(:id)).unscope(:order).group(:role_id).count
-      else
-        {}
-      end
+    load_roles_index
+    if turbo_frame_request? && turbo_frame_request_id == 'roles_list'
+      render partial: 'v2/admin/roles/list_frame', layout: false
+    else
+      render_page 'v2/admin/roles/index'
+    end
   end
 
   def new
@@ -41,6 +41,7 @@ class Admin::RolesController < ApplicationController
       planning_toolbar: Preferences::Catalog.new_role_admin_planning_toolbar_seed,
       spaces: Preferences::Catalog.new_role_admin_spaces_seed
     )
+    render_admin_form_or_list('new_sidebar', 'v2/admin/roles/index', admin_roles_path) { load_roles_index }
   end
 
   def create
@@ -48,7 +49,12 @@ class Admin::RolesController < ApplicationController
     authorize! :create, @role
     @role.assign_attributes(role_attributes)
     if @role.save
-      redirect_to(link_back || edit_admin_role_path(@role), notice: t('admin.roles.flash.created'))
+      respond_to do |format|
+        format.turbo_stream { render_role_created }
+        format.html { redirect_to(link_back || edit_admin_role_path(@role), notice: t('admin.roles.flash.created')) }
+      end
+    elsif sidebar_submit?
+      render 'new_sidebar', layout: false, status: :unprocessable_entity, formats: [:html]
     else
       render :new
     end
@@ -56,12 +62,19 @@ class Admin::RolesController < ApplicationController
 
   def edit
     authorize! :update, @role
+    render_admin_form_or_list('edit_sidebar', 'v2/admin/roles/index', admin_roles_path) { load_roles_index }
   end
 
   def update
     authorize! :update, @role
     if @role.update(role_attributes)
-      redirect_to(link_back || edit_admin_role_path(@role), notice: t('admin.roles.flash.updated'))
+      if sidebar_submit?
+        render_role_saved
+      else
+        redirect_to(link_back || edit_admin_role_path(@role), notice: t('admin.roles.flash.updated'))
+      end
+    elsif sidebar_submit?
+      render 'edit_sidebar', layout: false, status: :unprocessable_entity, formats: [:html]
     else
       render :edit
     end
@@ -70,7 +83,16 @@ class Admin::RolesController < ApplicationController
   def destroy
     authorize! :destroy, @role
     @role.destroy
-    redirect_to admin_roles_path, notice: t('admin.roles.flash.destroyed')
+    respond_to do |format|
+      format.turbo_stream do
+        render_streams(
+          stream_remove(@role),
+          stream_index_count(count: @reseller.roles.count, help: t('admin.roles.index.count_help'), model_key: 'activerecord.models.roles', filterable: false),
+          close_sidebar: false
+        )
+      end
+      format.html { redirect_to admin_roles_path, notice: t('admin.roles.flash.destroyed') }
+    end
   end
 
   def destroy_multiple
@@ -96,7 +118,8 @@ class Admin::RolesController < ApplicationController
       icon: source.icon,
       color: source.color,
       planning_toolbar: json_column_dup(source.planning_toolbar),
-      spaces: json_column_dup(source.spaces)
+      spaces: json_column_dup(source.spaces),
+      operations_mobile: json_column_dup(source.operations_mobile)
     )
 
     if copy.save
@@ -107,6 +130,41 @@ class Admin::RolesController < ApplicationController
   end
 
   private
+
+  def load_roles_index
+    scope = apply_roles_search(@reseller.roles)
+    @roles = scope.order(:name)
+    @user_counts_by_role_id =
+      if @roles.exists?
+        User.where(role_id: @roles.select(:id)).unscope(:order).group(:role_id).count
+      else
+        {}
+      end
+  end
+
+  def apply_roles_search(scope)
+    q = params[:q].to_s.strip
+    return scope if q.blank?
+
+    pattern = "%#{Role.sanitize_sql_like(q)}%"
+    scope.where('roles.name ILIKE :q OR COALESCE(roles.ref, \'\') ILIKE :q', q: pattern)
+  end
+
+  def render_role_created
+    render_streams(
+      stream_append('roles-list', partial: 'v2/admin/roles/list_row', locals: { role: @role, user_count: 0 }),
+      stream_index_count(count: @reseller.roles.count, help: t('admin.roles.index.count_help'), model_key: 'activerecord.models.roles', filterable: false),
+      close_sidebar: true
+    )
+  end
+
+  def render_role_saved
+    html = render_to_string(template: 'admin/roles/edit_sidebar', formats: [:html], layout: false)
+    render turbo_stream: [
+      turbo_stream.replace('form_sidebar', html: html),
+      stream_replace(@role, partial: 'v2/admin/roles/list_row', locals: { role: @role, user_count: User.where(role_id: @role.id).count })
+    ]
+  end
 
   def set_reseller
     @reseller = current_user.reseller
@@ -149,7 +207,7 @@ class Admin::RolesController < ApplicationController
                    Preferences::Catalog.normalize_spaces(spaces_base)
                  end
 
-    {
+    attrs = {
       name: p[:name],
       ref: p[:ref],
       icon: role_icon_param_for_attributes(p[:icon]),
@@ -157,6 +215,21 @@ class Admin::RolesController < ApplicationController
       planning_toolbar: toolbar_val,
       spaces: spaces_val
     }
+    mobile = operations_mobile_from_params
+    attrs[:operations_mobile] = mobile if mobile
+    attrs
+  end
+
+  def operations_mobile_from_params
+    raw = params[:role]
+    return nil unless raw.respond_to?(:key?)
+    return nil unless raw.key?(:operations_mobile) || raw.key?('operations_mobile')
+
+    om = raw[:operations_mobile] || raw['operations_mobile'] || {}
+    OperationsMobile.from_form(
+      usable: om[:usable] || om['usable'],
+      visible: om[:visible] || om['visible']
+    )
   end
 
   def role_icon_param_for_attributes(raw)

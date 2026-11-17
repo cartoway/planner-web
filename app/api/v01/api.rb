@@ -17,8 +17,10 @@
 #
 require 'exceptions'
 require_relative '../api_request_transaction'
+require_relative '../time_zone_guard'
 
 class V01::Api < Grape::API
+  use TimeZoneGuard
   helpers do
     include CancanGrapeHelpers
 
@@ -37,7 +39,8 @@ class V01::Api < Grape::API
     def current_customer(customer_id = nil, **options)
       api_key = headers['Api-Key'] || params[:api_key]
       @current_user ||= api_key && User.find_by(api_key: api_key)
-      @current_user ||= warden.authenticated? && warden.user
+      # Cookie session: honor admin login-as (workspace_user_id), same as WorkspaceSession.
+      @current_user ||= warden.authenticated? && Workspaces::EffectiveUser.call(warden.user, session)
       @current_customer ||= @current_user && (@current_user.admin? && customer_id ? @current_user.reseller.customers.find(customer_id) : @current_user.customer)
       error!(V01::Status.code_response(:code_401, message: 'Customer required'), 401) if @current_customer.nil? && !options[:skip_customer_requirement]
       @current_customer

@@ -40,7 +40,7 @@
         <td>
           <%= user.email %>
           <% if current_user.admin? %>
-            <br /> <a href="/?api_key=<%= user.api_key %>"><%= t 'admin.users.edit.connect_as' %></a>
+            <br /><%= link_to t('admin.users.edit.connect_as'), handoff_workspace_path(user_id: user.id), class: 'btn btn-link btn-sm p-0', data: { turbo_method: :post, turbo_frame: '_top' } %>
           <% end %>
         </td>
         <td>

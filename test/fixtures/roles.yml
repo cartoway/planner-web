@@ -1,0 +1,21 @@
+# Permissions of a membership that has no role in the test env (config/default_permissions.yml, test).
+# Blank role_id closes Planner spaces, so fixture users keep a role with that catalog.
+role_catalog:
+  reseller: reseller_one
+  name: Catalog permissions
+  ref: test_catalog_permissions
+  planning_toolbar: <%= Preferences::Catalog.normalize_planning_toolbar(Preferences::Catalog.no_role_planning_toolbar_seed_hash).to_json %>
+  spaces: <%= Preferences::Catalog.normalize_spaces(Preferences::Catalog.no_role_spaces_seed_hash).to_json %>
+  operations_mobile:
+    version: 1
+    capabilities: {}
+
+role_catalog_two:
+  reseller: reseller_two
+  name: Catalog permissions
+  ref: test_catalog_permissions
+  planning_toolbar: <%= Preferences::Catalog.normalize_planning_toolbar(Preferences::Catalog.no_role_planning_toolbar_seed_hash).to_json %>
+  spaces: <%= Preferences::Catalog.normalize_spaces(Preferences::Catalog.no_role_spaces_seed_hash).to_json %>
+  operations_mobile:
+    version: 1
+    capabilities: {}

@@ -223,6 +223,8 @@ class CustomersController < ApplicationController
         :description,
         :end_subscription,
         :test,
+        :operations_mobile,
+        :default_driver_role_id,
         :destination_duration,
         :destination_icon,
         :destination_icon_size,
@@ -323,6 +325,7 @@ class CustomersController < ApplicationController
         devices: RecursiveParamsHelper.permit_recursive(devices_params),
         advanced_options: RecursiveParamsHelper.permit_recursive(advanced_options_params)
       )
+      parameters[:default_driver_role_id] = nil if parameters[:default_driver_role_id].blank?
       return parameters
     else
       allowed_params = [

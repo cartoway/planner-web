@@ -8,12 +8,26 @@ import { pathToFileURL } from 'node:url'
 
 const srcPath = new URL('../../app/javascript/controllers/v2/transfer_list_controller.js', import.meta.url)
 const tmpPath = path.join(os.tmpdir(), 'planner-transfer-list.mjs')
-const source = fs.readFileSync(srcPath, 'utf8').replace(
-  'import { Controller } from "@hotwired/stimulus"\n\nconst ITEM_SELECTOR = ".transfer-list-item"\n\nexport default class extends Controller {',
-  'class Controller {}\n\nconst ITEM_SELECTOR = ".transfer-list-item"\n\nexport default class extends Controller {'
-)
+const source = fs.readFileSync(srcPath, 'utf8')
+  .replace('import { Controller } from "@hotwired/stimulus"\n', '')
+  .replace('import { showToast } from "lib/toast"\n', 'const showToast = () => null\n')
+  .replace(
+    'const ITEM_SELECTOR = ".transfer-list-item"\n\nexport default class extends Controller {',
+    'class Controller {}\n\nconst ITEM_SELECTOR = ".transfer-list-item"\n\nexport default class extends Controller {'
+  )
 fs.writeFileSync(tmpPath, source)
-const { listValues, nextColumnKey, itemAfter, placeItem } = await import(pathToFileURL(tmpPath).href)
+const transferListModule = await import(pathToFileURL(tmpPath).href)
+const { listValues, nextColumnKey, itemAfter, placeItem, syncItemHiddenInput } = transferListModule
+const TransferListController = transferListModule.default
+
+if (typeof globalThis.Event !== 'function') {
+  globalThis.Event = class Event {
+    constructor (type, init = {}) {
+      this.type = type
+      this.bubbles = !!init.bubbles
+    }
+  }
+}
 
 describe('transfer list values', () => {
   it('reads data-value from transfer-list items in DOM order', () => {
@@ -48,6 +62,59 @@ function chip (left, top, width, height) {
     }
   }
 }
+
+describe('transfer list form sync', () => {
+  it('bubbles a change event so dirty-form-submit can show the save bar', () => {
+    let received = null
+    const controller = new TransferListController()
+    controller.element = {
+      dispatchEvent (event) {
+        received = event
+        return true
+      }
+    }
+    controller.notifyFormChange()
+    assert.equal(received.type, 'change')
+    assert.equal(received.bubbles, true)
+  })
+
+  it('sets a hidden input name that follows the destination column', () => {
+    const item = {
+      dataset: { value: 'plannings' },
+      _hiddenInputs: [{ type: 'hidden', name: 'role[spaces_active][]', value: 'plannings' }],
+      querySelectorAll () {
+        return [{
+          remove: () => { this._hiddenInputs = [] }
+        }]
+      },
+      appendChild (node) {
+        this._hiddenInputs.push(node)
+      }
+    }
+
+    syncItemHiddenInput(item, 'role[spaces_disabled][]')
+    assert.equal(item._hiddenInputs.length, 1)
+    assert.equal(item._hiddenInputs[0].name, 'role[spaces_disabled][]')
+    assert.equal(item._hiddenInputs[0].value, 'plannings')
+
+    syncItemHiddenInput(item, '')
+    assert.equal(item._hiddenInputs.length, 0)
+  })
+})
+
+describe('transfer list min active', () => {
+  it('blocks emptying the active column when minActiveItems is 1', () => {
+    const controller = new TransferListController()
+    const active = { dataset: { inactive: 'false' }, querySelectorAll: () => [{ dataset: { value: 'ortools' } }] }
+    const inactive = { dataset: { inactive: 'true' }, querySelectorAll: () => [] }
+    controller.minActiveItemsValue = 1
+    controller.listTargets = [active, inactive]
+
+    assert.equal(controller.wouldViolateMinActive(active, inactive, 1), true)
+    assert.equal(controller.wouldViolateMinActive(inactive, active, 1), false)
+    assert.equal(controller.wouldViolateMinActive(active, inactive, 0), false)
+  })
+})
 
 describe('transfer list reorder', () => {
   it('inserts a chip before the neighbour under the pointer instead of appending', () => {

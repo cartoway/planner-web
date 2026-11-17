@@ -171,6 +171,8 @@ module UserPreferences
   def read_spaces_hash
     raw = if permissions_from_role?
             role.spaces
+          elsif role_id.blank? && !(respond_to?(:admin?) && admin?)
+            ::Preferences::Catalog.closed_spaces
           else
             ::Preferences::Catalog.no_role_spaces_seed_hash
           end

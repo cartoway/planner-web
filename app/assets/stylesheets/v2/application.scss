@@ -295,6 +295,12 @@
       }
     }
 
+    // Role permissions DnD needs a bit more width than the default form panel.
+    &:has(#role-form-sidebar) .form-sidebar.slide-panel {
+      width: clamp(360px, 46vw, 720px);
+      max-width: min(720px, 58vw);
+    }
+
     .form-sidebar-chrome {
       flex: 0 0 auto;
       display: flex;

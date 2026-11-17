@@ -1,0 +1,8 @@
+-# Copyright © Cartoway
+-# locals: title:, return_to_customer_id: (optional)
+- return_to_customer_id = local_assigns[:return_to_customer_id].presence
+%header.mb-3.d-flex.align-items-center.gap-2
+  - if return_to_customer_id.present?
+    = link_to edit_customer_path(return_to_customer_id, sidebar_tab: 'users'), class: 'btn-icon flex-shrink-0', title: t('admin.accounts.form.back_to_customer'), 'aria-label': t('admin.accounts.form.back_to_customer'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+      %i.fa.fa-chevron-left{"aria-hidden": "true"}
+  %h2.h5.mb-0= title

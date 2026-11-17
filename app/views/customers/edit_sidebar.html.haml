@@ -1,0 +1,60 @@
+-# Copyright © Cartoway
+- sidebar_tab = (@customer_sidebar_tab.presence || params[:sidebar_tab].presence || 'general').to_s
+- users_memberships = @customer.users.select { |user| User::OPEN_STATUSES.include?(user.status) }.sort_by { |user| user.email.to_s.downcase }
+= turbo_frame_tag "form_sidebar" do
+  .customer-form-sidebar{data: { controller: "v2--customer-form-extended" }}
+    %header.mb-3.d-flex.justify-content-between.align-items-center
+      %h2.h5.mb-0= t('customers.edit.title')
+      = render 'extended_options_toggle'
+    - if flash[:error].present?
+      .alert.alert-danger.mb-2{role: "alert"}= flash[:error]
+    %ul.nav.nav-tabs.mb-3{role: 'tablist'}
+      %li.nav-item
+        %button.nav-link{type: 'button', role: 'tab', class: ('active' if sidebar_tab == 'general'), data: { bs_toggle: 'tab', bs_target: '#general' }}= t('customers.edit.tab_settings')
+      %li.nav-item
+        %button.nav-link{type: 'button', role: 'tab', class: ('active' if sidebar_tab == 'users'), data: { bs_toggle: 'tab', bs_target: '#users' }}= t('customers.edit.user.list')
+      %li.nav-item
+        %button.nav-link{type: 'button', role: 'tab', class: ('active' if sidebar_tab == 'vehicles'), data: { bs_toggle: 'tab', bs_target: '#vehicles' }}= t('customers.edit.vehicles.list')
+    .tab-content
+      #general.tab-pane.fade{role: 'tabpanel', class: ('show active' if sidebar_tab == 'general')}
+        .sidebar-form{data: { controller: "v2--dirty-form-submit" }}
+          = render 'v2/customers/form'
+          .form-submit-bar.is-hidden{data: { "v2--dirty-form-submit-target": "bar" }}
+            %button.btn.btn-primary{type: "submit", form: "customer-form-sidebar", disabled: !current_user_customer_form_submit_enabled?(@customer)}= t('customers.form.submit')
+      #users.tab-pane.fade{role: 'tabpanel', class: ('show active' if sidebar_tab == 'users')}
+        %p.d-flex.flex-wrap.gap-2
+          = link_to new_admin_account_path(customer_id: @customer.id, return_to_customer_id: @customer.id, mode: 'new'), class: 'btn btn-outline-secondary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+            %i.fa.fa-plus.fa-fw
+            = t('customers.edit.user.new')
+          = link_to new_admin_account_path(customer_id: @customer.id, return_to_customer_id: @customer.id, mode: 'existing'), class: 'btn btn-outline-secondary', data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+            %i.fa.fa-user-plus.fa-fw
+            = t('customers.edit.user.add_existing')
+        #users
+          %p.customers-users-role-heading.fw-bold= t('customers.edit.role_column')
+          - users_memberships.each do |user|
+            - account = user.account
+            .v2-index-card.destinations-index-card.mb-2
+              .v2-index-card-body.p-2
+                .d-flex.justify-content-between.align-items-center.flex-wrap.gap-2
+                  %span
+                    = account&.name.presence || user.email
+                    · #{admin_user_role_display(user)}
+                  .d-flex.gap-1
+                    - if account
+                      = link_to send_email_admin_account_path(account, return_to_customer_id: @customer.id), class: 'btn btn-outline-secondary btn-sm', title: t('admin.accounts.form.send_email'), data: { turbo_method: :post, turbo_frame: 'form_sidebar', turbo_confirm: t('admin.accounts.form.send_email_confirm') } do
+                        %i.fa.fa-envelope.fa-fw
+                      = link_to edit_admin_account_path(account, return_to_customer_id: @customer.id), class: 'btn btn-primary btn-sm', title: t('all.verb.edit'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+                        %i.fa.fa-pencil.fa-fw
+                      = link_to detach_membership_admin_account_path(account, membership_id: user.id, return_to_customer_id: @customer.id), class: 'btn btn-danger btn-sm', title: t('admin.accounts.form.detach'), data: { turbo_method: :patch, turbo_frame: 'form_sidebar', turbo_confirm: t('all.verb.destroy_confirm') } do
+                        %i.fa.fa-trash.fa-fw
+      #vehicles.tab-pane.fade{role: 'tabpanel', class: ('show active' if sidebar_tab == 'vehicles')}
+        - @customer.vehicles.each do |vehicle|
+          .v2-index-card.destinations-index-card.mb-2
+            .v2-index-card-body.p-2.d-flex.justify-content-between.align-items-center
+              %span
+                = vehicle.name
+                = vehicle.ref
+                = vehicle_devices(vehicle)
+              - if current_user_space_action_usable?(:vehicle_usages, :edit)
+                = link_to delete_vehicle_customer_path(@customer, vehicle_id: vehicle.id), class: 'btn btn-danger btn-sm', data: { turbo_method: :delete, turbo_confirm: t('all.verb.destroy_confirm') } do
+                  %i.fa.fa-trash.fa-fw

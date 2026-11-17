@@ -1,0 +1,8 @@
+-# Copyright © Cartoway
+= turbo_frame_tag "form_sidebar" do
+  %header.mb-3
+    %h2.h5.mb-0= t('admin.roles.edit.title')
+  .sidebar-form{data: { controller: "v2--dirty-form-submit" }}
+    = render 'form'
+    .form-submit-bar.is-hidden{data: { "v2--dirty-form-submit-target": "bar" }}
+      %button.btn.btn-primary{type: "submit", form: "role-form-sidebar"}= t('helpers.submit.update', model: Role.model_name.human)

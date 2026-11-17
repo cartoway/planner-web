@@ -1,0 +1,71 @@
+-# Copyright © Cartoway
+- return_to_customer_id = params[:return_to_customer_id].presence
+= turbo_frame_tag "form_sidebar" do
+  = render 'admin/accounts/sidebar_header', title: t('admin.accounts.edit.title'), return_to_customer_id: return_to_customer_id
+  .sidebar-form{ data: { controller: "v2--dirty-form-submit" } }
+    = form_with model: @account, url: admin_account_path(@account), method: :patch, id: 'account-form-sidebar', class: 'form-horizontal form-sidebar-form form-sidebar-form--full-bleed', data: { turbo_frame: 'form_sidebar', v2__dirty_form_submit_target: 'form' } do |f|
+      = hidden_field_tag :v2_sidebar, '1'
+      - if return_to_customer_id.present?
+        = hidden_field_tag :return_to_customer_id, return_to_customer_id
+      = render 'shared/error_messages', model: @account
+      .mb-3
+        = f.label :email, t('admin.accounts.form.email'), class: 'form-label'
+        = f.email_field :email, class: 'form-control'
+      .mb-3
+        = f.label :name, t('admin.accounts.form.name'), class: 'form-label'
+        = f.text_field :name, class: 'form-control'
+      .mb-3
+        = f.label :phone, t('admin.accounts.form.phone'), class: 'form-label'
+        = f.telephone_field :phone, class: 'form-control'
+      .mb-3
+        = f.label :locale, t('admin.accounts.form.locale'), class: 'form-label'
+        = f.select :locale, I18n.available_locales.map { |locale| [locale, locale] }, { include_blank: true }, class: 'form-select'
+      .mb-3
+        = f.label :time_zone, t('admin.accounts.form.time_zone'), class: 'form-label'
+        = f.time_zone_select :time_zone, nil, { include_blank: true }, class: 'form-select'
+      %h3.h6.mt-4= t('admin.accounts.form.memberships')
+      - @memberships.each do |membership|
+        .border.rounded.p-2.mb-2
+          .fw-bold= membership.customer&.name
+          .row.g-2
+            .col-md-6
+              = label_tag "membership_role_#{membership.id}", t('admin.accounts.form.role'), class: 'form-label'
+              = select_tag "memberships[#{membership.id}][role_id]", options_from_collection_for_select(@roles, :id, :name, membership.role_id), include_blank: t('admin.accounts.form.role_blank'), class: 'form-select', id: "membership_role_#{membership.id}"
+            .col-md-6
+              = label_tag "membership_status_#{membership.id}", t('admin.accounts.form.status'), class: 'form-label'
+              = select_tag "memberships[#{membership.id}][status]", options_for_select(User::STATUSES, membership.status), class: 'form-select', id: "membership_status_#{membership.id}"
+            .col-md-6
+              = label_tag "membership_relationship_#{membership.id}", t('admin.accounts.form.relationship'), class: 'form-label'
+              = select_tag "memberships[#{membership.id}][relationship]", options_for_select(admin_user_relationship_options, membership.relationship), class: 'form-select', id: "membership_relationship_#{membership.id}"
+            .col-md-6
+              = label_tag "membership_zone_#{membership.id}", t('admin.accounts.form.time_zone'), class: 'form-label'
+              = select_tag "memberships[#{membership.id}][time_zone]", time_zone_options_for_select(membership.time_zone), include_blank: true, class: 'form-select', id: "membership_zone_#{membership.id}"
+          = link_to t('admin.accounts.form.detach'), detach_membership_admin_account_path(@account, membership_id: membership.id), class: 'btn btn-outline-secondary btn-sm mt-2', data: { turbo_method: :patch, turbo_frame: 'form_sidebar' }
+      %h3.h6.mt-4= t('admin.accounts.form.add_membership')
+      .row.g-2.mb-3
+        .col-md-6
+          = label_tag :new_membership_customer_id, t('admin.accounts.form.customer'), class: 'form-label'
+          = select_tag 'new_membership[customer_id]', options_from_collection_for_select(@customers, :id, :name), include_blank: true, class: 'form-select', id: 'new_membership_customer_id'
+        .col-md-6
+          = label_tag :new_membership_role_id, t('admin.accounts.form.role'), class: 'form-label'
+          = select_tag 'new_membership[role_id]', options_from_collection_for_select(@roles, :id, :name), include_blank: t('admin.accounts.form.role_blank'), class: 'form-select', id: 'new_membership_role_id'
+    .form-submit-bar.is-hidden{ data: { "v2--dirty-form-submit-target": "bar" } }
+      %button.btn.btn-primary{ type: "submit", form: "account-form-sidebar" }= t('helpers.submit.update', model: Account.model_name.human)
+  %h3.h6.mt-4= t('admin.accounts.form.devices')
+  - @account.account_devices.order(:id).each do |device|
+    .d-flex.justify-content-between.align-items-center.border.rounded.p-2.mb-2
+      %span
+        = device.platform
+        = device.installation_id
+        - if device.revoked?
+          %span.badge.text-bg-warning= t('admin.accounts.form.revoked')
+      - if device.revoked?
+        = button_to t('admin.accounts.form.reauthorize'), reauthorize_device_admin_account_path(@account, device_id: device.id), method: :post, class: 'btn btn-outline-secondary btn-sm', form: { data: { turbo_frame: 'form_sidebar' } }
+      - else
+        = button_to t('admin.accounts.form.revoke'), revoke_device_admin_account_path(@account, device_id: device.id), method: :post, class: 'btn btn-outline-secondary btn-sm', form: { data: { turbo_frame: 'form_sidebar' } }
+  .d-flex.flex-wrap.gap-2.mt-3
+    = button_to t('admin.accounts.form.send_email'), send_email_admin_account_path(@account), method: :post, class: 'btn btn-outline-secondary', form: { data: { turbo_frame: 'form_sidebar' } }
+    - if account_deletable?(@account) && !@account.anonymized?
+      = button_to t('admin.accounts.form.anonymize'), anonymize_admin_account_path(@account), method: :post, class: 'btn btn-outline-secondary', form: { data: { turbo_confirm: t('all.verb.destroy_confirm'), turbo_frame: 'form_sidebar' } }
+    - if account_deletable?(@account)
+      = button_to t('all.verb.destroy'), admin_account_path(@account), method: :delete, class: 'btn btn-danger', form: { data: { turbo_confirm: t('all.verb.destroy_confirm') } }

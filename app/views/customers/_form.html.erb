@@ -1,5 +1,5 @@
 <% require "#{Rails.application.root}/lib/localized_values.rb" %>
-<% options= {layout: :horizontal, html: { class: 'clear-passwords number-to-percentage form-horizontal'} } %>
+<% options= {layout: :horizontal, html: { class: 'clear-passwords number-to-percentage form-horizontal', data: (current_user.admin? ? { turbo_frame: '_top' } : {}) }} %>
 <% extended_class = "customer-form-extended#{' d-none' if current_user.admin?}" %>
 <%= bootstrap_form_for @customer, options do |f| %>
 
@@ -455,9 +455,13 @@
   </legend>
 
   <% if current_user.admin? %>
+    <% deliver_enabled = @customer.device.enableds.key?(:deliver) %>
     <div class="row">
       <% @customer.device.definitions.slice(:deliver, :sopac, :stg_telematics).each do |key, device| %>
         <%= render partial: 'shared/check_box', locals: { form: f, name: "customer[devices][#{key}][enable]", checked: to_bool(@customer.devices[key] && @customer.devices[key][:enable]), label: device[:label], help: (t("customers.form.devices.#{key}.help") if device[:help]) } %>
+        <% if key == :deliver %>
+          <%= render partial: 'shared/check_box', locals: { form: f, field: :operations_mobile, label: t('activerecord.attributes.customer.operations_mobile'), help: t('customers.form.operations_mobile_help'), options: { disabled: !deliver_enabled } } %>
+        <% end %>
       <% end %>
     </div>
   <% else %>

@@ -1,0 +1,524 @@
+-# Copyright © Cartoway
+- require "#{Rails.application.root}/lib/localized_values.rb"
+:ruby
+  options = {
+    layout: :horizontal,
+    builder: BootstrapForm::V2FormBuilder,
+    label_col: 'col-md-10 offset-md-1 fw-bold',
+    control_col: 'col-md-10 offset-md-1 field',
+    html: {
+      id: 'customer-form-sidebar',
+      class: 'clear-passwords number-to-percentage form-horizontal form-sidebar-form form-sidebar-form--full-bleed',
+      data: {
+        controller: 'v2--customer-form',
+        action: [
+          'change->v2--customer-form#syncExternalCallback',
+          'change->v2--customer-form#syncSoftUpperBound',
+          'change->v2--customer-form#syncVehiclePosition',
+          'change->v2--customer-form#syncProofRetention',
+          'change->v2--customer-form#syncNotificationWraps',
+          'change->v2--customer-form#syncSuiviSection',
+          'change->v2--customer-form#syncOperationsMobile'
+        ].join(' '),
+        turbo_frame: 'form_sidebar',
+        v2__dirty_form_submit_target: 'form'
+      }
+    }
+  }
+- extended_class = "customer-form-extended#{' d-none' if current_user.admin?}"
+= bootstrap_form_for @customer, options do |f|
+  = hidden_field_tag :v2_sidebar, '1'
+
+  = render 'shared/error_messages', model: @customer
+
+  - if current_user.admin?
+    = f.text_field :ref, help: t('activerecord.attributes.customer.ref_help')
+    = f.text_area :description, { size: '100%', class: 'form-control', help: t('activerecord.attributes.customer.description_help') }
+    - if @customer.last_async_jobs.present?
+      .mb-3.row
+        %label.col-form-label.col-md-10.offset-md-1.fw-bold= Customer.human_attribute_name(:last_async_jobs)
+        .col-md-10.offset-md-1
+          = render 'customers/last_async_jobs', customer: @customer
+
+  = f.text_field :name, required: true, disabled: !current_user.admin?, label: { text: t('customers.form.name') }
+  = f.text_field :end_subscription, { value: @customer.end_subscription ? l(@customer.end_subscription.to_time, format: :datepicker) : nil, disabled: !current_user.admin?, class: 'datepicker', append: content_tag('i', '', { class: 'fa fa-calendar fa-fw' }) }
+  - if current_user.admin?
+    = render partial: 'v2/customers/check_box', locals: { form: f, field: :test, label: t('activerecord.attributes.customer.test'), options: { checked: @customer.id ? @customer.test : Planner::Application.config.customer_test_default } }
+
+  %legend.scheduler-border.col-md-8= t 'customers.form.limits'
+  = f.number_field :max_vehicles, min: 1, required: (Planner::Application.config.manage_vehicles_only_admin && current_user.admin?), disabled: (Planner::Application.config.manage_vehicles_only_admin && !current_user.admin?), append: content_tag('i', '', class: 'fa fa-truck-field fa-fw')
+  - if current_user.admin?
+    = f.number_field :max_plannings, help: t('customers.form.max_plannings_help'), placeholder: (Planner::Application.config.max_plannings_default || Planner::Application.config.max_plannings) && t('customers.form.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_plannings_default || Planner::Application.config.max_plannings)), min: 1, append: content_tag('i', '', class: 'fa fa-map-location fa-fw')
+    = f.number_field :max_zonings, help: t('customers.form.max_zonings_help'), placeholder: (Planner::Application.config.max_zonings_default || Planner::Application.config.max_zonings) && t('customers.form.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_zonings_default || Planner::Application.config.max_zonings)), min: 1, append: content_tag('i', '', class: 'fa fa-draw-polygon fa-fw')
+    = f.number_field :max_destinations, help: t('customers.form.max_destinations_help'), placeholder: (Planner::Application.config.max_destinations_default || Planner::Application.config.max_destinations) && t('customers.form.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_destinations_default || Planner::Application.config.max_destinations)), min: 1, append: content_tag('i', '', class: 'fa fa-map-marker fa-fw')
+    = f.number_field :max_vehicle_usage_sets, help: t('customers.form.max_vehicle_usage_sets_help'), placeholder: (Planner::Application.config.max_vehicle_usage_sets_default || Planner::Application.config.max_vehicle_usage_sets) && t('customers.form.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.max_vehicle_usage_sets_default || Planner::Application.config.max_vehicle_usage_sets)), min: 1, append: content_tag('i', '', class: 'fa fa-truck-field fa-fw')
+
+  %legend.scheduler-border.col-md-8= t 'customers.form.default_value'
+
+  = f.number_field :operation_date_offset, help: t('customers.form.operation_date_offset_help'), placeholder: t('customers.form.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.operation_date_offset_default)), min: 0, append: content_tag('i', '', class: 'fa fa-calendar fa-fw')
+
+  = f.number_field :stops_preload_limit, min: 1, help: t('customers.form.stops_preload_limit_help'), placeholder: t('customers.form.value_default', n: '1000'), append: content_tag('i', '', class: 'fa fa-list-ol fa-fw')
+
+  = render partial: 'v2/customers/profile_router_inputs', locals: { f: f }
+
+  %div{class: extended_class}
+    #router_options_traffic_input{class: ('router-option-disabled' unless @customer.router.try(&:traffic?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_traffic'}
+        = t('activerecord.attributes.customer.router_options_traffic')
+
+      .col-md-10.offset-md-1.field
+        %label
+          %input#customer_router_options_traffic_yes{type: 'radio', name: 'customer[router_options][traffic]', value: 'true', checked: @customer.router_options['traffic'] == true}
+          = t('customers.form.router_options_traffic_yes')
+        %label
+          %input#customer_router_options_traffic_no{type: 'radio', name: 'customer[router_options][traffic]', value: 'false', checked: @customer.router_options['traffic'] != true}
+          = t('customers.form.router_options_traffic_no')
+    #router_options_track_input{class: ('router-option-disabled' unless @customer.router.try(&:track?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_track'}
+        = t('activerecord.attributes.customer.router_options_track')
+
+      .col-md-10.offset-md-1.field
+        %label
+          %input#customer_router_options_track_yes{type: 'radio', name: 'customer[router_options][track]', value: 'true', checked: @customer.router_options['track'] != false}
+          = t('customers.form.router_options_track_yes')
+        %label
+          %input#customer_router_options_track_no{type: 'radio', name: 'customer[router_options][track]', value: 'false', checked: @customer.router_options['track'] == false}
+          = t('customers.form.router_options_track_no')
+    #router_options_motorway_input{class: ('router-option-disabled' unless @customer.router.try(&:motorway?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_motorway'}
+        = t('activerecord.attributes.customer.router_options_motorway')
+
+      .col-md-10.offset-md-1.field
+        %label
+          %input#customer_router_options_motorway_yes{type: 'radio', name: 'customer[router_options][motorway]', value: 'true', checked: @customer.router_options['motorway'] != false}
+          = t('customers.form.router_options_motorway_yes')
+        %label
+          %input#customer_router_options_motorway_no{type: 'radio', name: 'customer[router_options][motorway]', value: 'false', checked: @customer.router_options['motorway'] == false}
+          = t('customers.form.router_options_motorway_no')
+    #router_options_low_emission_zone_input{class: ('router-option-disabled' unless @customer.router.try(&:low_emission_zone?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_low_emission_zone'}
+        = t('activerecord.attributes.customer.router_options_low_emission_zone')
+
+      .col-md-10.offset-md-1.field
+        %label
+          %input#customer_router_options_low_emission_zone_yes{type: 'radio', name: 'customer[router_options][low_emission_zone]', value: 'true', checked: @customer.router_options['low_emission_zone'] != false}
+          = t('customers.form.router_options_low_emission_zone_yes')
+        %label
+          %input#customer_router_options_low_emission_zone_no{type: 'radio', name: 'customer[router_options][low_emission_zone]', value: 'false', checked: @customer.router_options['low_emission_zone'] == false}
+          = t('customers.form.router_options_low_emission_zone_no')
+    #router_options_toll_input{class: ('router-option-disabled' unless @customer.router.try(&:toll?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_toll'}
+        = t('activerecord.attributes.customer.router_options_toll')
+
+      .col-md-10.offset-md-1.field
+        %label
+          %input#customer_router_options_toll_yes{type: 'radio', name: 'customer[router_options][toll]', value: 'true', checked: @customer.router_options['toll'] != false}
+          = t('customers.form.router_options_toll_yes')
+        %label
+          %input#customer_router_options_toll_no{type: 'radio', name: 'customer[router_options][toll]', value: 'false', checked: @customer.router_options['toll'] == false}
+          = t('customers.form.router_options_toll_no')
+
+    #router_options_trailers_input{class: ('router-option-disabled' unless @customer.router.try(&:trailers?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_trailers'}
+        = t('activerecord.attributes.customer.router_options_trailers')
+
+      .col-md-10.offset-md-1.field
+        .input-group
+          = number_field_tag 'customer[router_options][trailers]', @customer.router_options['trailers'], min: 0, max: 4, step: 1, class: 'form-control'
+          %span.input-group-text
+            %i.fa.fa-truck-field.fa-fw
+        %p.form-text= t('customers.form.router_options_trailers_range', from: 0, to: 4)
+
+    #router_options_weight_input{class: ('router-option-disabled' unless @customer.router.try(&:weight?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_weight'}
+        = t('activerecord.attributes.customer.router_options_weight')
+
+      .col-md-10.offset-md-1.field
+        .input-group
+          = number_field_tag 'customer[router_options][weight]', @customer.router_options['weight'], min: 0, max: 1000, class: 'form-control'
+          %span.input-group-text= t('all.unit.ton')
+        %p.form-text= t('customers.form.router_options_weight_range', from: 0, to: 1000)
+
+    #router_options_weight_per_axle_input{class: ('router-option-disabled' unless @customer.router.try(&:weight_per_axle?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_weight_per_axle'}
+        = t('activerecord.attributes.customer.router_options_weight_per_axle')
+
+      .col-md-10.offset-md-1.field
+        .input-group
+          = number_field 'customer[router_options]', :weight_per_axle, value: @customer.router_options['weight_per_axle'], min: 0, max: 1000, step: 'any', class: 'form-control'
+          %span.input-group-text= t('all.unit.ton')
+        %p.form-text= t('customers.form.router_options_weight_per_axle_range', from: 0, to: 1000)
+
+    #router_options_height_input{class: ('router-option-disabled' unless @customer.router.try(&:height?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_height'}
+        = t('activerecord.attributes.customer.router_options_height')
+
+      .col-md-10.offset-md-1.field
+        .input-group
+          = number_field 'customer[router_options]', :height, value: @customer.router_options['height'], min: 0, max: 50, step: 'any', class: 'form-control'
+          %span.input-group-text= t('all.unit.m')
+        %p.form-text= t('customers.form.router_options_height_range', from: 0, to: 50)
+
+    #router_options_width_input{class: ('router-option-disabled' unless @customer.router.try(&:width?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_width'}
+        = t('activerecord.attributes.customer.router_options_width')
+
+      .col-md-10.offset-md-1.field
+        .input-group
+          = number_field 'customer[router_options]', :width, value: @customer.router_options['width'], min: 0, max: 50, step: 'any', class: 'form-control'
+          %span.input-group-text= t('all.unit.m')
+        %p.form-text= t('customers.form.router_options_width_range', from: 0, to: 50)
+
+    #router_options_length_input{class: ('router-option-disabled' unless @customer.router.try(&:length?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_length'}
+        = t('activerecord.attributes.customer.router_options_length')
+
+      .col-md-10.offset-md-1.field
+        .input-group
+          = number_field 'customer[router_options]', :length, value: @customer.router_options['length'], min: 0, max: 300, step: 'any', class: 'form-control'
+          %span.input-group-text= t('all.unit.m')
+        %p.form-text= t('customers.form.router_options_length_range', from: 0, to: 300)
+
+    #router_options_hazardous_goods_input{class: ('router-option-disabled' unless @customer.router.try(&:hazardous_goods?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_hazardous_goods'}
+        = t('activerecord.attributes.customer.router_options_hazardous_goods')
+
+      .col-md-10.offset-md-1.field
+        = select_tag 'customer[router_options][hazardous_goods]', options_for_select(t('activerecord.attributes.router.options.hazardous_goods').invert, @customer.router_options['hazardous_goods']), include_blank: true, class: 'form-control'
+
+    #router_options_max_walk_distance_input{class: ('router-option-disabled' unless @customer.router.try(&:max_walk_distance?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_max_walk_distance'}
+        = t('activerecord.attributes.customer.router_options_max_walk_distance')
+
+      .col-md-10.offset-md-1.field
+        .input-group
+          = number_field 'customer[router_options]', :max_walk_distance, value: @customer.router_options['max_walk_distance'], step: 'any', class: 'form-control'
+          %span.input-group-text= t('all.unit.m')
+        %p.form-text= t('customers.form.router_options_max_walk_distance_range')
+
+    #router_options_approach_input{class: ('router-option-disabled' unless @customer.router.try(&:approach?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_approach'}
+        = t('activerecord.attributes.customer.router_options_approach')
+
+      .col-md-10.offset-md-1.field
+        = select_tag 'customer[router_options][approach]', options_for_select(t('activerecord.attributes.router.options.approach').invert, selected: @customer.router_options['approach']), include_blank: false, class: 'form-control'
+        %p.form-text= t('customers.form.router_options_approach_help')
+
+    #router_options_snap_input{class: ('router-option-disabled' unless @customer.router.try(&:snap?))}
+      %label.col-md-10.offset-md-1{for: 'customer_router_options_snap'}
+        = t('activerecord.attributes.customer.router_options_snap')
+
+      .col-md-10.offset-md-1.field
+        .input-group
+          = number_field 'customer[router_options]', :snap, value: @customer.router_options['snap'], step: 'any', class: 'form-control'
+          %span.input-group-text= t('all.unit.m')
+        %p.form-text= t('customers.form.router_options_snap_range')
+
+    - if @customer.router.try(&:strict_restriction?)
+      = render partial: 'v2/customers/check_box', locals: { form: f, name: "customer[router_options][strict_restriction]", checked: !!@customer.router_options['strict_restriction'], label: t('activerecord.attributes.customer.router_options_strict_restriction'), help: t('customers.form.router_options_strict_restriction') }
+
+    .row
+      %label.col-md-10.offset-md-1{for: 'speed_multiplier'}
+        = t('activerecord.attributes.customer.speed_multiplier')
+      .col-md-10.offset-md-1.field
+        .input-group
+          = number_field_tag :speed_multiplier, (@customer.speed_multiplier ? (@customer.speed_multiplier * 100).to_i : 100), { min: 50, max: 150, placeholder: t('customers.form.speed_multiplier_default', n: 100), class: 'form-control number-to-percentage' }
+          %span.input-group-text= '%'
+        %p.form-text= t('customers.form.speed_multiplier_help')
+
+    = f.text_field :destination_duration, { help: t('customers.form.destination_duration_help'), placeholder: t('all.unit.hour_minute_second'), value: @customer.destination_duration_time_with_seconds, append: content_tag('i', '', class: 'fa fa-map-marker fa-fw') }
+
+    = f.text_field :visit_duration, { help: t('customers.form.visit_duration_help'), placeholder: t('all.unit.hour_minute_second'), value: @customer.visit_duration_time_with_seconds, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw') }
+    = f.text_field :store_reload_duration, { help: t('customers.form.store_reload_duration_help'), placeholder: t('all.unit.hour_minute_second'), value: @customer.store_reload_duration_time_with_seconds, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw') }
+
+  = f.text_field :default_country, required: true
+  = render partial: 'v2/customers/check_box', locals: { form: f, field: :with_state, label: t('activerecord.attributes.customer.with_state') }
+
+  - if current_user.admin?
+    %legend.scheduler-border.col-md-8= t 'customers.form.options'
+
+    = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_global_optimization, label: t('activerecord.attributes.customer.enable_global_optimization'), help: (t('customers.form.enable_global_optimization_test') if !@customer.id || @customer.test) }
+    = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_store_stops, label: t('activerecord.attributes.customer.enable_store_stops') }
+    = render partial: 'v2/customers/check_box', locals: { form: f, value: @customer[:enable_external_callback], field: :enable_external_callback, label: t('activerecord.attributes.customer.enable_external_callback'), help: (t('customers.form.external_callback.enabled') if @customer.reseller[:enable_external_callback] && !@customer[:enable_external_callback]) }
+    #external_callback_container.mb-3{class: ('d-none' unless @customer.enable_external_callback?)}
+      = render 'v2/customers/form_accordion_header', target: 'collapseExternalCallback', title: t('customers.form.external_callback.title')
+      #collapseExternalCallback.collapse
+        .p-2
+          .col-md-10
+            = f.text_field :external_callback_name, label: t('customers.form.external_callback.name'), placeholder: customer_external_callback_name(@customer, t('customers.form.external_callback.name_placeholder'))
+            = f.text_field :external_callback_url, label: t('customers.form.external_callback.url'), help: simple_format(t('customers.form.external_callback.url_help')), placeholder: customer_external_callback_url(@customer), value: @customer.external_callback_url
+
+    %legend.scheduler-border.col-md-8= t 'customers.form.optimization_parameters'
+    .row
+      %label.col-md-10.offset-md-1= t 'customers.form.solver_priority'
+      .col-md-10.offset-md-1.field
+        - available_solvers = Planner::Application.config.available_solvers
+        - current_priority = (@customer.solver_priority || available_solvers).select { |s| available_solvers.include?(s) }
+        - inactive_solvers = available_solvers - current_priority
+        :ruby
+          solver_columns = [
+            {
+              key: 'active',
+              title: t('customers.form.solver_priority_active'),
+              inactive: false,
+              icon_class: 'fa fa-check fa-fw',
+              icon_style: 'color: green;',
+              transfer_all_to: 'inactive',
+              transfer_all_title: t('v2.transfer_list.transfer_all_to_inactive'),
+              transfer_all_icon_class: 'fa fa-angle-double-right',
+              zone_class: 'active-zone',
+              input_name: 'customer[advanced_options][solver_priority][]',
+              items: current_priority.map { |solver| { value: solver, label: solver.upcase } }
+            },
+            {
+              key: 'inactive',
+              title: t('customers.form.solver_priority_inactive'),
+              inactive: true,
+              icon_class: 'fa fa-times fa-fw',
+              icon_style: 'color: red;',
+              transfer_all_to: 'active',
+              transfer_all_title: t('v2.transfer_list.transfer_all_to_active'),
+              transfer_all_icon_class: 'fa fa-angle-double-left',
+              zone_class: 'inactive-zone',
+              toggle_to: 'active',
+              items: inactive_solvers.map { |solver| { value: solver, label: solver.upcase } }
+            }
+          ]
+        = render 'v2/shared/transfer_list',
+          id: 'customer-solver-priority',
+          show_order: true,
+          stacked: true,
+          min_active_items: 1,
+          min_active_message: t('customers.form.solver_priority_not_empty'),
+          help: t('customers.form.solver_priority_help'),
+          columns: solver_columns
+    = f.number_field :optimization_dicho_minimum_service_size, { help: t('customers.form.optimization_dicho_minimum_service_size_help'), placeholder: t('customers.form.value_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_dicho_minimum_service_size)), min: 0, append: content_tag('i', '', class: 'fa fa-gears fa-fw') }
+    = f.number_field :optimization_max_split_size, { help: t('customers.form.optimization_max_split_size_help'), placeholder: t('customers.form.optimization_max_split_size_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_max_split_size)), min: 0, append: content_tag('i', '', class: 'fa fa-gears fa-fw') }
+    = f.number_field :optimization_cluster_size, { help: t('customers.form.optimization_cluster_size_help'), placeholder: t('customers.form.optimization_cluster_size_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_cluster_size)), min: 0, append: t('all.unit.second') }
+
+    .row
+      %label.col-md-10.offset-md-1= t 'customers.form.optimization_time'
+      .col-md-10.offset-md-1.field
+        .input-group
+          = number_field 'customer', 'optimization_minimal_time', value: @customer.optimization_minimal_time, placeholder: t('customers.form.optimization_minimal_time_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_minimal_time)), min: 0.1, step: 0.1, class: 'form-control width_1_2'
+          = number_field 'customer', 'optimization_time', value: @customer.optimization_time, placeholder: t('customers.form.optimization_time_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_time)), min: 1, step: 1, class: 'form-control width_1_2'
+          %span.input-group-text= t('all.unit.second')
+        %small.form-text= t 'customers.form.optimization_minimal_time_help'
+        %small.form-text= t 'customers.form.optimization_time_help'
+
+    = f.number_field :optimization_cost_fixed, { help: t('customers.form.optimization_cost_fixed_help'), placeholder: t('customers.form.optimization_cost_fixed_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_cost_fixed)), min: 0, step: 1, append: content_tag('i', '', class: 'fa fa-truck fa-fw') }
+    = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_vehicle_costs, label: t('activerecord.attributes.customer.enable_vehicle_costs'), help: t('customers.form.enable_vehicle_costs_help') }
+    = f.number_field :optimization_cost_waiting_time, { help: t('customers.form.optimization_cost_waiting_time_help'), placeholder: t('customers.form.optimization_cost_waiting_time_default', n: LocalizedValues.localize_numeric_value(Planner::Application.config.optimize_cost_waiting_time)), min: 0.1, step: '0.1', append: '×' }
+
+    = render partial: 'v2/customers/check_box', locals: { form: f, field: :optimization_force_start, label: t('activerecord.attributes.customer.optimization_force_start'), help: t('customers.form.optimization_force_start_help') }
+  = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_strict_within_timewindows, label: t('activerecord.attributes.customer.enable_strict_within_timewindows'), help: t('customers.form.enable_strict_within_timewindows_help') }
+  = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_optimization_soft_upper_bound, label: t('activerecord.attributes.customer.enable_optimization_soft_upper_bound'), help: t('customers.form.enable_optimization_soft_upper_bound_help') }
+  #optimization_soft_upper_bound{class: ('d-none' unless @customer.enable_optimization_soft_upper_bound)}
+    = f.text_field :stop_max_upper_bound, { help: t('customers.form.stop_max_upper_bound_help'), placeholder: t('all.unit.hour_minute'), value: @customer.stop_max_upper_bound_time || 0, append: content_tag('i', '', class: 'fa fa-stopwatch fa-fw') }
+    = f.text_field :vehicle_max_upper_bound, { help: t('customers.form.vehicle_max_upper_bound'), placeholder: t('all.unit.hour_minute'), value: @customer.vehicle_max_upper_bound_time || 0, append: content_tag('i', '', class: 'fa fa-repeat fa-fw') }
+
+  %div{class: extended_class}
+    %legend.scheduler-border.col-md-8= t 'customers.form.map_markers.legend'
+    = render partial: 'v2/customers/map_marker_defaults', locals: { model_class: :destination, grouped_icons: @destination_grouped_icons, default_icon: Planner::Application.config.destination_icon_default, default_size: Planner::Application.config.destination_icon_size_default, addon_icon: 'fa-location-pin' }
+    = render partial: 'v2/customers/map_marker_defaults', locals: { model_class: :store, grouped_icons: @store_grouped_icons, default_icon: Planner::Application.config.store_icon_default, default_size: Planner::Application.config.store_icon_size_default, addon_icon: 'fa-store' }
+    = render partial: 'v2/customers/map_marker_defaults', locals: { model_class: :rest, grouped_icons: @rest_grouped_icons, default_icon: Planner::Application.config.rest_icon_default, default_size: Planner::Application.config.rest_icon_size_default, addon_icon: 'fa-mug-saucer' }
+
+    %legend.scheduler-border.col-md-8= t 'customers.form.company.title'
+    .row
+      .col-md-10.offset-md-1
+        %p.form-text= t('customers.form.company.help')
+    = f.text_field :company_name
+    = f.text_field :company_street, help: t('web.form.helpers.street')
+    = f.text_field :company_detail, help: t('destinations.form.detail_help')
+    #customer_company_city_input.mb-3.row
+      %label.visually-hidden{for: 'customer_company_postalcode'}= t('activerecord.attributes.customer.company_postalcode')
+      %label.visually-hidden{for: 'customer_company_city'}= t('activerecord.attributes.customer.company_city')
+      %label.col-md-10.offset-md-1.field
+        = t('activerecord.attributes.customer.company_postalcode')
+        \/ #{t('activerecord.attributes.customer.company_city')}
+      .col-md-10.offset-md-1.field
+        .input-group
+          = text_field :customer, :company_postalcode, maxlength: 17, class: 'form-control width_1_2'
+          = text_field :customer, :company_city, class: 'form-control width_1_2'
+          %span.input-group-text
+            %i.fa.fa-map.fa-fw
+    = f.text_field :company_phone, input_group: content_tag('i', '', class: 'fa fa-phone fa-fw')
+    = f.file_field :company_logo, help: t('customers.form.company.logo_help')
+    - if @customer.company_logo.url
+      .row.mb-3
+        .col-md-10.offset-md-1
+          = image_tag @customer.company_logo.url, alt: @customer.company_name.presence || @customer.name, style: 'max-height: 64px; max-width: 200px;'
+
+  %legend.scheduler-border.col-md-8= t 'customers.form.outputs'
+
+  - if current_user.admin?
+    - deliver_enabled = @customer.device.enableds.key?(:deliver)
+    .row
+      - @customer.device.definitions.slice(:deliver, :sopac, :stg_telematics).each do |key, device|
+        = render partial: 'v2/customers/check_box', locals: { form: f, name: "customer[devices][#{key}][enable]", checked: to_bool(@customer.devices[key] && @customer.devices[key][:enable]), label: device[:label], help: (t("customers.form.devices.#{key}.help") if device[:help]) }
+        - if key == :deliver
+          = render partial: 'v2/customers/check_box', locals: { form: f, field: :operations_mobile, label: t('activerecord.attributes.customer.operations_mobile'), help: t('customers.form.operations_mobile_help'), options: { disabled: !deliver_enabled } }
+    .row
+      .col-md-10.offset-md-1
+        = f.label :default_driver_role_id, class: 'control-label'
+      .col-md-10.offset-md-1.field
+        = f.collection_select :default_driver_role_id, @customer.reseller.roles.order(:name), :id, :name,
+          { include_blank: t('customers.form.default_driver_role_blank') },
+          { class: 'form-control selectpicker', 'data-live-search' => 'true' }
+        %p.form-text= t('customers.form.default_driver_role_help')
+  - else
+    .row
+
+  - if !@customer.device.enabled_definitions.empty?
+    #devices_settings{class: extended_class}
+      - @customer.device.enabled_definitions.each do |key, definition|
+        - if definition[:forms].key?(:settings)
+          %div{id: "#{key}_container", class: 'border rounded p-2 mb-3'}
+            .mb-2
+              %h2.h6
+                = definition[:label]
+            .p-2
+              - definition[:forms][:settings].each do |field, type|
+                - next if field.to_s == 'demo' && !current_user.admin?
+                .row
+                  - name = "customer[devices][#{key}][#{field}]"
+                  .col-md-10.offset-md-1
+                    = f.label_tag name, t("activerecord.attributes.customer.devices.#{key}.#{field}"), class: 'control-label'
+                  .col-md-10.offset-md-1.field
+                    - device_field_help_key = ["customers.form.devices.#{key}.#{field}_help", "activerecord.attributes.customer.devices.#{key}.#{field}_help"].find { |k| I18n.exists?(k) }
+                    - case type
+                    - when :text
+                      = f.text_field_tag name, @customer.devices[key] && @customer.devices[key][field], autocomplete: 'off', class: 'form-control'
+                    - when :password
+                      = f.password_field_tag name, @customer.devices[key] && @customer.devices[key][field], autocomplete: 'new-password', class: 'form-control'
+                    - when :boolean
+                      = render partial: 'v2/customers/check_box', locals: { form: f, name: "customer[devices][#{key}][#{field}]", checked: to_bool(@customer.devices[key] && @customer.devices[key][field]), help: t("customers.form.devices.#{key}.#{field}_help"), label: t("activerecord.attributes.customer.devices.#{key}.#{field}"), options: { label_col: 'd-none', control_col: 'form-switch', help_label_class: '' } }
+                    - if device_field_help_key && type != :boolean
+                      %p.form-text= t(device_field_help_key)
+              - if definition[:has_sync]
+                / SYNC BUTTON TODO IMPLEMENTATION
+
+  - if current_user.admin?
+    - operations_device_keys = @customer.device.definitions.select { |_, definition| definition[:has_operations] }.keys
+    #customer_suivi_section.mb-3{class: ('d-none' unless @customer.device.operations_enabled?), data: { operations_devices: operations_device_keys.join(',') }}
+      = render 'v2/customers/form_accordion_header', target: 'collapseSuivi', title: t('customers.form.suivi')
+      #collapseSuivi.collapse
+        .p-2
+          = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_vehicle_position, label: t('activerecord.attributes.customer.enable_vehicle_position') }
+          #vehicle_position_trace_options{class: ('d-none' unless @customer.enable_vehicle_position)}
+            = render partial: 'v2/customers/check_box', locals: { form: f, field: :vehicle_position_keep_trace, label: t('activerecord.attributes.customer.vehicle_position_keep_trace'), help: t('customers.form.vehicle_position_keep_trace_help') }
+            #vehicle_position_retention_days_wrap{class: ('d-none' unless @customer.enable_vehicle_position && @customer.vehicle_position_keep_trace)}
+              = f.number_field :vehicle_position_retention_days, { help: t('customers.form.vehicle_position_retention_days_help'), min: 1, max: 365 }
+          = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_proofs, label: t('activerecord.attributes.customer.enable_proofs'), help: t('customers.form.enable_proofs_help') }
+          #proof_retention_days_wrap{class: ('d-none' unless @customer.enable_proofs)}
+            = f.number_field :proof_retention_days, { help: t('customers.form.proof_retention_days_help'), min: 30, max: 1825 }
+          = f.number_field :history_cron_hour, { help: t('customers.form.history_cron_hour_help'), min: 0, max: 23, append: content_tag('i', '', class: 'fa fa-chart-line fa-fw') }
+
+  .mb-3{class: extended_class}
+    = render 'v2/customers/form_accordion_header', target: 'collapsePrint', title: t('customers.form.print.title')
+    #collapsePrint.collapse
+      .p-2
+        = render partial: 'v2/customers/check_box', locals: { form: f, field: :print_map, label: t('activerecord.attributes.customer.print_map') }
+        = render partial: 'v2/customers/check_box', locals: { form: f, field: :print_planning_annotating, label: t('activerecord.attributes.customer.print_planning_annotating') }
+        = f.text_area :print_header, help: t('customers.form.print_header_help')
+
+  - messaging_disabled = @customer.reseller.messagings.none? { |_k, v| v['enable'] == true }
+  - email_notifications_active = @customer.enable_email_driver || @customer.enable_email_destination
+  - sms_notifications_active = @customer.enable_sms_driver || @customer.enable_sms_destination || @customer.enable_sms_intransit
+  - show_email_notifications = current_user.admin? || email_notifications_active
+  - show_sms_notifications = current_user.admin? || sms_notifications_active
+  - show_notifications_panel = current_user.admin? || show_email_notifications || show_sms_notifications
+  - if show_notifications_panel
+    #customer_notifications_panel.mb-3
+      = render 'v2/customers/form_accordion_header', target: 'collapseNotifications', title: t('customers.form.notifications.title')
+      #collapseNotifications.collapse
+        .p-2
+          .row
+            .col-md-10.offset-md-1
+              %h4.h5= t 'customers.form.notifications.tracking_eta_title'
+              %p.form-text= t('customers.form.notifications.tracking_eta_help')
+          = f.number_field :delivery_tracking_eta_gap_before, min: 0, max: 180, help: t('customers.form.notifications.tracking_eta_gap_before_help')
+          = f.number_field :delivery_tracking_eta_gap_after, min: 0, max: 180, help: t('customers.form.notifications.tracking_eta_gap_after_help')
+
+          - if show_email_notifications
+            #customer_notifications_email_panel.mb-3
+              = render 'v2/customers/form_accordion_header', target: 'collapseNotificationsEmail', title: t('customers.form.notifications.email'), heading: :h3
+              #collapseNotificationsEmail.collapse
+                .p-2
+                  - if current_user.admin?
+                    .row
+                      .col-md-10.offset-md-1
+                        %h4.h5= t 'customers.form.notifications.driver'
+                    = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_email_driver, label: t('activerecord.attributes.customer.enable_email_driver') }
+
+                  - if current_user.admin? || @customer.enable_email_destination
+                    .row
+                      .col-md-10.offset-md-1
+                        %h4.h5= t 'customers.form.notifications.destination'
+                    - if current_user.admin?
+                      = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_email_destination, label: t('activerecord.attributes.customer.enable_email_destination') }
+                    #customer_destination_email_template_wrap{class: ('d-none' if current_user.admin? && !@customer.enable_email_destination)}
+                      = f.text_area :recipient_template, placeholder: t('notifications.email.alert_plan'), value: @customer.recipient_template || t('notifications.email.alert_plan')
+                      .row
+                        .col-md-10.offset-md-1
+                          %p.form-text= t 'customers.form.recipient_template_help'
+                          %p.form-text= t 'customers.form.recipient_keys_help'
+
+          - if show_sms_notifications
+            #customer_notifications_sms_panel.mb-3
+              = render 'v2/customers/form_accordion_header', target: 'collapseNotificationsSms', title: t('customers.form.notifications.sms'), heading: :h3
+              #collapseNotificationsSms.collapse
+                .p-2
+                  = f.text_field :sms_sender_name,
+                    maxlength: 11,
+                    pattern: '[A-Za-z0-9]{3,11}',
+                    title: t('customers.form.sms_sender_name_pattern_title'),
+                    placeholder: @customer.default_sms_sender_name,
+                    help: t('customers.form.sms_sender_name_help')
+
+                  - if current_user.admin? || @customer.enable_sms_driver
+                    .row
+                      .col-md-10.offset-md-1
+                        %h4.h5= t 'customers.form.notifications.driver'
+                    - if current_user.admin?
+                      = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_sms_driver, label: t('activerecord.attributes.customer.enable_sms_driver'), options: { disabled: messaging_disabled } }
+                    #customer_sms_driver_template_wrap{class: ('d-none' if current_user.admin? && !@customer.enable_sms_driver)}
+                      = f.text_area :sms_driver_template, placeholder: t('notifications.sms.alert_driver'), value: @customer.sms_driver_template || t('notifications.sms.alert_driver')
+                      .row
+                        .col-md-10.offset-md-1
+                          #sms_driver_character_count
+                          %p.form-text= t 'customers.form.sms_driver_template_help'
+                          %p.form-text= t 'customers.form.sms_driver_keys_help'
+
+                  - if current_user.admin? || @customer.enable_sms_destination
+                    .row
+                      .col-md-10.offset-md-1
+                        %h4.h5= t 'customers.form.notifications.destination'
+                    - if current_user.admin?
+                      = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_sms_destination, label: t('activerecord.attributes.customer.enable_sms_destination'), options: { disabled: messaging_disabled } }
+                    #customer_sms_template_wrap{class: ('d-none' if current_user.admin? && !@customer.enable_sms_destination)}
+                      = f.text_area :sms_template, placeholder: t('notifications.sms.alert_plan'), value: @customer.sms_template || t('notifications.sms.alert_plan')
+                      .row
+                        .col-md-10.offset-md-1
+                          #sms_character_count
+                          %p.form-text= t 'customers.form.sms_template_help'
+                          %p.form-text= t 'customers.form.sms_keys_help'
+
+                  - if current_user.admin? || @customer.enable_sms_intransit
+                    .row
+                      .col-md-10.offset-md-1
+                        %h4.h5= t 'customers.form.notifications.approach'
+                    - if current_user.admin?
+                      = render partial: 'v2/customers/check_box', locals: { form: f, field: :enable_sms_intransit, label: t('activerecord.attributes.customer.enable_sms_intransit'), help: t('customers.form.enable_sms_intransit_help'), options: { disabled: messaging_disabled } }
+                    #customer_sms_intransit_template_wrap{class: ('d-none' if current_user.admin? && !@customer.enable_sms_intransit)}
+                      = f.text_area :sms_intransit_template, placeholder: t('notifications.sms.alert_intransit'), value: @customer.sms_intransit_template || t('notifications.sms.alert_intransit')
+                      .row
+                        .col-md-10.offset-md-1
+                          #customer_sms_intransit_count
+                          %p.form-text= t 'customers.form.sms_intransit_template_help'
+                          %p.form-text= t 'customers.form.sms_intransit_keys_help'
+
+                  .row
+                    .col-md-10.offset-md-1
+                      %h4.h5= t 'customers.form.notifications.sms_options'
+                  = render partial: 'v2/customers/check_box', locals: { form: f, field: :sms_concat, label: t('activerecord.attributes.customer.sms_concat'), help: t('customers.form.sms_concat_help') }
