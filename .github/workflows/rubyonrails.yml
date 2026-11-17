@@ -18,7 +18,7 @@ permissions:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgis/postgis:15-3.5
@@ -38,14 +38,14 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: libz-dev libicu-dev build-essential g++ libgeos-dev libgeos++-dev
-          version: 1.0
+          version: ubuntu-24.04-1
       - name: Cache gems
         uses: actions/cache@v4
         with:
           path: vendor/bundle
-          key: ${{ runner.os }}-bundle-${{ hashFiles('.ruby-version', '**/Gemfile.lock') }}
+          key: ${{ runner.os }}-ubuntu-24.04-bundle-${{ hashFiles('.ruby-version', '**/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-bundle-
+            ${{ runner.os }}-ubuntu-24.04-bundle-
       - name: Install Ruby
         uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
         with:
@@ -56,8 +56,10 @@ jobs:
           bundle config set --local path vendor/bundle
           bundle config set --local deployment true
           bundle install --jobs 4 --retry 3
-      - name: Rebuild rgeo gem
-        run: bundle pristine rgeo
+      - name: Rebuild native gems linked to system libs
+        run: |
+          bundle pristine rgeo
+          bundle pristine charlock_holmes
       - name: Set Node.js 14.x
         uses: actions/setup-node@v4
         with:
@@ -73,7 +75,7 @@ jobs:
         run: bin/rake test
 
   lookbook_visual:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [test, lint]
     timeout-minutes: 45
     services:
@@ -95,14 +97,14 @@ jobs:
         uses: awalsh128/cache-apt-pkgs-action@latest
         with:
           packages: libz-dev libicu-dev build-essential g++ libgeos-dev libgeos++-dev
-          version: 1.0
+          version: ubuntu-24.04-1
       - name: Cache gems
         uses: actions/cache@v4
         with:
           path: vendor/bundle
-          key: ${{ runner.os }}-bundle-${{ hashFiles('.ruby-version', '**/Gemfile.lock') }}
+          key: ${{ runner.os }}-ubuntu-24.04-bundle-${{ hashFiles('.ruby-version', '**/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-bundle-
+            ${{ runner.os }}-ubuntu-24.04-bundle-
       - name: Install Ruby
         uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
         with:
@@ -113,8 +115,10 @@ jobs:
           bundle config set --local path vendor/bundle
           bundle config set --local deployment true
           bundle install --jobs 4 --retry 3
-      - name: Rebuild rgeo gem
-        run: bundle pristine rgeo
+      - name: Rebuild native gems linked to system libs
+        run: |
+          bundle pristine rgeo
+          bundle pristine charlock_holmes
       - name: Set Node.js 14.x (Webpacker)
         uses: actions/setup-node@v4
         with:
@@ -150,17 +154,22 @@ jobs:
           retention-days: 14
 
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+      - name: Install dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libz-dev libicu-dev build-essential g++ libgeos-dev libgeos++-dev
+          version: ubuntu-24.04-1
       - name: Cache gems
         uses: actions/cache@v4
         with:
           path: vendor/bundle
-          key: ${{ runner.os }}-bundle-${{ hashFiles('.ruby-version', '**/Gemfile.lock') }}
+          key: ${{ runner.os }}-ubuntu-24.04-bundle-${{ hashFiles('.ruby-version', '**/Gemfile.lock') }}
           restore-keys: |
-            ${{ runner.os }}-bundle-
+            ${{ runner.os }}-ubuntu-24.04-bundle-
       - name: Install Ruby
         uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
         with:
@@ -175,7 +184,7 @@ jobs:
         run: bundle exec rubocop --parallel
 
   docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [test, lint, lookbook_visual]
     if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev2'
 
@@ -196,7 +205,7 @@ jobs:
           service: web
 
   docker-superset:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [test, lint, lookbook_visual]
     if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev2'
 
@@ -220,7 +229,7 @@ jobs:
           service: superset
 
   docker-superset_nginx:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: [test, lint, lookbook_visual]
     if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev2'
 
