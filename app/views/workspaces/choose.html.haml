@@ -1,0 +1,17 @@
+-# Copyright © Cartoway
+- content_for :title, t('workspaces.choose.title')
+- reseller_scope = workspace_reseller_scope?
+.container.py-4
+  %h1.h3= t('workspaces.choose.title')
+  %p.text-muted= t('workspaces.choose.help')
+  .list-group
+    - workspace_chip_customer_groups(@web_workspaces).each do |customer, memberships|
+      .list-group-item.bg-light.fw-semibold= customer.name
+      - memberships.each do |membership|
+        - same_host = customer.reseller_id == @reseller&.id
+        .list-group-item.d-flex.justify-content-between.align-items-center
+          %span
+            = workspace_chip_user_label(membership)
+            - if membership.role
+              %span.badge.text-bg-secondary.ms-2= membership.role.name
+          = button_to t('workspaces.choose.open'), workspace_enter_path(membership, reseller_scope: reseller_scope, same_host: same_host), method: :post, class: 'btn btn-primary btn-sm', data: { turbo: false }

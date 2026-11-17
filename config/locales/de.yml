@@ -772,7 +772,7 @@ de:
         protocol_url_https: HTTPS
     users:
       menu:
-        users: Benutzer
+        users: Konten
         send_email: Bestätigungs-E-Mail senden
       index:
         title: Bearbeiten der Benutzer
@@ -800,7 +800,7 @@ de:
     menu:
       customer: Globale Einstellungen
       user_settings: Benutzereinstellungen
-      customers: Benutzerkonten
+      customers: Kunden
     edit:
       title: Bearbeiten der globalen Einstellungen
       send_email: Bestätigungs-E-Mail senden
@@ -814,8 +814,8 @@ de:
       time_zone: Zeitzone
       devices: GPS & Mobile Exporte
     index:
-      title: Auflisten der Benutzerkonten
-      new: Neues Benutzerkonto
+      title: Kunden
+      new: Neuer Kunde
       map: Karte
       no_test: nicht im Test
       status: Status

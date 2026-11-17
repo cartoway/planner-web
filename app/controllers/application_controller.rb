@@ -16,6 +16,8 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 class ApplicationController < ActionController::Base
+  include WorkspaceSession
+
   around_action :set_sentry_context
 
   # Prevent CSRF attacks by raising an exception.
@@ -24,7 +26,7 @@ class ApplicationController < ActionController::Base
 
   # Handle exceptions
   rescue_from StandardError, with: :server_error if Planner::Application.config.raise_on_standard_error
-  rescue_from ActionController::InvalidAuthenticityToken, with: :server_error
+  rescue_from ActionController::InvalidAuthenticityToken, with: :csrf_error
   rescue_from ActiveRecord::RecordNotFound, with: :not_found_error
   rescue_from AbstractController::ActionNotFound, with: :not_found_error
   rescue_from ActiveRecord::StaleObjectError, with: :database_error
@@ -137,12 +139,12 @@ class ApplicationController < ActionController::Base
   end
 
   def customer_payment_period
-    if current_user.customer
-      customer = current_user.customer
-      @unsubscribed = customer.end_subscription && Time.now >= customer.end_subscription
-      if @unsubscribed
-        flash.now[:error] = I18n.t('all.subscribe.expiration_date_over', date: I18n.l((customer.end_subscription - 1.second), format: :long), reseller: @reseller&.name)
-      end
+    customer = workspace_context_customer || current_user.customer
+    return unless customer
+
+    @unsubscribed = customer.end_subscription && Time.now >= customer.end_subscription
+    if @unsubscribed
+      flash.now[:error] = I18n.t('all.subscribe.expiration_date_over', date: I18n.l((customer.end_subscription - 1.second), format: :long), reseller: @reseller&.name)
     end
   end
 
@@ -260,6 +262,12 @@ class ApplicationController < ActionController::Base
       format.json { head :forbidden }
       format.any { head :forbidden }
     end
+  end
+
+  def csrf_error(exception)
+    log_error(exception, :warn)
+    # Stale CSRF after session rotation (e.g. workspace switch) — ask for a fresh login form.
+    redirect_to new_user_session_path, alert: I18n.t('devise.failure.timeout')
   end
 
   def server_error(exception)

@@ -1,0 +1,24 @@
+-# Copyright © Cartoway
+- content_for :title, t('workspaces.handoff.claiming')
+.container.py-4
+  %p.text-muted.mb-3= t('workspaces.handoff.claiming')
+  = form_with url: claim_workspace_path, method: :post, html: { id: 'workspace-claim-form', data: { turbo: false } } do
+    = hidden_field_tag :token, @token, id: 'workspace-claim-token'
+    = submit_tag t('workspaces.choose.open'), class: 'btn btn-primary'
+:javascript
+  (function () {
+    var form = document.getElementById('workspace-claim-form')
+    var input = document.getElementById('workspace-claim-token')
+    if (!form || !input) return
+    var hash = new URLSearchParams((window.location.hash || '').replace(/^#/, ''))
+    var token = hash.get('token') || new URLSearchParams(window.location.search).get('token') || input.value
+    if (!token) {
+      window.location = #{(user_signed_in? ? root_path : new_user_session_path).to_json}
+      return
+    }
+    input.value = token
+    if (window.location.hash) {
+      history.replaceState(null, '', window.location.pathname + window.location.search)
+    }
+    form.submit()
+  })()

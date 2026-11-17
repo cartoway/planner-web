@@ -39,6 +39,15 @@ Rails.application.routes.draw do
   get 'edit_user_settings/:id' => 'users#edit_settings', :as => 'edit_user_settings'
   patch 'user_settings/:id' => 'users#update_settings', :as => 'update_user_settings'
 
+  resource :workspace, only: [], controller: 'workspaces' do
+    get :choose
+    post :switch
+    post :handoff
+    # GET shows auto-POST form (prefetch must not burn the one-shot JTI).
+    get :claim, action: :claim_prompt
+    post :claim
+  end
+
   resources :users, only: [:edit, :update] do
     member do
       get :password
@@ -49,6 +58,16 @@ Rails.application.routes.draw do
   resources :identities, only: [:destroy]
 
   namespace :admin do
+    resources :accounts do
+      member do
+        post :send_email
+        post :anonymize
+        post :revoke_device
+        post :reauthorize_device
+        patch :detach_membership
+      end
+    end
+    delete 'accounts' => 'accounts#destroy_multiple'
     resources :users do
       member do
         get :send_email
@@ -111,6 +130,7 @@ Rails.application.routes.draw do
       delete :delete_vehicle
       delete :delete_multiple_vehicles
       patch :duplicate
+      patch :refresh_counters
       get :export
       post :external_callback
     end

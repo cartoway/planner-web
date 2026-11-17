@@ -658,7 +658,7 @@ es:
         reseller: Revendedor
     users:
       menu:
-        users: Usuarios
+        users: Cuentas
         send_email: Mandar un e-mail de confirmación
       index:
         title: Modificar usuarios
@@ -686,7 +686,7 @@ es:
     menu:
       customer: Configuración espacio cliente
       user_settings: Configuraciones usuario
-      customers: Cuentas clientes
+      customers: Clientes
     edit:
       title: Modificar configuración espacio cliente
       password: Cambiar la contraseña
@@ -700,7 +700,7 @@ es:
       devices: Exportaciones GPS & Móviles
       send_email: Mandar e-mail de confirmación
     index:
-      title: Lista cuentas cliente
+      title: Clientes
       map: Mapa
       no_test: fuera test
       status: Estatus

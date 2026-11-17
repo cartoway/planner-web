@@ -164,6 +164,16 @@ class Customer < ApplicationRecord
 
   scope :includes_deps, -> { includes([:profile, :router, :job_optimizer, :job_destination_geocoding, :job_store_geocoding, :job_destination_import, { users: :role }]) }
   scope :includes_stores, -> { includes(:stores) }
+  scope :for_reseller_id, ->(reseller_id) { where(reseller_id: reseller_id) }
+
+  def self.search_by_name_or_ref(q)
+    q = q.to_s.strip
+    return all if q.blank?
+
+    pattern = "%#{sanitize_sql_like(q)}%"
+    where('customers.name ILIKE :q OR COALESCE(customers.ref, \'\') ILIKE :q', q: pattern)
+  end
+
   scope :for_duplication, -> {
     preload(
       :custom_attributes,
@@ -756,7 +766,17 @@ class Customer < ApplicationRecord
   end
 
   def too_many_plannings?
-    default_max_plannings && default_max_plannings <= self.plannings.count
+    default_max_plannings && default_max_plannings <= plannings_count
+  end
+
+  # Recompute counter caches (and visits_count, which is maintained by Visit callbacks).
+  def refresh_counters!
+    Customer.reset_counters(id, :plannings, :destinations, :vehicles)
+    update_column(
+      :visits_count,
+      Visit.joins(:destination).where(destinations: { customer_id: id }).count
+    )
+    reload
   end
 
   def default_max_zonings

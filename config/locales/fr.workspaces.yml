@@ -1,0 +1,27 @@
+# Copyright © Cartoway
+# Web workspace switcher
+fr:
+  workspaces:
+    chip:
+      filter: Filtrer les espaces…
+      admin: "Administration %{name}"
+      available_in_app: Disponible dans l’app
+      open_on_host: "Ouvrir sur %{host} # %{name}"
+      login_as: "Ouvrir en tant que %{name}"
+      stop_impersonating: Revenir à l’interface administrateur
+    switch:
+      success: "Espace : %{name}"
+      failure: Impossible de basculer vers cet espace.
+    choose:
+      title: Choisir un espace
+      help: "Plusieurs espaces sont disponibles pour ce compte. Choisissez d’abord le client, puis l’utilisateur :"
+      open: Ouvrir
+    tabs:
+      changed: Espace changé dans un autre onglet
+    handoff:
+      invalid: Lien invalide ou expiré.
+      claiming: Ouverture de l’espace…
+    impersonation:
+      started: "Connecté en tant que %{name}"
+      stopped: "Administration %{name}"
+      banner: "Vous êtes connecté en tant que %{name}."

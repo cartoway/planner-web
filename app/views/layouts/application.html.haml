@@ -3,6 +3,7 @@
   %head
     %meta{content: "text/html; charset=UTF-8", "http-equiv": "Content-Type"}/
     = render partial: 'layouts/head'
+  -# Paloma reads a single data-controller name — do not append Stimulus controllers here.
   %body{"data-controller": "#{controller.controller_path.gsub('/', '_')}", "data-action": "#{controller.action_name}"}
     #wrapper
       .menu-left.hidden-print{style: "overflow: hidden;"}
@@ -32,7 +33,7 @@
                       .hidden-menu
                         = t 'customers.menu.customers'
                 %li.menu-section.menu-list-item
-                  = link_to admin_users_path do
+                  = link_to admin_accounts_path do
                     .d-flex.align-items-center.justify-content-center
                       %i.fa.fa-address-book.fa-fw
                       .hidden-menu
@@ -125,7 +126,7 @@
                           - if current_user.customer.too_many_plannings?
                             %i.fa.text-warning.fa-calendar-xmark{"aria-hidden": "true"}
                             %span.text-warning
-                              = current_user.customer.plannings.length
+                              = current_user.customer.plannings_count
                             \/
                             %span
                               = current_user.customer.default_max_plannings
@@ -133,7 +134,7 @@
                           - else
                             %i.fa.fa-calendar-check{"aria-hidden": "true"}
                             %span
-                              = current_user.customer.plannings.length
+                              = current_user.customer.plannings_count
                             \/
                             %span
                               = current_user.customer.default_max_plannings

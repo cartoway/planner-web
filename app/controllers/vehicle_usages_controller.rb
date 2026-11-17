@@ -192,8 +192,8 @@ class VehicleUsagesController < ApplicationController
     if parameters.key?(:vehicle)
       parameters[:vehicle_attributes] = parameters[:vehicle]
       parameters[:vehicle_attributes][:devices] = {} unless parameters[:vehicle_attributes].key?(:devices)
-      parameters[:vehicle_attributes][:max_distance] = DistanceUnits.distance_to_meters(parameters[:vehicle_attributes][:max_distance], @current_user.prefered_unit) if parameters[:vehicle_attributes].key?(:max_distance)
-      parameters[:vehicle_attributes][:max_ride_distance] = DistanceUnits.distance_to_meters(parameters[:vehicle_attributes][:max_ride_distance], @current_user.prefered_unit) if parameters[:vehicle_attributes].key?(:max_ride_distance)
+      parameters[:vehicle_attributes][:max_distance] = DistanceUnits.distance_to_meters(parameters[:vehicle_attributes][:max_distance], current_user.prefered_unit) if parameters[:vehicle_attributes].key?(:max_distance)
+      parameters[:vehicle_attributes][:max_ride_distance] = DistanceUnits.distance_to_meters(parameters[:vehicle_attributes][:max_ride_distance], current_user.prefered_unit) if parameters[:vehicle_attributes].key?(:max_ride_distance)
       parameters.except(:vehicle)
     else
       parameters

@@ -1,0 +1,65 @@
+-# Copyright © Cartoway
+-# Floating workspace chip. Hidden with a single accessible space (no switch UI).
+-# Menu from 2+ entries (or admin/impersonation); filter from 5. V2 layout only.
+-# Admin/reseller scope: multi-user customers render as a group header + one row per user.
+- return unless user_signed_in?
+- return unless workspace_show_menu?
+- reseller_scope = workspace_reseller_scope?
+- web_list = reseller_scope ? workspace_reseller_web_list : workspace_web_list
+- mobile_only = workspace_mobile_only_list
+- show_filter = workspace_show_filter?
+- host_reseller = @reseller
+- multi_reseller = !reseller_scope && web_list.map { |m| m.customer.reseller_id }.uniq.size > 1
+- multi_user_customers = web_list.group_by(&:customer_id).transform_values(&:size)
+.workspace-chip{data: { controller: 'v2--workspace-chip', v2__workspace_chip_filter_threshold_value: 5 }}
+  .dropdown
+    %button.workspace-chip__button.btn.btn-light.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown', bs_auto_close: 'outside' }, aria: { expanded: false }}
+      %i.fa.fa-building.fa-fw
+      %span.workspace-chip__label= workspace_chip_label
+    %ul.dropdown-menu.dropdown-menu-end.workspace-chip__menu.shadow
+      - if show_filter
+        %li.px-2.pb-2
+          %input.form-control.form-control-sm{type: 'search', placeholder: t('workspaces.chip.filter'), data: { v2__workspace_chip_target: 'filter', action: 'input->v2--workspace-chip#filter' }, autocomplete: 'off'}
+      - if workspace_impersonating?
+        %li
+          = button_to switch_workspace_path(stop_impersonating: 1), method: :post, class: 'dropdown-item workspace-chip__item', data: { turbo: false } do
+            %i.fa.fa-sign-out.fa-fw
+            = t('workspaces.chip.stop_impersonating')
+        %li
+          %hr.dropdown-divider
+      - elsif current_user.admin?
+        %li
+          .dropdown-item.workspace-chip__item.disabled
+            %i.fa.fa-check.fa-fw.text-success
+            = t('workspaces.chip.admin', name: current_user.reseller.name)
+        %li
+          %hr.dropdown-divider
+      - if reseller_scope
+        - workspace_chip_customer_groups(web_list).each do |customer, memberships|
+          - same_host = customer.reseller_id == host_reseller&.id
+          %li.workspace-chip__group{data: { v2__workspace_chip_target: 'group', filter_label: customer.name.downcase }}
+            %span.workspace-chip__group-label= customer.name
+          - memberships.each do |membership|
+            - user_label = workspace_chip_user_label(membership)
+            %li.workspace-chip__grouped-item{data: { v2__workspace_chip_target: 'item', filter_label: "#{customer.name} #{user_label}".downcase }}
+              = button_to workspace_enter_path(membership, reseller_scope: reseller_scope, same_host: same_host), method: :post, class: 'dropdown-item workspace-chip__item', data: { turbo: false } do
+                = workspace_chip_item_icon(membership, same_host: same_host, reseller_scope: reseller_scope)
+                = user_label
+      - else
+        - web_list.each do |membership|
+          - customer = membership.customer
+          - same_host = customer.reseller_id == host_reseller&.id
+          - label = customer.name
+          - label = "#{label} — #{membership.email}" if multi_user_customers[membership.customer_id].to_i > 1
+          - label = "#{label} — #{customer.reseller.name}" if multi_reseller
+          %li{data: { v2__workspace_chip_target: 'item', filter_label: label.downcase }}
+            = button_to workspace_enter_path(membership, reseller_scope: reseller_scope, same_host: same_host), method: :post, class: 'dropdown-item workspace-chip__item', data: { turbo: false } do
+              = workspace_chip_item_icon(membership, same_host: same_host, reseller_scope: reseller_scope)
+              = workspace_chip_item_label(membership, label: label, same_host: same_host, reseller_scope: reseller_scope)
+      - if mobile_only.any?
+        %li
+          %hr.dropdown-divider
+        %li.px-3.py-1.small.text-muted= t('workspaces.chip.available_in_app')
+        - mobile_only.each do |membership|
+          %li.px-3.py-1.small.text-muted{data: { v2__workspace_chip_target: 'item', filter_label: membership.customer&.name.to_s.downcase }}
+            = membership.customer&.name

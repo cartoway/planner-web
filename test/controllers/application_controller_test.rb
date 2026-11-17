@@ -54,10 +54,10 @@ class ApplicationControllerTest < ActionController::TestCase
     end
   end
 
-  test 'should rescue server error' do
-      ApplicationController.stub_any_instance(:api_key?, lambda { |*a| raise ActionController::InvalidAuthenticityToken.new }) do
-        get :index, params: { format: :json }
-        assert_response :internal_server_error
-      end
+  test 'should redirect to sign in on CSRF error' do
+    ApplicationController.stub_any_instance(:api_key?, lambda { |*_a| raise ActionController::InvalidAuthenticityToken }) do
+      get :index, params: { format: :json }
+      assert_redirected_to new_user_session_path
+    end
   end
 end
