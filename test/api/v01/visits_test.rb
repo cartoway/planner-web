@@ -288,6 +288,33 @@ class V01::VisitsTest < ActiveSupport::TestCase
     assert Visit.exists?(visit_bar.id)
   end
 
+  test 'DELETE by_tags matching all visits returns 403 without delete_all' do
+    customer = customers(:customer_one)
+    tag = customer.tags.create!(label: 'Wipe', ref: 'wipe-all')
+    customer.visits.find_each { |visit| TagVisit.create!(visit: visit, tag: tag) }
+
+    u = users(:user_one)
+    spaces = Preferences::Catalog.default_spaces.deep_dup
+    spaces['destination']['actions']['segment_controls']['delete_all_visits'] = {
+      'visible' => true, 'usable' => false
+    }
+    role = Role.create!(
+      reseller: resellers(:reseller_one),
+      name: "api-no-delete-all-visits-#{SecureRandom.hex(4)}",
+      planning_toolbar: Preferences::Catalog.default_planning_toolbar,
+      spaces: Preferences::Catalog.normalize_spaces(spaces)
+    )
+    u.update!(role_id: role.id)
+
+    assert_no_difference('Visit.count') do
+      delete api('by_tags', tag_ids: 'ref:wipe-all')
+      assert_equal 403, last_response.status, last_response.body
+    end
+  ensure
+    u.update!(role_id: nil)
+    role&.destroy
+  end
+
   test 'should create a visit using deprecated time fields' do
     assert_difference('Visit.count', 1) do
       visit_attributes = @visit.attributes
