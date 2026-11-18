@@ -701,12 +701,21 @@ class Customer < ApplicationRecord
     destinations.where(id: ids).delete_all
     self.reload
     reindex_routes
+    refresh_destination_counters!
   end
 
   def delete_all_destinations
     destinations.delete_all
     self.reload
     reindex_routes
+    refresh_destination_counters!
+  end
+
+  def delete_visits(ids)
+    Visit.joins(:destination).where(destinations: { customer_id: id }, id: ids).delete_all
+    reload
+    reindex_routes
+    refresh_visit_counters!
   end
 
   def delete_all_visits(destination_ids: nil)
@@ -715,6 +724,7 @@ class Customer < ApplicationRecord
     scope.delete_all
     reload
     reindex_routes
+    refresh_visit_counters!
   end
 
   def delete_all_plannings
@@ -817,6 +827,20 @@ class Customer < ApplicationRecord
   end
 
   private
+
+  def refresh_visit_counters!
+    # update_all: destinations_count/visits_count may be counter_cache readonly via update_columns.
+    self.class.where(id: id).update_all(
+      visits_count: Visit.joins(:destination).where(destinations: { customer_id: id }).count
+    )
+  end
+
+  def refresh_destination_counters!
+    self.class.where(id: id).update_all(
+      destinations_count: Destination.where(customer_id: id).count,
+      visits_count: Visit.joins(:destination).where(destinations: { customer_id: id }).count
+    )
+  end
 
   def reindex_routes
     plannings_to_reindex = plannings.includes(routes: [:route_geojson, :stops])

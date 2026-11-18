@@ -638,6 +638,23 @@ class CustomerTest < ActiveSupport::TestCase
     assert routes_with_geojson.each(&:reload).all? { |r| r.outdated }
   end
 
+  test 'should delete selected visits and outdate routes' do
+    visit = visits(:visit_one)
+    routes_with_visit = Route.joins(:stops).where(stops: { visit_id: visit.id }).distinct.to_a
+    assert routes_with_visit.any?
+    expected_visits_count = @customer.visits.count - 1
+
+    without_loading Stop, if: -> (stop) { stop.visit_id == visit.id } do
+      assert_difference('Visit.count', -1) do
+        @customer.delete_visits([visit.id])
+      end
+    end
+
+    assert_not Visit.exists?(visit.id)
+    assert routes_with_visit.each(&:reload).all?(&:outdated)
+    assert_equal expected_visits_count, @customer.reload.visits_count
+  end
+
   test 'should use limitation' do
     @customer.delete_all_destinations
     @customer.delete_all_plannings
