@@ -22,14 +22,18 @@ module PlanningOperationHelper
       external_callback_name: planning.customer.enable_external_callback && planning.customer.external_callback_name,
       external_callback_url: planning.customer.enable_external_callback && planning.customer.external_callback_url,
       routes: planning.routes.map{ |route|
+        vehicle = route.vehicle_usage&.vehicle
         {
           route_id: route.id,
           vehicle_usage_id: route.vehicle_usage_id,
-          vehicle_id: route.vehicle_usage&.vehicle_id,
-          name: [route.ref, route.vehicle_usage&.vehicle&.name || t('plannings.edit.out_of_route')].compact_blank.join(' '),
-          color: route.color || route.vehicle_usage&.vehicle&.color || '#707070',
+          vehicle_id: vehicle&.id,
+          name: [route.ref, vehicle&.name || t('plannings.edit.out_of_route')].compact_blank.join(' '),
+          color: route.color || vehicle&.color || '#707070',
           hidden: route.hidden,
           locked: route.locked,
+          # Used by the operation-create modal to refresh driver contacts after vehicle switch.
+          contact_email: vehicle&.contact_email,
+          phone_number: vehicle&.phone_number,
           data: route.slice(
             :out_of_window, :out_of_capacity, :out_of_drive_time, :out_of_work_time,
             :out_of_max_distance, :out_of_max_reload, :out_of_relation, :out_of_skill,
