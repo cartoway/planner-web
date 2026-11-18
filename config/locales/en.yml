@@ -4127,6 +4127,7 @@ en:
         country: Country
         phone: Phone
         email: Email
+        tracking_url: Tracking link
         detail: Detail
         comment: Comment
         lat: Latitude
