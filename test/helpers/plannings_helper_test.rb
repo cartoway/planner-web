@@ -37,6 +37,18 @@ class PlanningsHelperTest < ActionView::TestCase
     end
   end
 
+  test 'planning_summary exposes current vehicle contacts for operation modal refresh' do
+    planning = plannings(:planning_one)
+    route = planning.routes.find { |r| r.vehicle_usage_id.present? }
+    assert route, 'expected an assigned route'
+    vehicle = route.vehicle_usage.vehicle
+    vehicle.update_columns(contact_email: 'new-driver@example.com', phone_number: '+33600000000')
+
+    row = planning_summary(planning.reload)[:routes].find { |r| r[:route_id] == route.id }
+    assert_equal 'new-driver@example.com', row[:contact_email]
+    assert_equal '+33600000000', row[:phone_number]
+  end
+
   test 'planning_route_checklist_label includes stop counts' do
     planning = plannings(:planning_one)
     row = planning_summary(planning)[:routes].find { |r| r[:data][:size].to_i.positive? && !r[:data][:out_of_route] }
