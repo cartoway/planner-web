@@ -10,6 +10,8 @@ import { OverlayLayersToggleIControl } from 'maplibre/overlay_layers_toggle_cont
 import { DeclusterViewportIControl } from 'maplibre/decluster_viewport_control'
 import { DestinationsMapLayers, CLUSTER_LAYER_ID } from 'maplibre/destinations_map_layers'
 import { createDestinationMarkerElement } from 'maplibre/destination_markers'
+import { isFeatureActive, paintActiveDisc, parseLngLat, shouldKeepDomMarkerOnClear } from 'maplibre/map_index_selection'
+import { createPositionEditBindings } from 'maplibre/index_position_edit'
 import { disableMapPitchAndRotation } from 'maplibre/map_interactions'
 import { attachMapToContainer, bindTurboMapHost, detachMapFromContainer, getMaplibre } from 'maplibre/turbo_map_host'
 import { bindMapViewHash, parseMapViewHash } from 'lib/map_view_hash'
@@ -23,38 +25,17 @@ const DEFAULT_ZOOM = 12
 const MIN_CHARS = 3
 const DEBOUNCE_MS = 300
 
-function roundCoord (value) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return value
-  return Math.round(value * 1e6) / 1e6 // DB / API precision (see app/api/v01/destinations.rb)
-}
+const positionEdit = createPositionEditBindings({
+  latId: 'destination_lat',
+  lngId: 'destination_lng',
+  nameId: 'destination_name',
+  formSidebarId: 'destination-form-sidebar',
+  formIdAttr: 'data-destination_id',
+  rowSelector: (id) => `.destination[data-destination-id="${CSS.escape(String(id))}"]`,
+  collapseSidebar: (host, onDone) => host._collapseDestinationsSidebar(onDone)
+})
 
-/** Fixed-width string for form fields (matches persisted float rounding). */
-function coordToDbInputString (value) {
-  if (typeof value !== 'number' || !Number.isFinite(value)) return ''
-  return roundCoord(value).toFixed(6)
-}
-
-/** Run fn after a slide-panel CSS transition, or immediately if none fires (e.g. reduced motion). */
-function afterSlideTransition (el, fn) {
-  if (!el) {
-    fn()
-    return
-  }
-  let settled = false
-  const finish = () => {
-    if (settled) return
-    settled = true
-    el.removeEventListener('transitionend', onEnd)
-    clearTimeout(fallbackId)
-    fn()
-  }
-  const onEnd = (e) => {
-    if (e.target !== el || e.propertyName !== 'transform') return
-    finish()
-  }
-  el.addEventListener('transitionend', onEnd)
-  const fallbackId = setTimeout(finish, 500)
-}
+const { afterSlideTransition } = positionEdit
 
 // Split only before the next key:value token, not on spaces inside a value.
 function splitFilterSegments (input) {
@@ -141,6 +122,7 @@ export default class extends Controller {
     this._domMarker = null
     this._domMarkerId = null
     this._domMarkerEl = null
+    this._activeDestinationId = null
     this._iconOverStack = []
     this._searchDebounce = null
     this._positionEdit = null
@@ -238,6 +220,8 @@ export default class extends Controller {
     if (this._domMarkerId === idStr && this._domMarker) {
       this._domMarker.setLngLat(lngLat)
       if (this._domMarkerEl) {
+        // No element id: Teritorio discs own feature ids; duplicate ids made conceal() hit this pin.
+        this._domMarkerEl.classList.add('destinations-marker--dom-pin')
         this._domMarkerEl.classList.toggle('destinations-marker--active', active)
       }
       this._bindPositionEditMarker(this._domMarker)
@@ -247,6 +231,8 @@ export default class extends Controller {
 
     this._removeDomMarker()
     const el = createDestinationMarkerElement(name)
+    // Mark as edit pin (no id) so paintActiveDisc / conceal only touch Teritorio discs.
+    el.classList.add('destinations-marker--dom-pin')
     if (active) el.classList.add('destinations-marker--active')
     const marker = new maplibregl.Marker({ element: el, anchor: 'center' })
       .setLngLat(lngLat)
@@ -270,13 +256,22 @@ export default class extends Controller {
     if (this._domMarkerEl) this._domMarkerEl.classList.add('destinations-marker--dragging')
   }
 
+  _paintActiveDestination () {
+    const root = this.element?.querySelector('#map') || this.element
+    paintActiveDisc(root, this._activeDestinationId)
+  }
+
+  _isActiveDestinationFeature (feature) {
+    return isFeatureActive(this._activeDestinationId, feature)
+  }
+
   _clearDestinationHighlight () {
     if (!this.element) return
     this.element.querySelectorAll('.destination').forEach((tr) => tr.classList.remove('highlight', 'highlight--map-pin'))
     this._iconOverStack = []
-    const keepMarker =
-      this._positionEdit && this._domMarkerId === this._positionEdit.markerId
-    if (!keepMarker) {
+    this._activeDestinationId = null
+    this._paintActiveDestination()
+    if (!shouldKeepDomMarkerOnClear(this._positionEdit, this._domMarkerId)) {
       this._removeDomMarker()
       this._syncHiddenGeojsonPins()
     }
@@ -353,25 +348,28 @@ export default class extends Controller {
         rec = { lngLat: [lng, lat], name: '' }
       }
     }
-    if (rec) {
-      this._showDomMarker(idStr, { name: rec.name, lngLat: rec.lngLat, active: true })
-      this._iconOverStack.push(idStr)
-      if (flyToMap && this._map) {
-        const map = this._map
-        const center = rec.lngLat
-        const zoom = Math.max(map.getZoom(), 14)
-        const runFly = () => {
+
+    // Selection paints the Teritorio disc (customers-style). DOM pin is for position edit only.
+    this._activeDestinationId = String(idStr)
+    this._paintActiveDestination()
+
+    if (rec && flyToMap && this._map) {
+      const map = this._map
+      const center = rec.lngLat
+      const zoom = Math.max(map.getZoom(), 14)
+      const runFly = () => {
+        if (this._map !== map) return
+        const padding = this._mapFlyToPadding()
+        requestAnimationFrame(() => {
           if (this._map !== map) return
-          const padding = this._mapFlyToPadding()
-          requestAnimationFrame(() => {
-            if (this._map !== map) return
-            map.flyTo({ center, zoom, padding, duration: 500 })
-          })
-        }
-        // Card click centers behind the list; only fa-expand reveals the map pane.
-        if (revealMobileMap) this._withMobileMapVisible(runFly)
-        else runFly()
+          map.flyTo({ center, zoom, padding, duration: 500 })
+          // Teritorio rebuilds markers after move; re-apply active class.
+          map.once('moveend', () => this._paintActiveDestination())
+        })
       }
+      // Card click centers behind the list; only fa-expand reveals the map pane.
+      if (revealMobileMap) this._withMobileMapVisible(runFly)
+      else runFly()
     }
     if (rows.length) {
       rows.forEach((tr) => tr.classList.add('highlight'))
@@ -559,7 +557,11 @@ export default class extends Controller {
         return this._buildMapGeojsonUrl(merged)
       },
       onPointClick: (feature) => this._handleMapPointClick(feature),
-      onFeaturesUpdated: () => this._applyPendingHighlight(),
+      onFeaturesUpdated: () => {
+        this._applyPendingHighlight()
+        this._paintActiveDestination()
+      },
+      isFeatureActive: (feature) => this._isActiveDestinationFeature(feature),
       getMovePadding: () => this._mapFlyToPadding(),
       signal
     }
@@ -627,7 +629,7 @@ export default class extends Controller {
       }
       if (e.target.closest && e.target.closest('.destinations-position-drag-cancel')) {
         e.preventDefault()
-        this._disablePositionDrag()
+        this._cancelPositionDrag()
       }
     }, { signal })
 
@@ -702,7 +704,8 @@ export default class extends Controller {
         const savedMarker = frame.querySelector('[data-destinations-saved-id]')
         const savedId = savedMarker?.getAttribute('data-destinations-saved-id')
         if (savedMarker) savedMarker.removeAttribute('data-destinations-saved-id')
-        this._onFormSidebarClosed()
+        // Keep map coords after a successful save; otherwise restore like cancel placement.
+        this._onFormSidebarClosed({ discardMapChanges: !savedId })
         if (savedId) {
           this._expandDestinationsSidebar()
           this._refreshListAfterSidebarSave(String(savedId))
@@ -796,246 +799,94 @@ export default class extends Controller {
     } catch (e) { /* ignore */ }
   }
 
-  /**
-   * Snap marker to rounded coordinates and sync list row + destination lat/lng inputs.
-   */
   _syncPositionFromMarker (destinationIdStr, marker) {
-    if (!marker) return
-    const ll = marker.getLngLat()
-    let lat = typeof ll.lat === 'number' ? ll.lat : parseFloat(String(ll.lat))
-    let lng = typeof ll.lng === 'number' ? ll.lng : parseFloat(String(ll.lng))
-    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
-    lat = roundCoord(lat)
-    lng = roundCoord(lng)
-    try {
-      marker.setLngLat({ lng, lat })
-    } catch (e) { /* ignore */ }
-    if (this._mapLayers) this._mapLayers.updateDestinationCoords(destinationIdStr, lng, lat)
-    const latInp = document.getElementById('destination_lat')
-    const lngInp = document.getElementById('destination_lng')
-    const sync = (input, valueStr) => {
-      if (!input) return
-      input.value = valueStr
-      input.dispatchEvent(new Event('input', { bubbles: true }))
-      input.dispatchEvent(new Event('change', { bubbles: true }))
-    }
-    sync(latInp, coordToDbInputString(lat))
-    sync(lngInp, coordToDbInputString(lng))
-    const row = this.element.querySelector(`.destination[data-destination-id="${destinationIdStr}"]`)
-    if (row) {
-      row.setAttribute('data-lat', coordToDbInputString(lat))
-      row.setAttribute('data-lng', coordToDbInputString(lng))
-    }
+    positionEdit.syncPositionFromMarker(this, destinationIdStr, marker)
   }
 
   _refreshPositionEditMarker () {
-    const state = this._positionEdit
-    if (!state) return
-    if (this._domMarkerId === state.markerId && this._domMarker) {
-      state.marker = this._domMarker
-    }
-  }
-
-  /**
-   * Horizontal center of the map band visible beside the open form sidebar (not full layout width).
-   */
-  _positionDragCancelButtonLeftPx () {
-    const layout = this.element
-    const layoutRect = layout.getBoundingClientRect()
-    let visibleRight = layoutRect.right
-
-    const formSidebar = document.querySelector('.form-sidebar')
-    if (formSidebar && !formSidebar.classList.contains('slide-panel--collapsed')) {
-      const formRect = formSidebar.getBoundingClientRect()
-      if (formRect.left < visibleRight) visibleRight = formRect.left
-    }
-
-    const visibleLeft = layoutRect.left
-    const centerX = visibleLeft + (visibleRight - visibleLeft) / 2
-    return centerX - layoutRect.left
+    positionEdit.refreshPositionEditMarker(this)
   }
 
   _syncPositionDragCancelButtonPosition () {
-    const cancelBtn = this.element.querySelector('.destinations-position-drag-cancel')
-    if (!cancelBtn || cancelBtn.classList.contains('d-none')) return
-    cancelBtn.style.left = `${this._positionDragCancelButtonLeftPx()}px`
+    positionEdit.syncPositionDragCancelButtonPosition(this)
   }
 
   _setMapPositionDragCursor (active) {
-    const canvas = this._map && typeof this._map.getCanvas === 'function' ? this._map.getCanvas() : null
-    if (canvas) canvas.style.cursor = active ? 'crosshair' : ''
+    positionEdit.setMapPositionDragCursor(this, active)
   }
 
   _syncPositionDragLayout (active) {
-    const layout = this.element
-    const sidebar = layout.querySelector('.destinations-sidebar')
-    const cancelBtn = layout.querySelector('.destinations-position-drag-cancel')
-    const state = this._positionEdit
-
-    if (active) {
-      layout.classList.add('destinations-map-layout--position-drag')
-      const collapsed = this._collapseDestinationsSidebar(() => this._syncPositionDragCancelButtonPosition())
-      if (state) state.listSidebarHiddenForDrag = collapsed
-      if (cancelBtn) cancelBtn.classList.remove('d-none')
-      this._setMapPositionDragCursor(true)
-      requestAnimationFrame(() => this._syncPositionDragCancelButtonPosition())
-      return
-    }
-
-    layout.classList.remove('destinations-map-layout--position-drag')
-    this._setMapPositionDragCursor(false)
-    if (state?.listSidebarHiddenForDrag && sidebar) {
-      sidebar.classList.remove('slide-panel--collapsed')
-      state.listSidebarHiddenForDrag = false
-      afterSlideTransition(sidebar, () => { if (this._map) this._map.resize() })
-    }
-    if (cancelBtn) {
-      cancelBtn.classList.add('d-none')
-      cancelBtn.style.left = ''
-    }
+    positionEdit.syncPositionDragLayout(this, active)
   }
 
   _teardownPositionEdit () {
-    const state = this._positionEdit
-    if (!state) return
-    if (state.active) {
-      if (state.mapClickHandler && this._map) {
-        try { this._map.off('click', state.mapClickHandler) } catch (e) { /* ignore */ }
-      }
-      try {
-        if (state.marker && typeof state.marker.setDraggable === 'function') state.marker.setDraggable(false)
-      } catch (e) { /* ignore */ }
-      const rec = this._domMarkerEl
-      if (rec) rec.classList.remove('destinations-marker--dragging')
-      state.active = false
-    }
-    if (state.dragEndHandler && state.marker) {
-      try { state.marker.off('dragend', state.dragEndHandler) } catch (e) { /* ignore */ }
-    }
-    try {
-      if (state.marker && typeof state.marker.setDraggable === 'function') state.marker.setDraggable(false)
-    } catch (e) { /* ignore */ }
-    if (state.toggleButton) this._applyPositionDragToggleUi(state.toggleButton, false)
-    this._syncPositionDragLayout(false)
-    this._positionEdit = null
+    positionEdit.teardownPositionEdit(this)
+  }
+
+  _readEditLngLat () {
+    return positionEdit.readEditLngLat(this._domMarker)
+  }
+
+  _applyEditLngLat (lngLat) {
+    positionEdit.applyEditLngLat(this, lngLat)
+  }
+
+  /** Restore GeoJSON + list row coords (form fields may already be gone on sidebar close). */
+  _restoreMapCoordsOnly (idStr, lngLat) {
+    positionEdit.restoreMapCoordsOnly(this, idStr, lngLat)
+  }
+
+  /** Discard unsaved map moves for the open edit session (form-open baseline). */
+  _abandonPositionEditSession () {
+    positionEdit.abandonSession(this, {
+      clearActiveId: () => { this._activeDestinationId = null },
+      paint: () => this._paintActiveDestination()
+    })
+  }
+
+  _cancelPositionDrag () {
+    positionEdit.cancelPositionDrag(this)
   }
 
   _disablePositionDrag () {
-    const state = this._positionEdit
-    if (!state || !state.active) return
-    if (state.mapClickHandler && this._map) {
-      try { this._map.off('click', state.mapClickHandler) } catch (e) { /* ignore */ }
-      state.mapClickHandler = null
-    }
-    try {
-      if (state.marker && typeof state.marker.setDraggable === 'function') state.marker.setDraggable(false)
-    } catch (e) { /* ignore */ }
-    if (this._domMarkerEl) this._domMarkerEl.classList.remove('destinations-marker--dragging')
-    state.active = false
-    this._syncPositionDragLayout(false)
-    if (state.toggleButton) this._applyPositionDragToggleUi(state.toggleButton, false)
+    positionEdit.disablePositionDrag(this)
   }
 
   _enablePositionDrag () {
-    const state = this._positionEdit
-    if (!state || state.active || !this._map) return
-    this._refreshPositionEditMarker()
-    state.mapClickHandler = (e) => {
-      if (!this._positionEdit?.active) return
-      const t = e.originalEvent && e.originalEvent.target
-      if (t && typeof t.closest === 'function') {
-        // Clicks on the HTML marker can still surface as map `click`; ignore (drag handles position).
-        if (t.closest('.maplibregl-marker') || t.closest('.mapboxgl-marker') || t.closest('.destinations-marker')) return
-        // MapLibre UI (zoom, geocoder, layer switcher…): do not move the pin.
-        if (t.closest('.maplibregl-ctrl') || t.closest('.mapboxgl-ctrl')) return
-      }
-      if (!e.lngLat) return
-      this._applyPlacementClick(e.lngLat)
-    }
-    this._map.on('click', state.mapClickHandler)
-    state.active = true
-    if (state.marker && this._domMarkerId === state.markerId && typeof state.marker.setDraggable === 'function') {
-      try { state.marker.setDraggable(true) } catch (e) { /* ignore */ }
-      if (this._domMarkerEl) this._domMarkerEl.classList.add('destinations-marker--dragging')
-    }
-    this._syncPositionDragLayout(true)
-    if (state.toggleButton) this._applyPositionDragToggleUi(state.toggleButton, true)
+    positionEdit.enablePositionDrag(this)
   }
 
   _applyPlacementClick (lngLat) {
-    const state = this._positionEdit
-    if (!state || !lngLat) return
-    if (!state.marker || this._domMarkerId !== state.markerId) {
-      const nameInp = document.querySelector('#destination_name')
-      this._showDomMarker(state.markerId, {
-        name: nameInp ? nameInp.value : '',
-        lngLat: [lngLat.lng, lngLat.lat],
-        active: true
-      })
-    } else {
-      try { state.marker.setLngLat(lngLat) } catch (err) { /* ignore */ }
-    }
-    this._syncPositionFromMarker(state.markerId, this._domMarker)
+    positionEdit.applyPlacementClick(this, lngLat)
   }
 
   _togglePositionDragMode (btn) {
-    const state = this._positionEdit
-    if (!state) return
-    if (btn) state.toggleButton = btn
-    if (state.active) this._disablePositionDrag()
-    else this._enablePositionDrag()
+    positionEdit.togglePositionDragMode(this, btn)
   }
 
   _applyPositionDragToggleUi (btn, active) {
-    if (!btn) return
-    const icon = btn.querySelector('i')
-    const idle = btn.dataset.titleIdle
-    const on = btn.dataset.titleActive
-    btn.setAttribute('aria-pressed', active ? 'true' : 'false')
-    if (idle && on) btn.setAttribute('title', active ? on : idle)
-    if (icon) {
-      icon.className = active ? 'fa fa-times fa-fw' : 'fa fa-location-crosshairs fa-fw'
-    }
+    positionEdit.applyPositionDragToggleUi(btn, active)
   }
 
   _onPositionDragToggleDocumentClick (e) {
-    const btn = e.target.closest('[data-v2-map-position-drag-toggle]')
-    if (!btn) return
-    const form = document.getElementById('destination-form-sidebar')
-    if (!form || !form.contains(btn)) return
-    if (!this._positionEdit) {
-      const frame = document.getElementById('form_sidebar')
-      if (frame) this._syncPositionEditFromFormSidebar(frame)
-    }
-    if (!this._positionEdit || btn.classList.contains('d-none')) return
-    const fid = form.getAttribute('data-destination_id')
-    if (fid == null || String(fid) !== String(this._positionEdit.markerId)) return
-    this._refreshPositionEditMarker()
-    e.preventDefault()
-    e.stopPropagation()
-    this._togglePositionDragMode(btn)
+    positionEdit.onPositionDragToggleDocumentClick(this, e, {
+      syncFromFormSidebar: (frame) => this._syncPositionEditFromFormSidebar(frame)
+    })
   }
 
   _forceResetPositionDragChrome () {
-    const layout = this.element
-    if (!layout.classList.contains('destinations-map-layout--position-drag')) return
-
-    layout.classList.remove('destinations-map-layout--position-drag')
-    this._setMapPositionDragCursor(false)
-    const cancelBtn = layout.querySelector('.destinations-position-drag-cancel')
-    if (cancelBtn) {
-      cancelBtn.classList.add('d-none')
-      cancelBtn.style.left = ''
-    }
-    const sidebar = layout.querySelector('.destinations-sidebar')
-    if (sidebar) {
-      sidebar.classList.remove('slide-panel--collapsed')
-      afterSlideTransition(sidebar, () => { if (this._map) this._map.resize() })
-    }
+    positionEdit.forceResetPositionDragChrome(this)
   }
 
-  _onFormSidebarClosed () {
-    this._teardownPositionEdit()
+  /**
+   * @param {{ discardMapChanges?: boolean }} [options]
+   *   discardMapChanges: restore marker/GeoJSON to form-open baseline (same idea as cancel placement).
+   *   Skip after a successful save — list/map reload applies the new coords.
+   */
+  _onFormSidebarClosed (options = {}) {
+    const discardMapChanges = options.discardMapChanges !== false
+    if (discardMapChanges) this._abandonPositionEditSession()
+    else this._teardownPositionEdit()
     this._forceResetPositionDragChrome()
     if (this._domMarker) {
       this._removeDomMarker()
@@ -1095,7 +946,8 @@ export default class extends Controller {
    * Dragging is enabled after the user clicks the crosshairs control; map clicks move the pin; the button toggles off.
    */
   _syncPositionEditFromFormSidebar (frameEl) {
-    this._teardownPositionEdit()
+    // Switching destination forms discards unsaved map moves on the previous one.
+    this._abandonPositionEditSession()
     if (!this._map || !frameEl) return
 
     const form = frameEl.querySelector('#destination-form-sidebar')
@@ -1118,6 +970,13 @@ export default class extends Controller {
       }
     }
 
+    const baselineLngLat = rec
+      ? parseLngLat(rec.lngLat[0], rec.lngLat[1])
+      : parseLngLat(
+        form.querySelector('#destination_lng')?.value,
+        form.querySelector('#destination_lat')?.value
+      )
+
     const dragEndHandler = () => {
       const current = this._positionEdit
       this._syncPositionFromMarker(id, current && current.marker)
@@ -1129,10 +988,16 @@ export default class extends Controller {
       toggleButton: toggleButton || null,
       active: false,
       mapClickHandler: null,
-      listSidebarHiddenForDrag: false
+      listSidebarHiddenForDrag: false,
+      baselineLngLat,
+      initialLngLat: null
     }
 
     if (rec) this._showDomMarker(id, { name: rec.name, lngLat: rec.lngLat, active: true })
+
+    // Align list↔map selection with the open form so the previous disc drops --active.
+    this._activeDestinationId = id
+    this._paintActiveDestination()
 
     if (toggleButton) {
       toggleButton.classList.remove('d-none')

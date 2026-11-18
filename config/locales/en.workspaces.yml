@@ -1,0 +1,27 @@
+# Copyright © Cartoway
+# Web workspace switcher
+en:
+  workspaces:
+    chip:
+      filter: Filter workspaces…
+      admin: "Administration %{name}"
+      available_in_app: Available in the app
+      open_on_host: "Open on %{host} # %{name}"
+      login_as: "Open as %{name}"
+      stop_impersonating: Return to the admin interface
+    switch:
+      success: "Workspace: %{name}"
+      failure: Unable to switch to that workspace.
+    choose:
+      title: Choose a workspace
+      help: Several workspaces are available for this account. Choose a customer, then the user to open.
+      open: Open
+    tabs:
+      changed: Workspace changed in another tab
+    handoff:
+      invalid: Invalid or expired link.
+      claiming: Opening workspace…
+    impersonation:
+      started: "Signed in as %{name}"
+      stopped: "Administration %{name}"
+      banner: "You are signed in as %{name}."

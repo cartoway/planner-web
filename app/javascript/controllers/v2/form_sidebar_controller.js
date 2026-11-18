@@ -7,8 +7,7 @@ import { visit } from "turbo/frame_promoted_visit"
 import {
   formSidebarAdoptMainNavigation,
   formSidebarHistoryUpdate,
-  formSidebarPageKey,
-  formSidebarShouldGoBackOnClose
+  formSidebarPageKey
 } from "lib/form_sidebar_history"
 
 export default class extends Controller {
@@ -108,6 +107,12 @@ export default class extends Controller {
       return
     }
     if (event.state?.formSidebar) {
+      // Nested form → close → browser back can land on another form URL. If the sidebar is
+      // already empty, snap to the list instead of reopening from leftover params.
+      if (!this.hasForm()) {
+        this.clearFormUrlFromHistory(list)
+        return
+      }
       this._fromPopstate = true
       visit(window.location.href, { frame: "form_sidebar", track: false })
     }
@@ -118,18 +123,24 @@ export default class extends Controller {
     this.replaceFrameWithPlaceholder()
     this.refreshState()
     this._skipNextFrameHistory = true
+    const listUrl = this.listUrl()
     this._listUrlWhileFormOpen = null
     // Not a Turbo navigation — notify listeners (e.g. destinations index position-drag teardown).
     const frame = this.frameEl()
     if (frame) {
       frame.dispatchEvent(new CustomEvent("turbo:frame-load", { bubbles: true }))
     }
-    // Pop the form URL when we pushed it; otherwise replace the address bar with the list.
-    if (formSidebarShouldGoBackOnClose(window.history.state)) {
-      window.history.back()
-    } else {
-      this.syncHistory()
-    }
+    // Always clear the form URL (and formSidebar marker). history.back() alone can land on a
+    // previous nested form entry and reopen the sidebar via onPopState.
+    this.clearFormUrlFromHistory(listUrl)
+  }
+
+  clearFormUrlFromHistory (listUrl) {
+    const next = formSidebarPageKey(listUrl || this.listUrlValue || window.location.href)
+    const state = { ...(window.history.state || {}), listUrl: next }
+    delete state.formSidebar
+    delete state.turboFrameId
+    window.history.replaceState(state, "", `${next}${window.location.hash || ""}`)
   }
 
   refreshState() {

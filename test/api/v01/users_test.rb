@@ -115,23 +115,21 @@ class V01::UsersTest < ActiveSupport::TestCase
   end
 
   test 'should update a user' do
-    @user.email = 'user@example.com'
-    put api_admin('ref:' + @user.ref), @user.attributes
+    # Do not send full attributes: body api_key would override the admin query key.
+    put api_admin('ref:' + @user.ref), { email: 'user@example.com' }
     assert last_response.ok?, last_response.body
     get api_admin(@user.id)
     assert last_response.ok?, last_response.body
-    assert_equal @user.reload.email, JSON.parse(last_response.body)['email']
+    assert_equal 'user@example.com', JSON.parse(last_response.body)['email']
+    assert_equal 'user@example.com', @user.reload.email
   end
 
-  test 'should not update a user' do
+  test 'should not update a user from another reseller' do
     user = users(:user_three)
-    email_reference = 'user@example.com'
-    user.email = email_reference
-    put api_admin('ref:' + user.ref), user.attributes
-    assert last_response.ok?, last_response.body
-    get api_admin(@user.id)
-    assert last_response.ok?, last_response.body
-    assert user.reload.email != email_reference
+    email_before = user.email
+    put api_admin('ref:' + user.ref), { email: 'user@example.com' }
+    assert_equal 404, last_response.status, last_response.body
+    assert_equal email_before, user.reload.email
   end
 
   test 'should return 402 error' do

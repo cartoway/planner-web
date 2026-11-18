@@ -189,7 +189,7 @@ en:
         last_async_jobs: Last async jobs
         end_subscription: End subscription
         test: Test
-        max_vehicles: Number vehicles
+        max_vehicles: Number of vehicles
         max_plannings: Max plans
         max_zonings: Max sectorisations
         max_destinations: Max destinations
@@ -397,6 +397,7 @@ en:
         extra_dashboard_url: Extra Dashboard URL
         planning_dashboard_url: Planning's Dashboard URL
         default_role_id: Default role for new users
+        default_driver_role_id: Default driver role
         default_profile_id: Default profile for new customers
         default_router_id: Default router for new customers
       role:
@@ -848,6 +849,8 @@ en:
           icon_unknown: is not in font-awesome icons list
           default_role_config_missing_ref: >-
             The default role configuration must contain a reference. (Contact your administrator)
+          default_driver_role_config_missing_ref: >-
+            The default driver role configuration must contain a reference. (Contact your administrator)
         optimization_time:
           must_be_greater_than_minimal_time: must be greater than minimal time
         router:
@@ -974,6 +977,8 @@ en:
         application_name_help: Reseller Website name
         default_role_help: >-
           Preselected role when an administrator creates a user. Leave blank for no default.
+        default_driver_role_help: >-
+          Role assigned to new drivers (Deliver). Overridable per customer. Leave blank for no default.
         default_profile_router_label: Default profile and router for new customers
         default_profile_router_blank: No default profile / router
         default_profile_router_help: >-
@@ -1043,6 +1048,7 @@ en:
       index:
         title: Roles
         new: New role
+        count_help: Number of roles
         users_count: Users count
       new:
         title: New role
@@ -1055,6 +1061,8 @@ en:
         spaces_title: Spaces (navigation)
         spaces_help: >-
           The left column grants full access to the space. The middle column shows it in navigation without allowing access. The right column hides it.
+        spaces_channel_help: >-
+          Web spaces (everything except Mobile operations) open Planner sign-in: one visible or active space is enough. Mobile operations opens Deliver; alone, with every web space hidden, the account stays driver-only and cannot sign in to Planner. A planner can also be a driver by combining both.
         space_actions_section_title: Per-space permissions
         space_actions_help: >-
           For each active space, the left column allows the listed actions. The middle column shows them as read-only where applicable. The right column hides them.
@@ -1069,6 +1077,7 @@ en:
           deliverable_units: Deliverable units
           custom_attributes: Custom attributes
           operations: Operations
+          operations_mobile: Mobile operations
         space_actions:
           common:
             edit: Create, edit, and delete
@@ -1111,7 +1120,7 @@ en:
       default_permissions_role_name: Default permissions
     users:
       menu:
-        users: Users
+        users: Accounts
         send_email: Send Confirmation E-Mail
         send_sms_driver: Send SMS to drivers
       index:
@@ -1198,28 +1207,58 @@ en:
     menu:
       customer: Customer account settings
       user_settings: User Settings
-      customers: Accounts
+      customers: Customers
       analytics: Analytics
       extra_analytics: Extra Analytics
     edit:
       title: Editing customer account settings
+      tab_settings: Settings
       send_email: Send Confirmation E-Mail
       password: Change Password
       role_column: Role
       user:
         connect_as: Connect as…
-        list: Users list
-        new: New user
+        list: Users
+        new: Create an account
+        add_existing: Add an existing account
       vehicles:
-        list: Vehicles list
+        list: Vehicles
       time_zone: Time Zone
       devices: GPS & Mobiles Exports
     index:
-      title: Listing accounts
-      new: New Account
+      title: Customers
+      new: New customer
       import: Import customer
       map: Map
+      refresh_counters: Update counters
       no_test: not in test
+      comment_label: 'Comment:'
+      map_legend: Map legend
+      legend_active: Active
+      legend_test: Test
+      legend_inactive: Inactive
+      count:
+        one: customer
+        other: customers
+      none: No customers found
+      count_no_test:
+        one: non-test customer
+        other: non-test customers
+      count_total:
+        one: customer
+        other: customers
+      no_test_count_help: Non-test accounts
+      total_count_help: All accounts (including tests)
+      customers_count_help: Non-test customers / all customers
+      vehicles_count_help: Non-test vehicles / all vehicles
+      vehicles_no_test_count_help: Vehicles from non-test accounts
+      vehicles_no_test_count_help: Vehicles from non-test accounts
+      vehicles_count_no_test:
+        one: non-test vehicle
+        other: non-test vehicles
+      vehicles_count_total:
+        one: vehicle
+        other: vehicles
       status: Status
       status_no_user: No users
       status_no_sign_in_user: User never signed-in
@@ -1246,6 +1285,8 @@ en:
       success: Vehicle deleted successfully
     delete_multiple_vehicles:
       success: Vehicles deleted successfully
+    refresh_counters:
+      success: Counters updated
     form:
       field_default: '%{n} (default value)'
       name: Account
@@ -1255,6 +1296,10 @@ en:
       options: Options
       extended_options: Extended options
       suivi: Tracking
+      operations_mobile_help: Requires Cartoway Deliver to be enabled.
+      default_driver_role_blank: Use reseller default
+      default_driver_role_help: >-
+        Role assigned to new drivers for this customer. Leave blank to use the reseller default.
       enable_proofs_help: >-
         Allows storing photos and signatures from the mobile view and via the API.
       optimization_parameters: Optimization settings

@@ -1,0 +1,24 @@
+-# Copyright © Cartoway
+-# Cards + pagination — updated by page/per_page without replacing the toolbar.
+= turbo_frame_tag 'customers_list_body' do
+  #customer_box.destinations-list-scroll
+    .v2-index-cards.px-2{data: { v2__index_selection_target: 'root' }}
+      .v2-index-cards-select-bar
+        %label.mb-0.d-flex.align-items-center.gap-2
+          %input{type: 'checkbox', data: { v2__table_selection_target: 'all', action: 'change->v2--table-selection#toggleAll' }}
+          %span= t('all.verb.select_all')
+      #customers-list
+        - if @customers.any?
+          - @customers.each do |customer|
+            = render 'v2/customers/list_row', customer: customer
+        - else
+          %p.v2-index-card-empty.text-muted.text-center.mb-0= t('customers.index.none', default: 'Aucun client trouvé')
+
+    - if @pagination[:per_page].positive? && @pagination[:total] > @pagination[:per_page]
+      - total_pages = (@pagination[:total].to_f / @pagination[:per_page]).ceil
+      - pagination_params = customers_index_params
+      = render 'shared/pagination_controls',
+               page: @pagination[:page],
+               total_pages: total_pages,
+               url_for_page: ->(page_number) { customers_path(pagination_params.merge(page: page_number)) },
+               link_data: { turbo_frame: 'customers_list', turbo_action: 'advance' }

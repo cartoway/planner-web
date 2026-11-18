@@ -18,6 +18,19 @@
 module CustomersHelper
   # Customer and reseller router selects only expose the time (fastest) dimension.
   ROUTER_SELECT_DIMENSION = 'time'.freeze
+  CUSTOMERS_INDEX_PER_PAGE_OPTIONS = [25, 50, 100].freeze
+
+  def customers_index_per_page_options
+    CUSTOMERS_INDEX_PER_PAGE_OPTIONS
+  end
+
+  def customers_index_params(overrides = {})
+    {
+      page: params[:page],
+      per_page: params[:per_page].presence,
+      q: params[:q].presence
+    }.compact.merge(overrides)
+  end
 
   def customer_plannings_count(customer)
     capture do

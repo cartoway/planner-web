@@ -30,6 +30,89 @@ class CustomersControllerTest < ActionController::TestCase
     assert_valid response
   end
 
+  test 'admin index uses destinations-style map layout with list pane by default' do
+    sign_in users(:user_admin)
+    get :index
+    assert_response :success
+    assert_select '#customers-map-layout.destinations-map-layout.is-mobile-pane-list'
+    assert_select '#customers-map-layout #map.destinations-map'
+    assert_select '.destinations-sidebar-header .destinations-sidebar-title-row'
+    assert_select '.destinations-list-toolbar'
+    assert_select '.v2-map-index-mobile-panes button[data-pane=list][aria-selected=true]'
+    assert_select '.v2-map-index-mobile-panes button[data-pane=map][aria-selected=false]'
+    assert_select '.destinations-sidebar-toggle'
+    assert_select '.destinations-sidebar-expand'
+    assert_select 'button.customers-row-center'
+    assert_select '.store-row[data-customer-id]'
+    assert_select '#customer_box.destinations-list-scroll'
+    assert_select '.customers-map-legend.map-legend'
+    assert_select '.customers-map-legend', text: /#{Regexp.escape(I18n.t('customers.index.legend_active'))}/
+    assert_select 'turbo-frame#customers_list'
+    assert_select 'turbo-frame#customers_list_body'
+    assert_select '.destinations-sidebar-counts #count .destinations-list-count-numbers', text: "#{assigns(:customers_count)} / #{assigns(:total_count)}"
+    assert_select '.destinations-sidebar-counts #count-vehicles .destinations-list-count-numbers', text: "#{assigns(:vehicles_no_test_count)} / #{assigns(:vehicles_count)}"
+    assert_select '.customers-map-legend.map-legend'
+  end
+
+  test 'admin index paginates customers list' do
+    sign_in users(:user_admin)
+    get :index, params: { per_page: 25, page: 1 }
+    assert_response :success
+    assert_select '.destinations-list-toolbar-meta .dropdown-menu a[data-per-page="25"]'
+    assert_select '.destinations-list-toolbar-meta .dropdown-menu a[data-per-page="50"]'
+    assert_select '.destinations-list-toolbar-meta .dropdown-menu a[data-per-page="100"]'
+  end
+
+  test 'admin index search filters customers and updates total count' do
+    sign_in users(:user_admin)
+    customer = customers(:customer_one)
+    customer.update!(name: 'UniqueCustomerFilterXYZ')
+    get :index, params: { q: 'UniqueCustomerFilterXYZ' }
+    assert_response :success
+    assert_equal 1, assigns(:total_count)
+    assert_select "#customer_#{customer.id}", 1
+    assert_select '.destinations-sidebar-counts #count .destinations-list-count-numbers', text: %r{/ 1\z}
+    assert_select 'input#customers-filter[value=UniqueCustomerFilterXYZ]', 1
+  end
+
+  test 'admin index json includes list page for each customer' do
+    sign_in users(:user_admin)
+    get :index, params: { format: :json, per_page: 1 }
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert body['customers'].is_a?(Array)
+    assert body['customers'].all? { |c| c['page'].to_i >= 1 }
+    pages = body['customers'].map { |c| c['page'].to_i }
+    assert_includes pages, 1
+    assert_operator pages.max, :>=, 1
+  end
+
+  test 'admin index json respects search filter q' do
+    sign_in users(:user_admin)
+    customer = customers(:customer_one)
+    customer.update!(name: 'UniqueJsonCustomerFilterXYZ')
+    get :index, params: { format: :json, q: 'UniqueJsonCustomerFilterXYZ' }
+    assert_response :success
+    body = JSON.parse(response.body)
+    names = body['customers'].map { |c| c['name'] }
+    assert_equal ['UniqueJsonCustomerFilterXYZ'], names
+  end
+
+  test 'admin index opens highlight customer page' do
+    sign_in users(:user_admin)
+    reseller = users(:user_admin).reseller
+    ids = reseller.customers.order(:name, :id).pluck(:id)
+    skip 'need at least 2 customers' if ids.size < 2
+
+    target_id = ids[1]
+    # per_page: 1 is not in CUSTOMERS_INDEX_PER_PAGE_OPTIONS — stub the effective page size.
+    @controller.stubs(:customers_index_per_page).returns(1)
+    get :index, params: { highlight_customer_id: target_id }
+    assert_response :success
+    assert_equal 2, assigns(:pagination)[:page]
+    assert_select ".store-row[data-customer-id=?]", target_id.to_s
+  end
+
   test 'admin edit hides client sections behind extended options toggle' do
     sign_in users(:user_admin)
     get :edit, params: { id: @customer }
@@ -63,6 +146,24 @@ class CustomersControllerTest < ActionController::TestCase
     assert_response :success
     assert_select '#customer_suivi_section:not(.d-none)'
     assert_select '#collapseSuivi'
+    # Callback accordion stays in the DOM and is toggled by the enable checkbox.
+    assert_select '#customer_enable_external_callback'
+    assert_select '#external_callback_container'
+    assert_select '#customer-solver-priority[data-v2--transfer-list-min-active-items-value="1"]'
+    assert_select 'label[for=customer_operations_mobile]', text: I18n.t('activerecord.attributes.customer.operations_mobile')
+    # Fixture customer_one has Deliver enabled → Deliver v2 toggle is usable.
+    # Hidden siblings must not steal the checkbox id (would keep Deliver v2 disabled in JS).
+    assert_select 'input[type=checkbox]#customer_devices_deliver_enable[checked]'
+    assert_select 'input[type=hidden]#customer_devices_deliver_enable', count: 0
+    assert_select 'input[type=checkbox]#customer_operations_mobile:not([disabled])'
+    assert_select 'input[type=hidden]#customer_operations_mobile', count: 0
+    # Subsections use accordion button headers, not hyperlinks.
+    assert_select 'button.customer-form-accordion-toggle[data-bs-target="#collapseSuivi"]'
+    assert_select 'button.customer-form-accordion-toggle[data-bs-target="#collapseNotifications"]'
+    assert_select 'button.customer-form-accordion-toggle[data-bs-target="#collapseNotificationsEmail"]'
+    assert_select 'button.customer-form-accordion-toggle[data-bs-target="#collapseNotificationsSms"]'
+    assert_select 'a.accordion-toggle[href="#collapseSuivi"]', count: 0
+    assert_select 'a.accordion-toggle[href="#collapseNotifications"]', count: 0
     assert_select '#customer_enable_proofs'
     assert_select '#customer_enable_vehicle_position'
     assert_select '#customer_history_cron_hour'
@@ -155,6 +256,7 @@ class CustomersControllerTest < ActionController::TestCase
     get :edit, params: { id: @customer }
     assert_response :success
     assert_select '#customer_suivi_section.d-none'
+    assert_select '#customer_operations_mobile[disabled]'
   end
 
   test 'non admin cannot see or enable deliver demo' do
@@ -191,7 +293,24 @@ class CustomersControllerTest < ActionController::TestCase
     sign_in users(:user_admin)
     get :edit, params: { id: @customer }
     assert_response :success
-    assert_select 'table#users thead th', { text: I18n.t('customers.edit.role_column'), count: 1 }
+    assert_select '#users .customers-users-role-heading', text: I18n.t('customers.edit.role_column')
+  end
+
+  test 'admin customer edit users tab links to account sidebar forms' do
+    sign_in users(:user_admin)
+    membership = @customer.users.where(status: User::OPEN_STATUSES).first
+    skip 'need an open membership' unless membership&.account
+
+    get :edit, params: { id: @customer, sidebar_tab: 'users' }
+    assert_response :success
+    assert_select '#users.tab-pane.show.active', 1
+    assert_select 'a[data-turbo-frame=form_sidebar][href=?]',
+                  new_admin_account_path(customer_id: @customer.id, return_to_customer_id: @customer.id, mode: 'new')
+    assert_select 'a[data-turbo-frame=form_sidebar][href=?]',
+                  new_admin_account_path(customer_id: @customer.id, return_to_customer_id: @customer.id, mode: 'existing')
+    assert_select 'a[data-turbo-frame=form_sidebar][href=?]',
+                  edit_admin_account_path(membership.account, return_to_customer_id: @customer.id)
+    assert_select 'a[data-turbo=false][href=?]', new_admin_user_path, count: 0
   end
 
   test 'admin customer index dropdown lists every user without cap' do
@@ -211,8 +330,36 @@ class CustomersControllerTest < ActionController::TestCase
     get :index
     assert_response :success
 
-    assert_select "#customerUsersDropdown#{@customer.id} .customer-users-summary__row", count: @customer.users.count
-    assert_select "#customerUsersDropdown#{@customer.id} .customer-users-summary__email", text: 'extra-user-0@example.com'
+    assert_select ".v2-index-card-actions .dropdown-toggle .fa-users", minimum: 1
+    assert_select "#customerUsersDropdown#{@customer.id} .customer-users-dropdown__row", count: @customer.users.count
+    assert_select "#customerUsersDropdown#{@customer.id} .customer-users-dropdown__email", text: 'extra-user-0@example.com'
+    assert_select "#customerUsersDropdown#{@customer.id} a.customer-users-dropdown__connect[data-turbo-frame=?]", '_top'
+    assert_select "a.customer-card-counters__refresh[href=?]", refresh_counters_customer_path(@customer)
+  end
+
+  test 'admin refresh_counters recalculates customer counter caches' do
+    sign_in users(:user_admin)
+    Customer.where(id: @customer.id).update_all(
+      plannings_count: 0,
+      destinations_count: 0,
+      vehicles_count: 0,
+      visits_count: 0
+    )
+
+    patch :refresh_counters, params: { id: @customer.id }, format: :turbo_stream
+    assert_response :success
+
+    @customer.reload
+    assert_equal @customer.plannings.count, @customer.plannings_count
+    assert_equal @customer.destinations.count, @customer.destinations_count
+    assert_equal @customer.vehicles.count, @customer.vehicles_count
+    assert_equal Visit.joins(:destination).where(destinations: { customer_id: @customer.id }).count, @customer.visits_count
+  end
+
+  test 'non-admin cannot refresh_counters' do
+    sign_in users(:user_one)
+    patch :refresh_counters, params: { id: @customer.id }
+    assert_redirected_to root_url
   end
 
   test 'should update customer' do

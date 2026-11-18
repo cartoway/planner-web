@@ -760,7 +760,7 @@ pt:
           https://analytics.cartoway.com?id={ID}
     users:
       menu:
-        users: Utilizadores
+        users: Contas
         send_email: Enviar email de confirmação
       index:
         title: Alterar utilizadores
@@ -788,7 +788,7 @@ pt:
     menu:
       customer: Parâmetros da área de cliente
       user_settings: Parâmetros de utilizador
-      customers: Contas cliente
+      customers: Clientes
     edit:
       title: Modificar parâmetros da área de cliente
       send_email: Enviar email de confirmação
@@ -802,8 +802,8 @@ pt:
       time_zone: Fuso horário
       devices: Exportações GPS & Móveis
     index:
-      title: Lista de contas cliente
-      new: Nova conta cliente
+      title: Clientes
+      new: Novo cliente
       map: Mapa
       no_test: fora do teste
       status: Status

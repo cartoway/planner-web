@@ -1,0 +1,11 @@
+-# Copyright © Cartoway
+- content_for :form_sidebar do
+  = render "v2/layouts/form_sidebar_placeholder"
+- content_for :title, t('admin.accounts.index.title')
+#accounts-index-layout
+  .destinations-sidebar.slide-panel.slide-panel--from-left
+    .destinations-sidebar-header
+      .destinations-sidebar-title-row
+        %h1.mb-0.mt-0= t('admin.accounts.index.title')
+      = render 'v2/shared/index_server_filter', url: admin_accounts_path, frame: 'accounts_list', q: params[:q], input_id: 'accounts-filter', form_id: 'accounts-search-form', per_page: @pagination[:per_page]
+    = render 'v2/admin/accounts/list_frame'

@@ -185,11 +185,16 @@ body[data-controller*='-v2'] {
   }
 
   .data-info {
+    // Match body --bs-btn-* (set above); keep flex so icon + count stay aligned.
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     padding: var(--bs-btn-padding-y) var(--bs-btn-padding-x);
     font-size: var(--bs-btn-font-size);
     line-height: var(--bs-btn-line-height);
     border-radius: var(--bs-btn-border-radius);
     margin: 2px;
+    white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
     vertical-align: middle;

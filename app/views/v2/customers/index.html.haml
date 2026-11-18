@@ -1,0 +1,32 @@
+-# Copyright © Cartoway
+-# V2 customers index — map as background, collapsible list overlay (same chrome as destinations/stores).
+- content_for :form_sidebar do
+  = render "v2/layouts/form_sidebar_placeholder"
+- content_for :title, t('customers.index.title')
+- layers = Layer.all.sort_by(&:id).uniq.collect{ |layer| { name: layer.translated_name, url: layer.url, vector_style_url: layer.vector_style_url, attribution: layer.map_attribution, default: layer == current_user.layer, overlay: layer.overlay } }
+- map_config = { map_layers: Hash[layers.map{ |l| l[:name] }.zip(layers)], map_geojson_url: customers_path(format: :json), map_layers_title: t('destinations.index.map_layers'), map_base_layers_title: t('destinations.index.map_base_layers'), map_overlay_title: t('destinations.index.map_overlay_layers') }
+#customers-map-layout.destinations-map-layout.is-mobile-pane-list{data: { controller: 'v2--customers-index-map', config: map_config.to_json, v2__customers_index_map_target: 'layout' }}
+  .v2-map-index-mobile-panes{role: 'tablist', 'aria-label': t('operations.show.mobile_panes')}
+    %button.btn.btn-primary{type: 'button', role: 'tab', 'aria-selected': 'true', data: { pane: 'list', v2__customers_index_map_target: 'mobilePane', action: 'click->v2--customers-index-map#setMobilePane' }}= t('operations.show.pane_list')
+    %button.btn.btn-outline-secondary{type: 'button', role: 'tab', 'aria-selected': 'false', data: { pane: 'map', v2__customers_index_map_target: 'mobilePane', action: 'click->v2--customers-index-map#setMobilePane' }}= t('operations.show.pane_map')
+  #map.destinations-map.maplibre-host{data: { v2__customers_index_map_target: 'map' }}
+  .customers-map-legend.map-legend{"aria-label": t('customers.index.map_legend'), data: { v2__customers_index_map_target: 'legend' }}
+    %span
+      %i.fa.fa-circle{style: 'color:#558800'}
+      = t('customers.index.legend_active')
+    %span
+      %i.fa.fa-circle{style: 'color:#0077A3'}
+      = t('customers.index.legend_test')
+    %span
+      %i.fa.fa-circle{style: 'color:#707070'}
+      = t('customers.index.legend_inactive')
+  .destinations-sidebar.slide-panel.slide-panel--from-left
+    .destinations-sidebar-header
+      %button.floating-btn.destinations-sidebar-toggle{type: 'button', title: t('destinations.index.collapse_list'), 'aria-label': t('destinations.index.collapse_list')}
+        %i.fa.fa-chevron-left.fa-fw{"aria-hidden": "true"}
+      .destinations-sidebar-title-row
+        %h1.mb-0.mt-0= t('customers.index.title')
+      = render 'v2/shared/index_server_filter', url: customers_path, frame: 'customers_list', q: params[:q], input_id: 'customers-filter', form_id: 'customers-search-form', per_page: @pagination[:per_page]
+    = render 'v2/customers/list_frame'
+  %button.floating-btn.destinations-sidebar-expand.slide-panel-expand-trigger{type: 'button', title: t('destinations.index.expand_list'), 'aria-label': t('destinations.index.expand_list')}
+    %i.fa.fa-chevron-right.fa-fw{"aria-hidden": "true"}

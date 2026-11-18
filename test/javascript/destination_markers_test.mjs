@@ -28,7 +28,10 @@ function element () {
     attrs: {},
     children: [],
     textContent: '',
-    style: {},
+    style: {
+      setProperty (key, value) { this[key] = value },
+      removeProperty (key) { delete this[key] }
+    },
     setAttribute (key, value) { this.attrs[key] = value },
     removeAttribute (key) { delete this.attrs[key] },
     appendChild (child) { this.children.push(child) },

@@ -13,6 +13,11 @@ import {
 
 const OPEN_COLLAPSE = '.menu-content.collapse.show'
 
+// Clicks inside an iframe do not bubble to .main — detect focus moving into a main iframe.
+export function iframeFocusShouldCollapseMenu (main, activeElement) {
+  return !!(main && activeElement && activeElement.tagName === 'IFRAME' && main.contains(activeElement))
+}
+
 export default class extends Controller {
   connect () {
     this.sidebar = this.element.querySelector('.menu-left')
@@ -36,6 +41,13 @@ export default class extends Controller {
       this.sidebar.classList.remove('open')
       this._hideAllCollapses()
       clearSectionExpand(this.sidebar)
+    }
+
+    // Jobs / Performances (and any other admin iframe): first click focuses the frame.
+    this._onWindowBlur = () => {
+      setTimeout(() => {
+        if (iframeFocusShouldCollapseMenu(this.main, document.activeElement)) this._closeSidebar()
+      }, 0)
     }
 
     this._onCollapseShow = (ev) => {
@@ -68,6 +80,7 @@ export default class extends Controller {
 
     this.element.addEventListener('click', this._openSidebarCapture, this._captureOpts)
     this.main.addEventListener('click', this._closeSidebar)
+    window.addEventListener('blur', this._onWindowBlur)
     this.sidebar.addEventListener('show.bs.collapse', this._onCollapseShow)
     this.sidebar.addEventListener('shown.bs.collapse', this._onCollapseShown)
     this.sidebar.addEventListener('hide.bs.collapse', this._onCollapseHide)
@@ -81,6 +94,7 @@ export default class extends Controller {
     if (this.main && this._closeSidebar) {
       this.main.removeEventListener('click', this._closeSidebar)
     }
+    if (this._onWindowBlur) window.removeEventListener('blur', this._onWindowBlur)
     if (this.sidebar) {
       if (this._onCollapseShow) this.sidebar.removeEventListener('show.bs.collapse', this._onCollapseShow)
       if (this._onCollapseShown) this.sidebar.removeEventListener('shown.bs.collapse', this._onCollapseShown)

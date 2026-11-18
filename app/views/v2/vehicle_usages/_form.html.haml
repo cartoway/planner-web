@@ -51,11 +51,11 @@
           = t 'activerecord.attributes.vehicle.max_distance'
         %div{class: v2_control_col}
           .input-group
-            - max_distance = distance_in_user_unit(@vehicle_usage.vehicle.max_distance, @current_user.prefered_unit)
+            - max_distance = distance_in_user_unit(@vehicle_usage.vehicle.max_distance, current_user.prefered_unit)
             = number_field 'vehicle_usage[vehicle]',
               :max_distance,
               value: max_distance,
-              placeholder: (@vehicle_usage.vehicle_usage_set.max_distance ? t('customers.form.field_default', n: distance_in_user_unit(@vehicle_usage.vehicle_usage_set.max_distance, @current_user.prefered_unit)) : ''),
+              placeholder: (@vehicle_usage.vehicle_usage_set.max_distance ? t('customers.form.field_default', n: distance_in_user_unit(@vehicle_usage.vehicle_usage_set.max_distance, current_user.prefered_unit)) : ''),
               step: 'any', class: 'form-control', min: 0
             %span.input-group-text
               = current_user.prefered_unit == 'mi' ? t('all.unit.miles') : t('all.unit.kms')
@@ -65,11 +65,11 @@
         %label{class: v2_label_col}= t 'activerecord.attributes.vehicle.max_ride_distance'
         %div{class: v2_control_col}
           .input-group
-            - max_ride_distance = distance_in_user_unit(@vehicle_usage.vehicle.max_ride_distance, @current_user.prefered_unit)
+            - max_ride_distance = distance_in_user_unit(@vehicle_usage.vehicle.max_ride_distance, current_user.prefered_unit)
             = number_field 'vehicle_usage[vehicle]',
               :max_ride_distance,
               value: max_ride_distance ,
-              placeholder: @vehicle_usage.vehicle_usage_set.max_ride_distance ? t('customers.form.field_default', n: distance_in_user_unit(@vehicle_usage.vehicle_usage_set.max_ride_distance, @current_user.prefered_unit)) : '',
+              placeholder: @vehicle_usage.vehicle_usage_set.max_ride_distance ? t('customers.form.field_default', n: distance_in_user_unit(@vehicle_usage.vehicle_usage_set.max_ride_distance, current_user.prefered_unit)) : '',
               step: 'any',
               class: 'form-control', min: 0
             %span.input-group-text= current_user.prefered_unit == 'mi' ? t('all.unit.miles') : t('all.unit.kms')

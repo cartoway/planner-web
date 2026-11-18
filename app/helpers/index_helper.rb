@@ -19,10 +19,17 @@ module IndexHelper
   def customer_summary
     return {} unless @customer
 
+    # Route default_scope already includes route_data / start_ / stop_; preload routes+tags once for the 5 cards.
+    latest_plannings = @customer.plannings
+                                .reorder('date DESC NULLS LAST, updated_at DESC')
+                                .includes(:tags, :routes)
+                                .first(5)
+    latest_vehicle_usage_set = @customer.vehicle_usage_sets.reorder(updated_at: :desc).first
+
     {
       plannings: {
         count: @customer.plannings_count,
-        latest: @customer.plannings.reorder('date DESC NULLS LAST, updated_at DESC').first(5),
+        latest: latest_plannings,
         limit: @customer.default_max_plannings
       },
       zonings: {
@@ -44,8 +51,8 @@ module IndexHelper
         latest: @customer.vehicles.reorder(updated_at: :desc).first(5)
       },
       vehicle_usages: {
-        count: @customer.vehicle_usage_sets.reorder(updated_at: :desc).first.vehicle_usages.count,
-        latest: @customer.vehicle_usage_sets.reorder(updated_at: :desc).first.vehicle_usages.reorder(updated_at: :desc).first(5)
+        count: latest_vehicle_usage_set ? latest_vehicle_usage_set.vehicle_usages.count : 0,
+        latest: latest_vehicle_usage_set ? latest_vehicle_usage_set.vehicle_usages.reorder(updated_at: :desc).first(5) : []
       },
       vehicle_usage_sets: {
         count: @customer.vehicle_usage_sets.count,

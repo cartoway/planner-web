@@ -1,13 +1,26 @@
 // Copyright © Cartoway
 // Shared multi-column transfer list (2+ columns), same idea as ActiveInactiveDragDrop.
 import { Controller } from "@hotwired/stimulus"
+import { showToast } from "lib/toast"
 
 const ITEM_SELECTOR = ".transfer-list-item"
 
 export default class extends Controller {
   static targets = ["list"]
   static values = {
-    showOrder: { type: Boolean, default: true }
+    showOrder: { type: Boolean, default: true },
+    minActiveItems: { type: Number, default: 0 },
+    minActiveMessage: { type: String, default: "" }
+  }
+
+  connect () {
+    this.listTargets.forEach((list) => {
+      list.querySelectorAll(ITEM_SELECTOR).forEach((item) => {
+        this.prepareItem(item)
+        this.applyListState(item, list)
+      })
+    })
+    this.refreshOrders()
   }
 
   loadFromTemplate (template) {
@@ -43,23 +56,62 @@ export default class extends Controller {
     const from = this.listFor(event.currentTarget.dataset.from)
     const to = this.listFor(event.currentTarget.dataset.to)
     if (!from || !to || from === to) return
+    if (this.wouldViolateMinActive(from, to, from.querySelectorAll(ITEM_SELECTOR).length)) {
+      this.warnMinActive()
+      return
+    }
     this.moveAll(from, to)
   }
 
   moveAll (from, to) {
     ;[...from.querySelectorAll(ITEM_SELECTOR)].forEach((item) => this.moveItem(item, to, false))
     this.refreshOrders()
+    this.notifyFormChange()
   }
 
   moveItem (item, list, refresh = true) {
+    const from = item.parentElement
+    if (this.wouldViolateMinActive(from, list, 1)) {
+      this.warnMinActive()
+      return
+    }
     list.appendChild(item)
     this.applyListState(item, list)
-    if (refresh) this.refreshOrders()
+    if (refresh) {
+      this.refreshOrders()
+      this.notifyFormChange()
+    }
+  }
+
+  // Mirror ActiveInactiveDragDrop minActiveItems: keep at least N items in non-inactive columns.
+  wouldViolateMinActive (fromList, toList, movingCount = 1) {
+    if (this.minActiveItemsValue <= 0) return false
+    if (!fromList || !toList || fromList === toList) return false
+    if (fromList.dataset.inactive === "true") return false
+    if (toList.dataset.inactive !== "true") return false
+    return this.activeItemCount() - movingCount < this.minActiveItemsValue
+  }
+
+  activeItemCount () {
+    return this.listTargets
+      .filter((list) => list.dataset.inactive !== "true")
+      .reduce((sum, list) => sum + list.querySelectorAll(ITEM_SELECTOR).length, 0)
+  }
+
+  warnMinActive () {
+    const message = this.minActiveMessageValue || `At least ${this.minActiveItemsValue} item(s) must be active`
+    showToast({ message, className: "alert-warning" })
+  }
+
+  // Programmatic hidden input updates do not fire native change; bubble one for dirty-form-submit.
+  notifyFormChange () {
+    this.element.dispatchEvent(new Event("change", { bubbles: true }))
   }
 
   applyListState (item, list) {
     item.dataset.zone = list.dataset.columnKey || ""
     item.classList.toggle("inactive", list.dataset.inactive === "true")
+    syncItemHiddenInput(item, list.dataset.inputName || "")
   }
 
   toggleDestination (fromList) {
@@ -107,9 +159,15 @@ export default class extends Controller {
     event.stopPropagation()
     if (!this.dragItem) return
     const list = event.currentTarget
+    const from = this.dragItem.parentElement
+    if (this.wouldViolateMinActive(from, list, 1)) {
+      this.warnMinActive()
+      return
+    }
     placeItem(list, this.dragItem, event.clientX, event.clientY)
     this.applyListState(this.dragItem, list)
     this.refreshOrders()
+    this.notifyFormChange()
   }
 
   refreshOrders () {
@@ -166,6 +224,28 @@ export function listValues (list) {
     ? [...list.children].filter((item) => item.matches?.(ITEM_SELECTOR) || String(item.className || "").includes("transfer-list-item"))
     : [...list.querySelectorAll(ITEM_SELECTOR)]
   return items.map((item) => item.dataset.value).filter(Boolean)
+}
+
+// Keep a single hidden input per item whose name matches the destination column (form submit).
+export function syncItemHiddenInput (item, inputName) {
+  if (typeof item.querySelectorAll === "function") {
+    item.querySelectorAll('input[type="hidden"]').forEach((hidden) => hidden.remove())
+  } else {
+    item._hiddenInputs = []
+  }
+  if (!inputName) return
+  const value = item.dataset?.value
+  if (value == null || value === "") return
+  if (typeof document !== "undefined" && document.createElement) {
+    const hidden = document.createElement("input")
+    hidden.type = "hidden"
+    hidden.name = inputName
+    hidden.value = value
+    item.appendChild(hidden)
+    return
+  }
+  // Node test / non-DOM mocks: stash a plain descriptor.
+  item._hiddenInputs = [{ type: "hidden", name: inputName, value }]
 }
 
 export function placeItem (list, item, x, y) {

@@ -116,6 +116,7 @@ gem 'grape-entity'
 gem 'grape-swagger'
 gem 'grape-swagger-entity'
 gem 'rack-cors'
+gem 'rack-attack'
 gem 'rswag-api'
 gem 'rswag-specs'
 gem 'rspec-rails' # Used in production for api-web doc generation (rswag:specs:swaggerize)

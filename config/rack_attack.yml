@@ -1,0 +1,24 @@
+# Rack::Attack throttle limits for the driver API.
+# Docker overrides this via docker/rack_attack.yml (see docker-compose.yml).
+default: &default
+  driver_token:
+    limit: 300
+    period_seconds: 60
+  driver_public_ip:
+    limit: 60
+    period_seconds: 60
+  driver_session_ip:
+    limit: 10
+    period_seconds: 3600
+  driver_session_email:
+    limit: 10
+    period_seconds: 3600
+
+development:
+  <<: *default
+
+test:
+  <<: *default
+
+production:
+  <<: *default

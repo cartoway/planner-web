@@ -1,0 +1,10 @@
+-# Copyright © Cartoway
+= turbo_frame_tag "form_sidebar" do
+  .customer-form-sidebar{data: { controller: "v2--customer-form-extended" }}
+    %header.mb-3.d-flex.justify-content-between.align-items-center
+      %h2.h5.mb-0= t('customers.new.title')
+      = render 'extended_options_toggle'
+    .sidebar-form{data: { controller: "v2--dirty-form-submit" }}
+      = render 'v2/customers/form'
+      .form-submit-bar.is-hidden{data: { "v2--dirty-form-submit-target": "bar" }}
+        %button.btn.btn-primary{type: "submit", form: "customer-form-sidebar"}= t('customers.form.submit')

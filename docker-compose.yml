@@ -42,9 +42,11 @@ x-web: &web
     SMTP_DEFAULT_FROM: ${SMTP_DEFAULT_FROM:-root@localhost}
     SMTP_DELIVERY_METHOD: ${SMTP_DELIVERY_METHOD:-smtp}
   volumes:
-    - ./config/database.yml.docker:/srv/app/config/database.yml
+    # Config overrides from docker/ (edit those files to customize the image defaults).
+    - ./docker/database.yml:/srv/app/config/database.yml
     - ./docker/production.rb:/srv/app/config/environments/production.rb
-    - ./docker/production.rb:/srv/app/config/environments/development.rb
+    - ./docker/development.rb:/srv/app/config/environments/development.rb
+    - ./docker/rack_attack.yml:/srv/app/config/rack_attack.yml
     - ./docker/uploads:/srv/app/public/uploads
     - ./docker/storage:/srv/app/storage
   depends_on:

@@ -1,0 +1,7 @@
+-# Copyright © Cartoway
+.container.py-4{data: { controller: "v2--customer-form-extended" }}
+  .form-check.form-switch.mb-3
+    %input#customer-form-extended-toggle.form-check-input{type: "checkbox", role: "switch", data: { action: "change->v2--customer-form-extended#toggle" }}
+    %label.form-check-label{for: "customer-form-extended-toggle"} Extended options
+  .customer-form-extended.d-none
+    %p.mb-0 A section hidden until the switch is on.

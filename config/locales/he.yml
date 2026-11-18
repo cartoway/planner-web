@@ -603,7 +603,7 @@ he:
         protocol_url_https: HTTPS
     users:
       menu:
-        users: משתמש
+        users: חשבונות
         send_email: שלח הודעת דוא"ל לאישור
       index:
         title: ערוך משתמש
@@ -631,7 +631,7 @@ he:
     menu:
       customer: הגדרות גלובאליות
       user_settings: הגדרות משתמש
-      customers: חשבונות
+      customers: לקוחות
     edit:
       title: עריכת הגדרות גלובאליים
       send_email: שלח מייל לאישור
@@ -644,8 +644,8 @@ he:
         list: רכבים חדשים
       time_zone: איזור זמן
     index:
-      title: רישום חשבונות
-      new: חשבון חדש
+      title: לקוחות
+      new: לקוח חדש
       map: מפה
       no_test: לא בבדיקה
       status: סטטוס

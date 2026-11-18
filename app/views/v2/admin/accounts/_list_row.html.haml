@@ -1,0 +1,46 @@
+-# Copyright © Cartoway
+- deletable = account_deletable?(account)
+- memberships = account.users.select { |user| user.customer_id.present? }.sort_by { |user| user.customer&.name.to_s.downcase }
+- title = account.name.presence || account.email.presence || t('admin.accounts.form.no_email')
+.v2-index-card.store-row.destinations-index-card{id: dom_id(account)}
+  .v2-index-card-main
+    .v2-index-card-select
+      = check_box_tag "accounts[#{account.id}]", '1', false, disabled: !deletable, data: { v2__table_selection_target: 'row', action: 'change->v2--table-selection#syncBulk' }
+    .v2-index-card-body
+      .v2-index-card-header.destinations-card-header
+        .destinations-card-identity
+          %h2.v2-index-card-title.destinations-card-name= title
+        .v2-index-card-badges
+          - if account.anonymized?
+            %span.badge.text-bg-secondary= t('admin.accounts.form.anonymized')
+        .v2-index-card-actions.destinations-card-actions
+          - if memberships.any?
+            .dropdown
+              %button.btn.btn-outline-secondary.dropdown-toggle{type: 'button', data: { bs_toggle: 'dropdown' }, title: t('admin.accounts.form.memberships'), aria: { expanded: false, haspopup: true }}
+                %i.fa.fa-users.fa-fw
+                = memberships.size
+              %ul.dropdown-menu.dropdown-menu-end.account-memberships-dropdown{id: "accountMembershipsDropdown#{account.id}", role: 'menu'}
+                - memberships.each do |user|
+                  %li
+                    .account-memberships-dropdown__row
+                      %span.account-memberships-dropdown__customer= user.customer&.name
+                      -# link_to: button_to would nest a <form> inside accounts-destroy and submit DELETE instead.
+                      = link_to handoff_workspace_path(user_id: user.id), class: 'btn btn-outline-secondary btn-sm account-memberships-dropdown__connect', title: t('customers.edit.user.connect_as'), data: { turbo_method: :post, turbo_frame: '_top' } do
+                        %i.fa.fa-arrow-right-to-bracket.fa-fw
+                        %span.visually-hidden= t('customers.edit.user.connect_as')
+          = link_to send_email_admin_account_path(account), class: 'btn btn-outline-secondary', title: t('admin.accounts.form.send_email'), data: { turbo_method: :post, turbo_frame: 'form_sidebar', turbo_confirm: t('admin.accounts.form.send_email_confirm') } do
+            %i.fa.fa-envelope.fa-fw
+          = link_to edit_admin_account_path(account), class: 'btn btn-primary', title: t('all.verb.edit'), 'aria-label': t('all.verb.edit'), data: { turbo_frame: 'form_sidebar', turbo_prefetch: 'false' } do
+            %i.fa.fa-pencil.fa-fw
+          %button.btn.btn-danger{type: 'button', disabled: !deletable, title: (deletable ? t('all.verb.destroy') : t('admin.accounts.form.refused')), 'aria-label': t('all.verb.destroy'), data: (deletable ? confirm_click_destroy_data(group: 'accounts-destroy', url: admin_account_path(account)) : {})}
+            %i.fa.fa-trash.fa-fw
+      - if (account.name.present? && account.email.present?) || memberships.any?
+        %p.destinations-card-address
+          - if account.name.present? && account.email.present?
+            %span= account.email
+            - if memberships.any?
+              ·
+          - if memberships.any?
+            %span
+              %span.fw-semibold= memberships.size
+              = t('admin.accounts.index.spaces', count: memberships.size)

@@ -115,4 +115,17 @@ module V2Layout
     @form_sidebar_list_url = list_url
     render_page index_template
   end
+
+  # Reseller admin screens have no customer. Always the v2 list, whatever layout_v2?.
+  def render_admin_form_or_list(sidebar_template, index_template, list_url)
+    if form_sidebar_request?
+      render sidebar_template, layout: false
+      return
+    end
+
+    yield if block_given?
+    @sidebar_template = "#{controller_path}/#{sidebar_template}"
+    @form_sidebar_list_url = list_url
+    render_page index_template
+  end
 end

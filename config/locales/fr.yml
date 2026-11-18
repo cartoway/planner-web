@@ -195,7 +195,7 @@ fr:
         last_async_jobs: Derniers jobs asynchrones
         end_subscription: Fin de souscription
         test: Test
-        max_vehicles: Nombre livreurs
+        max_vehicles: Nombre de véhicules
         max_plannings: Max plans
         max_zonings: Max sectorisations
         max_destinations: Max destinations
@@ -403,6 +403,7 @@ fr:
         extra_dashboard_url: URL du tableau de bord extra du compte
         planning_dashboard_url: URL du tableau de bord de planification
         default_role_id: Rôle par défaut pour les nouveaux utilisateurs
+        default_driver_role_id: Rôle chauffeur par défaut
         default_profile_id: Profil par défaut pour les nouveaux clients
         default_router_id: Routeur par défaut pour les nouveaux clients
       role:
@@ -860,6 +861,8 @@ fr:
           icon_unknown: n'est pas une icône font-awesome autorisée
           default_role_config_missing_ref: >-
             La configuration du rôle par défaut doit contenir une référence. (Contactez votre administrateur)
+          default_driver_role_config_missing_ref: >-
+            La configuration du rôle chauffeur par défaut doit contenir une référence. (Contactez votre administrateur)
         optimization_time:
           must_be_greater_than_minimal_time: doit être supérieur à la durée minimale
         router:
@@ -993,6 +996,9 @@ fr:
         default_role_help: >-
           Rôle présélectionné lorsqu’un administrateur crée un utilisateur.
           Laisser vide pour aucun défaut.
+        default_driver_role_help: >-
+          Rôle attribué aux nouveaux chauffeurs (Deliver). Surchargeable par client.
+          Laisser vide pour aucun défaut.
         default_profile_router_label: Profil et routeur par défaut pour les nouveaux clients
         default_profile_router_blank: Aucun profil / routeur par défaut
         default_profile_router_help: >-
@@ -1069,6 +1075,7 @@ fr:
       index:
         title: Rôles
         new: Nouveau rôle
+        count_help: Nombre de rôles
         users_count: Nombre d'utilisateurs
       new:
         title: Nouveau rôle
@@ -1081,6 +1088,8 @@ fr:
         spaces_title: Espaces (navigation)
         spaces_help: >-
           La colonne de gauche accorde l’accès complet à l’espace. La colonne centrale l’affiche dans la navigation sans permettre l’accès. La colonne de droite le masque.
+        spaces_channel_help: >-
+          Les espaces web (hors Opérations mobiles) ouvrent la connexion à Planner : un espace visible ou actif suffit. Opérations mobiles ouvre Deliver ; seul, avec tous les espaces web masqués, le compte reste chauffeur et ne peut pas se connecter à Planner. Un planificateur peut aussi être chauffeur en cumulant les deux.
         space_actions_section_title: Permissions par espace
         space_actions_help: >-
           Pour chaque espace actif, la colonne de gauche autorise les actions listées. La colonne centrale les limite à la consultation lorsque c’est pertinent. La colonne de droite les masque.
@@ -1095,6 +1104,7 @@ fr:
           deliverable_units: Unités livrables
           custom_attributes: Champs additionnels
           operations: Opérations
+          operations_mobile: Opérations mobiles
         space_actions:
           common:
             edit: Création, édition et suppression
@@ -1137,7 +1147,7 @@ fr:
       default_permissions_role_name: Permissions par défaut
     users:
       menu:
-        users: Utilisateurs
+        users: Comptes
         send_email: Envoyer email de confirmation
         send_sms_driver: Envoyer SMS aux livreurs
       index:
@@ -1224,28 +1234,58 @@ fr:
     menu:
       customer: Paramétrage de l'espace client
       user_settings: Paramètres utilisateur
-      customers: Espaces clients
+      customers: Clients
       analytics: Statistiques
       extra_analytics: Statistiques extra
     edit:
       title: Modifier paramétrage de l'espace client
+      tab_settings: Paramétrage
       send_email: Envoyer email de confirmation
       password: Changer le mot de passe
       role_column: Rôle
       user:
         connect_as: Connecter en tant que…
-        list: Liste des utilisateurs
-        new: Nouvel utilisateur
+        list: Utilisateurs
+        new: Créer un compte
+        add_existing: Ajouter un compte existant
       vehicles:
-        list: Liste des véhicules
+        list: Véhicules
       time_zone: Fuseau horaire
       devices: Exports GPS & Mobiles
     index:
-      title: Liste espaces clients
-      new: Nouvel espace client
+      title: Clients
+      new: Nouveau client
       import: Importer
       map: Carte
+      refresh_counters: Mettre à jour les compteurs
       no_test: hors test
+      comment_label: 'Commentaire :'
+      map_legend: Légende de la carte
+      legend_active: Actif
+      legend_test: Test
+      legend_inactive: Inactif
+      count:
+        one: client
+        other: clients
+      none: Aucun client trouvé
+      count_no_test:
+        one: client hors test
+        other: clients hors test
+      count_total:
+        one: client
+        other: clients
+      no_test_count_help: Comptes hors test
+      total_count_help: Tous les comptes (tests compris)
+      customers_count_help: Clients hors test / tous les clients
+      vehicles_count_help: Véhicules hors test / tous les véhicules
+      vehicles_no_test_count_help: Véhicules des comptes hors test
+      vehicles_no_test_count_help: Véhicules des comptes hors test
+      vehicles_count_no_test:
+        one: véhicule hors test
+        other: véhicules hors test
+      vehicles_count_total:
+        one: véhicule
+        other: véhicules
       status: Statut
       status_no_user: Pas d'utilisateur
       status_no_sign_in_user: Utilisateur jamais connecté
@@ -1272,6 +1312,8 @@ fr:
       success: Véhicule supprimé avec succès
     delete_multiple_vehicles:
       success: Véhicules supprimés avec succès
+    refresh_counters:
+      success: Compteurs à jour
     form:
       field_default: '%{n} (valeur par défaut)'
       name: Compte
@@ -1281,6 +1323,10 @@ fr:
       options: Options
       extended_options: Options étendues
       suivi: Suivi
+      operations_mobile_help: Nécessite que Cartoway Deliver soit activé.
+      default_driver_role_blank: Utiliser le défaut revendeur
+      default_driver_role_help: >-
+        Rôle attribué aux nouveaux chauffeurs de ce client. Laisser vide pour utiliser le défaut revendeur.
       enable_proofs_help: >-
         Permet de stocker des photos et signatures sur la vue mobile et via l’API.
       optimization_parameters: Paramètres d'optimisation

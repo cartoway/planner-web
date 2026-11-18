@@ -1,0 +1,58 @@
+# Copyright © Cartoway
+de:
+  admin:
+    accounts:
+      index:
+        title: Konten
+        new: Neues Konto
+        count_help: Anzahl der Konten
+      count:
+        one: Konto
+        other: Konten
+      new:
+        title: Neues Konto
+      edit:
+        title: Konto
+      form:
+        email: E-Mail
+        phone: Telefon
+        locale: Sprache
+        time_zone: Zeitzone
+        customer: Kunde
+        role: Rolle
+        role_blank: Standardrolle
+        send_email: Einladungs-E-Mail senden
+        memberships: Mitgliedschaften
+        status: Status
+        relationship: Beziehung
+        add_membership: Mitgliedschaft hinzufügen
+        detach: Trennen
+        devices: Geräte
+        revoke: Widerrufen
+        reauthorize: Erneut autorisieren
+        revoked: Widerrufen
+        anonymize: Anonymisieren
+        anonymized: Anonymisiert
+        refused: Nicht erlaubt
+        no_email: Keine E-Mail
+        duplicate_membership: Diese Mitgliedschaft existiert bereits
+      relationships:
+        employee: Angestellter
+        independent: Selbstständig
+        subcontractor_staff: Subunternehmer
+    roles:
+      operations_mobile:
+        title: Mobile Operationen
+  customers:
+    index:
+      count:
+        one: Kunde
+        other: Kunden
+  activerecord:
+    models:
+      account:
+        one: Konto
+        other: Konten
+    attributes:
+      customer:
+        operations_mobile: Mobile Operationen

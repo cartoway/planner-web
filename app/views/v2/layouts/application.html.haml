@@ -6,7 +6,14 @@
     = render partial: 'v2/layouts/head'
   - v2_body_controller = "#{controller.controller_path.tr('/', '_')} #{controller.controller_path.tr('/', '-')}-v2"
   - v2_body_action = controller.action_name
-  %body.cartoway-v2{"data-controller": v2_body_controller, "data-action": v2_body_action}
+  - body_controllers = [v2_body_controller]
+  - body_controllers << 'v2--workspace-guard' if user_signed_in?
+  - body_data = {"data-controller": body_controllers.join(' '), "data-action": v2_body_action}
+  - if user_signed_in?
+    - body_data['data-active-user-id'] = workspace_active_user_id
+    - body_data['data-v2--workspace-guard-user-id-value'] = workspace_active_user_id
+    - body_data['data-v2--workspace-guard-changed-message-value'] = t('workspaces.tabs.changed')
+  %body.cartoway-v2{body_data}
     #wrapper{data: { controller: 'menu-left' }}
       .menu-left-backdrop.d-print-none{data: { action: 'click->menu-left#closeMobile' }, 'aria-hidden': 'true'}
       .menu-mobile-topbar.d-print-none
@@ -35,23 +42,35 @@
                       .hidden-menu
                         = t 'admin.resellers.menu.reseller'
                 %li.menu-section.menu-list-item
-                  = link_to customers_path do
+                  = link_to customers_path, data: { turbo_frame: "main", turbo_action: "advance" } do
                     .d-flex.align-items-center.justify-content-center
                       %i.fa.fa-user-gear.fa-fw
                       .hidden-menu
                         = t 'customers.menu.customers'
                 %li.menu-section.menu-list-item
-                  = link_to admin_users_path do
+                  = link_to admin_accounts_path, data: { turbo_frame: "main", turbo_action: "advance" } do
                     .d-flex.align-items-center.justify-content-center
-                      %i.fa.fa-user-gear.fa-fw
+                      %i.fa.fa-address-book.fa-fw
                       .hidden-menu
                         = t 'admin.users.menu.users'
                 %li.menu-section.menu-list-item
-                  = link_to delayed_job_path do
+                  = link_to admin_roles_path, data: { turbo_frame: "main", turbo_action: "advance" } do
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-pen-ruler.fa-fw
+                      .hidden-menu
+                        = t 'admin.roles.menu.roles'
+                %li.menu-section.menu-list-item
+                  = link_to admin_tools_delayed_job_path, data: { turbo_frame: 'main', turbo_action: 'advance' } do
                     .d-flex.align-items-center.justify-content-center
                       %i.fa.fa-tower-observation.fa-fw
                       .hidden-menu
                         = t 'admin.jobs.menu.observation'
+                %li.menu-section.menu-list-item
+                  = link_to admin_tools_performance_path, data: { turbo_frame: 'main', turbo_action: 'advance' } do
+                    .d-flex.align-items-center.justify-content-center
+                      %i.fa.fa-chart-area.fa-fw
+                      .hidden-menu
+                        = t 'admin.jobs.menu.performance'
                 %li.menu-section.menu-list-item
                   = link_to admin_profiles_path do
                     .d-flex.align-items-center.justify-content-center
@@ -122,7 +141,7 @@
                           - if current_user.customer.too_many_plannings?
                             %i.fa.text-warning.fa-calendar-xmark{"aria-hidden": "true"}
                             %span.text-warning
-                              = current_user.customer.plannings.length
+                              = current_user.customer.plannings_count
                             \/
                             %span
                               = current_user.customer.default_max_plannings
@@ -130,7 +149,7 @@
                           - else
                             %i.fa.fa-calendar-check{"aria-hidden": "true"}
                             %span
-                              = current_user.customer.plannings.length
+                              = current_user.customer.plannings_count
                             \/
                             %span
                               = current_user.customer.default_max_plannings
@@ -463,5 +482,8 @@
             %button.btn.btn-primary{"data-bs-dismiss": "modal", style: "display:none;", type: "button"}
               = t('web.dialog.close')
     = render 'shared/flash_messages'
+    - if user_signed_in?
+      = render 'v2/shared/impersonation_banner'
+      = render 'v2/shared/workspace_chip'
     #v2-toast-stack.v2-toast-stack{ data: { controller: 'v2--toast', 'v2-toast-stack': true }, 'aria-live': 'polite', 'aria-relevant': 'additions' }
     = render 'v2/layouts/javascript'

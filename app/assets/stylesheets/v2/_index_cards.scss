@@ -264,3 +264,110 @@
     }
   }
 }
+
+// Customer index: aligned counters with icons (vehicles / destinations / visits / plans).
+.customer-card-counters-row {
+  display: flex;
+  align-items: flex-start;
+  gap: .25rem;
+  margin: .15rem 0 .35rem;
+}
+
+.customer-card-counters {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: .35rem .75rem;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: .85rem;
+
+  @media (max-width: 991.98px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  &__item {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    min-width: 0;
+  }
+
+  &__value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+  }
+
+  &__label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--bs-secondary-color, #6c757d);
+  }
+
+  &__refresh {
+    flex: 0 0 auto;
+    padding: .1rem .25rem;
+    line-height: 1;
+    color: var(--bs-secondary-color, #6c757d);
+
+    &:hover,
+    &:focus {
+      color: var(--bs-primary, #25417c);
+    }
+  }
+}
+
+// Role list: icon beside the title, fixed box so glyphs don't shift the name.
+.role-list-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 1.25rem;
+  width: 1.25rem;
+  line-height: 1;
+
+  .fa {
+    line-height: 1;
+  }
+
+  &__placeholder {
+    display: inline-block;
+    width: 1.25rem;
+    text-align: center;
+  }
+}
+
+// Account / customer index: memberships or users + connect-as links in the actions dropdown.
+.account-memberships-dropdown,
+.customer-users-dropdown {
+  min-width: 18rem;
+  max-width: 28rem;
+  padding: .5rem .65rem;
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    margin-bottom: .35rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  &__customer,
+  &__email {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: .8rem;
+    color: var(--bs-secondary-color, #6c757d);
+  }
+
+  &__connect {
+    flex: 0 0 auto;
+    margin-left: auto;
+  }
+}

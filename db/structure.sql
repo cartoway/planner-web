@@ -38,73 +38,41 @@ COMMENT ON EXTENSION postgis IS 'PostGIS geometry and geography spatial types an
 
 
 --
--- Name: operation_stops_null_for_destination(); Type: FUNCTION; Schema: public; Owner: -
+-- Name: enforce_operation_route_execution_write(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.operation_stops_null_for_destination() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-BEGIN
-  UPDATE operation_stops
-  SET destination_id = NULL,
-      visit_id = NULL,
-      stop_id = NULL
-  WHERE destination_id = OLD.id
-     OR visit_id IN (SELECT id FROM visits WHERE destination_id = OLD.id);
-  RETURN OLD;
-END;
-$$;
-
-
---
--- Name: operation_execution_write_allowed(integer, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.operation_execution_write_allowed(op_id integer, occurred_at timestamp without time zone) RETURNS boolean
-    LANGUAGE plpgsql
-    STABLE
-    AS $$
-DECLARE
-  op_status character varying;
-  op_closed_at timestamp without time zone;
-BEGIN
-  SELECT status, closed_at INTO op_status, op_closed_at
-  FROM operations
-  WHERE id = op_id;
-
-  IF NOT FOUND THEN
-    RETURN false;
-  END IF;
-
-  IF op_status = 'in_progress' THEN
-    RETURN true;
-  END IF;
-
-  IF op_closed_at IS NULL THEN
-    RETURN false;
-  END IF;
-
-  RETURN COALESCE(occurred_at, clock_timestamp()::timestamp) <= (op_closed_at + INTERVAL '12 hours');
-END;
-$$;
-
-
---
--- Name: enforce_operation_stop_status_event_write(); Type: FUNCTION; Schema: public; Owner: -
---
-
-CREATE FUNCTION public.enforce_operation_stop_status_event_write() RETURNS trigger
+CREATE FUNCTION public.enforce_operation_route_execution_write() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 DECLARE
-  op_id integer;
+  occurred_at timestamp without time zone;
 BEGIN
-  SELECT operation_routes.operation_id INTO op_id
-  FROM operation_stops
-  INNER JOIN operation_routes ON operation_routes.id = operation_stops.operation_route_id
-  WHERE operation_stops.id = NEW.operation_stop_id;
+  IF NEW.departure_status IS NOT DISTINCT FROM OLD.departure_status
+     AND NEW.departure_eta IS NOT DISTINCT FROM OLD.departure_eta
+     AND NEW.departure_status_updated_at IS NOT DISTINCT FROM OLD.departure_status_updated_at
+     AND NEW.arrival_status IS NOT DISTINCT FROM OLD.arrival_status
+     AND NEW.arrival_eta IS NOT DISTINCT FROM OLD.arrival_eta
+     AND NEW.arrival_status_updated_at IS NOT DISTINCT FROM OLD.arrival_status_updated_at THEN
+    RETURN NEW;
+  END IF;
 
-  IF NOT public.operation_execution_write_allowed(op_id, NEW.recorded_at) THEN
+  occurred_at := COALESCE(
+    NEW.departure_status_updated_at,
+    NEW.arrival_status_updated_at,
+    clock_timestamp()::timestamp
+  );
+
+  IF NEW.departure_status IS DISTINCT FROM OLD.departure_status
+     OR NEW.departure_eta IS DISTINCT FROM OLD.departure_eta
+     OR NEW.departure_status_updated_at IS DISTINCT FROM OLD.departure_status_updated_at THEN
+    occurred_at := COALESCE(NEW.departure_status_updated_at, occurred_at);
+  ELSIF NEW.arrival_status IS DISTINCT FROM OLD.arrival_status
+        OR NEW.arrival_eta IS DISTINCT FROM OLD.arrival_eta
+        OR NEW.arrival_status_updated_at IS DISTINCT FROM OLD.arrival_status_updated_at THEN
+    occurred_at := COALESCE(NEW.arrival_status_updated_at, occurred_at);
+  END IF;
+
+  IF NOT public.operation_execution_write_allowed(NEW.operation_id, occurred_at) THEN
     RAISE EXCEPTION 'operation_closed'
       USING ERRCODE = 'check_violation';
   END IF;
@@ -150,41 +118,21 @@ $$;
 
 
 --
--- Name: enforce_operation_route_execution_write(); Type: FUNCTION; Schema: public; Owner: -
+-- Name: enforce_operation_stop_status_event_write(); Type: FUNCTION; Schema: public; Owner: -
 --
 
-CREATE FUNCTION public.enforce_operation_route_execution_write() RETURNS trigger
+CREATE FUNCTION public.enforce_operation_stop_status_event_write() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 DECLARE
-  occurred_at timestamp without time zone;
+  op_id integer;
 BEGIN
-  IF NEW.departure_status IS NOT DISTINCT FROM OLD.departure_status
-     AND NEW.departure_eta IS NOT DISTINCT FROM OLD.departure_eta
-     AND NEW.departure_status_updated_at IS NOT DISTINCT FROM OLD.departure_status_updated_at
-     AND NEW.arrival_status IS NOT DISTINCT FROM OLD.arrival_status
-     AND NEW.arrival_eta IS NOT DISTINCT FROM OLD.arrival_eta
-     AND NEW.arrival_status_updated_at IS NOT DISTINCT FROM OLD.arrival_status_updated_at THEN
-    RETURN NEW;
-  END IF;
+  SELECT operation_routes.operation_id INTO op_id
+  FROM operation_stops
+  INNER JOIN operation_routes ON operation_routes.id = operation_stops.operation_route_id
+  WHERE operation_stops.id = NEW.operation_stop_id;
 
-  occurred_at := COALESCE(
-    NEW.departure_status_updated_at,
-    NEW.arrival_status_updated_at,
-    clock_timestamp()::timestamp
-  );
-
-  IF NEW.departure_status IS DISTINCT FROM OLD.departure_status
-     OR NEW.departure_eta IS DISTINCT FROM OLD.departure_eta
-     OR NEW.departure_status_updated_at IS DISTINCT FROM OLD.departure_status_updated_at THEN
-    occurred_at := COALESCE(NEW.departure_status_updated_at, occurred_at);
-  ELSIF NEW.arrival_status IS DISTINCT FROM OLD.arrival_status
-        OR NEW.arrival_eta IS DISTINCT FROM OLD.arrival_eta
-        OR NEW.arrival_status_updated_at IS DISTINCT FROM OLD.arrival_status_updated_at THEN
-    occurred_at := COALESCE(NEW.arrival_status_updated_at, occurred_at);
-  END IF;
-
-  IF NOT public.operation_execution_write_allowed(NEW.operation_id, occurred_at) THEN
+  IF NOT public.operation_execution_write_allowed(op_id, NEW.recorded_at) THEN
     RAISE EXCEPTION 'operation_closed'
       USING ERRCODE = 'check_violation';
   END IF;
@@ -194,9 +142,187 @@ END;
 $$;
 
 
+--
+-- Name: operation_execution_write_allowed(integer, timestamp without time zone); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.operation_execution_write_allowed(op_id integer, occurred_at timestamp without time zone) RETURNS boolean
+    LANGUAGE plpgsql STABLE
+    AS $$
+DECLARE
+  op_status character varying;
+  op_closed_at timestamp without time zone;
+BEGIN
+  SELECT status, closed_at INTO op_status, op_closed_at
+  FROM operations
+  WHERE id = op_id;
+
+  IF NOT FOUND THEN
+    RETURN false;
+  END IF;
+
+  IF op_status = 'in_progress' THEN
+    RETURN true;
+  END IF;
+
+  IF op_closed_at IS NULL THEN
+    RETURN false;
+  END IF;
+
+  RETURN COALESCE(occurred_at, clock_timestamp()::timestamp) <= (op_closed_at + INTERVAL '12 hours');
+END;
+$$;
+
+
+--
+-- Name: operation_stops_null_for_destination(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION public.operation_stops_null_for_destination() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN
+  UPDATE operation_stops
+  SET destination_id = NULL,
+      visit_id = NULL,
+      stop_id = NULL
+  WHERE destination_id = OLD.id
+     OR visit_id IN (SELECT id FROM visits WHERE destination_id = OLD.id);
+  RETURN OLD;
+END;
+$$;
+
+
 SET default_tablespace = '';
 
 SET default_table_access_method = heap;
+
+--
+-- Name: account_devices; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.account_devices (
+    id bigint NOT NULL,
+    account_id bigint NOT NULL,
+    installation_id character varying NOT NULL,
+    platform character varying NOT NULL,
+    app_version character varying,
+    os_version character varying,
+    locale character varying,
+    push_provider character varying,
+    push_token character varying,
+    notifications_permission character varying,
+    last_seen_at timestamp without time zone,
+    revoked_at timestamp without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: account_devices_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.account_devices_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: account_devices_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.account_devices_id_seq OWNED BY public.account_devices.id;
+
+
+--
+-- Name: account_sessions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.account_sessions (
+    id bigint NOT NULL,
+    account_id bigint NOT NULL,
+    account_device_id bigint NOT NULL,
+    token_digest character varying NOT NULL,
+    revoked_at timestamp without time zone,
+    last_used_at timestamp without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: account_sessions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.account_sessions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: account_sessions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.account_sessions_id_seq OWNED BY public.account_sessions.id;
+
+
+--
+-- Name: accounts; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.accounts (
+    id bigint NOT NULL,
+    uid uuid NOT NULL,
+    email character varying,
+    encrypted_password character varying DEFAULT ''::character varying NOT NULL,
+    reset_password_token character varying,
+    reset_password_sent_at timestamp without time zone,
+    remember_created_at timestamp without time zone,
+    sign_in_count integer DEFAULT 0 NOT NULL,
+    current_sign_in_at timestamp without time zone,
+    last_sign_in_at timestamp without time zone,
+    current_sign_in_ip character varying,
+    last_sign_in_ip character varying,
+    confirmation_token character varying,
+    confirmed_at timestamp without time zone,
+    confirmation_sent_at timestamp without time zone,
+    unconfirmed_email character varying,
+    name character varying,
+    phone character varying,
+    locale character varying,
+    time_zone character varying,
+    anonymized_at timestamp without time zone,
+    last_user_id bigint,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: accounts_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.accounts_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: accounts_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.accounts_id_seq OWNED BY public.accounts.id;
+
 
 --
 -- Name: active_storage_attachments; Type: TABLE; Schema: public; Owner: -
@@ -449,7 +575,8 @@ CREATE TABLE public.customers (
     company_logo character varying,
     recipient_template text,
     delivery_tracking_eta_gap_before integer DEFAULT 5 NOT NULL,
-    delivery_tracking_eta_gap_after integer DEFAULT 15 NOT NULL
+    delivery_tracking_eta_gap_after integer DEFAULT 15 NOT NULL,
+    default_driver_role_id bigint
 );
 
 
@@ -637,7 +764,8 @@ CREATE TABLE public.identities (
     provider character varying NOT NULL,
     uid character varying NOT NULL,
     created_at timestamp without time zone NOT NULL,
-    updated_at timestamp without time zone NOT NULL
+    updated_at timestamp without time zone NOT NULL,
+    account_id bigint NOT NULL
 );
 
 
@@ -1243,7 +1371,8 @@ CREATE TABLE public.resellers (
     planning_dashboard_url character varying,
     default_role_id bigint,
     default_profile_id bigint,
-    default_router_id bigint
+    default_router_id bigint,
+    default_driver_role_id bigint
 );
 
 
@@ -1280,7 +1409,8 @@ CREATE TABLE public.roles (
     planning_toolbar jsonb DEFAULT '{}'::jsonb NOT NULL,
     spaces jsonb DEFAULT '{}'::jsonb NOT NULL,
     created_at timestamp(6) without time zone NOT NULL,
-    updated_at timestamp(6) without time zone NOT NULL
+    updated_at timestamp(6) without time zone NOT NULL,
+    operations_mobile jsonb DEFAULT '{}'::jsonb NOT NULL
 );
 
 
@@ -1947,6 +2077,42 @@ ALTER SEQUENCE public.tags_id_seq OWNED BY public.tags.id;
 
 
 --
+-- Name: user_sessions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.user_sessions (
+    id bigint NOT NULL,
+    user_id bigint NOT NULL,
+    account_device_id bigint NOT NULL,
+    token_digest character varying NOT NULL,
+    revoked_reason character varying,
+    revoked_at timestamp without time zone,
+    last_used_at timestamp without time zone,
+    created_at timestamp(6) without time zone NOT NULL,
+    updated_at timestamp(6) without time zone NOT NULL
+);
+
+
+--
+-- Name: user_sessions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.user_sessions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: user_sessions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.user_sessions_id_seq OWNED BY public.user_sessions.id;
+
+
+--
 -- Name: users; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -1973,7 +2139,7 @@ CREATE TABLE public.users (
     confirmation_token character varying,
     confirmed_at timestamp without time zone,
     confirmation_sent_at timestamp without time zone,
-    time_zone character varying DEFAULT 'UTC'::character varying NOT NULL,
+    time_zone character varying DEFAULT 'UTC'::character varying,
     prefered_unit character varying DEFAULT 'km'::character varying,
     locale character varying,
     prefered_currency integer DEFAULT 0,
@@ -1981,7 +2147,13 @@ CREATE TABLE public.users (
     default_display_polylines boolean DEFAULT true NOT NULL,
     role_id bigint,
     headers jsonb DEFAULT '{}'::jsonb NOT NULL,
-    filter_planning_route_data boolean DEFAULT false NOT NULL
+    filter_planning_route_data boolean DEFAULT false NOT NULL,
+    account_id bigint NOT NULL,
+    status character varying DEFAULT 'active'::character varying NOT NULL,
+    relationship character varying DEFAULT 'employee'::character varying NOT NULL,
+    label character varying,
+    phone character varying,
+    session_token character varying
 );
 
 
@@ -2247,6 +2419,40 @@ ALTER SEQUENCE public.visits_id_seq OWNED BY public.visits.id;
 
 
 --
+-- Name: workspace_switch_events; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.workspace_switch_events (
+    id bigint NOT NULL,
+    account_id bigint NOT NULL,
+    from_user_id bigint,
+    to_user_id bigint,
+    channel character varying NOT NULL,
+    result character varying NOT NULL,
+    created_at timestamp without time zone NOT NULL
+);
+
+
+--
+-- Name: workspace_switch_events_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+CREATE SEQUENCE public.workspace_switch_events_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: workspace_switch_events_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: -
+--
+
+ALTER SEQUENCE public.workspace_switch_events_id_seq OWNED BY public.workspace_switch_events.id;
+
+
+--
 -- Name: zones; Type: TABLE; Schema: public; Owner: -
 --
 
@@ -2311,6 +2517,27 @@ CREATE SEQUENCE public.zonings_id_seq
 --
 
 ALTER SEQUENCE public.zonings_id_seq OWNED BY public.zonings.id;
+
+
+--
+-- Name: account_devices id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_devices ALTER COLUMN id SET DEFAULT nextval('public.account_devices_id_seq'::regclass);
+
+
+--
+-- Name: account_sessions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_sessions ALTER COLUMN id SET DEFAULT nextval('public.account_sessions_id_seq'::regclass);
+
+
+--
+-- Name: accounts id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts ALTER COLUMN id SET DEFAULT nextval('public.accounts_id_seq'::regclass);
 
 
 --
@@ -2594,6 +2821,13 @@ ALTER TABLE ONLY public.tags ALTER COLUMN id SET DEFAULT nextval('public.tags_id
 
 
 --
+-- Name: user_sessions id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_sessions ALTER COLUMN id SET DEFAULT nextval('public.user_sessions_id_seq'::regclass);
+
+
+--
 -- Name: users id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2636,6 +2870,13 @@ ALTER TABLE ONLY public.visits ALTER COLUMN id SET DEFAULT nextval('public.visit
 
 
 --
+-- Name: workspace_switch_events id; Type: DEFAULT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.workspace_switch_events ALTER COLUMN id SET DEFAULT nextval('public.workspace_switch_events_id_seq'::regclass);
+
+
+--
 -- Name: zones id; Type: DEFAULT; Schema: public; Owner: -
 --
 
@@ -2647,6 +2888,30 @@ ALTER TABLE ONLY public.zones ALTER COLUMN id SET DEFAULT nextval('public.zones_
 --
 
 ALTER TABLE ONLY public.zonings ALTER COLUMN id SET DEFAULT nextval('public.zonings_id_seq'::regclass);
+
+
+--
+-- Name: account_devices account_devices_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_devices
+    ADD CONSTRAINT account_devices_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: account_sessions account_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_sessions
+    ADD CONSTRAINT account_sessions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts accounts_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts
+    ADD CONSTRAINT accounts_pkey PRIMARY KEY (id);
 
 
 --
@@ -2978,6 +3243,14 @@ ALTER TABLE ONLY public.tags
 
 
 --
+-- Name: user_sessions user_sessions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_sessions
+    ADD CONSTRAINT user_sessions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -3023,6 +3296,14 @@ ALTER TABLE ONLY public.vehicles
 
 ALTER TABLE ONLY public.visits
     ADD CONSTRAINT visits_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: workspace_switch_events workspace_switch_events_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.workspace_switch_events
+    ADD CONSTRAINT workspace_switch_events_pkey PRIMARY KEY (id);
 
 
 --
@@ -3224,6 +3505,55 @@ CREATE UNIQUE INDEX idx_ca_on_customer_obj_class_rel_field_name ON public.custom
 
 
 --
+-- Name: index_account_devices_on_account_and_installation; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_account_devices_on_account_and_installation ON public.account_devices USING btree (account_id, installation_id);
+
+
+--
+-- Name: index_account_devices_on_account_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_account_devices_on_account_id ON public.account_devices USING btree (account_id);
+
+
+--
+-- Name: index_account_sessions_on_account_device_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_account_sessions_on_account_device_id ON public.account_sessions USING btree (account_device_id);
+
+
+--
+-- Name: index_account_sessions_on_account_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_account_sessions_on_account_id ON public.account_sessions USING btree (account_id);
+
+
+--
+-- Name: index_account_sessions_on_token_digest; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_account_sessions_on_token_digest ON public.account_sessions USING btree (token_digest);
+
+
+--
+-- Name: index_accounts_on_lower_email; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_accounts_on_lower_email ON public.accounts USING btree (lower((email)::text)) WHERE ((email IS NOT NULL) AND (btrim((email)::text) <> ''::text));
+
+
+--
+-- Name: index_accounts_on_uid; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_accounts_on_uid ON public.accounts USING btree (uid);
+
+
+--
 -- Name: index_active_storage_attachments_on_blob_id; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3298,6 +3628,13 @@ CREATE INDEX index_deliverable_units_on_customer_id ON public.deliverable_units 
 --
 
 CREATE UNIQUE INDEX index_deliverable_units_on_customer_id_and_ref ON public.deliverable_units USING btree (customer_id, ref);
+
+
+--
+-- Name: index_identities_on_account_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_identities_on_account_id ON public.identities USING btree (account_id);
 
 
 --
@@ -3595,10 +3932,24 @@ CREATE INDEX index_resellers_on_default_role_id ON public.resellers USING btree 
 
 
 --
+-- Name: index_resellers_on_default_driver_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_resellers_on_default_driver_role_id ON public.resellers USING btree (default_driver_role_id);
+
+
+--
 -- Name: index_resellers_on_default_router_id; Type: INDEX; Schema: public; Owner: -
 --
 
 CREATE INDEX index_resellers_on_default_router_id ON public.resellers USING btree (default_router_id);
+
+
+--
+-- Name: index_customers_on_default_driver_role_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_customers_on_default_driver_role_id ON public.customers USING btree (default_driver_role_id);
 
 
 --
@@ -3770,10 +4121,52 @@ CREATE UNIQUE INDEX index_tags_on_customer_id_and_ref ON public.tags USING btree
 
 
 --
+-- Name: index_user_sessions_on_account_device_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_user_sessions_on_account_device_id ON public.user_sessions USING btree (account_device_id);
+
+
+--
+-- Name: index_user_sessions_on_token_digest; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_user_sessions_on_token_digest ON public.user_sessions USING btree (token_digest);
+
+
+--
+-- Name: index_user_sessions_on_user_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_user_sessions_on_user_id ON public.user_sessions USING btree (user_id);
+
+
+--
+-- Name: index_users_on_account_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_users_on_account_id ON public.users USING btree (account_id);
+
+
+--
+-- Name: index_users_on_account_id_and_customer_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_users_on_account_id_and_customer_id ON public.users USING btree (account_id, customer_id) WHERE (customer_id IS NOT NULL);
+
+
+--
+-- Name: index_users_on_account_id_and_reseller_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX index_users_on_account_id_and_reseller_id ON public.users USING btree (account_id, reseller_id) WHERE ((reseller_id IS NOT NULL) AND (customer_id IS NULL));
+
+
+--
 -- Name: index_users_on_api_key; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX index_users_on_api_key ON public.users USING btree (api_key);
+CREATE UNIQUE INDEX index_users_on_api_key ON public.users USING btree (api_key);
 
 
 --
@@ -3781,13 +4174,6 @@ CREATE INDEX index_users_on_api_key ON public.users USING btree (api_key);
 --
 
 CREATE UNIQUE INDEX index_users_on_confirmation_token ON public.users USING btree (confirmation_token);
-
-
---
--- Name: index_users_on_email; Type: INDEX; Schema: public; Owner: -
---
-
-CREATE UNIQUE INDEX index_users_on_email ON public.users USING btree (email);
 
 
 --
@@ -3924,6 +4310,20 @@ CREATE UNIQUE INDEX index_visits_on_destination_id_and_ref ON public.visits USIN
 
 
 --
+-- Name: index_workspace_switch_events_on_account_id; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_workspace_switch_events_on_account_id ON public.workspace_switch_events USING btree (account_id);
+
+
+--
+-- Name: index_workspace_switch_events_on_created_at; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX index_workspace_switch_events_on_created_at ON public.workspace_switch_events USING btree (created_at);
+
+
+--
 -- Name: stops_idx_customer_id_date; Type: INDEX; Schema: public; Owner: -
 --
 
@@ -3938,13 +4338,6 @@ CREATE UNIQUE INDEX unique_schema_migrations ON public.schema_migrations USING b
 
 
 --
--- Name: destinations operation_stops_before_destination_delete; Type: TRIGGER; Schema: public; Owner: -
---
-
-CREATE TRIGGER operation_stops_before_destination_delete BEFORE DELETE ON public.destinations FOR EACH ROW EXECUTE FUNCTION public.operation_stops_null_for_destination();
-
-
---
 -- Name: operation_routes operation_routes_execution_guard; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -3956,6 +4349,13 @@ CREATE TRIGGER operation_routes_execution_guard BEFORE UPDATE ON public.operatio
 --
 
 CREATE TRIGGER operation_stop_status_events_execution_guard BEFORE INSERT ON public.operation_stop_status_events FOR EACH ROW EXECUTE FUNCTION public.enforce_operation_stop_status_event_write();
+
+
+--
+-- Name: destinations operation_stops_before_destination_delete; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER operation_stops_before_destination_delete BEFORE DELETE ON public.destinations FOR EACH ROW EXECUTE FUNCTION public.operation_stops_null_for_destination();
 
 
 --
@@ -4083,6 +4483,14 @@ ALTER TABLE ONLY public.messaging_logs
 
 ALTER TABLE ONLY public.vehicle_positions
     ADD CONSTRAINT fk_rails_0cea5179a8 FOREIGN KEY (vehicle_id) REFERENCES public.vehicles(id) ON DELETE SET NULL;
+
+
+--
+-- Name: accounts fk_rails_0daad635e4; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts
+    ADD CONSTRAINT fk_rails_0daad635e4 FOREIGN KEY (last_user_id) REFERENCES public.users(id) ON DELETE SET NULL;
 
 
 --
@@ -4286,6 +4694,14 @@ ALTER TABLE ONLY public.identities
 
 
 --
+-- Name: identities fk_rails_548ec30f12; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.identities
+    ADD CONSTRAINT fk_rails_548ec30f12 FOREIGN KEY (account_id) REFERENCES public.accounts(id);
+
+
+--
 -- Name: routes fk_rails_5699cfb483; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4326,11 +4742,27 @@ ALTER TABLE ONLY public.routes
 
 
 --
+-- Name: workspace_switch_events fk_rails_5b2b8d502a; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.workspace_switch_events
+    ADD CONSTRAINT fk_rails_5b2b8d502a FOREIGN KEY (account_id) REFERENCES public.accounts(id);
+
+
+--
 -- Name: stops_relations fk_rails_61598bbbd9; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.stops_relations
     ADD CONSTRAINT fk_rails_61598bbbd9 FOREIGN KEY (successor_id) REFERENCES public.visits(id) ON DELETE CASCADE;
+
+
+--
+-- Name: users fk_rails_61ac11da2b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT fk_rails_61ac11da2b FOREIGN KEY (account_id) REFERENCES public.accounts(id);
 
 
 --
@@ -4422,6 +4854,14 @@ ALTER TABLE ONLY public.tag_visits
 
 
 --
+-- Name: account_sessions fk_rails_945f847dab; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_sessions
+    ADD CONSTRAINT fk_rails_945f847dab FOREIGN KEY (account_device_id) REFERENCES public.account_devices(id);
+
+
+--
 -- Name: resellers fk_rails_97c579d701; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -4430,11 +4870,51 @@ ALTER TABLE ONLY public.resellers
 
 
 --
+-- Name: resellers fk_rails_default_driver_role; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.resellers
+    ADD CONSTRAINT fk_rails_reseller_default_driver_role FOREIGN KEY (default_driver_role_id) REFERENCES public.roles(id) ON DELETE SET NULL;
+
+
+--
+-- Name: customers fk_rails_customer_default_driver_role; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.customers
+    ADD CONSTRAINT fk_rails_customer_default_driver_role FOREIGN KEY (default_driver_role_id) REFERENCES public.roles(id) ON DELETE SET NULL;
+
+
+--
 -- Name: active_storage_variant_records fk_rails_993965df05; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY public.active_storage_variant_records
     ADD CONSTRAINT fk_rails_993965df05 FOREIGN KEY (blob_id) REFERENCES public.active_storage_blobs(id);
+
+
+--
+-- Name: user_sessions fk_rails_9fa262d742; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_sessions
+    ADD CONSTRAINT fk_rails_9fa262d742 FOREIGN KEY (user_id) REFERENCES public.users(id);
+
+
+--
+-- Name: account_sessions fk_rails_a3af5663bb; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_sessions
+    ADD CONSTRAINT fk_rails_a3af5663bb FOREIGN KEY (account_id) REFERENCES public.accounts(id);
+
+
+--
+-- Name: user_sessions fk_rails_a4a3405388; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.user_sessions
+    ADD CONSTRAINT fk_rails_a4a3405388 FOREIGN KEY (account_device_id) REFERENCES public.account_devices(id);
 
 
 --
@@ -4587,6 +5067,14 @@ ALTER TABLE ONLY public.store_reload_vehicle_usages
 
 ALTER TABLE ONLY public.plannings
     ADD CONSTRAINT fk_rails_f0e748b80c FOREIGN KEY (vehicle_usage_set_id) REFERENCES public.vehicle_usage_sets(id);
+
+
+--
+-- Name: account_devices fk_rails_f5a17fb20b; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.account_devices
+    ADD CONSTRAINT fk_rails_f5a17fb20b FOREIGN KEY (account_id) REFERENCES public.accounts(id);
 
 
 --
@@ -5091,6 +5579,13 @@ INSERT INTO "schema_migrations" (version) VALUES
 ('20261027140000'),
 ('20261027150000'),
 ('20261105073008'),
-('20261105090914');
+('20261105090914'),
+('20261113180000'),
+('20261113180100'),
+('20261113180200'),
+('20261113180300'),
+('20261113180400'),
+('20261113180500'),
+('20261118110000');
 
 

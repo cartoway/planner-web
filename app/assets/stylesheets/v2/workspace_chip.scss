@@ -1,0 +1,92 @@
+// Copyright © Cartoway
+// Floating workspace chip. Sit in the main column, not over .menu-left.
+
+.workspace-impersonation-banner {
+  position: sticky;
+  top: 0;
+  z-index: 1035;
+}
+
+.workspace-chip {
+  position: fixed;
+  left: calc(#{$menu-width} + 1rem);
+  bottom: 1rem;
+  z-index: 1030; // below menu overlays (1035+)
+  max-width: 22rem;
+
+  @media print {
+    display: none !important;
+  }
+
+  // Expanded desktop menu (250px in scaffolds)
+  @media (min-width: 992px) {
+    body:has(.menu-left.open) & {
+      left: calc(250px + 1rem);
+    }
+  }
+
+  // Mobile: menu is off-canvas
+  @media (max-width: 991.98px) {
+    left: 1rem;
+  }
+}
+
+// MapLibre scale/attribution sit in .maplibregl-ctrl-bottom-left — lift them above this chip.
+body:has(.workspace-chip) .maplibre-host .maplibregl-ctrl-bottom-left {
+  // chip bottom 1rem + ~2.5rem button + gap
+  bottom: 3.75rem;
+}
+
+.workspace-chip__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  max-width: 100%;
+  padding: 0.35rem 0.85rem;
+  border-radius: 999px !important; // match .operation-legend pill
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.workspace-chip__label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 14rem;
+}
+
+.workspace-chip__menu {
+  max-height: 70vh;
+  overflow-y: auto;
+  min-width: 16rem;
+  border-radius: 0.75rem;
+}
+
+.workspace-chip__item {
+  display: flex !important;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: normal;
+}
+
+.workspace-chip__group {
+  padding: 0.4rem 1rem 0.15rem;
+  pointer-events: none;
+}
+
+.workspace-chip__group-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+.workspace-chip__grouped-item .workspace-chip__item {
+  padding-left: 1.5rem;
+}
+
+// button_to wraps the button in a form; keep dropdown items flush.
+.workspace-chip__menu form {
+  margin: 0;
+}

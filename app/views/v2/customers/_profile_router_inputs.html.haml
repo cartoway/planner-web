@@ -1,0 +1,19 @@
+-# Copyright © Cartoway
+- if current_user.admin?
+  - if has_vehicle_with_unauthorized_router(@customer)
+    .mb-3
+      %p.alert.alert-warning= t('customers.form.vehicle_router_unauthorized', profile: @customer.profile.name).html_safe
+  - if has_user_with_unauthorized_layer(@customer)
+    .mb-3
+      %p.alert.alert-warning= t('customers.form.user_layer_unauthorized', profile: @customer.profile.name).html_safe
+- else
+  = hidden_field :customer, :profile_id
+#customer_router_input.mb-3.row{class: ('customer-router-select--profiles' if current_user.admin?)}
+  %label.col-form-label.col-md-10.offset-md-1.fw-bold{for: 'customer_router'}= t('activerecord.attributes.customer.router')
+  .col-md-10.offset-md-1.field
+    - router_selected = customer_router_selected_value(@customer, admin: current_user.admin?)
+    - router_options = customer_router_select_options(@customer, admin: current_user.admin?, reseller: @customer.reseller)
+    = select_tag 'customer[router]', (current_user.admin? ? grouped_options_for_select(router_options, router_selected) : options_for_select(router_options, router_selected)), class: 'form-select', required: true, id: 'customer_router', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true }
+    %p.form-text= t('customers.form.router_help')
+    - unless current_user.admin?
+      %p.form-text.router-unauthorized.d-none.alert.alert-warning= t('activerecord.attributes.customer.router_warning')

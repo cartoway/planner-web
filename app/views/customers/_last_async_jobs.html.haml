@@ -8,9 +8,9 @@
       - error = entry['error'] || entry[:error]
       - finished_at = entry['finished_at'] || entry[:finished_at]
       - finished_time = finished_at.present? ? (Time.iso8601(finished_at) rescue nil) : nil
-      - label_class = { 'succeeded' => 'success', 'failed' => 'danger', 'killed' => 'warning', 'queued' => 'info', 'working' => 'primary' }[status] || 'default'
+      - label_class = { 'succeeded' => 'success', 'failed' => 'danger', 'killed' => 'warning', 'queued' => 'info', 'working' => 'primary' }[status] || 'secondary'
       .last-async-jobs__item{ title: error.presence }
         %code.last-async-jobs__kind= "#{kind}##{job_id}"
-        %span.label{ class: "label-#{label_class}" }= status
+        %span.badge{ class: "text-bg-#{label_class}" }= status
         - if finished_time
           %span.last-async-jobs__time= l(finished_time, format: :short)

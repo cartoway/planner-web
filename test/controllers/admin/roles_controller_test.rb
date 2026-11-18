@@ -34,6 +34,24 @@ class Admin::RolesControllerTest < ActionController::TestCase
     assert assigns(:user_counts_by_role_id).is_a?(Hash)
   end
 
+  test 'index header matches accounts chrome with server filter and count in the list frame' do
+    enable_layout_v2!(users(:user_admin))
+    get :index
+    assert_response :success
+    assert_select '.destinations-sidebar-header .destinations-sidebar-title-row #count', 0
+    assert_select '.destinations-sidebar-header #roles-search-form[data-controller="v2--list-filters"]', 1
+    assert_select 'turbo-frame#roles_list #count', 1
+    assert_select 'turbo-frame#roles_list [data-v2--table-filter-target="count"]', 0
+
+    unique = "RoleFilter#{SecureRandom.hex(4)}"
+    @reseller.roles.create!(name: unique)
+    @request.headers['Turbo-Frame'] = 'roles_list'
+    get :index, params: { q: unique }
+    assert_response :success
+    assert_equal 1, assigns(:roles).size
+    assert_equal unique, assigns(:roles).first.name
+  end
+
   test 'create persists name and optional icon and color' do
     assert_difference('Role.count', 1) do
       post :create, params: {
@@ -156,6 +174,8 @@ class Admin::RolesControllerTest < ActionController::TestCase
     assert_select "##{planning_toolbar_accordion}"
     assert_select "##{ActionView::RecordIdentifier.dom_id(@role, 'space_actions_plannings')}_collapse"
     assert_select "##{ActionView::RecordIdentifier.dom_id(@role, 'operations_planning')}_collapse"
+    assert_select '[data-controller~="v2--transfer-list"].transfer-list--3-cols.transfer-list--stacked', minimum: 1
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@role, 'spaces_resources')} .transfer-list-item", minimum: 1
     # Role.create! seeds toolbar segments in the disabled tier, so active inputs
     # ([planning_toolbar][planning][]) may be absent — use the accordion id as marker.
     spaces_pos = response.body.index('spaces_active')
@@ -210,6 +230,75 @@ class Admin::RolesControllerTest < ActionController::TestCase
 
     assert_redirected_to admin_roles_path
     assert_nil @reseller.reload.default_role_id
+  end
+
+  test 'index is v2 cards with and without the layout preference' do
+    enable_layout_v2!(users(:user_admin))
+    get :index
+    assert_response :success
+    assert_select 'body.cartoway-v2', 1
+    assert_select '#roles-list .v2-index-card.destinations-index-card', minimum: 1
+    assert_select %(a[href="#{new_admin_role_path}"][data-turbo-frame="form_sidebar"]), 1
+    assert_select 'table', 0
+    assert_select '.selectpicker', 0
+
+    enable_layout_legacy!(users(:user_admin))
+    get :index
+    assert_response :success
+    assert_select 'body.cartoway-v2', 1
+    assert_select '#roles-list .v2-index-card', minimum: 1
+  end
+
+  test 'create as turbo stream appends the card and a blank name is 422' do
+    assert_difference('Role.count', 1) do
+      post :create, params: { v2_sidebar: '1', role: { name: 'Stream role' } }, format: :turbo_stream
+    end
+    assert_response :success
+    assert_match(/turbo-stream action="append"/, response.body)
+
+    assert_no_difference('Role.count') do
+      post :create, params: { v2_sidebar: '1', role: { name: '' } }
+    end
+    assert_response :unprocessable_entity
+  end
+
+  test 'edit sidebar has no selectpicker' do
+    get :edit, params: { id: @role.id }
+    assert_response :success
+    assert_select 'turbo-frame#form_sidebar', 1
+    assert_select '#role-form-sidebar', 1
+    assert_select '.selectpicker', 0
+    assert_select '#role_operations_mobile_access', 0
+    assert_select '#role-permissions #role-operations-mobile .accordion', 1
+    assert_select "#role-permissions ##{ActionView::RecordIdentifier.dom_id(@role, 'operations_mobile_capabilities')}.transfer-list--3-cols.transfer-list--stacked", 1
+    assert_select "##{ActionView::RecordIdentifier.dom_id(@role, 'operations_mobile_capabilities')} .transfer-list-item", minimum: 1
+    assert_includes response.body, 'operations_mobile'
+  end
+
+  test 'update persists operations mobile capability tiers' do
+    patch :update, params: {
+      id: @role.id,
+      role: {
+        name: @role.name,
+        spaces_ui: '1',
+        spaces_active: %w[operations_mobile],
+        operations_mobile: {
+          usable: %w[stops.proofs],
+          visible: %w[routes.read_all]
+        }
+      }
+    }
+    assert_redirected_to edit_admin_role_path(@role)
+    @role.reload
+    caps = @role.operations_mobile['capabilities']
+    refute @role.operations_mobile.key?('access')
+    assert @role.spaces['operations_mobile']['usable']
+    assert_equal 'usable', caps['stops.proofs']
+    assert_equal 'visible', caps['routes.read_all']
+    refute caps.key?('routes.read_assigned')
+    refute caps.key?('catalog.read')
+    assert_equal 'usable',
+                 OperationsMobile.read(@role.operations_mobile, access_usable: true).dig('capabilities', 'routes.read_assigned')
   end
 
   test 'destroy succeeds when users are assigned to role' do

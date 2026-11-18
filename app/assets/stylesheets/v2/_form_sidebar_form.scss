@@ -2,6 +2,13 @@
 // Shared styles for forms rendered in turbo-frame#form_sidebar.
 // Add `.form-sidebar-form` on the form; use `--full-bleed` when columns should fill the panel.
 
+// Customer form subsections: reuse .v2-collapse-toggle, keep h6 sizing.
+.customer-form-accordion-toggle.v2-collapse-toggle {
+  font-size: inherit;
+  font-weight: 600;
+  padding: 0.45rem 0;
+}
+
 .form-sidebar-form {
   .input-group {
     flex-wrap: wrap;
@@ -94,6 +101,15 @@
     display: none !important;
   }
 
+  .customer-form-check {
+    margin-bottom: 0.75rem;
+
+    .form-text {
+      display: block;
+      margin-top: 0.25rem;
+    }
+  }
+
   .form-check {
     display: flex;
     align-items: center;
@@ -104,8 +120,17 @@
 
     .form-check-input {
       float: none;
-      margin: 0;
+      margin-top: 0;
+      margin-bottom: 0;
+      margin-left: 0;
+      margin-right: 0;
       flex-shrink: 0;
+    }
+
+    .form-check-label {
+      margin-bottom: 0;
+      padding-top: 0;
+      line-height: 1.25;
     }
   }
 
@@ -130,5 +155,17 @@
       padding-left: 0;
       padding-right: 0;
     }
+  }
+}
+
+// Win over body[data-controller*='-v2'] .form-check { display: block } + input margin-top.
+body[data-controller*='-v2'] .form-sidebar-form .form-check,
+body.cartoway-v2 .form-sidebar-form .form-check {
+  display: flex;
+  align-items: center;
+
+  .form-check-input {
+    margin-top: 0;
+    margin-right: 0;
   }
 }

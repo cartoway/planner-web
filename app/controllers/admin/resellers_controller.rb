@@ -80,6 +80,7 @@ class Admin::ResellersController < ApplicationController
       :extra_dashboard_url,
       :planning_dashboard_url,
       :default_role_id,
+      :default_driver_role_id,
       :default_profile_id,
       :default_router_id,
       messagings: {
@@ -88,6 +89,7 @@ class Admin::ResellersController < ApplicationController
       }
     )
     p[:default_role_id] = nil if p[:default_role_id].blank?
+    p[:default_driver_role_id] = nil if p[:default_driver_role_id].blank?
     p[:default_profile_id] = nil if p[:default_profile_id].blank?
     p[:default_router_id] = nil if p[:default_router_id].blank?
     p

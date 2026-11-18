@@ -9,18 +9,24 @@ class Admin::UsersControllerTest < ActionController::TestCase
   end
 
   test 'should get index' do
+    # GET /admin/users lists nothing: redirect to the Accounts screen.
     get :index
-    assert_response :success
-    assert_not_nil assigns(:users)
-    assert_valid response
+    assert_response :see_other
+    assert_redirected_to admin_accounts_path
   end
 
-  test 'index shows role icon with role name as title when user has a role' do
+  test 'customers index shows role icon with role name as title when user has a role' do
     return unless Role.column_names.include?('icon')
 
     role = Role.create!(reseller: @reseller, name: 'Liste rôle test', icon: 'fa-star', color: '#336699')
     @user.update!(role_id: role.id)
 
+    get :index
+    assert_redirected_to admin_accounts_path
+
+    # Role icons live on the customers index membership dropdown, not accounts.
+    @controller = CustomersController.new
+    sign_in users(:user_admin)
     get :index
     assert_response :success
     assert_match(/title="Liste rôle test"/, @response.body)

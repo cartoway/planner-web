@@ -17,8 +17,17 @@
 #
 class Identity < ApplicationRecord
   belongs_to :user
+  belongs_to :account
+
+  before_validation :copy_account_from_user
 
   validates :provider, presence: true
   validates :uid, presence: true
   validates :uid, uniqueness: { scope: :provider }
+
+  private
+
+  def copy_account_from_user
+    self.account_id ||= user&.account_id
+  end
 end

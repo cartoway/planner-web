@@ -1,0 +1,62 @@
+-# Copyright © Cartoway
+- active_spaces, disabled_spaces, hidden_spaces = @role.spaces_resources_three_way_split
+- accordion_space_actions = dom_id(@role, 'space_actions_accordion')
+- accordion_planning_toolbar = dom_id(@role, 'planning_toolbar_accordion')
+%fieldset#role-permissions
+  %legend= t('admin.roles.form.permissions_legend')
+  %p.form-text= t('admin.roles.form.permissions_help')
+  = hidden_field_tag 'role[spaces_ui]', '1'
+  = hidden_field_tag 'role[spaces_active][]', ''
+  = hidden_field_tag 'role[spaces_disabled][]', ''
+  %h3.h6= t('admin.roles.form.spaces_title')
+  %p.form-text= t('admin.roles.form.spaces_help')
+  %p.form-text= t('admin.roles.form.spaces_channel_help')
+  = render 'v2/shared/transfer_list', id: dom_id(@role, 'spaces_resources'), show_order: false, stacked: true, columns: role_permission_three_tier_columns(active_name: 'role[spaces_active][]', disabled_name: 'role[spaces_disabled][]', active_items: role_transfer_items(active_spaces) { |sid| role_space_resource_label(sid) }, disabled_items: role_transfer_items(disabled_spaces) { |sid| role_space_resource_label(sid) }, hidden_items: role_transfer_items(hidden_spaces) { |sid| role_space_resource_label(sid) })
+  - if active_spaces.any?
+    %h3.h6.mt-3= t('admin.roles.form.space_actions_section_title')
+    %p.form-text= t('admin.roles.form.space_actions_help')
+    .accordion{id: accordion_space_actions}
+      - active_spaces.each do |space_key|
+        - next if Preferences::Catalog::SPACE_ACTIONS.fetch(space_key, []).empty?
+        - cid_sa = dom_id(@role, "space_actions_#{space_key}")
+        - collapse_id = "#{cid_sa}_collapse"
+        - active_a, disabled_a, hidden_a = @role.space_actions_tier_split(space_key)
+        .accordion-item
+          %h4.accordion-header
+            %button.accordion-button.collapsed{type: 'button', data: { bs_toggle: 'collapse', bs_target: "##{collapse_id}" }}= role_space_resource_label(space_key)
+          .accordion-collapse.collapse{id: collapse_id}
+            .accordion-body
+              = hidden_field_tag "role[spaces_actions][#{space_key}][active][]", ''
+              = hidden_field_tag "role[spaces_actions][#{space_key}][disabled][]", ''
+              = render 'v2/shared/transfer_list', id: cid_sa, show_order: false, stacked: true, columns: role_permission_three_tier_columns(active_name: "role[spaces_actions][#{space_key}][active][]", disabled_name: "role[spaces_actions][#{space_key}][disabled][]", hidden_name: "role[spaces_actions][#{space_key}][hidden][]", active_items: role_transfer_items(active_a) { |aid| role_space_action_label(space_key, aid) }, disabled_items: role_transfer_items(disabled_a) { |aid| role_space_action_label(space_key, aid) }, hidden_items: role_transfer_items(hidden_a) { |aid| role_space_action_label(space_key, aid) })
+  %h3.h6.mt-3= t('admin.roles.form.planning_toolbar_section_title')
+  %p.form-text= t('users.form.display_ui.operations_help')
+  .accordion{id: accordion_planning_toolbar}
+    - %w[planning route stop].each do |zone|
+      - cid = dom_id(@role, "operations_#{zone}")
+      - collapse_id = "#{cid}_collapse"
+      - active_o, disabled_o, hidden_o = @role.planning_toolbar_tier_split(zone)
+      .accordion-item
+        %h4.accordion-header
+          %button.accordion-button.collapsed{type: 'button', data: { bs_toggle: 'collapse', bs_target: "##{collapse_id}" }}= t("users.form.display_ui.#{zone}_toolbar")
+        .accordion-collapse.collapse{id: collapse_id}
+          .accordion-body
+            = hidden_field_tag "role[planning_toolbar][#{zone}][]", ''
+            = hidden_field_tag "role[planning_toolbar][#{zone}_disabled][]", ''
+            = render 'v2/shared/transfer_list', id: cid, show_order: false, stacked: true, columns: role_permission_three_tier_columns(active_name: "role[planning_toolbar][#{zone}][]", disabled_name: "role[planning_toolbar][#{zone}_disabled][]", active_items: role_transfer_items(active_o) { |sid| t("display_ui.operations.#{sid}", default: sid.to_s.humanize) }, disabled_items: role_transfer_items(disabled_o) { |sid| t("display_ui.operations.#{sid}", default: sid.to_s.humanize) }, hidden_items: role_transfer_items(hidden_o) { |sid| t("display_ui.operations.#{sid}", default: sid.to_s.humanize) })
+  - document = @role.operations_mobile.is_a?(Hash) ? @role.operations_mobile : {}
+  - usable_caps, visible_caps, none_caps = OperationsMobile.capability_three_way_split(document)
+  - accordion_operations_mobile = dom_id(@role, 'operations_mobile_accordion')
+  - operations_mobile_collapse_id = "#{accordion_operations_mobile}_collapse"
+  #role-operations-mobile
+    %h3.h6.mt-3= t('admin.roles.operations_mobile.title')
+    %p.form-text= t('admin.roles.operations_mobile.help')
+    .accordion{id: accordion_operations_mobile}
+      .accordion-item
+        %h4.accordion-header
+          %button.accordion-button.collapsed{type: 'button', data: { bs_toggle: 'collapse', bs_target: "##{operations_mobile_collapse_id}" }}= t('admin.roles.operations_mobile.capabilities_title')
+        .accordion-collapse.collapse{id: operations_mobile_collapse_id}
+          .accordion-body
+            = hidden_field_tag 'role[operations_mobile][usable][]', ''
+            = hidden_field_tag 'role[operations_mobile][visible][]', ''
+            = render 'v2/shared/transfer_list', id: dom_id(@role, 'operations_mobile_capabilities'), show_order: false, stacked: true, columns: role_permission_three_tier_columns(active_name: 'role[operations_mobile][usable][]', disabled_name: 'role[operations_mobile][visible][]', active_items: role_transfer_items(usable_caps) { |key| role_operations_mobile_capability_label(key) }, disabled_items: role_transfer_items(visible_caps) { |key| role_operations_mobile_capability_label(key) }, hidden_items: role_transfer_items(none_caps) { |key| role_operations_mobile_capability_label(key) })

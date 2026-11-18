@@ -368,8 +368,8 @@ class VehicleUsageSetsController < ApplicationController
                                               :max_ride_distance,
                                               :max_ride_duration,
                                               store_reload_ids: [])
-    parameters[:max_distance] = DistanceUnits.distance_to_meters(parameters[:max_distance], @current_user.prefered_unit) if parameters.key?(:max_distance)
-    parameters[:max_ride_distance] = DistanceUnits.distance_to_meters(parameters[:max_ride_distance], @current_user.prefered_unit) if parameters.key?(:max_ride_distance)
+    parameters[:max_distance] = DistanceUnits.distance_to_meters(parameters[:max_distance], current_user.prefered_unit) if parameters.key?(:max_distance)
+    parameters[:max_ride_distance] = DistanceUnits.distance_to_meters(parameters[:max_ride_distance], current_user.prefered_unit) if parameters.key?(:max_ride_distance)
     parameters
   end
 

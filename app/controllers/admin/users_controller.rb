@@ -25,7 +25,7 @@ class Admin::UsersController < ApplicationController
   before_action :find_roles_for_select, except: [:index, :destroy_multiple]
 
   def index
-    @users = User.from_customers_for_reseller_id(current_user.reseller_id).includes(:role)
+    redirect_to admin_accounts_path, status: :see_other
   end
 
   def new
@@ -40,7 +40,12 @@ class Admin::UsersController < ApplicationController
     send_password_email = send_password_email_requested?(attrs)
     attrs = attrs.except(:send_email, 'send_email')
     @user = User.new(attrs.merge(password: password, password_confirmation: password))
-    if @user.save
+    # QR memberships may omit email. This admin form refuses a blank one (P1).
+    if @user.email.blank?
+      @user.validate
+      @user.errors.add(:email, :blank) if @user.errors[:email].blank?
+      render action: :new
+    elsif @user.save
       @user.send_password_email if send_password_email
       redirect_to_default
     else
@@ -49,7 +54,12 @@ class Admin::UsersController < ApplicationController
   end
 
   def update
-    if @user.update(user_params)
+    @user.assign_attributes(user_params)
+    if @user.email.blank?
+      @user.validate
+      @user.errors.add(:email, :blank) if @user.errors[:email].blank?
+      render action: :edit
+    elsif @user.save
       redirect_to_default
     else
       render action: :edit

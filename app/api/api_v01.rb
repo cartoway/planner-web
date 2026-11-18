@@ -31,6 +31,7 @@ class ApiV01 < Grape::API
 
   default_format :json
 
+  mount V01::Driver
   mount V01::Api
 
   add_swagger_documentation(

@@ -1,7 +1,9 @@
 require 'exceptions'
 require_relative '../api_request_transaction'
+require_relative '../time_zone_guard'
 
 class V100::Api < Grape::API
+  use TimeZoneGuard
   helpers do
     include CancanGrapeHelpers
 
@@ -20,7 +22,7 @@ class V100::Api < Grape::API
     def current_customer(customer_id = nil)
       api_key = headers['Api-Key'] || params[:api_key]
       @current_user ||= api_key && User.find_by(api_key: api_key)
-      @current_user ||= warden.authenticated? && warden.user
+      @current_user ||= warden.authenticated? && Workspaces::EffectiveUser.call(warden.user, session)
       @current_customer ||= @current_user && (@current_user.admin? && customer_id ? @current_user.reseller.customers.find(customer_id) : @current_user.customer)
     end
 

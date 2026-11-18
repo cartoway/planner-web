@@ -8,6 +8,7 @@ import {
   fillClusterMarker,
   fillDestinationMarker,
   geojsonClusterSourceOptions,
+  UNFOLDED_CLUSTER_MAX_LEAVES,
   teritorioClusterOptions
 } from 'maplibre/destination_markers'
 import { pointsToFeatures } from 'maplibre/map_points'
@@ -20,6 +21,9 @@ export const DECLUSTER_LAYER_ID = 'destinations-v2-decluster-viewport-points'
 const FETCH_DEBOUNCE_MS = 300
 const BBOX_PADDING_RATIO = 0.35
 const PRUNE_MARGIN_RATIO = 2.5
+// OSM (and most raster bases) stop around z19. Cluster fitBounds above that 400s tiles.
+// Stacked leaves spider in place instead of chasing z22+.
+export const CLUSTER_FIT_MAX_ZOOM = 18
 
 function paddedBounds (map) {
   const b = map.getBounds()
@@ -45,12 +49,13 @@ function featureKey (feature) {
 }
 
 export class DestinationsMapLayers {
-  constructor (map, { buildUrl, staticFeatures, onPointClick, onFeaturesUpdated, getMovePadding, signal }) {
+  constructor (map, { buildUrl, staticFeatures, onPointClick, onFeaturesUpdated, isFeatureActive, getMovePadding, signal }) {
     this.map = map
     this.buildUrl = buildUrl
     this.staticFeatures = Array.isArray(staticFeatures) ? staticFeatures : null
     this.onPointClick = onPointClick
     this.onFeaturesUpdated = onFeaturesUpdated
+    this.isFeatureActive = isFeatureActive
     this.getMovePadding = getMovePadding
     this.signal = signal
     this._featureCache = new Map()
@@ -65,6 +70,8 @@ export class DestinationsMapLayers {
     this._cluster = null
     this._declusterCluster = null
     this._disposed = false
+    // Raised on cluster click when leaves cannot be separated by zoom (stacked points).
+    this._unfoldedClusterMaxLeaves = null
     this._boundHandlers = {
       moveend: () => this._onMoveEnd(),
       resize: () => this._syncFitBoundsOptions(),
@@ -119,7 +126,18 @@ export class DestinationsMapLayers {
     this._removeLayers()
     this._featureCache.clear()
     this._hiddenIds.clear()
+    this._unfoldedClusterMaxLeaves = null
     this._declusterViewportActive = false
+  }
+
+  /** Replace static point set (customers index filter) and redraw clusters. */
+  replaceStaticFeatures (features) {
+    if (!this._isStatic() || this._disposed) return
+    this.staticFeatures = Array.isArray(features) ? features : []
+    this._featureCache.clear()
+    this._mergeFeatures(this.staticFeatures)
+    this._pushSourceData()
+    if (this.onFeaturesUpdated) this.onFeaturesUpdated()
   }
 
   _isCurrentEpoch (epoch) {
@@ -163,11 +181,15 @@ export class DestinationsMapLayers {
     this._hiddenIds.forEach((id) => {
       let node = null
       try {
-        node = container.querySelector(`[id="${CSS.escape(id)}"]`)
+        // Only Teritorio discs use the feature id. Edit pins are --dom-pin without id.
+        node = container.querySelector(`.destinations-marker[id="${CSS.escape(id)}"]:not(.destinations-marker--dom-pin)`)
       } catch (e) {
         return
       }
-      if (!node || node.classList.contains('destinations-marker--active')) return
+      // Hide even --active discs: position-edit uses a separate DOM pin, and leaving the
+      // yellow Teritorio disc visible keeps a stale active colour after form switches.
+      if (!node) return
+      node.classList.remove('destinations-marker--active')
       node.style.visibility = 'hidden'
     })
   }
@@ -192,7 +214,9 @@ export class DestinationsMapLayers {
     const fitBounds = options.fitBounds !== false
     this._loadedBounds = null
     this._declusterViewportActive = false
+    this._unfoldedClusterMaxLeaves = null
     this._featureCache.clear()
+    this._syncUnfoldedClusterMaxLeaves()
 
     // Filter applied before the map finished loading: initial viewport will use this epoch + current filters.
     if (!this._layersReady) return
@@ -236,7 +260,7 @@ export class DestinationsMapLayers {
 
   _syncFitBoundsOptions () {
     const padding = typeof this.getMovePadding === 'function' ? this.getMovePadding() : 48
-    const options = { padding: padding || 48, maxZoom: 16 }
+    const options = { padding: padding || 48, maxZoom: CLUSTER_FIT_MAX_ZOOM }
     if (this._cluster) this._cluster.setBoundsOptions(options)
     if (this._declusterCluster) this._declusterCluster.setBoundsOptions(options)
   }
@@ -321,13 +345,23 @@ export class DestinationsMapLayers {
       clusterRender (element, props) {
         fillClusterMarker(element, props)
       },
-      markerRender (element, _markerSize, feature) {
-        const name = feature && feature.properties && feature.properties.name
-        fillDestinationMarker(element, { name, anchored: true })
+      markerRender: (element, _markerSize, feature) => {
+        const props = feature && feature.properties
+        const name = props && props.name
+        fillDestinationMarker(element, {
+          name,
+          anchored: true,
+          status: props && props.status,
+          color: props && props.color
+        })
+        if (typeof this.isFeatureActive === 'function' && this.isFeatureActive(feature)) {
+          element.classList.add('destinations-marker--active')
+        }
       },
+
       pinMarkerRender (coords, offset) {
-        // Selection is the controller's draggable pin. Keep Teritorio's pin invisible
-        // so a click does not stack a second marker on the point.
+        // Index selection paints the Teritorio disc; destinations/stores may still
+        // add a MapLibre DOM pin for position edit. Keep Teritorio's pin invisible.
         const el = document.createElement('div')
         el.className = 'destinations-marker-pin-placeholder'
         const marker = new maplibregl.Marker({ element: el }).setLngLat(coords)
@@ -335,8 +369,86 @@ export class DestinationsMapLayers {
         return marker
       }
     }))
+    this._patchClusterExpand(layer)
     layer.addEventListener('feature-click', this._boundHandlers.featureClick)
     return layer
+  }
+
+  // Teritorio cluster click → fitBounds (tile-safe maxZoom). Stacked / still-tight
+  // leaves: raise unfoldedClusterMaxLeaves and re-render so Teritorio spiders.
+  _patchClusterExpand (layer) {
+    if (!layer || layer._cartowayExpandPatched) return
+    layer._cartowayExpandPatched = true
+    const original = layer.fitBoundsToClusterLeaves.bind(layer)
+    layer.fitBoundsToClusterLeaves = (features) => {
+      const leaves = features || []
+      if (leaves.length === 0) return
+      if (this._clusterLeavesAreStacked(leaves)) {
+        this._spiderClusterLeaves(leaves.length)
+        return
+      }
+      original(leaves)
+      this.map.once('moveend', () => {
+        if (this._disposed || !layer.map) return
+        // Hit tile-safe ceiling or leaves still share one point → spider in place.
+        if (this._clusterLeavesAreStacked(leaves) ||
+            this.map.getZoom() >= CLUSTER_FIT_MAX_ZOOM - 0.05) {
+          this._spiderClusterLeaves(leaves.length)
+        }
+      })
+    }
+  }
+
+  _clusterLeavesAreStacked (features) {
+    const coords = (features || [])
+      .map((f) => f.geometry && f.geometry.coordinates)
+      .filter((c) => c && c.length >= 2)
+    if (coords.length < 2) return false
+    let minLng = coords[0][0]
+    let maxLng = coords[0][0]
+    let minLat = coords[0][1]
+    let maxLat = coords[0][1]
+    for (let i = 1; i < coords.length; i++) {
+      const [lng, lat] = coords[i]
+      if (lng < minLng) minLng = lng
+      if (lng > maxLng) maxLng = lng
+      if (lat < minLat) minLat = lat
+      if (lat > maxLat) maxLat = lat
+    }
+    // ~1m-scale span: zoom cannot visually separate these pins.
+    return Math.max(maxLng - minLng, maxLat - minLat) < 1e-5
+  }
+
+  _spiderClusterLeaves (leafCount) {
+    const n = Number(leafCount) || 0
+    if (n <= 0) return
+    const prev = this._unfoldedClusterMaxLeaves
+    this._unfoldedClusterMaxLeaves = Math.max(prev || 0, n)
+    if (this._unfoldedClusterMaxLeaves === prev) {
+      // Cap already high enough but markers may still be a bubble — force re-render.
+      this._rerenderClusters()
+      return
+    }
+    this._syncUnfoldedClusterMaxLeaves()
+    this._rerenderClusters()
+  }
+
+  _syncUnfoldedClusterMaxLeaves () {
+    const n = this._unfoldedClusterMaxLeaves
+    ;[this._cluster, this._declusterCluster].forEach((layer) => {
+      if (!layer || !layer.opts) return
+      layer.opts.unfoldedClusterMaxLeaves = n == null
+        ? UNFOLDED_CLUSTER_MAX_LEAVES
+        : Math.max(UNFOLDED_CLUSTER_MAX_LEAVES, n)
+    })
+  }
+
+  _rerenderClusters () {
+    ;[this._cluster, this._declusterCluster].forEach((layer) => {
+      if (!layer || typeof layer.renderCustom !== 'function') return
+      layer.abortExec += 1
+      layer.renderCustom(layer.abortExec)
+    })
   }
 
   _handleFeatureClick (event) {

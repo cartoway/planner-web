@@ -1,27 +1,13 @@
-- javascript 'admin_roles'
-= bootstrap_form_for [:admin, @role], layout: :horizontal, html: { class: 'form-horizontal' } do |f|
+= bootstrap_form_for [:admin, @role], layout: :horizontal, builder: BootstrapForm::V2FormBuilder, label_col: 'col-md-10 offset-md-1 fw-bold', control_col: 'col-md-10 offset-md-1 field', html: { id: 'role-form-sidebar', class: 'form-horizontal form-sidebar-form form-sidebar-form--full-bleed', data: { turbo_frame: 'form_sidebar', v2__dirty_form_submit_target: 'form' } } do |f|
+  = hidden_field_tag :v2_sidebar, '1'
   = render 'shared/error_messages', model: @role
   %fieldset#role-details
     = f.text_field :name, required: true
     = f.text_field :ref, help: t('.ref_help')
     = f.color_field :color, help: t('.color_help')
-    .row
-      %label.col-md-offset-2.col-md-2.control-label= t('activerecord.attributes.role.icon')
-      .col-md-offset-2.col-md-8.field
-        = select_tag 'role[icon]', grouped_options_for_select([                                                                                                                  |
-          [t('roles.form.prefered_icons'),                                                                                                                                       |
-            @grouped_role_icons[0].map { |icon| [icon, icon, { data: { content: "<i class='fa fa-fw #{icon}'></i> #{icon}" }, selected: (@role.icon == icon) ? true : nil }]},], |
-            [t('roles.form.other_icons'),                                                                                                                                        |
-              @grouped_role_icons[1].map { |icon| [icon, icon, { data: { content: "<i class='fa fa-fw #{icon}'></i> #{icon}" }, selected: (@role.icon == icon) ? true : nil }]}  |
-            ]                                                                                                                                                                    |
-          ]), include_blank: t('web.form.default', n: 'fa-hammer'), class: 'form-control  width_1_2 selectpicker', 'data-live-search' => 'true'                                  |
-        %p.help-block= t('admin.roles.form.icon_help')
-  %fieldset#role-permissions
-    %legend= t('admin.roles.form.permissions_legend')
-    %p.help-block.col-md-offset-2= t('admin.roles.form.permissions_help')
-    = render 'shared/role_permissions_admin_drag_drop',
-      record: @role,
-      param_prefix: 'role',
-      label_col_classes: 'control-label col-md-offset-2 col-md-2',
-      field_col_classes: 'col-md-offset-2 col-md-8 field'
-  = f.submit
+    .mb-3.row
+      %label.col-form-label.col-md-10.offset-md-1.fw-bold{for: 'role_icon'}= t('activerecord.attributes.role.icon')
+      .col-md-10.offset-md-1.field
+        = select_tag 'role[icon]', grouped_options_for_select([[t('roles.form.prefered_icons'), @grouped_role_icons[0]], [t('roles.form.other_icons'), @grouped_role_icons[1]]], @role.icon), include_blank: t('web.form.default', n: 'fa-hammer'), class: 'form-select', id: 'role_icon', data: { controller: 'v2--tom-select', v2__tom_select_simple_value: true }
+        %p.form-text= t('admin.roles.form.icon_help')
+  = render 'permissions'
