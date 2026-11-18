@@ -227,7 +227,8 @@ class OperationStop < ApplicationRecord
     I18n.t("#{scope}.#{code}", default: I18n.t("plannings.edit.stop_status.#{code}", default: status))
   end
 
-  # Delay vs planned departure (service end), not arrival.
+  # Plan deviation vs planned departure (service end), not arrival.
+  # Prefer plan_deviation_minutes in new code; delay_minutes kept for board/JS dataset keys.
   def delay_minutes
     return unless treated?
 
@@ -236,6 +237,27 @@ class OperationStop < ApplicationRecord
     return if planned.blank? || actual.blank?
 
     ((actual - planned) / 60.0).round
+  end
+  alias plan_deviation_minutes delay_minutes
+
+  # Lateness vs the closest visit time window in real minutes (not optimizer soft_upper_bound scoring).
+  # Honours enable_strict_within_timewindows like planning (frozen on planning_snapshot).
+  def time_window_delay_minutes
+    return unless treated?
+
+    arrival = seconds_from_operation_day(actual_arrival_at)
+    return if arrival.blank?
+
+    windows = visit_time_windows
+    return if windows.empty?
+
+    close_compare = strict_within_timewindows? ? arrival + service_duration_seconds : arrival
+    _open, close = windows.min_by { |open, window_close|
+      eval_time_window(open, window_close, arrival, close_compare).abs
+    }
+    return 0 if close.blank? || close_compare <= close
+
+    ((close_compare - close) / 60.0).round
   end
 
   def actual_quantity(kind, unit_id)
@@ -465,6 +487,49 @@ class OperationStop < ApplicationRecord
     return false if eta.blank? || planned.blank?
 
     ((eta - planned) / 60.0) > LATE_AFTER_MINUTES
+  end
+
+  def visit_time_windows
+    visit = visit_snapshot || {}
+    (1..2).filter_map { |index|
+      open = visit["time_window_start_#{index}"]
+      close = visit["time_window_end_#{index}"]
+      next if open.blank? && close.blank?
+
+      [open&.to_i, close&.to_i]
+    }
+  end
+
+  def seconds_from_operation_day(time)
+    return if time.blank?
+
+    date = operation_route.operation.date
+    return if date.blank?
+
+    (time - Time.zone.local(date.year, date.month, date.day)).to_i
+  end
+
+  # Signed distance for window pick: negative before open, positive after close, else 0.
+  # Unweighted on purpose — unlike Stop#eval_open_close, this is an ops metric not an optimizer score.
+  def eval_time_window(open, close, arrival, close_compare)
+    if open && arrival < open
+      arrival - open
+    elsif close && close_compare > close
+      close_compare - close
+    else
+      0
+    end
+  end
+
+  # Prefer the value frozen at publish/sync; fall back for legacy ops without the key.
+  def strict_within_timewindows?
+    snap = operation_route.operation.planning_snapshot
+    if snap.is_a?(Hash) && snap.key?('enable_strict_within_timewindows')
+      ActiveModel::Type::Boolean.new.cast(snap['enable_strict_within_timewindows'])
+    else
+      # TODO: backfill planning_snapshot then drop customer fallback.
+      operation_route.operation.customer.enable_strict_within_timewindows
+    end
   end
 
   def visit_snapshot_present

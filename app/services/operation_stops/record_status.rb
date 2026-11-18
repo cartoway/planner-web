@@ -65,7 +65,6 @@ module OperationStops
     def stop_patch_payload(route)
       board = route.board
       stop = @operation_stop
-      delay = stop.delay_minutes
       {
         stop_id: stop.id,
         route_id: route.id,
@@ -77,8 +76,8 @@ module OperationStops
         actual_arrival_clock: stop.actual_arrival_clock,
         planned_departure_clock: stop.planned_departure_clock,
         actual_departure_clock: stop.actual_departure_clock,
-        delay: delay,
-        aside: stop_aside(stop, delay),
+        delay: stop.delay_minutes,
+        asides: OperationStops::Asides.call(stop),
         started: route.started?,
         route: {
           delivered: board[:delivered],
@@ -89,30 +88,10 @@ module OperationStops
           current: board[:current],
           total: board[:total],
           delay: board[:delay],
+          window_delay: board[:window_delay],
           units: board[:units]
         }
       }
-    end
-
-    def stop_aside(stop, delay)
-      phase = stop.phase
-      if phase == 'failed'
-        { css: 'operation-gap is-bad', kind: 'status' }
-      elsif phase == 'exception'
-        { css: 'operation-gap is-exception', kind: 'exception' }
-      elsif phase == 'started'
-        { css: 'badge operation-now', kind: 'status' }
-      elsif phase == 'current'
-        { css: 'badge operation-now', kind: 'en_route' }
-      elsif (stop.kind == 'store' && stop.treated?) || (phase == 'delivered' && delay&.negative?)
-        { css: 'operation-gap is-ok', kind: 'status' }
-      elsif delay && delay > OperationStop::LATE_AFTER_MINUTES
-        { css: 'operation-gap is-late', kind: 'late' }
-      elsif delay
-        { css: 'operation-gap is-ok', kind: 'delay' }
-      elsif phase == 'late'
-        { css: 'operation-gap is-late', kind: 'late_risk' }
-      end
     end
 
     # rubocop:disable Naming/PredicateMethod

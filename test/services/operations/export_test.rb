@@ -76,6 +76,7 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes sheet, I18n.t('operations.export.columns.status_lng')
     assert_includes sheet, I18n.t('operations.export.columns.planned_arrival')
     assert_includes sheet, I18n.t('operations.export.columns.delay_minutes')
+    assert_includes sheet, I18n.t('operations.export.columns.window_delay_minutes')
     assert_includes sheet, I18n.t('operations.export.columns.tracking_url')
     assert_includes sheet, @operation.name
     assert_includes sheet, I18n.t('operations.export.columns.stop_index')
@@ -273,6 +274,7 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes html, %(href="media/route_#{route.id}/stop_#{@stop.id}")
     assert_includes html, 'media-folder'
     assert_includes html, I18n.t('operations.export.open_media')
+    assert_includes html, I18n.t('operations.show.plan_deviation')
     assert_includes html, I18n.t('operations.show.cumulative_delay')
     assert_includes html, 'stops.xlsx'
     assert_operator entries["delivery_notes/stop_#{@stop.id}.pdf"], :start_with?, '%PDF'

@@ -4138,7 +4138,8 @@ en:
         planned_departure: Planned departure
         actual_arrival: Actual arrival
         actual_departure: Actual departure
-        delay_minutes: Delay
+        delay_minutes: Gap
+        window_delay_minutes: Window delay
         time_windows: Time windows
         stop_distance: Distance
         stop_drive_time: Drive duration
@@ -4232,7 +4233,8 @@ en:
       waiting_group: Waiting
       refresh: Refresh
       en_route: On the way
-      late: "Late +%{count} min"
+      plan_gap: "Deviation +%{count} min"
+      window_late: "Late +%{count} min"
       late_risk: Delay risk
       filter_all: All
       filter_late: Late
@@ -4241,7 +4243,8 @@ en:
       filter_upcoming: Upcoming
       filter_en_route: On the way
       filter_delivered: Delivered
-      cumulative_delay: Cumulative delays
+      plan_deviation: Gap vs plan
+      cumulative_delay: Cumulative window delays
       distance: Distance
       parcels: Parcels
       quantities: Quantities

@@ -104,10 +104,13 @@ class RecordStatusTest < ActiveSupport::TestCase
     json = CGI.unescapeHTML(content[%r{<template>(.*)</template>}m, 1].to_s)
     payload = JSON.parse(json)
     assert_equal 'delivered', payload['status']
-    assert payload.dig('aside', 'kind')
+    assert_kind_of Array, payload['asides']
+    assert payload['asides'].first&.dig('kind')
+    assert payload['asides'].first&.dig('label').present?
+    assert payload['asides'].first&.key?('css')
     refute payload.key?('status_label')
     refute payload.key?('stops_label')
-    refute payload.dig('aside', 'text')
+    refute payload['asides'].any? { |aside| aside.key?('text') }
     refute_includes json, I18n.t('operations.show.stops', locale: :en)
   end
 
