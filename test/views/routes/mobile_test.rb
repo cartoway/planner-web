@@ -146,9 +146,13 @@ class RouteMobileTest < ActiveSupport::TestCase
 
     assert last_response.ok?
     assert_includes last_response.body, 'stop-photos-pick'
-    assert_match(/<label[^>]*stop-photos-pick[\s\S]*?stop-photos-camera-input/m, last_response.body)
+    assert_includes last_response.body, 'stop-photos-camera-open'
+    assert_includes last_response.body, 'stop-photos-camera-input'
     assert_includes last_response.body, 'stop-photos-gallery-input'
     assert_match(/capture=["']environment["']/, last_response.body)
+    assert_includes last_response.body, 'stop-camera-modal'
+    assert_includes last_response.body, 'stop-camera-modal-shutter'
+    assert_includes last_response.body, 'stop-camera-modal-video'
     assert_includes last_response.body, 'stop-documents-accordion d-none'
     refute_match(/stop-documents-toggle[^>]*data-toggle/, last_response.body)
     refute_includes last_response.body, 'stop-photo-remove'
@@ -156,6 +160,7 @@ class RouteMobileTest < ActiveSupport::TestCase
     assert_includes last_response.body, I18n.t('stops.mobile.documents_loaded')
     assert_includes last_response.body, "data-max-count='#{ProofAttachments::PHOTO_MAX_COUNT}'"
     assert_includes last_response.body, I18n.t('stops.mobile.photos_too_many', count: ProofAttachments::PHOTO_MAX_COUNT)
+    assert_includes last_response.body, I18n.t('stops.mobile.photos_process_error')
     assert_includes last_response.body, 'stop-photo-modal'
     assert_includes last_response.body, 'stop-photo-modal-prev'
     assert_includes last_response.body, 'stop-photo-modal-next'

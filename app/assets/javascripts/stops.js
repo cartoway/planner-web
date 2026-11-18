@@ -473,7 +473,8 @@ function initStopPhotos() {
     input.value = '';
 
     var maxCount = Number(panel.data('max-count')) || 10;
-    var current = documentsRoot(panel).find('.stop-documents-list .stop-photo:not(.stop-photo-pending):not(.stop-signature-doc)').length;
+    // Include pending thumbs so rapid picks cannot overrun max before upload finishes.
+    var current = documentsRoot(panel).find('.stop-documents-list .stop-photo:not(.stop-signature-doc)').length;
     if (current + rawFiles.length > maxCount) {
       showMobileFailed(panel.data('too-many') || 'Photos');
       return;
@@ -515,6 +516,9 @@ function initStopPhotos() {
             }
             queuePhotoUpload(panel, files);
           });
+        }).catch(function() {
+          panel.find('[data-pending="compressing"]').remove();
+          showMobileFailed(panel.data('process-error') || panel.data('too-many') || 'Photos');
         });
       }, 0);
     });
@@ -581,6 +585,17 @@ function onStopPhotosClick(e) {
     e.preventDefault();
     e.stopPropagation();
     openStopPhotoModal(open);
+    return;
+  }
+
+  // Desktop/shared partial: no in-page camera modal — open the native capture input.
+  var cameraOpen = el.closest('.stop-photos-camera-open');
+  if (cameraOpen) {
+    e.preventDefault();
+    e.stopPropagation();
+    var photos = cameraOpen.closest('.stop-photos');
+    var cameraInput = photos && photos.querySelector('.stop-photos-camera-input');
+    if (cameraInput) cameraInput.click();
     return;
   }
 
