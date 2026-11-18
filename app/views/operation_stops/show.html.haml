@@ -3,22 +3,12 @@
 - title = stop_list_primary_line(@operation_stop.list_fields).presence || @operation_stop.address_label
 - rest = @operation_stop.kind == 'rest'
 = turbo_frame_tag 'form_sidebar' do
-  - delay = @operation_stop.delay_minutes
   .operation-fiche.operation-stop-detail
     .d-flex.align-items-start.justify-content-between.gap-2
       %h2.mb-0= title
-      - if @operation_stop.phase == 'failed'
-        %span.badge.text-bg-danger= @operation_stop.status_label
-      - elsif @operation_stop.phase == 'exception'
-        %span.badge.operation-exception= t('plannings.edit.stop_status.exception')
-      - elsif @operation_stop.phase == 'started'
-        %span.badge.text-bg-info= @operation_stop.status_label
-      - elsif delay && delay > OperationStop::LATE_AFTER_MINUTES
-        %span.badge.text-bg-warning= t('operations.show.late', count: delay)
-      - elsif @operation_stop.phase == 'delivered' && (rest || delay&.negative?)
-        %span.badge.text-bg-success= @operation_stop.status_label
-      - elsif delay && delay.positive?
-        %span.badge.text-bg-warning= "+#{delay} min"
+      .d-flex.flex-wrap.gap-1.justify-content-end
+        - operation_stop_asides(@operation_stop).each do |aside|
+          %span{class: operation_stop_fiche_badge_class(@operation_stop, aside)}= operation_stop_aside_text(@operation_stop, aside)
     .operation-times
       - [['arrival', @operation_stop.planned_arrival_clock, @operation_stop.actual_arrival_clock, 'estimated'], ['departure', @operation_stop.planned_departure_clock, @operation_stop.actual_departure_clock, 'actual']].each do |key, planned, actual, secondary|
         .operation-time-block

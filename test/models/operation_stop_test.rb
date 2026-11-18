@@ -101,4 +101,91 @@ class OperationStopTest < ActiveSupport::TestCase
     assert_includes label, '12 rue des Lilas'
     assert_includes label, 'Bordeaux'
   end
+
+  test 'time_window_delay_minutes uses the best matching window not plan deviation' do
+    day = @operation.date
+    @operation.update_columns(
+      planning_snapshot: (@operation.planning_snapshot || {}).merge('enable_strict_within_timewindows' => false)
+    )
+    @stop.update_columns(
+      status: 'delivered',
+      stop_snapshot: (@stop.stop_snapshot || {}).merge('time' => 9 * 3600),
+      visit_snapshot: (@stop.visit_snapshot || {}).merge(
+        'duration' => 10 * 60,
+        'time_window_start_1' => 10 * 3600,
+        'time_window_end_1' => 11 * 3600,
+        'time_window_start_2' => 14 * 3600,
+        'time_window_end_2' => 16 * 3600
+      ),
+      # Arrived 11:20 / left 11:30: 20 min late vs window 1 close, +140 min vs planned departure 09:10
+      status_updated_at: Time.zone.local(day.year, day.month, day.day, 11, 30)
+    )
+
+    assert_equal 140, @stop.delay_minutes
+    assert_equal 20, @stop.time_window_delay_minutes
+
+    board = @stop.operation_route.board
+    assert_equal 140, board[:delay]
+    assert_equal 20, board[:window_delay]
+  end
+
+  test 'time_window_delay_minutes keeps the strict flag frozen on the planning snapshot' do
+    day = @operation.date
+    @operation.update_columns(
+      planning_snapshot: (@operation.planning_snapshot || {}).merge('enable_strict_within_timewindows' => false)
+    )
+    @stop.update_columns(
+      status: 'delivered',
+      stop_snapshot: (@stop.stop_snapshot || {}).merge('time' => 9 * 3600),
+      visit_snapshot: (@stop.visit_snapshot || {}).merge(
+        'duration' => 30 * 60,
+        'time_window_start_1' => 10 * 3600,
+        'time_window_end_1' => 11 * 3600
+      ),
+      # Arrival 10:50: non-strict → on time; strict would count service end 11:20 → 20 min late
+      status_updated_at: Time.zone.local(day.year, day.month, day.day, 11, 20)
+    )
+
+    assert_equal 0, @stop.time_window_delay_minutes
+
+    @planning.customer.update_columns(enable_strict_within_timewindows: true)
+    @stop.reload
+    assert_equal 0, @stop.time_window_delay_minutes
+
+    @operation.update_columns(
+      planning_snapshot: (@operation.planning_snapshot || {}).merge('enable_strict_within_timewindows' => true)
+    )
+    @stop.reload
+    assert_equal 20, @stop.time_window_delay_minutes
+  end
+
+  test 'route board window_delay is 0 when on time and nil when no window data' do
+    day = @operation.date
+    route = @stop.operation_route
+    # Isolate board aggregation to this stop only.
+    route.operation_stops.where.not(id: @stop.id).update_all(status: nil)
+    @operation.update_columns(
+      planning_snapshot: (@operation.planning_snapshot || {}).merge('enable_strict_within_timewindows' => false)
+    )
+    @stop.update_columns(
+      status: 'delivered',
+      stop_snapshot: (@stop.stop_snapshot || {}).merge('time' => 10 * 3600 + 30 * 60),
+      visit_snapshot: (@stop.visit_snapshot || {}).merge(
+        'duration' => 10 * 60,
+        'time_window_start_1' => 10 * 3600,
+        'time_window_end_1' => 11 * 3600,
+        'time_window_start_2' => nil,
+        'time_window_end_2' => nil
+      ),
+      status_updated_at: Time.zone.local(day.year, day.month, day.day, 10, 40)
+    )
+    assert_equal 0, @stop.time_window_delay_minutes
+    assert_equal 0, route.board[:window_delay]
+
+    @stop.update_columns(visit_snapshot: (@stop.visit_snapshot || {}).except(
+      'time_window_start_1', 'time_window_end_1', 'time_window_start_2', 'time_window_end_2'
+    ))
+    assert_nil @stop.time_window_delay_minutes
+    assert_nil route.reload.board[:window_delay]
+  end
 end

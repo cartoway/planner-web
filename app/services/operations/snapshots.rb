@@ -52,7 +52,9 @@ module Operations
         'begin_date' => planning.begin_date&.to_s,
         'end_date' => planning.end_date&.to_s,
         'vehicle_usage_set_id' => planning.vehicle_usage_set_id,
-        'vehicle_usage_set_name' => planning.vehicle_usage_set&.name
+        'vehicle_usage_set_name' => planning.vehicle_usage_set&.name,
+        # Freeze at publish/sync so historized ops keep the rule used then.
+        'enable_strict_within_timewindows' => planning.customer.enable_strict_within_timewindows
       }
     end
 

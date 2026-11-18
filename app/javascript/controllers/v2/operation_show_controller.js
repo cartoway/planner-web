@@ -1335,12 +1335,13 @@ export default class extends Controller {
     const aside = row.querySelector('.operation-stop-aside')
     if (!aside) return
     aside.replaceChildren()
-    const text = this._asideText(payload)
-    if (!payload.aside || !text) return
-    const badge = document.createElement('span')
-    badge.className = payload.aside.css || ''
-    badge.textContent = text
-    aside.appendChild(badge)
+    ;(payload.asides || []).forEach((item) => {
+      if (!item || !item.label) return
+      const badge = document.createElement('span')
+      badge.className = item.css || ''
+      badge.textContent = item.label
+      aside.appendChild(badge)
+    })
   }
 
   _liveI18n () {
@@ -1351,30 +1352,6 @@ export default class extends Controller {
       this._i18n = {}
     }
     return this._i18n
-  }
-
-  _statusLabel (payload) {
-    const code = String(payload.status || '').toLowerCase()
-    if (!code) return ''
-    const i18n = this._liveI18n()
-    const bag = payload.kind === 'rest' ? i18n.stop_rest_status : payload.kind === 'store' ? i18n.stop_store_status : i18n.stop_status
-    return (bag && bag[code]) || (i18n.stop_status && i18n.stop_status[code]) || payload.status
-  }
-
-  _asideText (payload) {
-    const kind = payload.aside && payload.aside.kind
-    if (!kind) return payload.aside && payload.aside.text
-    const i18n = this._liveI18n()
-    if (kind === 'status') return this._statusLabel(payload)
-    if (kind === 'en_route') return i18n.en_route
-    if (kind === 'exception') return i18n.exception
-    if (kind === 'late') return String(i18n.late || '').replace('%{count}', payload.delay)
-    if (kind === 'delay') {
-      const delay = payload.delay
-      return `${delay > 0 ? '+' : ''}${delay} min`
-    }
-    if (kind === 'late_risk') return i18n.late_risk
-    return payload.aside.text
   }
 
   _setClockLeg (el, planned, actual) {
@@ -1395,6 +1372,9 @@ export default class extends Controller {
     ;['delivered', 'failed', 'exception', 'late', 'upcoming', 'current', 'total', 'delay'].forEach((key) => {
       if (board[key] != null) tour.dataset[key] = board[key]
     })
+    // Always sync: clear dataset when board has no window_delay (nil), else 0 would stick.
+    if (board.window_delay == null) delete tour.dataset.windowDelay
+    else tour.dataset.windowDelay = board.window_delay
     if (board.units) {
       tour.dataset.units = JSON.stringify(board.units)
       this._paintQuantityStats(tour.querySelector('.operation-tour-stats'), board.units)
@@ -1428,10 +1408,29 @@ export default class extends Controller {
     setWidth('is-rest', rest)
   }
 
+  _sumNullableDataset (tours, datasetKey) {
+    let sum = 0
+    let seen = false
+    tours.forEach((tour) => {
+      if (tour.dataset[datasetKey] == null) return
+      seen = true
+      sum += Number(tour.dataset[datasetKey])
+    })
+    return seen ? sum : null
+  }
+
+  _paintMinutesStat (statKey, value) {
+    const el = this.element.querySelector(`[data-stat="${statKey}"]`)
+    if (!el) return
+    el.textContent = value == null ? '—' : `${value} min`
+    el.closest('.operation-stat')?.classList.toggle('is-late', Number(value) > 0)
+  }
+
   _rollUpBoard () {
-    const totals = { delivered: 0, failed: 0, exception: 0, late: 0, upcoming: 0, current: 0, total: 0, delay: 0 }
+    const totals = { delivered: 0, failed: 0, exception: 0, late: 0, upcoming: 0, current: 0, total: 0 }
     const unitTotals = {}
-    this.element.querySelectorAll('details.operation-tour').forEach((tour) => {
+    const tours = Array.from(this.element.querySelectorAll('details.operation-tour'))
+    tours.forEach((tour) => {
       Object.keys(totals).forEach((key) => {
         totals[key] += Number(tour.dataset[key] || 0)
       })
@@ -1447,6 +1446,8 @@ export default class extends Controller {
         unitTotals[id] = bucket
       })
     })
+    const delay = this._sumNullableDataset(tours, 'delay')
+    const windowDelay = this._sumNullableDataset(tours, 'windowDelay')
     const label = this.element.querySelector('[data-board-progress]')
     if (label) {
       const stopsWord = this._liveI18n().stops || (label.textContent.split(' ').pop()) || ''
@@ -1454,11 +1455,8 @@ export default class extends Controller {
     }
     const stopsStat = this.element.querySelector('[data-stat="stops"]')
     if (stopsStat) stopsStat.textContent = `${totals.delivered + totals.failed + totals.exception}/${totals.total}`
-    const delayStat = this.element.querySelector('[data-stat="delay"]')
-    if (delayStat) {
-      delayStat.textContent = totals.delay ? `${totals.delay} min` : '—'
-      delayStat.closest('.operation-stat')?.classList.toggle('is-late', totals.delay > 0)
-    }
+    this._paintMinutesStat('delay', delay)
+    this._paintMinutesStat('window-delay', windowDelay)
     this._paintQuantityStats(this.element.querySelector('.operation-stats'), Object.values(unitTotals))
     this.element.querySelectorAll('.operation-chip[data-phase]').forEach((chip) => {
       const phase = chip.dataset.phase
