@@ -2949,10 +2949,14 @@ fr:
       documents_empty: Aucun document
       photos_delete_expired: Délai de suppression dépassé
       photos_too_many: Maximum %{count} photos par arrêt
+      photos_process_error: Impossible de traiter les photos
       proofs_disabled: Le stockage des preuves n’est pas activé pour ce compte
       photo_close: Fermer
       photo_delete: Supprimer
       photo_delete_confirm: Confirmer la suppression de la photo ?
+      camera_shutter: Prendre une photo
+      camera_count: "%{current} / %{max}"
+      camera_error: Caméra indisponible
       signature: Signature
       signature_open: Signer
       signature_clear: Effacer

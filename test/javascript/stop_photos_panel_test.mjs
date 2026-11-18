@@ -2,6 +2,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import {
+  CONFIRMED_PHOTO_SELECTOR,
   nextPhotoModalIndex,
   photoUploadErrorMessage,
   resolveStopPhotosPanel
@@ -66,5 +67,11 @@ describe('stop_photos_panel', () => {
     )
     assert.equal(photoUploadErrorMessage({ error: 'Photos too many' }), 'Photos too many')
     assert.equal(photoUploadErrorMessage(null, 'fallback'), 'fallback')
+  })
+
+  it('replaces confirmed photos without selecting in-flight pending thumbs', () => {
+    assert.match(CONFIRMED_PHOTO_SELECTOR, /stop-photo-pending/)
+    assert.match(CONFIRMED_PHOTO_SELECTOR, /stop-signature-doc/)
+    assert.equal(CONFIRMED_PHOTO_SELECTOR.includes(':not(.stop-photo-pending)'), true)
   })
 })
