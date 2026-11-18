@@ -4283,7 +4283,8 @@ fr:
         planned_departure: Départ prévu
         actual_arrival: Arrivée réelle
         actual_departure: Départ réel
-        delay_minutes: Retard
+        delay_minutes: Écart
+        window_delay_minutes: Retard créneau
         time_windows: Créneaux horaires
         stop_distance: Distance
         stop_drive_time: Durée de conduite
@@ -4377,7 +4378,8 @@ fr:
       waiting_group: En attente
       refresh: Actualiser
       en_route: En route
-      late: "Retard +%{count} min"
+      plan_gap: "Écart +%{count} min"
+      window_late: "Retard +%{count} min"
       late_risk: Risque retard
       filter_all: Tous
       filter_late: En retard
@@ -4386,7 +4388,8 @@ fr:
       filter_upcoming: À venir
       filter_en_route: En route
       filter_delivered: Livrés
-      cumulative_delay: Retards cumulés
+      plan_deviation: Écart au planifié
+      cumulative_delay: Retards créneau cumulés
       distance: Distance
       parcels: Colis
       quantities: Quantités

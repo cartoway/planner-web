@@ -50,4 +50,15 @@ class OperationsHelperTest < ActionView::TestCase
     assert_equal 1, rows.size
     assert rows.first[:already_sent]
   end
+
+  test 'operation_stop_asides delegates to OperationStops::Asides' do
+    stop = Struct.new(:delay_minutes, :time_window_delay_minutes, :phase, :kind, :status_label) do
+      def treated? = true
+    end.new(140, 20, 'delivered', 'visit', 'Livré')
+
+    asides = operation_stop_asides(stop)
+    assert_equal OperationStops::Asides.call(stop).map { |a| a[:kind] }, asides.map { |a| a[:kind] }
+    assert_equal asides.first[:label], operation_stop_aside_text(stop, asides.first)
+    assert_equal 'badge text-bg-warning', operation_stop_fiche_badge_class(stop, asides.first)
+  end
 end

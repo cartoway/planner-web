@@ -147,6 +147,9 @@
         %span= t('operations.show.stops')
       .stat{class: ('is-late' if board[:delay].to_i.positive?)}
         %strong= board[:delay].nil? ? '—' : "#{board[:delay]} min"
+        %span= t('operations.show.plan_deviation')
+      .stat{class: ('is-late' if board[:window_delay].to_i.positive?)}
+        %strong= board[:window_delay].nil? ? '—' : "#{board[:window_delay]} min"
         %span= t('operations.show.cumulative_delay')
       .stat.is-delivered
         %strong= board[:delivered]
@@ -186,6 +189,9 @@
           %span= t('operations.show.stops')
         .stat{class: ('is-late' if rboard[:delay].to_i.positive?)}
           %strong= rboard[:delay].nil? ? '—' : "#{rboard[:delay]} min"
+          %span= t('operations.show.plan_deviation')
+        .stat{class: ('is-late' if rboard[:window_delay].to_i.positive?)}
+          %strong= rboard[:window_delay].nil? ? '—' : "#{rboard[:window_delay]} min"
           %span= t('operations.show.cumulative_delay')
         - if rsnap['distance'].present?
           .stat.is-metric
