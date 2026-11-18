@@ -6,7 +6,7 @@
 - docs_count = photos.size + (signature ? 1 : 0)
 - confirm_photo_delete = local_assigns[:confirm_photo_delete]
 - photo_remove_confirm = confirm_photo_delete && confirm_click_data(group: 'stop-photos-destroy', wait_message: t('all.verb.destroy_confirm_wait'), confirm_message: t('stops.mobile.photo_delete_confirm'), ready_label: '<i class="fa fa-check fa-fw" aria-hidden="true"></i>', base_class: 'btn-default')
-- photos_data = { url: operation_stop_photos_path(stop), max_count: ProofAttachments::PHOTO_MAX_COUNT, too_many: t('stops.mobile.photos_too_many', count: ProofAttachments::PHOTO_MAX_COUNT) }
+- photos_data = { url: operation_stop_photos_path(stop), max_count: ProofAttachments::PHOTO_MAX_COUNT, too_many: t('stops.mobile.photos_too_many', count: ProofAttachments::PHOTO_MAX_COUNT), process_error: t('stops.mobile.photos_process_error') }
 - if photo_remove_confirm
   - photos_data.merge!(confirm_wait: photo_remove_confirm[:confirm_click_wait_message_value], confirm_message: photo_remove_confirm[:confirm_click_confirm_message_value], confirm_ready: photo_remove_confirm[:confirm_click_ready_label_value])
 .stop-documents
@@ -14,11 +14,12 @@
     .stop-photos{ data: photos_data }
       %label= t('stops.mobile.photos')
       .stop-photos-actions
-        %label.btn.btn-default.stop-photos-pick.mb-0
+        %button.btn.btn-default.stop-photos-pick.stop-photos-camera-open.mb-0{ type: 'button' }
           .d-flex.align-items-center.justify-content-center
             %i.fa.fa-camera.mr-2
             = t('stops.mobile.take_photo')
-          %input.stop-photos-input.stop-photos-camera-input{ type: 'file', accept: 'image/*', capture: 'environment', name: 'photos[]' }
+        -# Fallback when getUserMedia is unavailable (hidden; opened programmatically).
+        %input.stop-photos-input.stop-photos-camera-input{ type: 'file', accept: 'image/*', capture: 'environment', name: 'photos[]' }
         %label.btn.btn-default.stop-photos-pick.mb-0
           .d-flex.align-items-center.justify-content-center
             %i.fa.fa-folder-open.mr-2

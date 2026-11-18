@@ -1,7 +1,16 @@
 import { Controller } from '@hotwired/stimulus'
 import { ExclusiveAccordion } from 'lib/exclusive_accordion'
 import { compressImages } from 'lib/compress_image'
-import { nextPhotoModalIndex, photoUploadErrorMessage, resolveStopPhotosPanel } from 'lib/stop_photos_panel'
+import { startCameraStream } from 'lib/camera_stream'
+import { canCaptureVideoFrame, captureVideoFrameToFile, waitForVideoFrame } from 'lib/capture_video_frame'
+import {
+  CONFIRMED_PHOTO_SELECTOR,
+  formatCameraCount,
+  nextPhotoModalIndex,
+  photoUploadErrorMessage,
+  resolveStopPhotosPanel,
+  revokePhotoBlobUrls
+} from 'lib/stop_photos_panel'
 
 const CONFIRM_DELAY = 200
 const CONFIRM_DISARM_AFTER = 4000
@@ -31,16 +40,25 @@ export default class extends Controller {
     this.photoModalIndex = 0
     this.photoModalPanel = null
     this.signaturePanel = null
+    this.cameraPanel = null
+    this.cameraStream = null
+    this.cameraRequestId = 0
+    this.cameraCapturing = false
     this.stopsAccordion = null
     this.onClick = this.onClick.bind(this)
     this.onChange = this.onChange.bind(this)
     this.onConfirmClick = this.onConfirmClick.bind(this)
     this.onOnline = this.onOnline.bind(this)
     this.onServiceMessage = this.onServiceMessage.bind(this)
+    this.onKeydown = this.onKeydown.bind(this)
+    this.onVisibilityChange = this.onVisibilityChange.bind(this)
     this.element.addEventListener('click', this.onClick)
     this.element.addEventListener('change', this.onChange)
     this.element.addEventListener('confirm-click:confirmed', this.onConfirmClick)
     window.addEventListener('online', this.onOnline)
+    document.addEventListener('keydown', this.onKeydown)
+    document.addEventListener('visibilitychange', this.onVisibilityChange)
+    window.addEventListener('pagehide', this.onVisibilityChange)
     this.bindSignatureCanvas()
     this.registerServiceWorker()
     // Drop GPS queued for another operation/route — otherwise SW replays the old URL forever.
@@ -57,6 +75,7 @@ export default class extends Controller {
 
   disconnect () {
     this._dead = true
+    this.closeCamera()
     this.stopTracking()
     this.stopsAccordion?.destroy()
     this.stopsAccordion = null
@@ -64,7 +83,20 @@ export default class extends Controller {
     this.element.removeEventListener('change', this.onChange)
     this.element.removeEventListener('confirm-click:confirmed', this.onConfirmClick)
     window.removeEventListener('online', this.onOnline)
+    document.removeEventListener('keydown', this.onKeydown)
+    document.removeEventListener('visibilitychange', this.onVisibilityChange)
+    window.removeEventListener('pagehide', this.onVisibilityChange)
     if ('serviceWorker' in navigator) navigator.serviceWorker.removeEventListener('message', this.onServiceMessage)
+  }
+
+  onKeydown (event) {
+    if (event.key !== 'Escape') return
+    const camera = this.cameraEls()
+    if (camera && !camera.modal.classList.contains('d-none')) this.closeCamera()
+  }
+
+  onVisibilityChange (event) {
+    if (event?.type === 'pagehide' || document.visibilityState === 'hidden') this.closeCamera()
   }
 
   toggleTracking (event) {
@@ -255,7 +287,14 @@ export default class extends Controller {
       return
     }
 
-    if (target.closest('.stop-photo-modal-close')) this.closePhoto()
+    if (target.closest('.stop-photos-camera-open')) {
+      event.preventDefault()
+      this.openCamera(target.closest('.stop-photos'))
+      return
+    }
+    if (target.closest('.stop-camera-modal-close')) this.closeCamera()
+    else if (target.closest('.stop-camera-modal-shutter')) this.captureCamera()
+    else if (target.closest('.stop-photo-modal-close')) this.closePhoto()
     else if (target.closest('.stop-photo-modal-prev')) this.stepPhoto(-1)
     else if (target.closest('.stop-photo-modal-next')) this.stepPhoto(1)
     else if (target.closest('.stop-signature-open')) this.openSignature(target.closest('.stop-signature'))
@@ -489,17 +528,23 @@ export default class extends Controller {
     if (!input.files.length) return
     const panel = input.closest('.stop-photos')
     const rawFiles = Array.from(input.files)
-    const csrf = this.csrfToken()
-    const url = panel && panel.dataset.url
     input.value = ''
+    this.uploadPhotoFiles(panel, rawFiles)
+  }
+
+  uploadPhotoFiles (panel, rawFiles) {
+    if (!panel || !rawFiles.length) return
+    const csrf = this.csrfToken()
+    const url = panel.dataset.url
     if (!url) return
     if (!this.photosWithinLimit(panel, rawFiles.length)) {
-      this.showFailed(panel.dataset.tooMany || 'Photos')
+      this.rejectPhotoLimit(panel)
       return
     }
     const pendingId = this.queueId()
     // Paint previews first (yield so the UI can render before compression blocks the thread).
     this.showLocalPhotos(panel, rawFiles, pendingId)
+    this.refreshCameraCount()
     this.afterPaint(() => {
       compressImages(rawFiles).then((files) => {
         this.updatePendingPhotos(panel, pendingId, files)
@@ -518,17 +563,166 @@ export default class extends Controller {
             // Invalid content / client errors: show server messages, never queue for retry.
             if (response.status >= 400 && response.status < 500) {
               this.clearPendingPhotos(panel, pendingId)
+              this.refreshCameraCount()
               this.showFailed(photoUploadErrorMessage(data, panel.dataset.tooMany || `HTTP ${response.status}`))
               return null
             }
             throw new Error(String(response.status))
           })
-          .then((data) => { if (data) this.renderPhotos(panel, data.photos || []) })
+          .then((data) => {
+            if (!data) return
+            // Drop this batch's pending first so renderPhotos can keep other in-flight thumbs.
+            this.clearPendingPhotos(panel, pendingId)
+            this.renderPhotos(panel, data.photos || [])
+            this.refreshCameraCount()
+          })
           .catch(() => {
             this.queuePhoto({ id: pendingId, url, files })
           })
+      }).catch(() => {
+        this.clearPendingPhotos(panel, pendingId)
+        this.refreshCameraCount()
+        this.showFailed(panel.dataset.processError || this.cameraError())
       })
     })
+  }
+
+  cameraEls () {
+    const modal = document.getElementById('stop-camera-modal')
+    if (!modal) return null
+    return {
+      modal,
+      video: modal.querySelector('.stop-camera-modal-video'),
+      shutter: modal.querySelector('.stop-camera-modal-shutter'),
+      count: modal.querySelector('.stop-camera-modal-count'),
+      flash: modal.querySelector('.stop-camera-modal-flash')
+    }
+  }
+
+  cameraError () {
+    return this.cameraEls()?.modal?.dataset?.error || 'Camera'
+  }
+
+  openCamera (panel) {
+    if (!panel) return
+    if (!this.photosWithinLimit(panel, 1)) {
+      this.rejectPhotoLimit(panel)
+      return
+    }
+    const els = this.cameraEls()
+    if (!els?.video) return
+    // Sync path keeps the user gesture so iOS still accepts the native file picker.
+    if (!navigator.mediaDevices?.getUserMedia) {
+      this.openNativeCameraFallback(panel)
+      return
+    }
+    this.closeSignature()
+    this.closePhoto()
+    this.closeCamera()
+    this.cameraPanel = panel
+    const requestId = ++this.cameraRequestId
+    if (els.shutter) els.shutter.disabled = true
+    startCameraStream().then((stream) => {
+      // Stale request (re-open / disconnect): drop this stream so tracks are not orphaned.
+      if (this._dead || this.cameraPanel !== panel || requestId !== this.cameraRequestId) {
+        stream.getTracks().forEach((track) => track.stop())
+        return
+      }
+      this.stopCameraStream()
+      this.cameraStream = stream
+      els.video.srcObject = stream
+      els.video.play().catch(() => {})
+      els.modal.classList.remove('d-none')
+      this.syncBodyScroll()
+      this.refreshCameraCount()
+      waitForVideoFrame(els.video).then(() => {
+        if (requestId !== this.cameraRequestId) return
+        if (els.shutter) els.shutter.disabled = false
+      }).catch(() => {
+        if (requestId !== this.cameraRequestId) return
+        this.showFailed(this.cameraError())
+        this.closeCamera()
+      })
+    }).catch(() => {
+      if (requestId !== this.cameraRequestId) return
+      this.cameraPanel = null
+      if (els.shutter) els.shutter.disabled = false
+      // Async getUserMedia failure: user-gesture is gone on iOS, so tell the driver why.
+      this.showFailed(this.cameraError())
+      this.openNativeCameraFallback(panel)
+    })
+  }
+
+  openNativeCameraFallback (panel) {
+    panel.querySelector('.stop-photos-camera-input')?.click()
+  }
+
+  stopCameraStream () {
+    if (!this.cameraStream) return
+    this.cameraStream.getTracks().forEach((track) => track.stop())
+    this.cameraStream = null
+  }
+
+  closeCamera () {
+    const els = this.cameraEls()
+    this.cameraRequestId += 1
+    this.cameraCapturing = false
+    this.stopCameraStream()
+    if (els?.video) els.video.srcObject = null
+    if (els?.shutter) els.shutter.disabled = false
+    if (els?.modal) els.modal.classList.add('d-none')
+    this.cameraPanel = null
+    this.syncBodyScroll()
+  }
+
+  captureCamera () {
+    const panel = this.cameraPanel
+    const els = this.cameraEls()
+    if (!panel || !els?.video || this.cameraCapturing) return
+    if (!canCaptureVideoFrame(els.video)) {
+      this.showFailed(this.cameraError())
+      return
+    }
+    if (!this.photosWithinLimit(panel, 1)) {
+      this.rejectPhotoLimit(panel)
+      this.closeCamera()
+      return
+    }
+    this.cameraCapturing = true
+    this.flashCamera()
+    if (els.shutter) els.shutter.disabled = true
+    captureVideoFrameToFile(els.video).then((file) => {
+      // showLocalPhotos is sync — next shot sees the pending thumb in the limit count.
+      this.uploadPhotoFiles(panel, [file])
+      if (!this.photosWithinLimit(panel, 1)) this.closeCamera()
+    }).catch(() => {
+      this.showFailed(this.cameraError())
+    }).finally(() => {
+      this.cameraCapturing = false
+      if (els.shutter && this.cameraPanel === panel) els.shutter.disabled = false
+    })
+  }
+
+  syncBodyScroll () {
+    const open = (id) => !document.getElementById(id)?.classList.contains('d-none')
+    const locked = open('stop-camera-modal') || open('stop-signature-modal') || open('stop-photo-modal')
+    document.body.style.overflow = locked ? 'hidden' : ''
+  }
+
+  flashCamera () {
+    const flash = this.cameraEls()?.flash
+    if (!flash) return
+    flash.classList.remove('is-flashing')
+    // Restart CSS animation even when capturing back-to-back.
+    void flash.offsetWidth
+    flash.classList.add('is-flashing')
+  }
+
+  refreshCameraCount () {
+    const els = this.cameraEls()
+    const panel = this.cameraPanel
+    if (!els || !panel || els.modal.classList.contains('d-none') || !els.count) return
+    els.count.textContent = formatCameraCount(els.modal.dataset.countTemplate, this.photoCount(panel), this.photoMax(panel))
   }
 
   afterPaint (fn) {
@@ -537,19 +731,32 @@ export default class extends Controller {
     })
   }
 
+  photoMax (panel) {
+    return Number(panel?.dataset?.maxCount) || 10
+  }
+
+  rejectPhotoLimit (panel) {
+    this.showFailed(panel?.dataset?.tooMany || 'Photos')
+  }
+
   photosWithinLimit (panel, incomingCount) {
-    const max = Number(panel.dataset.maxCount) || 10
+    return this.photoCount(panel) + incomingCount <= this.photoMax(panel)
+  }
+
+  // Count pending thumbs too so chained captures cannot overrun max before upload finishes.
+  photoCount (panel) {
     const list = this.documentsList(panel)
-    const current = list
-      ? list.querySelectorAll('.stop-photo:not(.stop-photo-pending):not(.stop-signature-doc)').length
-      : 0
-    return current + incomingCount <= max
+    if (!list) return 0
+    return list.querySelectorAll('.stop-photo:not(.stop-signature-doc)').length
   }
 
   clearPendingPhotos (panel, pendingId) {
     if (!pendingId) return
     const root = panel ? (panel.closest('.stop-documents') || panel) : this.element
-    root.querySelectorAll(`.stop-photo-pending[data-pending="${pendingId}"]`).forEach((node) => node.remove())
+    root.querySelectorAll(`.stop-photo-pending[data-pending="${pendingId}"]`).forEach((node) => {
+      revokePhotoBlobUrls(node)
+      node.remove()
+    })
     if (panel) this.refreshDocuments(panel)
   }
 
@@ -637,15 +844,19 @@ export default class extends Controller {
     panel = resolveStopPhotosPanel(panel)
     const list = this.documentsList(panel)
     if (!list || !panel) return
-    list.querySelectorAll('.stop-photo:not(.stop-signature-doc)').forEach((node) => node.remove())
+    // Keep other in-flight pending thumbs so burst capture cannot drop the limit counter.
+    list.querySelectorAll(CONFIRMED_PHOTO_SELECTOR).forEach((node) => {
+      revokePhotoBlobUrls(node)
+      node.remove()
+    })
     const base = panel.dataset.url
+    const anchor = list.querySelector('.stop-photo-pending, .stop-signature-doc')
     ;(photos || []).forEach((photo) => {
       const node = document.createElement('div')
       node.className = 'stop-photo'
       const remove = photo.deletable === false ? '' : this.photoRemoveButtonHtml(panel, `${base}/${photo.id}`)
-      node.innerHTML = `${remove}<button type="button" class="stop-photo-open" data-url="${photo.url}"><img src="${photo.url}" alt=""></button>`
-      const signature = list.querySelector('.stop-signature-doc')
-      if (signature) list.insertBefore(node, signature)
+      node.innerHTML = `${remove}<button type="button" class="stop-photo-open" data-url="${escapeAttr(photo.url)}"><img src="${escapeAttr(photo.url)}" alt=""></button>`
+      if (anchor) list.insertBefore(node, anchor)
       else list.appendChild(node)
     })
     this.refreshDocuments(panel)
@@ -694,12 +905,15 @@ export default class extends Controller {
   }
 
   openPhoto (button) {
+    this.closeCamera()
+    this.closeSignature()
     const modal = document.getElementById('stop-photo-modal')
     const list = button.closest('.stop-documents-list')
     this.photoModalPanel = resolveStopPhotosPanel(button)
     this.photoModalItems = this.photoItemsFromList(list, button.dataset.url)
     this.photoModalIndex = Math.max(0, this.photoModalItems.findIndex((item) => item.url === button.dataset.url))
     if (modal) modal.classList.remove('d-none')
+    this.syncBodyScroll()
     this.showPhoto()
   }
 
@@ -735,6 +949,7 @@ export default class extends Controller {
     const modal = document.getElementById('stop-photo-modal')
     if (modal) modal.classList.add('d-none')
     this.photoModalItems = []
+    this.syncBodyScroll()
   }
 
   deleteModalPhoto () {
@@ -760,11 +975,13 @@ export default class extends Controller {
   }
 
   openSignature (panel) {
+    this.closeCamera()
+    this.closePhoto()
     this.signaturePanel = panel
     const modal = document.getElementById('stop-signature-modal')
     if (!modal) return
     modal.classList.remove('d-none')
-    document.body.style.overflow = 'hidden'
+    this.syncBodyScroll()
     this.clearSignature()
   }
 
@@ -772,7 +989,7 @@ export default class extends Controller {
     const modal = document.getElementById('stop-signature-modal')
     if (!modal) return
     modal.classList.add('d-none')
-    document.body.style.overflow = ''
+    this.syncBodyScroll()
   }
 
   clearSignature () {

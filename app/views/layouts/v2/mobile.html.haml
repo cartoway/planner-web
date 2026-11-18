@@ -46,4 +46,14 @@
           %button.btn.btn-default.stop-signature-clear{ type: 'button' }= t('stops.mobile.signature_clear')
           %button.btn.btn-primary.stop-signature-save{ type: 'button' }= t('stops.mobile.signature_save')
 
+      #stop-camera-modal.stop-camera-modal.d-none{ role: 'dialog', 'aria-modal': 'true', 'aria-label': t('stops.mobile.take_photo'), data: { count_template: t('stops.mobile.camera_count'), error: t('stops.mobile.camera_error') } }
+        %button.stop-camera-modal-close.btn.btn-xs.btn-default{ type: 'button', 'aria-label': t('stops.mobile.photo_close') }
+          %i.fa.fa-times
+        %span.stop-camera-modal-count{ 'aria-live': 'polite' }
+        %video.stop-camera-modal-video{ playsinline: true, muted: true, autoplay: true, 'aria-label': t('stops.mobile.take_photo') }
+        .stop-camera-modal-flash{ 'aria-hidden': 'true' }
+        .stop-camera-modal-actions
+          %button.stop-camera-modal-shutter.btn.btn-default{ type: 'button', 'aria-label': t('stops.mobile.camera_shutter') }
+            %i.fa.fa-camera
+
     = render partial: 'shared/flash_messages'

@@ -22,3 +22,20 @@ export function photoUploadErrorMessage (data, fallback = '') {
   if (data && data.error) return String(data.error)
   return fallback
 }
+
+// Confirmed thumbs only — leave in-flight .stop-photo-pending alone during burst uploads.
+export const CONFIRMED_PHOTO_SELECTOR = '.stop-photo:not(.stop-signature-doc):not(.stop-photo-pending)'
+
+export function revokePhotoBlobUrls (node) {
+  if (!node || typeof node.querySelectorAll !== 'function') return
+  node.querySelectorAll('img[src], .stop-photo-open[data-url]').forEach((el) => {
+    const url = el.getAttribute('src') || el.getAttribute('data-url')
+    if (url && url.startsWith('blob:')) URL.revokeObjectURL(url)
+  })
+}
+
+export function formatCameraCount (template, current, max) {
+  return String(template || '%{current} / %{max}')
+    .replace('%{current}', String(current))
+    .replace('%{max}', String(max))
+}
