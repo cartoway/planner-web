@@ -523,7 +523,10 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'new planning date field uses offset as placeholder without default value' do
     customers(:customer_one).update!(operation_date_offset: 2)
-    suggested = I18n.l(Date.current + 2, format: :datepicker)
+    # Match ApplicationController#set_time_zone (user_one is Hawaii).
+    suggested = Time.use_zone(users(:user_one).time_zone) do
+      I18n.l(Date.current + 2, format: :datepicker)
+    end
 
     get :new
 
