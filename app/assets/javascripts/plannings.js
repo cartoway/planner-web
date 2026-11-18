@@ -706,6 +706,26 @@ var initPlanningExecution = function(planningId) {
     var filterLabel = String(name).toLowerCase();
     $option.attr('data-filter-label', filterLabel).data('filter-label', filterLabel);
   };
+  // Only overwrite locked (disabled) fields — keep manual edits.
+  var setRouteContacts = function(routeId, email, phone) {
+    var $row = rows().filter(function() {
+      return String($(this).data('route-id')) === String(routeId);
+    });
+    if (!$row.length) return;
+    var $email = $row.find('[data-contacts-field="email"]');
+    var $phone = $row.find('[data-contacts-field="phone"]');
+    if ($email.length && $email.prop('disabled')) $email.val(email == null ? '' : email);
+    if ($phone.length && $phone.prop('disabled')) $phone.val(phone == null ? '' : phone);
+    var $channel = $row.find('[data-contacts-channel]');
+    if (!$channel.length || !$channel.prop('disabled')) return;
+    var options = $channel.find('option').map(function() { return this.value; }).get();
+    var next = 'none';
+    if (options.indexOf('email') !== -1 && email) next = 'email';
+    else if (options.indexOf('sms') !== -1 && phone) next = 'sms';
+    else if (options.indexOf('email') !== -1) next = 'email';
+    else if (options.indexOf('sms') !== -1) next = 'sms';
+    $channel.val(next);
+  };
   var setRouteMeta = function($row, hidden, locked, stops) {
     var $box = $row.find('.execution-route-checkbox');
     var routeId = $row.data('route-id');
@@ -731,7 +751,7 @@ var initPlanningExecution = function(planningId) {
       routeChecklist.setItemVisible(routeId, !empty);
     }
   };
-  // Refresh sizes/visibility/names from planning summary (moves/optim/ref edits).
+  // Refresh sizes/visibility/names/contacts from planning summary (moves/optim/vehicle switch).
   var applyRoutesFromSummary = function(summary) {
     var byId = {};
     ((summary && summary.routes) || []).forEach(function(route) {
@@ -748,6 +768,7 @@ var initPlanningExecution = function(planningId) {
       var locked = flagTrue(route.locked);
       setRouteMeta($row, hidden, locked, stops);
       setRouteLabel(routeId, route.name);
+      setRouteContacts(routeId, route.contact_email, route.phone_number);
       if (!(hidden && locked) && stops > 0) defaults.push(routeId);
     });
     if (routeChecklist) {
