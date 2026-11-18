@@ -12,7 +12,7 @@ module Operations
       route_distance route_drive_time route_duration
       stop_index stop_kind stop_status destination_ref visit_ref name street postalcode city country phone email tracking_url detail comment
       lat lng status_lat status_lng
-      planned_arrival planned_departure actual_arrival actual_departure delay_minutes time_windows
+      planned_arrival planned_departure actual_arrival actual_departure delay_minutes window_delay_minutes time_windows
       stop_distance stop_drive_time stop_wait_time
       quantities photos signature delivery_note
     ].freeze
@@ -355,6 +355,7 @@ module Operations
         xlsx_clock(stop.actual_arrival_at),
         xlsx_clock(stop.actual_departure_at),
         stop.delay_minutes,
+        stop.time_window_delay_minutes,
         stop.time_windows_label,
         export_distance_km(snap['distance']),
         xlsx_duration(snap['drive_time']),

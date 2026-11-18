@@ -147,6 +147,7 @@ class OperationRoute < ApplicationRecord
     failed = stops.count { |stop| stop.phase == 'failed' }
     exception = stops.count { |stop| stop.phase == 'exception' }
     delays = stops.filter_map(&:delay_minutes)
+    window_delays = stops.filter_map(&:time_window_delay_minutes)
     distance = route_snapshot['distance'].to_f
     late_minutes = delays.select { |minutes| minutes > OperationStop::LATE_AFTER_MINUTES }
     {
@@ -157,7 +158,10 @@ class OperationRoute < ApplicationRecord
       upcoming: stops.count { |stop| stop.phase == 'upcoming' },
       current: stops.count { |stop| stop.phase == 'current' },
       total: stops.size,
+      # delay = sum of plan gaps > LATE_AFTER_MINUTES only; window_delay = sum of positive window lates.
+      # nil = no treated stop with a measurable value; 0 = measured and on time / under threshold.
       delay: (delays.empty? ? nil : late_minutes.sum),
+      window_delay: (window_delays.empty? ? nil : window_delays.select(&:positive?).sum),
       distance: distance,
       units: unit_totals(stops)
     }

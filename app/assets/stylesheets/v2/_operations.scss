@@ -377,6 +377,13 @@ tr.is-past { color: #6b7280; }
 
 .operation-stop-main { flex: 1 1 auto; min-width: 0; }
 
+.operation-stop-aside {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: .35rem;
+}
+
 .operation-gap {
   font-size: .85rem;
   font-weight: 700;

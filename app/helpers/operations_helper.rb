@@ -139,13 +139,23 @@ module OperationsHelper
     {
       stops: t('operations.show.stops'),
       en_route: t('operations.show.en_route'),
-      # JS replaces %{count} literally (operation_show_controller).
-      late: t('operations.show.late', count: '%{count}'), # rubocop:disable Style/FormatStringToken
       late_risk: t('operations.show.late_risk'),
       exception: t('plannings.edit.stop_status.exception'),
       stop_status: I18n.t('plannings.edit.stop_status'),
       stop_rest_status: I18n.t('plannings.edit.stop_rest_status'),
       stop_store_status: I18n.t('plannings.edit.stop_store_status')
     }
+  end
+
+  def operation_stop_asides(stop)
+    OperationStops::Asides.call(stop)
+  end
+
+  def operation_stop_aside_text(_stop, aside)
+    aside[:label]
+  end
+
+  def operation_stop_fiche_badge_class(_stop, aside)
+    OperationStops::Asides.fiche_css(aside[:tone])
   end
 end

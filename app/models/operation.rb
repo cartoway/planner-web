@@ -79,9 +79,12 @@ class Operation < ApplicationRecord
     parts = routes.map(&:board)
     keys = %i[delivered failed exception late upcoming current total]
     summed = keys.index_with { |key| parts.sum { |part| part[key].to_i } }
+    # Keep nil when every route board had nil (no data); 0 is a real "on time" aggregate.
     delays = parts.filter_map { |part| part[:delay] }
+    window_delays = parts.filter_map { |part| part[:window_delay] }
     summed.merge(
       delay: (delays.sum if delays.any?),
+      window_delay: (window_delays.sum if window_delays.any?),
       distance: parts.sum { |part| part[:distance].to_f },
       units: merged_units(parts.flat_map { |part| part[:units] }),
       rest: summed[:total] - summed[:delivered] - summed[:failed] - summed[:exception],

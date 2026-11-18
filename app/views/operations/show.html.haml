@@ -168,6 +168,11 @@
             %i.fa.fa-clock
             %div
               %strong{data: { stat: 'delay' }}= stats[:delay].nil? ? '—' : "#{stats[:delay]} min"
+              %span= t('operations.show.plan_deviation')
+          .operation-stat{class: ('is-late' if stats[:window_delay].to_i.positive?)}
+            %i.fa.fa-hourglass-half
+            %div
+              %strong{data: { stat: 'window-delay' }}= stats[:window_delay].nil? ? '—' : "#{stats[:window_delay]} min"
               %span= t('operations.show.cumulative_delay')
           = render 'operations/quantity_stats', units: stats[:units]
           - operation_preference_stat_keys.each do |key|
