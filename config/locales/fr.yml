@@ -4272,6 +4272,7 @@ fr:
         country: Pays
         phone: Téléphone
         email: E-mail
+        tracking_url: Lien de suivi
         detail: Complément
         comment: Commentaire
         lat: Latitude

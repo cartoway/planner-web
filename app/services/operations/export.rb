@@ -10,7 +10,7 @@ module Operations
       operation_date operation_ref operation_name
       route_ref vehicle_name driver_email driver_phone
       route_distance route_drive_time route_duration
-      stop_index stop_kind stop_status destination_ref visit_ref name street postalcode city country phone email detail comment
+      stop_index stop_kind stop_status destination_ref visit_ref name street postalcode city country phone email tracking_url detail comment
       lat lng status_lat status_lng
       planned_arrival planned_departure actual_arrival actual_departure delay_minutes time_windows
       stop_distance stop_drive_time stop_wait_time
@@ -43,6 +43,7 @@ module Operations
     end
 
     def to_xlsx
+      @tracking_urls = build_tracking_urls
       rows = [header_labels]
       each_export_row { |_route, row| rows << row }
       build_xlsx(rows)
@@ -272,7 +273,7 @@ module Operations
     end
 
     def preload_routes
-      ActiveRecord::Associations::Preloader.new.preload(@operation, customer: :custom_attributes)
+      ActiveRecord::Associations::Preloader.new.preload(@operation, [:operation_delivery_trackings, { customer: %i[custom_attributes reseller] }])
       @operation.operation_routes
                 .order(:index, :id)
                 .includes_for_export
@@ -343,6 +344,7 @@ module Operations
         place['country'],
         place['phone_number'],
         dest['email'],
+        export_tracking_url(stop),
         place['detail'],
         place['comment'],
         place['lat'],
@@ -385,6 +387,7 @@ module Operations
         nil,
         nil,
         nil,
+        nil,
         depot[:lat] || place['lat'],
         depot[:lng] || place['lng'],
         nil,
@@ -404,6 +407,23 @@ module Operations
         export_yes_no(false),
         *@stop_custom_attributes.map { nil }
       ]
+    end
+
+    # First executable visit of a destination gets the URL; later grouped visits stay blank.
+    def export_tracking_url(stop)
+      return unless stop.visit? && stop.sync_state == 'active' && stop.active
+
+      @tracking_urls.delete(stop.destination_identity)
+    end
+
+    def build_tracking_urls
+      OperationDeliveryTracking.ensure_for!(@operation)
+      reseller = @operation.customer.reseller
+      # Active tokens only — expired public pages return 410, same as the UI link.
+      OperationDeliveryTracking.active.where(operation_id: @operation.id).each_with_object({}) { |tracking, hash|
+        url = Operations::TrackingUrl.for(tracking, reseller: reseller)
+        hash[tracking.destination_id] = url if url
+      }
     end
 
     def depot_planned_at(route, role)

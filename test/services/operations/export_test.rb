@@ -6,6 +6,12 @@ require 'zip'
 class OperationsExportTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
+    shortener = Object.new
+    # Keep the token in the short URL so expired-token assertions stay readable.
+    def shortener.shorten(url)
+      "http://short.test/#{url.to_s.split('/').last}"
+    end
+    Rails.application.config.stubs(:url_shortener).returns(shortener)
     @operation = publish_operation!(planning: @planning)
     @stop = @operation.operation_stops.find_by!(stop_id: stops(:stop_one_one).id)
     @stop.update_columns(status: 'delivered', status_updated_at: Time.zone.parse('2026-09-25 11:00'))
@@ -70,6 +76,7 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_includes sheet, I18n.t('operations.export.columns.status_lng')
     assert_includes sheet, I18n.t('operations.export.columns.planned_arrival')
     assert_includes sheet, I18n.t('operations.export.columns.delay_minutes')
+    assert_includes sheet, I18n.t('operations.export.columns.tracking_url')
     assert_includes sheet, @operation.name
     assert_includes sheet, I18n.t('operations.export.columns.stop_index')
     assert_includes sheet, I18n.t('destinations.import_file.stop_type_visit')
@@ -78,6 +85,73 @@ class OperationsExportTest < ActiveSupport::TestCase
     refute_includes Operations::Export::CSV_HEADERS, 'route_index'
     refute_includes sheet, '>delivered<'
     assert_includes sheet, @stop.index.to_s
+  end
+
+  test 'xlsx includes tracking url once per destination for grouped visits' do
+    visits = @operation.operation_stops.select(&:visit?).sort_by { |stop| [stop.index.to_i, stop.id] }
+    assert_operator visits.size, :>=, 2
+    first, second = visits.first(2)
+    dest_id = first.destination_identity
+    assert dest_id.present?
+
+    [first, second].each do |stop|
+      snap = (stop.destination_snapshot || {}).merge('id' => dest_id)
+      stop.update_columns(destination_id: dest_id, destination_snapshot: snap, sync_state: 'active', active: true)
+    end
+
+    sheet = xlsx_sheet_xml(Operations::Export.new(@operation.reload).to_xlsx)
+    token = OperationDeliveryTracking.active.find_by!(operation_id: @operation.id, destination_id: dest_id).token
+    assert_includes sheet, I18n.t('operations.export.columns.tracking_url')
+    assert_equal 1, sheet.scan(%r{http://short\.test/#{Regexp.escape(token)}}).size
+  end
+
+  test 'xlsx keeps a tracking url per distinct destination' do
+    visits = @operation.operation_stops.select(&:visit?).sort_by { |stop| [stop.index.to_i, stop.id] }
+    assert_operator visits.size, :>=, 2
+    first, second = visits.first(2)
+    first_id = destinations(:destination_one).id
+    second_id = destinations(:destination_two).id
+    assert_not_equal first_id, second_id
+
+    first.update_columns(destination_id: first_id, destination_snapshot: (first.destination_snapshot || {}).merge('id' => first_id), sync_state: 'active', active: true)
+    second.update_columns(destination_id: second_id, destination_snapshot: (second.destination_snapshot || {}).merge('id' => second_id), sync_state: 'active', active: true)
+    # Clear other executable visits so only these two destinations emit links.
+    @operation.operation_stops.where.not(id: [first.id, second.id]).update_all(active: false)
+
+    OperationDeliveryTracking.ensure_for!(@operation.reload)
+    token_a = OperationDeliveryTracking.active.find_by!(operation_id: @operation.id, destination_id: first_id).token
+    token_b = OperationDeliveryTracking.active.find_by!(operation_id: @operation.id, destination_id: second_id).token
+    assert_not_equal token_a, token_b
+
+    sheet = xlsx_sheet_xml(Operations::Export.new(@operation).to_xlsx)
+    assert_equal 1, sheet.scan(%r{http://short\.test/#{Regexp.escape(token_a)}}).size
+    assert_equal 1, sheet.scan(%r{http://short\.test/#{Regexp.escape(token_b)}}).size
+  end
+
+  test 'xlsx skips tracking url for inactive visits and expired tokens' do
+    visits = @operation.operation_stops.select(&:visit?).sort_by { |stop| [stop.index.to_i, stop.id] }
+    assert_operator visits.size, :>=, 2
+    inactive, active = visits.first(2)
+    dest_id = active.destination_identity
+    assert dest_id.present?
+
+    [inactive, active].each do |stop|
+      snap = (stop.destination_snapshot || {}).merge('id' => dest_id)
+      stop.update_columns(destination_id: dest_id, destination_snapshot: snap, sync_state: 'active', active: true)
+    end
+    inactive.update_columns(active: false)
+    # Force inactive ahead of active so a naive emit-on-first-visit would steal the cell.
+    inactive.update_columns(index: active.index.to_i - 1)
+
+    OperationDeliveryTracking.ensure_for!(@operation)
+    tracking = OperationDeliveryTracking.active.find_by!(operation_id: @operation.id, destination_id: dest_id)
+
+    sheet = xlsx_sheet_xml(Operations::Export.new(@operation.reload).to_xlsx)
+    assert_equal 1, sheet.scan(%r{http://short\.test/#{Regexp.escape(tracking.token)}}).size
+
+    tracking.update_columns(expires_at: 1.hour.ago)
+    expired_sheet = xlsx_sheet_xml(Operations::Export.new(@operation.reload).to_xlsx)
+    refute_includes expired_sheet, tracking.token
   end
 
   test 'xlsx includes status GPS from the latest positioned event' do
