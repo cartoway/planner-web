@@ -377,13 +377,9 @@ class V01::Destinations < Grape::API
           authorize!(:delete_all, Destination)
           current_customer.delete_all_destinations
         else
-          Destination.where(id: ids).destroy_all
+          current_customer.delete_destinations(ids)
         end
 
-        Customer.where(id: current_customer.id).update_all(
-          destinations_count: Destination.where(customer_id: current_customer.id).count,
-          visits_count: Visit.joins(:destination).where(destinations: { customer_id: current_customer.id }).count
-        )
         status 204
       end
     end
@@ -455,10 +451,6 @@ class V01::Destinations < Grape::API
           current_customer.delete_all_destinations
         end
 
-        Customer.where(id: current_customer.id).update_all(
-          destinations_count: Destination.where(customer_id: current_customer.id).count,
-          visits_count: Visit.joins(:destination).where(destinations: { customer_id: current_customer.id }).count
-        )
         status 204
       end
     end

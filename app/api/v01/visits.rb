@@ -232,9 +232,10 @@ class V01::Visits < Grape::API
         authorize! :delete_by_tags, Visit
 
         if current_customer.visits.count == ids.size
+          authorize! :delete_all, Visit
           current_customer.delete_all_visits
         else
-          Visit.where(id: ids).destroy_all
+          current_customer.delete_visits(ids)
         end
 
         status 204
@@ -264,7 +265,7 @@ class V01::Visits < Grape::API
             authorize! :delete_all, Visit
             current_customer.delete_all_visits
           else
-            visits.each(&:destroy)
+            current_customer.delete_visits(visits.map(&:id))
           end
         elsif params[:destination_ids] && !params[:destination_ids].empty?
           authorize! :delete_all, Visit
