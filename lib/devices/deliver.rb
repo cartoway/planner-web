@@ -20,14 +20,15 @@ class Deliver < DeviceBase
     }
   end
 
-  def send_route(customer, route, _options = {})
-    email = route.vehicle_usage.vehicle.contact_email
-    return if email.nil?
+  # Expects an OperationRoute (Deliver email/SMS go through operations, not planning Route).
+  def send_route(customer, operation_route, _options = {})
+    email = operation_route.driver_email
+    return if email.blank?
 
     if Planner::Application.config.delayed_job_use
-      RouteMailer.delay.send_driver_route(customer, I18n.locale, email, route)
+      RouteMailer.delay.send_operation_route(customer, I18n.locale, email, operation_route)
     else
-      RouteMailer.send_driver_route(customer, I18n.locale, email, route).deliver_now
+      RouteMailer.send_operation_route(customer, I18n.locale, email, operation_route).deliver_now
     end
   end
 

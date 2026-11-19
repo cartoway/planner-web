@@ -18,7 +18,7 @@ module Operations
         list.count { |tracking|
           stop = SendDestinationSms.first_visit_stop(tracking)
           email = email_for(tracking, stop)
-          url = TrackingUrl.for(tracking)
+          url = TrackingUrl.long_for(tracking)
           next false if email.blank? || url.blank?
 
           body = MessagingService.new(customer.reseller, customer: customer)

@@ -46,7 +46,7 @@ class OperationRoutesController < ApplicationController
   end
 
   def mobile_url
-    render json: { url: Operations::MobileUrl.for(@operation_route) }
+    render json: { url: Operations::MobileUrl.long_for(@operation_route) }
   end
 
   def mobile
