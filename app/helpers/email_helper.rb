@@ -1,5 +1,5 @@
 module EmailHelper
-  def email_image_tag(image, **options)
+  def email_image_tag(image, **)
     image_name = image
     if image.start_with?('/uploads')
       image_name = image.split('/').last
@@ -8,14 +8,14 @@ module EmailHelper
       attachments[image_name] = File.read(Rails.root.join("app/assets/images/#{image}")) if attachments[image_name].nil?
     end
 
-    image_tag attachments[image_name].url, **options
+    image_tag(attachments[image_name].url, **)
   end
 
-  def base64_image(image, **options)
+  def base64_image(image, **)
     image = image.start_with?('/uploads') ? ("public/" + image) : ("app/assets/images/" + image)
     imageB64 = Base64.encode64 File.read(Rails.root.join(image))
 
-    image_tag "data:image/png;base64,#{imageB64}", **options
+    image_tag("data:image/png;base64,#{imageB64}", **)
   end
 
   def reseller_logo_path(reseller)
