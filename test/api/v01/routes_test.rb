@@ -290,11 +290,12 @@ class V01::RoutesTest < V01::RoutesBaseTest
     assert json['out_of_date']
   end
 
-  test 'route destination SMS endpoint is gone' do
-    @route.planning.customer.reseller.update(messagings: {sms_partner: { enable: true, api_key: :sms_api_key, api_secret: :sms_api_secret }})
-    @route.planning.customer.update!(enable_sms_driver: true)
-
+  test 'route SMS endpoints are gone' do
     get api(@route.planning_id, "#{@route.id}/send_sms")
+    assert_equal 410, last_response.status
+    assert_match(/Gone/i, last_response.body)
+
+    get api(@route.planning_id, "#{@route.id}/send_driver_sms")
     assert_equal 410, last_response.status
     assert_match(/Gone/i, last_response.body)
   end

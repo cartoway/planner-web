@@ -3080,21 +3080,6 @@ export const plannings_edit = function(params) {
     })
   });
 
-  var sendSMS = function() {
-    $.ajax({
-      type: 'GET',
-      url: this.href,
-      beforeSend: beforeSendWaiting,
-      success: function(data) {
-        stickyNotice(I18n.t('plannings.edit.send_sms_success', {c: data}));
-      },
-      complete: completeAjaxMap,
-      error: ajaxError
-    });
-    $(this).closest(".dropdown-menu").prev().dropdown("toggle");
-    return false;
-  };
-
   var historize = function() {
     $.ajax({
       type: 'POST',
@@ -3598,8 +3583,6 @@ export const plannings_edit = function(params) {
     $p.on('click.planningRouteDelegate', '.route .optimize', function() {
       $('#optimization-route_id').val($(this).closest('[data-route-id]').attr('data-route-id')).trigger('change');
     });
-
-    $p.on('click.planningRouteDelegate', '.route .send_sms', sendSMS);
 
     $p.on('click.planningRouteDelegate', '.route .active_all, .route .active_reverse, .route .active_none, .route .reverse_order', function() {
       var route_id = $(this).closest('[data-route-id]').attr('data-route-id');
@@ -4844,7 +4827,6 @@ export const plannings_edit = function(params) {
     });
   });
 
-  $('.send_sms').click(sendSMS);
   $('.historize').click(historize);
 
   $('#isochrone_size').timeEntry({

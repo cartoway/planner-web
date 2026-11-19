@@ -141,8 +141,6 @@
             %button#extract-inactive-stops-modal-confirm.btn.btn-primary{type: "button", disabled: !@manage_planning[:planning_move_stops_usable]}
               = t('plannings.edit.dialog.extract_inactive_stops.confirm')
 
-#planning-send-sms-drivers-modal.modal.fade{role: "dialog", tabindex: "-1"}
-
 = render partial: 'layouts/modal_csv'
 
 = render partial: 'plannings/optimization'

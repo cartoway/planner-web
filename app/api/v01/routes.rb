@@ -18,8 +18,6 @@
 require 'coerce'
 require 'exceptions'
 
-include PlanningsHelperApi
-
 class V01::Routes < Grape::API
   helpers SharedParams
   helpers do
@@ -208,33 +206,26 @@ class V01::Routes < Grape::API
           end
         end
 
-        desc 'Send SMS for each stop visit.',
-          detail: 'Send SMS for each stop visit of the specified route.',
+        desc 'Send SMS for each stop visit (retired).',
+          detail: 'Retired. Destination SMS is sent from operations.',
           nickname: 'sendSMS',
-          success: V01::Status.success(:code_200),
-          failure: V01::Status.failures
+          failure: V01::Status.failures(add: [:code_410])
         params do
           requires :id, type: String, desc: SharedParams::ID_DESC
         end
         get ':id/send_sms' do
-          error! V01::Status.code_response(:code_410), 410
+          error! V01::Status.code_response(:code_410, message: 'Gone. Planning SMS is sent from operations.'), 410
         end
 
-        desc 'Send SMS to driver.',
-          detail: 'Send SMS to the driver of the specified route.',
-          nickname: 'sendSMS',
-          success: V01::Status.success(:code_200),
-          failure: V01::Status.failures
+        desc 'Send SMS to driver (retired).',
+          detail: 'Retired. Driver SMS is sent from operations.',
+          nickname: 'sendDriverSMS',
+          failure: V01::Status.failures(add: [:code_410])
         params do
           requires :id, type: String, desc: SharedParams::ID_DESC
-          optional :phone_number, type: String, documentation: { desc: 'Overrides the existing phone number during this request' }
         end
         get ':id/send_driver_sms' do
-          if current_customer.enable_sms_driver && current_customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
-            send_sms_driver(get_route, params[:phone_number])
-          else
-            error! V01::Status.code_response(:code_403), 403
-          end
+          error! V01::Status.code_response(:code_410, message: 'Gone. Planning SMS is sent from operations.'), 410
         end
       end
 

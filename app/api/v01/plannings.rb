@@ -19,7 +19,6 @@ require 'coerce'
 require 'exceptions'
 require 'history'
 
-include PlanningsHelperApi
 include PlanningConcern
 
 class V01::Plannings < Grape::API
@@ -450,40 +449,26 @@ class V01::Plannings < Grape::API
       error!({ message: e.message, status: 422 }, 422)
     end
 
-    desc 'Send SMS for each stop visit.',
-      detail: 'Send SMS for each stop visit of each routes',
+    desc 'Send SMS for each stop visit (retired).',
+      detail: 'Retired. Destination SMS is sent from operations.',
       nickname: 'sendSMS',
-      success: V01::Status.success(:code_200),
-      failure: V01::Status.failures
+      failure: V01::Status.failures(add: [:code_410])
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
     end
     get ':id/send_sms' do
-      error! V01::Status.code_response(:code_410), 410
+      error! V01::Status.code_response(:code_410, message: 'Gone. Planning SMS is sent from operations.'), 410
     end
 
-    desc 'Send SMS to drivers.',
-      detail: 'Send SMS to drivers of each routes',
-      nickname: 'sendSMS',
-      success: V01::Status.success(:code_200),
-      failure: V01::Status.failures
+    desc 'Send SMS to drivers (retired).',
+      detail: 'Retired. Driver SMS is sent from operations.',
+      nickname: 'sendDriverSMS',
+      failure: V01::Status.failures(add: [:code_410])
     params do
       requires :id, type: String, desc: SharedParams::ID_DESC
-      optional :routes, type: Array, documentation: { desc: 'Select a subset of routes' } do
-        requires :id, type: Integer, documentation: { desc: 'Route id'}
-        optional :send, type: Boolean, default: true, documentation: { desc: 'Determines if the current route should be sent' }
-        optional :phone_number, type: String, documentation: { desc: 'Overrides the existing phone number during this request' }
-      end
     end
     post ':id/send_driver_sms' do
-      if current_customer.enable_sms_driver && current_customer.reseller.messagings.any?{ |_k, v| v['enable'] == true }
-        planning = current_customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
-        routes = planning.routes.where(id: params[:routes].map{ |r| r[:id] })
-        phone_number_hash = params[:routes].map{ |r| [r[:id], r[:phone_number]] if r[:send] }.compact.to_h
-        send_sms_drivers(routes, phone_number_hash)
-      else
-        error! V01::Status.code_response(:code_403), 403
-      end
+      error! V01::Status.code_response(:code_410, message: 'Gone. Planning SMS is sent from operations.'), 410
     end
 
     desc 'Historize the planning.',
