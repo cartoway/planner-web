@@ -34,11 +34,11 @@ module CancanGrapeHelpers
     error!(api_status_module.code_response(:code_403), 403)
   end
 
-  def can?(*args)
-    current_ability.can?(*args)
+  def can?(*)
+    current_ability.can?(*)
   end
 
-  def cannot?(*args)
-    current_ability.cannot?(*args)
+  def cannot?(*)
+    current_ability.cannot?(*)
   end
 end

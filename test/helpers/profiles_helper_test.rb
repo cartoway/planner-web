@@ -1,5 +1,4 @@
 require 'test_helper'
-require 'set'
 
 class ProfilesHelperTest < ActionView::TestCase
   setup do
