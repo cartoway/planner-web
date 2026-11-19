@@ -1,4 +1,4 @@
-ARG RUBY_IMAGE=3.1.7-alpine
+ARG RUBY_IMAGE=3.3.14-alpine
 
 FROM ruby:${RUBY_IMAGE}
 
