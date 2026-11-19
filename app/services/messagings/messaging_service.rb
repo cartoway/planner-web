@@ -15,6 +15,18 @@ class MessagingService
     MESSAGING_SERVICES[key]
   end
 
+  # Preferred factory for customer-scoped SMS providers.
+  def self.for_customer(customer)
+    reseller = customer.reseller
+    if VonageService.configured?(reseller)
+      VonageService.new(reseller, customer: customer)
+    elsif SmsPartnerService.configured?(reseller)
+      SmsPartnerService.new(reseller, customer: customer)
+    else
+      raise ArgumentError, "No SMS service configured for reseller #{customer.reseller_id}"
+    end
+  end
+
   def initialize(reseller, options = {})
     @reseller = reseller
     @options = options
@@ -50,8 +62,6 @@ class MessagingService
         }
       elsif v.is_a?(Date)
         template = template.gsub("{#{k}}".upcase, I18n.l(v, format: :date))
-      elsif k == :url && v.is_a?(String) && template.include?('{URL}')
-        template = template.gsub("{#{k}}".upcase, Rails.application.config.url_shortener.shorten(v))
       else
         template = template.gsub("{#{k}}".upcase, "#{v}")
       end

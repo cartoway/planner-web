@@ -8,7 +8,7 @@ module Operations
       customer = operation.customer
       return 0 unless customer.enable_sms_destination
 
-      messaging = SendDriverSms.messaging_service(customer)
+      messaging = MessagingService.for_customer(customer)
       template = customer.sms_template || I18n.t('notifications.sms.alert_plan')
       date = operation.date || Time.zone.today
       list = Array(trackings || OperationDeliveryTracking.for_send(operation))
@@ -17,8 +17,10 @@ module Operations
       list.count { |tracking|
         stop = first_visit_stop(tracking)
         phone = phone_for(tracking, stop)
-        url = TrackingUrl.for(tracking)
-        next false if phone.blank? || url.blank?
+        next false if phone.blank?
+
+        url = TrackingUrl.short_for(tracking)
+        next false if url.blank?
 
         content = replacements(stop, date, url)
         message_id = "#{messaging.class.name.demodulize}c#{customer.id}odt#{tracking.id}t#{date}C"
@@ -77,7 +79,7 @@ module Operations
       }
     end
 
-    # Net quantity + unit label, same idea as PlanningsHelperApi#send_sms_route.
+    # Net quantity + unit label for SMS template replacements.
     def self.quantities_text(stop)
       return '' unless stop
 

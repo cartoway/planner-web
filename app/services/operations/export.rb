@@ -422,7 +422,7 @@ module Operations
       reseller = @operation.customer.reseller
       # Active tokens only — expired public pages return 410, same as the UI link.
       OperationDeliveryTracking.active.where(operation_id: @operation.id).each_with_object({}) { |tracking, hash|
-        url = Operations::TrackingUrl.for(tracking, reseller: reseller)
+        url = Operations::TrackingUrl.long_for(tracking, reseller: reseller)
         hash[tracking.destination_id] = url if url
       }
     end

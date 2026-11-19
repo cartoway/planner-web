@@ -119,20 +119,17 @@ module StopsHelper
   def formatted_operation_stop_inroute_sms(operation_stop)
     customer = operation_stop.operation_route.operation.customer
     snap = operation_stop.destination_snapshot || {}
-    seconds = operation_stop.stop_snapshot&.[]('time').to_i
-    repl = {
-      time: Time.now.at_beginning_of_day + seconds,
-      customer_name: customer.name,
-      url: Operations::TrackingUrl.long_for(operation_stop.active_delivery_tracking),
-      'name' => snap['name'],
-      'street' => snap['street'],
-      'city' => snap['city']
-    }
-    template = customer.sms_intransit_template || I18n.t('notifications.sms.alert_intransit')
     service = MessagingService.new(customer.reseller)
-    content = service.content(template, replacements: repl, time_format: :hour_minute)
-    phone = snap['phone_number']
-    phone_number = phone.present? && service.format_phone_number(phone, snap['country'].presence || customer.default_country)
+    phone = customer.enable_sms_intransit && snap['phone_number'].presence
+    phone_number = phone && service.format_phone_number(phone, snap['country'].presence || customer.default_country)
+    url = phone_number && Operations::TrackingUrl.short_for(operation_stop.active_delivery_tracking)
+    return { phone_number: nil, content: nil } if url.blank?
+
+    seconds = operation_stop.stop_snapshot&.[]('time').to_i
+    repl = { time: Time.now.at_beginning_of_day + seconds, customer_name: customer.name, url: url,
+             'name' => snap['name'], 'street' => snap['street'], 'city' => snap['city'] }
+    template = customer.sms_intransit_template || I18n.t('notifications.sms.alert_intransit')
+    content = service.content(template, replacements: repl, time_format: :hour_minute, truncate: !customer.sms_concat)
     { phone_number: phone_number, content: content }
   end
 

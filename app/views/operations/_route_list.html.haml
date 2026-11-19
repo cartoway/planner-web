@@ -46,7 +46,7 @@
                 %i.fa.fa-location-crosshairs.fa-fw
             .btn-group
               - if operation.open? && show_transmit
-                .dropdown{data: { action: 'shown.bs.dropdown->v2--operation-show#shortenMobileLink' }}
+                .dropdown{data: { action: 'shown.bs.dropdown->v2--operation-show#resolveMobileLink' }}
                   %button.btn.btn-light.dropdown-toggle{type: 'button', disabled: !can_transmit, data: (can_transmit ? { bs_toggle: 'dropdown' } : {})}
                     %i.fa.fa-paper-plane.fa-fw
                     = t('plannings.edit.deliver_send.singular.transmit')
@@ -63,7 +63,7 @@
                       - mobile_url = Operations::MobileUrl.path(route)
                       - if mobile_url
                         %li
-                          = link_to mobile_url, class: 'dropdown-item', target: '_blank', rel: 'noopener noreferrer', data: { short_url: mobile_url_operation_operation_route_path(operation, route) } do
+                          = link_to mobile_url, class: 'dropdown-item', target: '_blank', rel: 'noopener noreferrer', data: { mobile_url: mobile_url_operation_operation_route_path(operation, route) } do
                             = t('plannings.edit.deliver_send.singular.access')
               = link_to media_operation_operation_route_path(operation, route), class: 'btn btn-light', data: { action: 'click->v2--operation-show#openMedia' } do
                 %i.fa.fa-images.fa-fw
