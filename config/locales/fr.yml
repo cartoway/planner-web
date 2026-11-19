@@ -1139,7 +1139,6 @@ fr:
       menu:
         users: Utilisateurs
         send_email: Envoyer email de confirmation
-        send_sms_driver: Envoyer SMS aux livreurs
       index:
         title: Modifier utilisateurs
         new: Nouvel utilisateur
@@ -2524,9 +2523,6 @@ fr:
       vehicle_last_position_time: 'Dernier relevé :'
       route_change_color_help: Changer la couleur de la tournée
       zone_change_color_help: Changer la couleur du secteur
-      send_sms: Envoyer un SMS aux clients
-      send_sms_drivers: Envoyer un SMS aux livreurs
-      send_sms_success: 'Envoi de %{c} SMS avec succès'
       historize: Historiser
       historize_success: Historisé avec succès
       lasso:
@@ -2721,11 +2717,6 @@ fr:
         automatic_insert:
           title: Recherche du meilleur endroit pour vos arrêts
           in_progress: Veuillez patienter
-        send_sms_drivers:
-          title: Envoi des tournées aux livreurs
-          send: Envoyer
-          route: Tournée
-          phone_number: Numéro
         spreadsheet:
           title: Export vers un tableur
           stops: Arrêts additionnels

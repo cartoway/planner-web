@@ -182,7 +182,6 @@ Rails.application.routes.draw do
     get 'refresh'
     get 'refresh_routes' => 'plannings#refresh_routes'
     get 'sidebar'
-    get 'modal'
     get 'move_stops_modal'
     get 'extract_inactive_stops_modal'
     patch 'switch'
@@ -226,11 +225,7 @@ Rails.application.routes.draw do
   # Same body-export note as plannings/export above (switch to via: :query when Rails allows).
   post 'routes/:id/export(.:format)' => 'routes#show', as: :export_route, constraints: { format: /excel|csv/ }
 
-  resources :routes do
-    member do
-      get 'modal'
-    end
-  end
+  resources :routes, only: [:show, :update]
 
   get 'routes/:route_id/stops/by_index/:index' => 'stops#show'
 
