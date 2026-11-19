@@ -93,6 +93,10 @@ class ActiveSupport::TestCase
   end
 
   def setup
+    # Reset after tests that change locale/default_locale (e.g. RouterTest#test_should_translate_name).
+    # French locale is required for comma-decimal casting via CoerceFloatString / LocalizedAttr.
+    I18n.locale = I18n.default_locale = :fr
+
     uri_template = Addressable::Template.new('gpp3-wxs.ign.fr/{api_key}/geoportail/ols')
     @stub_GeocodeRequest = stub_request(:post, uri_template).with { |request|
       request.body.include?("methodName='GeocodeRequest'")
@@ -123,10 +127,10 @@ class ActiveSupport::TestCase
     remove_request_stub(@stub_GeocodeComplete)
     remove_request_stub(@stub_Analytics)
 
-    # FIXME: remove this code when errors due to locales are resolved
     if I18n.locale != :fr
       p "Wrong locale after test: #{self.class.name} > #{self.method_name}"
     end
+    I18n.locale = I18n.default_locale = :fr
   end
 
   # Attach or clear the customer's OptimizerJob for [:during_optimization, nil] loops.
