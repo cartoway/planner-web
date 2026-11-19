@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <data>
 	
 					<vehicle_pos v_id="1091" code="356173064830644" lat="49.1860415" lng="-0.3810453" 
@@ -7,7 +7,7 @@
 						contact="1" engine="1" io="01"
 						driver="" driver_name=""
 						status="1" status_color="0,255,0"
-						status_label="Contact allumé"
-						status_label_html="Contact &lt;b&gt;allumé&lt;/b&gt;" />
+						status_label="Contact allumÃ©"
+						status_label_html="Contact &lt;b&gt;allumÃ©&lt;/b&gt;" />
 					
 </data>
