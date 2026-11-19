@@ -31,17 +31,5 @@ module Operations
 
       Rails.application.config.url_shortener.shorten(url)
     end
-
-    # SMS-only alias for PlanningsHelperApi (removed with planning SMS).
-    def for_planning_route(route)
-      vehicle = route&.vehicle_usage&.vehicle
-      return nil if vehicle&.driver_token.blank?
-
-      operation_route = OperationRoute.joins(:operation)
-                                      .where(route_id: route.id, operations: { status: Operation::OPEN_STATUSES })
-                                      .order('operations.published_at DESC')
-                                      .first
-      short_for(operation_route)
-    end
   end
 end

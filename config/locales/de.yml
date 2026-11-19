@@ -1722,8 +1722,6 @@ de:
       vehicle_speed: 'Geschwindigkeit:'
       vehicle_last_position_time: 'Letzte Position:'
       route_change_color_help: Ändern der Streckenfarbe
-      send_sms: Senden einer SMS an Zielorte
-      send_sms_success: 'Senden von %{c} SMS erfolgreich'
       popup:
         outdated: >-
           Streckenverfolgung veraltet. Aktualisieren Sie Ihren Plan

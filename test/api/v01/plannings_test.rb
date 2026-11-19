@@ -574,11 +574,12 @@ class V01::PlanningsTest < V01::PlanningsBaseTest
     end
   end
 
-  test 'planning destination SMS endpoint is gone' do
-    @planning.customer.reseller.update(messagings: {sms_partner: { enable: true, api_key: :sms_api_key, api_secret: :sms_api_secret }})
-    @planning.customer.update!(enable_sms_driver: true)
-
+  test 'planning SMS endpoints are gone' do
     get api("#{@planning.id}/send_sms")
+    assert_equal 410, last_response.status
+    assert_match(/Gone/i, last_response.body)
+
+    post api("#{@planning.id}/send_driver_sms"), {}.to_json, 'CONTENT_TYPE' => 'application/json'
     assert_equal 410, last_response.status
     assert_match(/Gone/i, last_response.body)
   end

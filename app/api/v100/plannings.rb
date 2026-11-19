@@ -1,7 +1,6 @@
 require 'coerce'
 require 'exceptions'
 
-include PlanningsHelperApi
 include PlanningConcern
 
 class V100::Plannings < Grape::API
