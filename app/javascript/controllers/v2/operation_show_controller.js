@@ -1089,10 +1089,11 @@ export default class extends Controller {
     window.bootstrap.Modal.getOrCreateInstance(modal).show()
   }
 
-  shortenMobileLink (event) {
-    const link = event.currentTarget.querySelector('[data-short-url]')
-    if (!link || link.dataset.shortened === 'true') return
-    const endpoint = link.dataset.shortUrl
+  // Resolve relative mobile path to absolute long URL (no shortener).
+  resolveMobileLink (event) {
+    const link = event.currentTarget.querySelector('[data-mobile-url]')
+    if (!link || link.dataset.resolved === 'true') return
+    const endpoint = link.dataset.mobileUrl
     if (!endpoint) return
     fetch(endpoint, { headers: { Accept: 'application/json' } }).then((response) => {
       if (!response.ok) return null
@@ -1100,7 +1101,7 @@ export default class extends Controller {
     }).then((data) => {
       if (!data || !data.url) return
       link.href = data.url
-      link.dataset.shortened = 'true'
+      link.dataset.resolved = 'true'
     }).catch(() => {})
   }
 

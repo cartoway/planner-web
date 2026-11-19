@@ -14,8 +14,10 @@ module Operations
 
       routes.count { |operation_route|
         phone = operation_route.driver_phone
-        url = MobileUrl.for(operation_route)
-        next false if phone.blank? || url.blank?
+        next false if phone.blank?
+
+        url = MobileUrl.short_for(operation_route)
+        next false if url.blank?
 
         content = {
           route_name: [operation_route.ref, operation_route.vehicle_name].compact.join(' - '),
@@ -37,13 +39,7 @@ module Operations
     end
 
     def self.messaging_service(customer)
-      if VonageService.configured?(customer.reseller)
-        VonageService.new(customer.reseller, customer: customer)
-      elsif SmsPartnerService.configured?(customer.reseller)
-        SmsPartnerService.new(customer.reseller, customer: customer)
-      else
-        raise ArgumentError, "No SMS service configured for reseller #{customer.reseller_id}"
-      end
+      MessagingService.for_customer(customer)
     end
   end
 end

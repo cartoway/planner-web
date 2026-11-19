@@ -8,10 +8,17 @@ class DeliverTest < ActionController::TestCase
     @service = Planner::Application.config.devices.deliver
   end
 
-  test 'should send route' do
-    assert_nothing_raised do
-      @service.send_route @customer, routes(:route_one_one)
+  test 'should send operation route by email' do
+    planning = plannings(:planning_one)
+    operation = publish_operation!(planning: planning, date: Date.current)
+    operation_route = operation.operation_routes.planned.first
+    operation_route.update!(vehicle_snapshot: operation_route.vehicle_snapshot.merge('contact_email' => 'driver@example.com'))
+
+    assert_difference 'ActionMailer::Base.deliveries.size', 1 do
+      @service.send_route @customer, operation_route
     end
+  ensure
+    Operation.where(customer_id: @customer.id).delete_all
   end
 
   test 'deliver is send-only (no clear on device definition)' do

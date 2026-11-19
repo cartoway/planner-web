@@ -25,17 +25,6 @@ class RouteMailer < ApplicationMailer
     end
   end
 
-  def send_driver_route(customer, locale, email, route)
-    @customer = customer
-    @reseller = customer.reseller
-    I18n.with_locale(locale) do
-      @title = "#{I18n.t('route_mailer.send_driver_route.title')} #{route.planning.date ? '- ' : '' }#{route.planning.date}"
-      mail to: EmailListFormat.split(email), subject: "[#{route.vehicle_usage.vehicle.name}] #{t('route_mailer.send_driver_route.subject')} #{route.planning.date ? '- ' : '' }#{route.planning.date}" do |format|
-        format.html { render 'route_mailer/send_driver_route', locals: { customer: customer, route: route, mobile_url: Operations::MobileUrl.for_planning_route(route) } }
-      end
-    end
-  end
-
   def send_operation_route(customer, locale, email, operation_route)
     @customer = customer
     @reseller = customer.reseller
@@ -52,7 +41,7 @@ class RouteMailer < ApplicationMailer
             vehicle_name: name,
             planning_name: operation.name,
             planning_date: date,
-            mobile_url: Operations::MobileUrl.for(operation_route)
+            mobile_url: Operations::MobileUrl.long_for(operation_route)
           }
         }
       end

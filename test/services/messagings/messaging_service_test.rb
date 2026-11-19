@@ -23,6 +23,25 @@ class MessagingServiceTest < ActiveSupport::TestCase
     assert_equal 'Hello John, your delivery is scheduled for 25/02/2024 at 14:30', content
   end
 
+  test 'passes url replacement through without shortening' do
+    service = MessagingService.new(@reseller, customer: @customer)
+    long = 'http://example.test/s/token123'
+    content = service.content('Go {URL}', replacements: { url: long }, truncate: false)
+    assert_equal 'Go http://example.test/s/token123', content
+  end
+
+  test 'for_customer picks a configured messaging provider' do
+    VonageService.stubs(:configured?).returns(true)
+    assert_instance_of VonageService, MessagingService.for_customer(@customer)
+
+    VonageService.stubs(:configured?).returns(false)
+    SmsPartnerService.stubs(:configured?).returns(true)
+    assert_instance_of SmsPartnerService, MessagingService.for_customer(@customer)
+
+    SmsPartnerService.stubs(:configured?).returns(false)
+    assert_raises(ArgumentError) { MessagingService.for_customer(@customer) }
+  end
+
   test 'should truncate content by default' do
     service = MessagingService.new(@reseller, customer: @customer)
     long_text = 'x' * 200
