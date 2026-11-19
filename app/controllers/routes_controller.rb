@@ -22,22 +22,13 @@ require 'zip'
 
 class RoutesController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_route, only: [:update, :modal]
+  before_action :set_route, only: [:update]
   before_action :authorize_route_paint_for_color!, only: [:update]
 
   load_and_authorize_resource
 
   include PlanningExport
   include PlanningToolbarPermissions
-
-  def modal
-    case params[:modal]
-    when 'sms_drivers'
-      respond_to do |format|
-        format.js { render partial: 'plannings/send_sms_drivers', locals: { planning: @route.planning, routes: [@route] } }
-      end
-    end
-  end
 
   def show
     @params = params

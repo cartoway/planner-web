@@ -35,7 +35,7 @@ class PlanningsController < ApplicationController
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
   before_action :enforce_operation_usable_for_refresh!, only: [:refresh]
   before_action :enforce_operation_usable_for_duplicate!, only: [:duplicate]
-  before_action :set_planning_without_stops, only: [:data_header, :operation_sync_preview, :summary, :filter_routes, :modal, :sidebar, :refresh_route, :refresh_routes, :move_stops_modal, :extract_inactive_stops_modal, :move, :update_stop]
+  before_action :set_planning_without_stops, only: [:data_header, :operation_sync_preview, :summary, :filter_routes, :sidebar, :refresh_route, :refresh_routes, :move_stops_modal, :extract_inactive_stops_modal, :move, :update_stop]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :refresh_routes, :reverse_order, :sidebar, :update_stop]
   before_action :check_no_existing_job, only: [:optimize, :optimize_route]
@@ -481,15 +481,6 @@ class PlanningsController < ApplicationController
 
     respond_to do |format|
       format.json { render json: { locals: { summary: planning_summary(@planning) }}}
-    end
-  end
-
-  def modal
-    case params[:modal]
-    when 'sms_drivers'
-      respond_to do |format|
-        format.js { render partial: 'send_sms_drivers', locals: { planning: @planning, routes: @planning.routes } }
-      end
     end
   end
 
