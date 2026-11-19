@@ -34,8 +34,8 @@ module Preloaders
     end
 
     # Yields each batch after preloading associations.
-    def self.each_batch(relation, batch_size: 30, associations: ASSOCIATIONS, &block)
-      BatchAssociationPreload.each_batch(relation, associations: associations, batch_size: batch_size, &block)
+    def self.each_batch(relation, batch_size: 30, associations: ASSOCIATIONS, &)
+      BatchAssociationPreload.each_batch(relation, associations: associations, batch_size: batch_size, &)
     end
   end
 end
