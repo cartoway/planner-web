@@ -24,10 +24,13 @@ class DeliveryTrackingTest < ActionController::TestCase
   end
 
   test 'tracking url is shortened when shortener is available' do
+    shortener = Object.new
+    shortener.define_singleton_method(:shorten) { |_url| 'http://short.test/track' }
+    Rails.application.config.stubs(:url_shortener).returns(shortener)
+
     long = Operations::TrackingUrl.long_for(@tracking)
     assert_includes long, "/s/#{@tracking.token}"
-    short = Operations::TrackingUrl.for(@tracking)
-    assert short.present?
+    assert_equal 'http://short.test/track', Operations::TrackingUrl.short_for(@tracking)
   end
 
   test 'public page shows en route status' do

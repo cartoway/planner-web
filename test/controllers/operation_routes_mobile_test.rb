@@ -10,6 +10,11 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
   end
 
   setup do
+    # Mobile in-route SMS links call TrackingUrl.short_for.
+    shortener = Object.new
+    shortener.define_singleton_method(:shorten) { |url| "http://short.test/#{url.hash.abs}" }
+    Rails.application.config.stubs(:url_shortener).returns(shortener)
+
     @route = routes(:route_one_one)
     @planning = @route.planning
     @operation = publish_operation!(planning: @planning)
@@ -313,7 +318,15 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
     }.returns('http://short.test/abc')
     Rails.application.config.stubs(:url_shortener).returns(shortener)
 
-    assert_equal 'http://short.test/abc', Operations::MobileUrl.for(@operation_route)
+    assert_equal 'http://short.test/abc', Operations::MobileUrl.short_for(@operation_route)
+  end
+
+  test 'long mobile url does not shorten' do
+    Rails.application.config.url_shortener.expects(:shorten).never
+
+    url = Operations::MobileUrl.long_for(@operation_route)
+    assert_includes url, "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile"
+    assert_includes url, "driver_token=#{@vehicle.driver_token}"
   end
 
   test 'local mobile path does not shorten' do
@@ -322,23 +335,6 @@ class OperationRoutesMobileTest < ActiveSupport::TestCase
     path = Operations::MobileUrl.path(@operation_route)
     assert_includes path, "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile"
     assert_includes path, "driver_token=#{@vehicle.driver_token}"
-  end
-
-  test 'planning send uses the operation mobile url' do
-    shortener = mock
-    shortener.expects(:shorten).with { |url|
-      url.include?("/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile") &&
-        url.include?("driver_token=#{@vehicle.driver_token}")
-    }.returns('http://short.test/plan')
-    Rails.application.config.stubs(:url_shortener).returns(shortener)
-
-    assert_equal 'http://short.test/plan', Operations::MobileUrl.for_planning_route(@route)
-  end
-
-  test 'planning send has no mobile url without an open operation' do
-    Operation.where(customer_id: @planning.customer_id).delete_all
-
-    assert_nil Operations::MobileUrl.for_planning_route(@route)
   end
 end
 
@@ -358,13 +354,12 @@ class OperationRouteMobileUrlTest < ActionController::TestCase
     Operation.where(customer_id: @planning.customer_id).delete_all
   end
 
-  test 'returns a shortened driver mobile url' do
-    shortener = mock
-    shortener.expects(:shorten).returns('http://short.test/abc')
-    Rails.application.config.stubs(:url_shortener).returns(shortener)
+  test 'returns a long driver mobile url without shortening' do
+    Rails.application.config.url_shortener.expects(:shorten).never
 
     get :mobile_url, params: { operation_id: @operation.id, id: @operation_route.id }
     assert_response :success
-    assert_equal 'http://short.test/abc', JSON.parse(response.body)['url']
+    url = JSON.parse(response.body)['url']
+    assert_includes url, "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile"
   end
 end

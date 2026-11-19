@@ -35,7 +35,7 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     assert_equal 0, Operations::SendDestinationSms.call(operation: @operation, trackings: [@tracking])
   end
 
-  test 'send destination email injects tracking url' do
+  test 'send destination email injects long tracking url without shortening' do
     @customer.update!(recipient_template: 'Bonjour {NAME} {URL}')
     assert_difference 'ActionMailer::Base.deliveries.size', 1 do
       count = Operations::SendDestinationEmail.call(operation: @operation, trackings: [@tracking])
@@ -43,7 +43,9 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
     end
     mail = ActionMailer::Base.deliveries.last
     assert_includes mail.to, 'dest@example.com'
-    assert_match %r{/s/#{Regexp.escape(@tracking.token)}|http}, mail.body.encoded
+    body = mail.body.encoded
+    assert_includes body, "/s/#{@tracking.token}"
+    refute_includes body, 'http://short.test/'
   end
 
   test 'destination email subject body and cta share french locale without literal newlines' do
@@ -91,29 +93,29 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
   end
 
   test 'send destination sms builds content with shortened url' do
+    captured = {}
     messaging = Object.new
-    def messaging.content(template, replacements:, truncate: true)
+    messaging.define_singleton_method(:content) { |template, replacements:, truncate: true|
+      captured[:url] = replacements[:url]
       "#{replacements[:name]} #{replacements[:url]}"
-    end
-
-    # rubocop:disable Naming/PredicateMethod
-    def messaging.send_message(*)
+    }
+    messaging.define_singleton_method(:send_message) { |*_args, **_kwargs|
       true
-    end
-    # rubocop:enable Naming/PredicateMethod
-
-    def messaging.class
+    }
+    messaging.define_singleton_method(:class) {
       Class.new {
         def self.name
           'FakeSms'
         end
       }.new.class
-    end
+    }
 
-    Operations::SendDriverSms.stubs(:messaging_service).returns(messaging)
+    MessagingService.stubs(:for_customer).returns(messaging)
     @customer.update!(enable_sms_destination: true, sms_template: 'Hi {NAME} {URL}')
     count = Operations::SendDestinationSms.call(operation: @operation, trackings: [@tracking])
     assert_equal 1, count
+    assert_match %r{\Ahttp://short\.test/}, captured[:url]
+    refute_includes captured[:url], "/s/#{@tracking.token}"
   end
 
   test 'send destination sms records timeline without moving status cursor' do
@@ -138,7 +140,7 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
       }.new.class
     end
 
-    Operations::SendDriverSms.stubs(:messaging_service).returns(messaging)
+    MessagingService.stubs(:for_customer).returns(messaging)
     @customer.update!(enable_sms_destination: true, sms_template: 'Hi {NAME} {URL}')
 
     assert_difference -> { stop.operation_stop_status_events.count }, 1 do
@@ -203,7 +205,7 @@ class SendDestinationNotificationsTest < ActiveSupport::TestCase
         end
       }.new.class
     }
-    Operations::SendDriverSms.stubs(:messaging_service).returns(messaging)
+    MessagingService.stubs(:for_customer).returns(messaging)
     @customer.update!(
       enable_sms_destination: true,
       company_name: 'Société Test',

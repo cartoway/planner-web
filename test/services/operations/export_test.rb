@@ -6,12 +6,6 @@ require 'zip'
 class OperationsExportTest < ActiveSupport::TestCase
   setup do
     @planning = plannings(:planning_one)
-    shortener = Object.new
-    # Keep the token in the short URL so expired-token assertions stay readable.
-    def shortener.shorten(url)
-      "http://short.test/#{url.to_s.split('/').last}"
-    end
-    Rails.application.config.stubs(:url_shortener).returns(shortener)
     @operation = publish_operation!(planning: @planning)
     @stop = @operation.operation_stops.find_by!(stop_id: stops(:stop_one_one).id)
     @stop.update_columns(status: 'delivered', status_updated_at: Time.zone.parse('2026-09-25 11:00'))
@@ -103,7 +97,8 @@ class OperationsExportTest < ActiveSupport::TestCase
     sheet = xlsx_sheet_xml(Operations::Export.new(@operation.reload).to_xlsx)
     token = OperationDeliveryTracking.active.find_by!(operation_id: @operation.id, destination_id: dest_id).token
     assert_includes sheet, I18n.t('operations.export.columns.tracking_url')
-    assert_equal 1, sheet.scan(%r{http://short\.test/#{Regexp.escape(token)}}).size
+    assert_equal 1, sheet.scan(%r{/s/#{Regexp.escape(token)}}).size
+    refute_includes sheet, 'http://short.test/'
   end
 
   test 'xlsx keeps a tracking url per distinct destination' do
@@ -125,8 +120,8 @@ class OperationsExportTest < ActiveSupport::TestCase
     assert_not_equal token_a, token_b
 
     sheet = xlsx_sheet_xml(Operations::Export.new(@operation).to_xlsx)
-    assert_equal 1, sheet.scan(%r{http://short\.test/#{Regexp.escape(token_a)}}).size
-    assert_equal 1, sheet.scan(%r{http://short\.test/#{Regexp.escape(token_b)}}).size
+    assert_equal 1, sheet.scan(%r{/s/#{Regexp.escape(token_a)}}).size
+    assert_equal 1, sheet.scan(%r{/s/#{Regexp.escape(token_b)}}).size
   end
 
   test 'xlsx skips tracking url for inactive visits and expired tokens' do
@@ -148,7 +143,7 @@ class OperationsExportTest < ActiveSupport::TestCase
     tracking = OperationDeliveryTracking.active.find_by!(operation_id: @operation.id, destination_id: dest_id)
 
     sheet = xlsx_sheet_xml(Operations::Export.new(@operation.reload).to_xlsx)
-    assert_equal 1, sheet.scan(%r{http://short\.test/#{Regexp.escape(tracking.token)}}).size
+    assert_equal 1, sheet.scan(%r{/s/#{Regexp.escape(tracking.token)}}).size
 
     tracking.update_columns(expires_at: 1.hour.ago)
     expired_sheet = xlsx_sheet_xml(Operations::Export.new(@operation.reload).to_xlsx)

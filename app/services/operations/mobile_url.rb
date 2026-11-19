@@ -15,16 +15,24 @@ module Operations
       "/operations/#{operation.id}/routes/#{operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
     end
 
-    # Shortened absolute URL of the operation route mobile page (mail / SMS).
-    def for(operation_route)
+    # Absolute long URL (UI, email). Prefer this outside SMS.
+    def long_for(operation_route)
       relative = path(operation_route)
       return nil if relative.blank?
 
       reseller = operation_route.operation.customer.reseller
-      url = "#{reseller.url_protocol}://#{reseller.host}#{relative}"
+      "#{reseller.url_protocol}://#{reseller.host}#{relative}"
+    end
+
+    # Shortened absolute URL — SMS send only.
+    def short_for(operation_route)
+      url = long_for(operation_route)
+      return nil if url.blank?
+
       Rails.application.config.url_shortener.shorten(url)
     end
 
+    # SMS-only alias for PlanningsHelperApi (removed with planning SMS).
     def for_planning_route(route)
       vehicle = route&.vehicle_usage&.vehicle
       return nil if vehicle&.driver_token.blank?
@@ -33,7 +41,7 @@ module Operations
                                       .where(route_id: route.id, operations: { status: Operation::OPEN_STATUSES })
                                       .order('operations.published_at DESC')
                                       .first
-      self.for(operation_route)
+      short_for(operation_route)
     end
   end
 end
