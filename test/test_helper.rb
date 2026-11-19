@@ -100,6 +100,10 @@ class ActiveSupport::TestCase
   end
 
   def setup
+    # Reset after tests that change locale/default_locale (e.g. RouterTest#test_should_translate_name).
+    # French locale is required for comma-decimal casting via CoerceFloatString / LocalizedAttr.
+    I18n.locale = I18n.default_locale = :fr
+
     uri_template = Addressable::Template.new('gpp3-wxs.ign.fr/{api_key}/geoportail/ols')
     @stub_GeocodeRequest = stub_request(:post, uri_template).with { |request|
       request.body.include?("methodName='GeocodeRequest'")
