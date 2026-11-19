@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-ARG RUBY_IMAGE=3.1.7-alpine
+ARG RUBY_IMAGE=3.3.14-alpine
 
 # Step 1: Build (assets, gems, node_modules)
 FROM ruby:${RUBY_IMAGE} AS builder
