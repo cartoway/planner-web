@@ -47,7 +47,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-ubuntu-24.04-bundle-
       - name: Install Ruby
-        uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
+        uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
         with:
           ruby-version: .ruby-version
           bundler-cache: false
@@ -106,7 +106,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-ubuntu-24.04-bundle-
       - name: Install Ruby
-        uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
+        uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
         with:
           ruby-version: .ruby-version
           bundler-cache: false
@@ -171,7 +171,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-ubuntu-24.04-bundle-
       - name: Install Ruby
-        uses: ruby/setup-ruby@0dafeac902942906541bc140009cdbf32665b601 # v1.315.0
+        uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
         with:
           ruby-version: .ruby-version
           bundler-cache: false
