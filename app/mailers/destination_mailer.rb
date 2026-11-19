@@ -3,7 +3,14 @@
 class DestinationMailer < ApplicationMailer
   layout false
 
-  def delivery_tracking(customer:, email:, body:, tracking_url:, locale: nil)
+  # ActionMailer passes kwargs as one Hash under Ruby 3.2+ (not as real keywords).
+  def delivery_tracking(attrs = {})
+    customer = attrs.fetch(:customer)
+    email = attrs.fetch(:email)
+    body = attrs.fetch(:body)
+    tracking_url = attrs.fetch(:tracking_url)
+    locale = attrs[:locale]
+
     @customer = customer
     @reseller = customer.reseller
     # Templates/locales often store literal "\n"; normalize before simple_format.
