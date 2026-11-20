@@ -615,7 +615,7 @@ tr.is-past { color: #6b7280; }
   &::after {
     content: "";
     position: absolute;
-    left: calc(.28rem + .275rem - 1px);
+    left: #{"calc(.28rem + .275rem - 1px)"};
     top: 0;
     bottom: 0;
     width: 1px;
@@ -655,7 +655,7 @@ tr.is-past { color: #6b7280; }
 .operation-media-spacer { flex: 0 0 var(--peek); }
 
 .operation-media-group {
-  flex: 0 0 calc((100% - (2 * var(--peek)) - (2 * var(--gap))) / 3);
+  flex: 0 0 #{"calc((100% - (2 * var(--peek)) - (2 * var(--gap))) / 3)"};
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -805,8 +805,8 @@ tr.is-past { color: #6b7280; }
   }
 
   .operation-board {
-    height: calc(100dvh - var(--menu-mobile-topbar-height, 3rem));
-    max-height: calc(100dvh - var(--menu-mobile-topbar-height, 3rem));
+    height: #{"calc(100dvh - var(--menu-mobile-topbar-height, 3rem))"};
+    max-height: #{"calc(100dvh - var(--menu-mobile-topbar-height, 3rem))"};
   }
 
   .operation-header {
@@ -919,7 +919,7 @@ tr.is-past { color: #6b7280; }
   }
 
   .operation-detail-body {
-    max-height: calc(75dvh - 2.5rem);
+    max-height: #{"calc(75dvh - 2.5rem)"};
   }
 
   .operations-index {
@@ -951,7 +951,7 @@ tr.is-past { color: #6b7280; }
     .operation-legend {
       flex-wrap: wrap;
       width: auto;
-      max-width: calc(100% - 1.5rem);
+      max-width: #{"calc(100% - 1.5rem)"};
       white-space: normal;
       border-radius: .75rem;
       justify-content: center;

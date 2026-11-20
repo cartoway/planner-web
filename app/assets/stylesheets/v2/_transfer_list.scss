@@ -76,7 +76,7 @@
   flex-wrap: wrap;
   gap: 10px;
   margin: 0;
-  max-height: min(35vh, 280px);
+  max-height: #{"min(35vh, 280px)"};
   min-height: 120px;
   overflow-x: hidden;
   overflow-y: auto;

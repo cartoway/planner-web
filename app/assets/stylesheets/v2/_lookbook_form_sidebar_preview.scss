@@ -5,7 +5,7 @@
   #lookbook-form-sidebar-layout.lookbook-form-sidebar-demo,
   #lookbook-form-sidebar-layout-collapsed.lookbook-form-sidebar-demo {
     position: relative;
-    height: min(36rem, 85vh);
+    height: #{"min(36rem, 85vh)"};
     min-height: 20rem;
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: var(--bs-border-radius, 0.375rem);
@@ -25,7 +25,7 @@
       bottom: 0;
       z-index: 2;
       width: clamp(280px, 36vw, 420px);
-      max-width: min(420px, 48vw);
+      max-width: #{"min(420px, 48vw)"};
       display: flex;
       flex-direction: column;
       min-height: 0;
@@ -68,7 +68,7 @@
   }
 
   #lookbook-form-sidebar-layout-collapsed.lookbook-form-sidebar-demo {
-    height: min(14rem, 40vh);
+    height: #{"min(14rem, 40vh)"};
     min-height: 10rem;
 
     .form-sidebar-expand.floating-btn.slide-panel-expand-trigger {
@@ -85,7 +85,7 @@
 
   #lookbook-form-sidebar-bottom-sheet.lookbook-form-sidebar-demo--bottom-sheet {
     position: relative;
-    height: min(40rem, 90vh);
+    height: #{"min(40rem, 90vh)"};
     min-height: 28rem;
     border: 1px solid var(--bs-border-color, #dee2e6);
     border-radius: var(--bs-border-radius, 0.375rem);

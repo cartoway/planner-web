@@ -275,7 +275,7 @@
       top: 0;
       bottom: 0;
       width: clamp(300px, 38vw, 560px);
-      max-width: min(560px, 48vw);
+      max-width: #{"min(560px, 48vw)"};
       display: flex;
       flex-direction: column;
       min-height: 0;
@@ -556,7 +556,7 @@
       }
 
       .form-sidebar-inner {
-        max-height: calc(75dvh - 2.75rem);
+        max-height: #{"calc(75dvh - 2.75rem)"};
         padding-top: 0.35rem;
       }
     }
@@ -574,7 +574,7 @@ body > .ts-dropdown {
   z-index: 1100 !important;
 
   .ts-dropdown-content {
-    max-height: min(45vh, 260px) !important;
+    max-height: #{"min(45vh, 260px) !important"};
   }
 }
 
@@ -645,7 +645,7 @@ form.v2-list-filters-form[aria-busy="true"]::after {
   display: flex;
   flex-direction: column-reverse;
   gap: 0.5rem;
-  max-width: min(22rem, calc(100vw - 2rem));
+  max-width: #{"min(22rem, calc(100vw - 2rem))"};
   pointer-events: none;
 }
 

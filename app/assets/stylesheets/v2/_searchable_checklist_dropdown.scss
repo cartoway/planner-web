@@ -5,8 +5,8 @@
   // Wide enough for long labels (deliverable units, translated names).
   min-width: 22rem;
   width: max-content;
-  max-width: min(90vw, 28rem);
-  max-height: min(70vh, 24rem);
+  max-width: #{"min(90vw, 28rem)"};
+  max-height: #{"min(70vh, 24rem)"};
   padding: 0;
   overflow: hidden;
   // Only when open — permanent display:flex would override Bootstrap's display:none.

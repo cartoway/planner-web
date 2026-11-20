@@ -456,14 +456,14 @@
 }
 
 .stop-camera-modal-close {
-  top: calc(12px + env(safe-area-inset-top, 0px));
+  top: #{"calc(12px + env(safe-area-inset-top, 0px))"};
   right: 12px;
   z-index: 2;
 }
 
 .stop-camera-modal-count {
   position: absolute;
-  top: calc(14px + env(safe-area-inset-top, 0px));
+  top: #{"calc(14px + env(safe-area-inset-top, 0px))"};
   left: 12px;
   z-index: 2;
   padding: 4px 10px;
@@ -499,7 +499,7 @@
   z-index: 2;
   display: flex;
   justify-content: center;
-  padding: 16px 12px calc(16px + env(safe-area-inset-bottom, 0px));
+  padding: 16px 12px #{"calc(16px + env(safe-area-inset-bottom, 0px))"};
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
 }
 

@@ -63,7 +63,12 @@ Rails.application.configure do
 
   config.raise_on_standard_error = false
 
-  config.assets.compile = true
+  # Default on for unit tests; Lookbook VRT CI precompiles then sets ASSETS_COMPILE=0
+  # so Puma never hits SassC (segfault under concurrent Playwright workers on Ruby 3.4).
+  config.assets.compile = ENV['ASSETS_COMPILE'] != '0'
+  config.assets.digest = true
+  # LibSass compressor rejects modern CSS min()/calc() with mixed rem/vw units.
+  config.assets.css_compressor = nil
 
   # Application config
 
@@ -199,8 +204,6 @@ module Vonage
     def initialize(options); end
     class SMS
       def send(options)
-        puts 'local override Vonage::Client...'
-        puts options
         OpenStruct.new(messages: [OpenStruct.new(status: '0')])
       end
     end

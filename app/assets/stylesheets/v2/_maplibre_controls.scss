@@ -15,7 +15,7 @@
 
     &.maplibre-geocoder--expanded {
       min-width: 220px;
-      max-width: min(320px, 42vw);
+      max-width: #{"min(320px, 42vw)"};
     }
   }
 
@@ -57,7 +57,7 @@
   .maplibre-overlay-toggles {
     margin-top: 0.35rem;
     padding: 0.35rem 0.5rem;
-    max-width: min(280px, 50vw);
+    max-width: #{"min(280px, 50vw)"};
     background: var(--bs-body-bg);
     border-radius: var(--bs-border-radius, 0.25rem);
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);

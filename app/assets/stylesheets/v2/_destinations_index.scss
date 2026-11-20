@@ -216,7 +216,7 @@
 
   .destinations-card-name {
     flex: 1 1 10rem;
-    min-width: min(100%, 10rem);
+    min-width: #{"min(100%, 10rem)"};
     margin: 0;
     font-size: 1.05rem;
     line-height: 1.3;
@@ -523,7 +523,7 @@
 
 .destinations-search-dropdown {
   position: absolute;
-  top: calc(100% + 0.35rem);
+  top: #{"calc(100% + 0.35rem)"};
   left: 0;
   right: 0;
   z-index: 30;
@@ -541,7 +541,7 @@
 }
 
 .destinations-search-dropdown-list {
-  max-height: min(40vh, 18rem);
+  max-height: #{"min(40vh, 18rem)"};
   overflow-y: auto;
 }
 
@@ -994,7 +994,7 @@ body:has(#operation-map-layout) {
 
 #operation-map-layout {
   .destinations-sidebar {
-    width: min(32rem, 92vw);
+    width: #{"min(32rem, 92vw)"};
     max-width: 32rem;
   }
 }
