@@ -56,4 +56,20 @@ class SmsPartnerServiceTest < ActiveSupport::TestCase
       country: 'France'
     )
   end
+
+  test 'send_message returns false when API fails without error payload' do
+    response = mock
+    response.expects(:body).returns({ 'success' => false, 'code' => 400 }.to_json)
+
+    RestClient.expects(:post).returns(response)
+
+    refute @service.send_message('0612345678', 'Test message', from: 'SENDER', country: 'France')
+  end
+
+  test 'SmsPartnerResponse normalizes missing errors for logging' do
+    response = SmsPartnerService::SmsPartnerResponse.new('success' => false, 'code' => 500)
+
+    assert_equal [], response.errors
+    assert_equal 'code=500', response.error_message
+  end
 end

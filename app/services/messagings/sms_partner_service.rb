@@ -5,7 +5,7 @@ class SmsPartnerService < MessagingService
   class SmsPartnerResponse
     def initialize(body)
       @success    = body['success']
-      @errors     = body['error']
+      @errors     = normalize_errors(body['error'] || body['errors'] || body['message'])
       @code       = body['code']
       @message_id = body['message_id']
       @raw_data   = body
@@ -15,7 +15,21 @@ class SmsPartnerService < MessagingService
       @success
     end
 
+    def error_message
+      errors.join(', ').presence || "code=#{code.inspect}"
+    end
+
     attr_reader :errors, :code, :message_id, :raw_data
+
+    private
+
+    def normalize_errors(value)
+      case value
+      when nil then []
+      when Array then value.map(&:to_s)
+      else [value.to_s]
+      end
+    end
   end
 
   def self.configured?(reseller, service_name = 'sms_partner')
@@ -55,7 +69,7 @@ class SmsPartnerService < MessagingService
       })
       true
     else
-      log_error("SMS sending failed", errors: response.errors.join(", "))
+      log_error("SMS sending failed", errors: response.error_message)
       false
     end
   end
@@ -69,7 +83,7 @@ class SmsPartnerService < MessagingService
     if response.success?
       response.raw_data['credits']['balance']&.to_f
     else
-      log_error("SMS balance fetching failed", errors: response.errors.join(", "))
+      log_error("SMS balance fetching failed", errors: response.error_message)
       nil
     end
   rescue RestClient::Forbidden => e
