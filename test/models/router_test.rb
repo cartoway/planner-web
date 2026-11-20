@@ -4,8 +4,7 @@ require 'routers/osrm'
 class RouterTest < ActiveSupport::TestCase
 
   test 'should translate name' do
-    begin
-      I18n.default_locale = :en
+    with_test_locale(:en) do
       router = routers(:router_one)
       router2 = routers(:router_two)
       router3 = routers(:router_osrm)
@@ -21,8 +20,6 @@ class RouterTest < ActiveSupport::TestCase
         assert_equal router2.translated_name, router2.name_locale['en']
         assert_equal router3.translated_name, router3.name
       end
-    ensure
-      I18n.default_locale = :fr
     end
   end
 

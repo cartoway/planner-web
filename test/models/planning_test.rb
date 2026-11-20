@@ -873,16 +873,13 @@ class PlanningTest < ActiveSupport::TestCase
   end
 
   test 'date format' do
-    orig_locale = I18n.locale
-    begin
-      planning = plannings :planning_one
-      planning.update! date: Date.new(2017, 1, 31)
-      I18n.locale = :en
+    planning = plannings :planning_one
+    planning.update! date: Date.new(2017, 1, 31)
+    I18n.with_locale(:en) do
       assert_equal '01-31-2017', I18n.l(planning.date.to_time, format: :datepicker)
-      I18n.locale = :fr
+    end
+    I18n.with_locale(:fr) do
       assert_equal '31-01-2017', I18n.l(planning.date.to_time, format: :datepicker)
-    ensure
-      I18n.locale = orig_locale
     end
   end
 

@@ -2,17 +2,11 @@ require 'test_helper'
 
 class ImporterDestinationsGeocodingTest < ActiveSupport::TestCase
   setup do
-    @original_locale = I18n.locale
-    I18n.locale = :en
     @customer = customers(:customer_one)
     @customer.update(job_destination_geocoding: nil)
     @importer = ImporterDestinations.new(@customer)
     @store_to_geocode = @customer.stores.not_positioned.count
     @destinations_to_geocode = @customer.destinations.not_positioned.count
-  end
-
-  teardown do
-    I18n.locale = @original_locale
   end
 
   test 'geocoding tasks are called in synchronous mode' do
@@ -125,7 +119,10 @@ class ImporterDestinationsGeocodingTest < ActiveSupport::TestCase
         }
       ]
 
-      @importer.import(import_data, 'test_import', true, {}) { |row, line| row }
+      # valid_stop_type matches I18n labels; English keys are "visit" / "store".
+      I18n.with_locale(:en) do
+        @importer.import(import_data, 'test_import', true, {}) { |row, line| row }
+      end
 
       assert_equal 2, mock_geocoder.call_count, "Geocoder should have been called twice"
     ensure

@@ -565,10 +565,8 @@ class ImporterDestinationsTest < ActionController::TestCase
   end
 
   test 'should import destinations with locale number separator (commas in french)' do
-    orig_locale = I18n.locale
-    begin
-      [:en, :fr].each do |locale|
-        I18n.locale = locale
+    [:en, :fr].each do |locale|
+      I18n.with_locale(locale) do
         assert_difference('Destination.count', 1) do
           ImportCsv.new(importer: ImporterDestinations.new(@customer), replace: false, file: tempfile("test/fixtures/files/import_destinations_#{locale.to_s.upcase}.csv", "text.csv")).import
         end
@@ -577,8 +575,6 @@ class ImporterDestinationsTest < ActionController::TestCase
         assert_equal 39.482, Visit.last.deliveries[2]
         assert_nil Visit.last.pickups[2]
       end
-    ensure
-      I18n.locale = orig_locale
     end
   end
 
@@ -587,19 +583,17 @@ class ImporterDestinationsTest < ActionController::TestCase
       'import_destinations_fr_decimal.csv' => [:fr, [48.856, -2.352]],
       'import_destinations_anglo_decimal.csv' => [:en, [48.856, -2.352]]
     }.each do |filename, (locale, expected_coords)|
-      orig_locale = I18n.locale
-      I18n.locale = locale
-      assert_difference('Destination.count', 1) do
-        ImportCsv.new(
-          importer: ImporterDestinations.new(@customer),
-          replace: false,
-          file: tempfile("test/fixtures/files/#{filename}", 'text.csv')
-        ).import
+      I18n.with_locale(locale) do
+        assert_difference('Destination.count', 1) do
+          ImportCsv.new(
+            importer: ImporterDestinations.new(@customer),
+            replace: false,
+            file: tempfile("test/fixtures/files/#{filename}", 'text.csv')
+          ).import
+        end
+        assert_in_delta expected_coords[0], Destination.last.lat, 0.0001
+        assert_in_delta expected_coords[1], Destination.last.lng, 0.0001
       end
-      assert_in_delta expected_coords[0], Destination.last.lat, 0.0001
-      assert_in_delta expected_coords[1], Destination.last.lng, 0.0001
-    ensure
-      I18n.locale = orig_locale
     end
   end
 

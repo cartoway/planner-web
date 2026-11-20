@@ -160,7 +160,7 @@ class V01::DestinationsTest < ActiveSupport::TestCase
   test 'should create bulk from csv' do
     assert_difference('Destination.count', 1) do
       assert_difference('Planning.count', 1) do
-        file = fixture_file_upload('test/fixtures/files/import_destinations_one.csv', 'text/csv')
+        file = fixture_file_upload('import_destinations_one.csv', 'text/csv')
         put api(), replace: false, file: file
         assert last_response.ok?, last_response.body
         assert_equal 1, JSON.parse(last_response.body).size
@@ -259,91 +259,85 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
   test 'should create bulk from json with store destination' do
     @customer.update(enable_store_stops: true)
-    orig_locale = I18n.locale
-    I18n.locale = :en
-
-    assert_difference('Store.count', 1) do
-      assert_difference('Destination.count', 0) do
-        assert_difference('Planning.count', 0) do
-          assert_difference('Stop.count', 1) do
-            put api(), nil, input: {
-              planning: {
-                ref: 'r1',
-              },
-              destinations: [{
-                name: 'New store',
-                ref: 'store_ref',
-                street: '123 Store Street',
-                postalcode: '12345',
-                city: 'Store City',
-                state: 'Store State',
-                lat: 43.5710885456786,
-                lng: 3.89636993408203,
-                stop_type: 'reload',
-                visits: [{
-                  duration: '00:10:00',
-                  route: 'route_one',
-                  ref_vehicle: '001',
+    I18n.with_locale(:en) do
+      assert_difference('Store.count', 1) do
+        assert_difference('Destination.count', 0) do
+          assert_difference('Planning.count', 0) do
+            assert_difference('Stop.count', 1) do
+              put api(), nil, input: {
+                planning: {
+                  ref: 'r1',
+                },
+                destinations: [{
+                  name: 'New store',
+                  ref: 'store_ref',
+                  street: '123 Store Street',
+                  postalcode: '12345',
+                  city: 'Store City',
+                  state: 'Store State',
+                  lat: 43.5710885456786,
+                  lng: 3.89636993408203,
+                  stop_type: 'reload',
+                  visits: [{
+                    duration: '00:10:00',
+                    route: 'route_one',
+                    ref_vehicle: '001',
+                  }]
                 }]
-              }]
-            }.to_json, CONTENT_TYPE: 'application/json'
-            assert last_response.ok?, last_response.body
+              }.to_json, CONTENT_TYPE: 'application/json'
+              assert last_response.ok?, last_response.body
 
-            get api()
+              get api()
 
-            # zoning sets stops out_of_route
-            planning = plannings(:planning_one)
-            route = planning.routes.find{ |r| r.ref == 'route_one' }
-            stop = route.stops.find{ |s| s.is_a?(StopStore) && s.store_reload.store.ref == 'store_ref' }
-            assert_not_nil stop
-            assert_equal 'StopStore', stop.type
-            assert_equal 'store_ref', stop.store_reload.store.ref
+              # zoning sets stops out_of_route
+              planning = plannings(:planning_one)
+              route = planning.routes.find{ |r| r.ref == 'route_one' }
+              stop = route.stops.find{ |s| s.is_a?(StopStore) && s.store_reload.store.ref == 'store_ref' }
+              assert_not_nil stop
+              assert_equal 'StopStore', stop.type
+              assert_equal 'store_ref', stop.store_reload.store.ref
+            end
           end
         end
       end
     end
-  ensure
-    I18n.locale = orig_locale
   end
 
   test 'should create bulk from json with store destination using legacy destination route params' do
     @customer.update(enable_store_stops: true)
-    orig_locale = I18n.locale
-    I18n.locale = :en
-
-    assert_difference('Store.count', 1) do
-      assert_difference('Stop.count', 1) do
-        put api(), nil, input: {
-          planning: {
-            ref: 'r1',
-          },
-          destinations: [{
-            vehicle: '001',
-            route: 'route_one',
-            name: 'Legacy store',
-            ref: 'store_ref_legacy',
-            street: '123 Store Street',
-            postalcode: '12345',
-            city: 'Store City',
-            lat: 43.5710885456786,
-            lng: 3.89636993408203,
-            stop_type: 'reload',
-            visits: [{
-              duration: '00:10:00'
+    I18n.with_locale(:en) do
+      assert_difference('Store.count', 1) do
+        assert_difference('Stop.count', 1) do
+          put api(), nil, input: {
+            planning: {
+              ref: 'r1',
+            },
+            destinations: [{
+              vehicle: '001',
+              route: 'route_one',
+              name: 'Legacy store',
+              ref: 'store_ref_legacy',
+              street: '123 Store Street',
+              postalcode: '12345',
+              city: 'Store City',
+              lat: 43.5710885456786,
+              lng: 3.89636993408203,
+              stop_type: 'reload',
+              visits: [{
+                duration: '00:10:00'
+              }]
             }]
-          }]
-        }.to_json, CONTENT_TYPE: 'application/json'
-        assert last_response.ok?, last_response.body
+          }.to_json, CONTENT_TYPE: 'application/json'
+          assert last_response.ok?, last_response.body
 
-        planning = plannings(:planning_one)
-        route = planning.routes.find{ |r| r.ref == 'route_one' }
-        stop = route.stops.find{ |s| s.is_a?(StopStore) && s.store_reload.store.ref == 'store_ref_legacy' }
-        assert_not_nil stop
-        assert_equal 'StopStore', stop.type
+          planning = plannings(:planning_one)
+          route = planning.routes.find{ |r| r.ref == 'route_one' }
+          stop = route.stops.find{ |s| s.is_a?(StopStore) && s.store_reload.store.ref == 'store_ref_legacy' }
+          assert_not_nil stop
+          assert_equal 'StopStore', stop.type
+        end
       end
     end
-  ensure
-    I18n.locale = orig_locale
   end
 
   test 'should create bulk from json with empty strings for coords' do
@@ -1258,42 +1252,40 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
   test 'should import existing store with ref' do
     @customer.update(enable_store_stops: true)
-    orig_locale = I18n.locale
-    I18n.locale = :en
-    # Get existing store from fixtures
-    existing_store_reload = store_reloads(:store_reload_one)
-    existing_store_reload.update(ref: 'store_reload_ref')
-    existing_store = existing_store_reload.store
+    I18n.with_locale(:en) do
+      # Get existing store from fixtures
+      existing_store_reload = store_reloads(:store_reload_one)
+      existing_store_reload.update(ref: 'store_reload_ref')
+      existing_store = existing_store_reload.store
 
-    assert_difference('Store.count', 0) do
-      assert_difference('Stop.count', 1) do
-        put api(), nil, input: {
-          planning: {
-            ref: 'r1',
-          },
-          destinations: [{
-            ref: existing_store.ref,
-            stop_type: 'reload',
-            visits: [{
-              ref: existing_store_reload.ref,
-              route: 'route_one',
-              ref_vehicle: '001',
+      assert_difference('Store.count', 0) do
+        assert_difference('Stop.count', 1) do
+          put api(), nil, input: {
+            planning: {
+              ref: 'r1',
+            },
+            destinations: [{
+              ref: existing_store.ref,
+              stop_type: 'reload',
+              visits: [{
+                ref: existing_store_reload.ref,
+                route: 'route_one',
+                ref_vehicle: '001',
+              }]
             }]
-          }]
-        }.to_json, CONTENT_TYPE: 'application/json'
+          }.to_json, CONTENT_TYPE: 'application/json'
 
-        assert last_response.ok?, last_response.body
+          assert last_response.ok?, last_response.body
 
-        planning = plannings(:planning_one)
-        route = planning.routes.find{ |r| r.ref == 'route_one' }
-        stop = route.stops.find{ |s| s.is_a?(StopStore) && s.store_reload.ref == existing_store_reload.ref }
-        assert_not_nil stop
-        assert_equal 'StopStore', stop.type
-        assert_equal existing_store_reload.ref, stop.store_reload.ref
+          planning = plannings(:planning_one)
+          route = planning.routes.find{ |r| r.ref == 'route_one' }
+          stop = route.stops.find{ |s| s.is_a?(StopStore) && s.store_reload.ref == existing_store_reload.ref }
+          assert_not_nil stop
+          assert_equal 'StopStore', stop.type
+          assert_equal existing_store_reload.ref, stop.store_reload.ref
+        end
       end
     end
-  ensure
-    I18n.locale = orig_locale
   end
 
   test 'should create bulk from json with stop custom attributes for visit' do
@@ -1347,52 +1339,49 @@ class V01::DestinationsTest < ActiveSupport::TestCase
 
   test 'should create bulk from json with stop custom attributes for store' do
     @customer.update(enable_store_stops: true)
-    orig_locale = I18n.locale
-    I18n.locale = :en
-
-    assert_difference('Store.count', 1) do
-      assert_difference('Destination.count', 0) do
-        assert_difference('Planning.count', 0) do
-          assert_difference('Stop.count', 1) do
-            put api(), nil, input: {
-              planning: {
-                ref: 'r1',
-              },
-              destinations: [{
-                name: 'New store with custom attributes',
-                ref: 'store_ref_custom',
-                street: '123 Store Street',
-                postalcode: '12345',
-                city: 'Store City',
-                state: 'Store State',
-                lat: 43.5710885456786,
-                lng: 3.89636993408203,
-                stop_type: 'reload',
-                stop_custom_attributes: {
-                  'stop_custom_field' => 'store_custom_value',
-                  'stop_priority' => 10,
-                  'stop_urgent' => false
+    I18n.with_locale(:en) do
+      assert_difference('Store.count', 1) do
+        assert_difference('Destination.count', 0) do
+          assert_difference('Planning.count', 0) do
+            assert_difference('Stop.count', 1) do
+              put api(), nil, input: {
+                planning: {
+                  ref: 'r1',
                 },
-                visits: [{
-                  duration: '00:10:00',
-                  route: 'route_one',
-                  ref_vehicle: '001',
+                destinations: [{
+                  name: 'New store with custom attributes',
+                  ref: 'store_ref_custom',
+                  street: '123 Store Street',
+                  postalcode: '12345',
+                  city: 'Store City',
+                  state: 'Store State',
+                  lat: 43.5710885456786,
+                  lng: 3.89636993408203,
+                  stop_type: 'reload',
+                  stop_custom_attributes: {
+                    'stop_custom_field' => 'store_custom_value',
+                    'stop_priority' => 10,
+                    'stop_urgent' => false
+                  },
+                  visits: [{
+                    duration: '00:10:00',
+                    route: 'route_one',
+                    ref_vehicle: '001',
+                  }]
                 }]
-              }]
-            }.to_json, CONTENT_TYPE: 'application/json'
-            assert last_response.ok?, last_response.body
+              }.to_json, CONTENT_TYPE: 'application/json'
+              assert last_response.ok?, last_response.body
 
-            stop = Stop.joins(store_reload: :store).where(stores: { ref: 'store_ref_custom' }).order(created_at: :desc).first
-            assert_not_nil stop, 'Stop should be created'
-            assert_equal 'store_custom_value', stop.custom_attributes['stop_custom_field']
-            assert_equal 10, stop.custom_attributes['stop_priority']
-            assert_equal false, stop.custom_attributes['stop_urgent']
+              stop = Stop.joins(store_reload: :store).where(stores: { ref: 'store_ref_custom' }).order(created_at: :desc).first
+              assert_not_nil stop, 'Stop should be created'
+              assert_equal 'store_custom_value', stop.custom_attributes['stop_custom_field']
+              assert_equal 10, stop.custom_attributes['stop_priority']
+              assert_equal false, stop.custom_attributes['stop_urgent']
+            end
           end
         end
       end
     end
-  ensure
-    I18n.locale = orig_locale
   end
 
   test 'should create bulk from json with stop custom attributes and active status' do
