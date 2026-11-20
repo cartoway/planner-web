@@ -114,10 +114,10 @@ module DestinationsHelper
     "destinations-list-col destinations-list-col--#{slug}"
   end
 
-  def destinations_list_column_td(column_id, tooltip: nil, extra_classes: nil, &block)
+  def destinations_list_column_td(column_id, tooltip: nil, extra_classes: nil, &)
     classes = [destinations_list_column_class(column_id), extra_classes].compact.join(' ')
     tag.td(class: classes, title: tooltip.presence) do
-      tag.span(class: 'destinations-list-cell-content', &block)
+      tag.span(class: 'destinations-list-cell-content', &)
     end
   end
 
