@@ -17,7 +17,67 @@ permissions:
   actions: write
 
 jobs:
-  test:
+  test_backend:
+    runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgis/postgis:15-3.5
+        ports:
+          - "5432:5432"
+        env:
+          POSTGRES_DB: rails_test
+          POSTGRES_USER: rails
+          POSTGRES_PASSWORD: password
+    env:
+      RAILS_ENV: test
+      DATABASE_URL: "postgres://rails:password@localhost:5432/rails_test"
+      # Backend partition does not assert on packs — skip yarn/webpack (~20–40s).
+      SKIP_WEBPACK: "1"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libz-dev libicu-dev build-essential g++ libgeos-dev libgeos++-dev
+          version: ubuntu-24.04-1
+      - name: Cache gems
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-ubuntu-24.04-bundle-${{ hashFiles('.ruby-version', '**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-ubuntu-24.04-bundle-
+      - name: Install Ruby
+        uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: false
+      - name: Bundle install
+        run: |
+          bundle config set --local path vendor/bundle
+          bundle config set --local deployment true
+          bundle install --jobs 4 --retry 3
+      - name: Rebuild native gems linked to system libs
+        run: |
+          bundle pristine rgeo
+          bundle pristine charlock_holmes
+      - name: Set up database schema
+        run: bin/rails db:setup
+      - name: Run backend tests
+        run: bin/rake test:backend
+      - name: Upload SimpleCov backend resultset
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-backend
+          # Dotfiles are skipped by default — SimpleCov writes .resultset.json.
+          path: coverage/backend/.resultset.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+
+  test_frontend:
     runs-on: ubuntu-24.04
     services:
       postgres:
@@ -71,13 +131,73 @@ jobs:
         run: NODE_ENV=test bin/rails webpacker:compile
       - name: Set up database schema
         run: bin/rails db:setup
-      - name: Run tests
-        run: bin/rake test
+      - name: Run frontend minitests
+        run: bin/rake test:frontend
+      - name: Upload SimpleCov frontend resultset
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-frontend
+          # Dotfiles are skipped by default — SimpleCov writes .resultset.json.
+          path: coverage/frontend/.resultset.json
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 1
+      - name: Set Node.js 20.x (JS self-checks)
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20.x
+      - name: Run frontend JS self-checks
+        run: bash script/run_frontend_js_checks.sh
+
+  coverage:
+    runs-on: ubuntu-24.04
+    needs: [test_backend, test_frontend]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install dependencies
+        uses: awalsh128/cache-apt-pkgs-action@latest
+        with:
+          packages: libz-dev libicu-dev build-essential g++ libgeos-dev libgeos++-dev
+          version: ubuntu-24.04-1
+      - name: Cache gems
+        uses: actions/cache@v4
+        with:
+          path: vendor/bundle
+          key: ${{ runner.os }}-ubuntu-24.04-bundle-${{ hashFiles('.ruby-version', '**/Gemfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-ubuntu-24.04-bundle-
+      - name: Install Ruby
+        uses: ruby/setup-ruby@f9c4492e86def3e644ab32a0ef185eda5b0c20d0 # v1.342.0
+        with:
+          ruby-version: .ruby-version
+          bundler-cache: false
+      - name: Bundle install
+        run: |
+          bundle config set --local path vendor/bundle
+          bundle config set --local deployment true
+          bundle install --jobs 4 --retry 3
+      - name: Download SimpleCov backend resultset
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-backend
+          path: coverage/backend
+      - name: Download SimpleCov frontend resultset
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-frontend
+          path: coverage/frontend
+      - name: Collate SimpleCov and enforce 84% minimum
+        # Avoid full Rails boot (no DB needed) — only SimpleCov gem.
+        run: |
+          ls -la coverage/backend coverage/frontend
+          bundle exec ruby -Itest -e 'require "./test/simplecov_setup"; SimplecovSetup.collate!'
 
   lookbook_visual:
     runs-on: ubuntu-24.04
-    needs: [test, lint]
     timeout-minutes: 45
+    needs: [test_backend, test_frontend, lint]
     services:
       postgres:
         image: postgis/postgis:15-3.5
@@ -130,6 +250,9 @@ jobs:
         run: NODE_ENV=test bin/rails webpacker:compile
       - name: Set up database schema
         run: bin/rails db:setup
+      - name: Precompile Sprockets assets
+        # After db:setup. precompile_overrides sets API_DOC_MODE so swaggerize skips schema load.
+        run: WEBPACKER_PRECOMPILE=false NODE_ENV=test bin/rails assets:precompile
       - name: Set Node.js 20.x (Playwright)
         uses: actions/setup-node@v4
         with:
@@ -144,6 +267,8 @@ jobs:
         run: npx playwright install --with-deps chromium
       - name: Run Lookbook visual regression tests
         working-directory: visual-regression
+        env:
+          ASSETS_COMPILE: '0'
         run: npx playwright test
       - name: Upload Playwright HTML report
         uses: actions/upload-artifact@v4
@@ -185,7 +310,7 @@ jobs:
 
   docker:
     runs-on: ubuntu-24.04
-    needs: [test, lint, lookbook_visual]
+    needs: [test_backend, test_frontend, lint, lookbook_visual, coverage]
     if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev2'
 
     permissions:
@@ -206,7 +331,7 @@ jobs:
 
   docker-superset:
     runs-on: ubuntu-24.04
-    needs: [test, lint, lookbook_visual]
+    needs: [test_backend, test_frontend, lint, lookbook_visual, coverage]
     if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev2'
 
     permissions:
@@ -230,7 +355,7 @@ jobs:
 
   docker-superset_nginx:
     runs-on: ubuntu-24.04
-    needs: [test, lint, lookbook_visual]
+    needs: [test_backend, test_frontend, lint, lookbook_visual, coverage]
     if: github.ref == 'refs/heads/dev' || startsWith(github.ref, 'refs/tags/v') || github.ref == 'refs/heads/dev2'
 
     permissions:

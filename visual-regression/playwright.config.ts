@@ -55,7 +55,9 @@ export default defineConfig({
           ...process.env,
           RAILS_ENV: 'test',
           DATABASE_URL: databaseUrl,
-          DISABLE_SPRING: '1'
+          DISABLE_SPRING: '1',
+          // CI precompiles then sets 0; local defaults to runtime compile.
+          ASSETS_COMPILE: process.env.ASSETS_COMPILE ?? (process.env.CI ? '0' : '1')
         },
         url: `${baseURL}/lookbook`,
         reuseExistingServer: process.env.PLAYWRIGHT_REUSE_SERVER === '1',

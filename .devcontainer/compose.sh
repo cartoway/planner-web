@@ -85,11 +85,22 @@ main() {
       ;;
     test)
       shift
-      compose exec \
-        -e RAILS_ENV=test \
-        -e COV=false \
-        -e COVERAGE=false \
-        web bundle exec rails test "$@"
+      case "${1:-}" in
+        frontend|backend)
+          compose exec \
+            -e RAILS_ENV=test \
+            -e COV=false \
+            -e COVERAGE=false \
+            web bundle exec rake "test:$1"
+          ;;
+        *)
+          compose exec \
+            -e RAILS_ENV=test \
+            -e COV=false \
+            -e COVERAGE=false \
+            web bundle exec rails test "$@"
+          ;;
+      esac
       ;;
     down|logs|ps|exec|run|pull|stop|start|top|config)
       compose "$@"
