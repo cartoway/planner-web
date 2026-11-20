@@ -10,6 +10,22 @@ class ApplicationStylesheetManifestTest < ActiveSupport::TestCase
     refute_match(%r{require\s+v2/application}, manifest)
     refute_match(/require\s+lookbook_preview/, manifest)
   end
+
+  # Goes through Sprockets (incl. optional CSS compressor). LibSass compression
+  # rejects modern min()/calc() with mixed rem/vw — compressor must stay off.
+  test 'v2 application is served by Sprockets with mixed CSS units' do
+    asset = Rails.application.assets.find_asset('v2/application')
+
+    assert asset, 'expected v2/application asset'
+    assert_match(/min\(\s*22rem/, asset.to_s)
+  end
+
+  test 'lookbook preview stylesheets are in the Sprockets precompile list' do
+    list = Rails.application.config.assets.precompile
+
+    assert_includes list, 'v2/layout_bootstrap_overrides.css'
+    assert_includes list, 'lookbook_preview.css'
+  end
 end
 
 class V2LayoutHeadTest < ActiveSupport::TestCase

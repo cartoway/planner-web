@@ -158,23 +158,20 @@ class Admin::CustomersControllerTest < ActionController::TestCase
   end
 
   test 'should update customer with locale' do
-    orig_locale = I18n.locale
-    begin
-      # EN
-      I18n.locale = I18n.default_locale = :en
+    # EN
+    with_test_locale(:en) do
       assert_equal :en, I18n.locale
       patch :update, params: { id: @customer, customer: { name: 123, router_dimension: 'distance', end_subscription: '10-30-2016' }}
       assert_redirected_to [:edit, @customer]
       assert @customer.reload.end_subscription.strftime("%d-%m-%Y") == '30-10-2016'
+    end
 
-      # FR
-      I18n.locale = I18n.default_locale = :fr
+    # FR
+    with_test_locale(:fr) do
       assert_equal :fr, I18n.locale
       patch :update, params: { id: @customer, customer: { name: 123, router_dimension: 'distance', end_subscription: '30-10-2016' }}
       assert_redirected_to [:edit, @customer]
       assert @customer.reload.end_subscription.strftime("%d-%m-%Y") == '30-10-2016'
-    ensure
-      I18n.locale = I18n.default_locale = orig_locale
     end
   end
 

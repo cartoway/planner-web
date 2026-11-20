@@ -40,9 +40,9 @@ end
 
 module AfterCommitHelper
   refine ::Object do
-    def after_commit(connection: ActiveRecord::Base.connection, &block)
+    def after_commit(connection: ActiveRecord::Base.connection, &)
       if connection.transaction_open?
-        connection.add_transaction_record(AfterCommitWrapper.new(&block))
+        connection.add_transaction_record(AfterCommitWrapper.new(&))
       else
         # No transaction, execute immediately
         yield

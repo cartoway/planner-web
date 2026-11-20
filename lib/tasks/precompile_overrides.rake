@@ -16,5 +16,9 @@
 # <http://www.gnu.org/licenses/agpl.html>
 #
 Rake::Task['assets:precompile'].enhance do
+  # swaggerize loads rails_helper → maintain_test_schema! unless API_DOC_MODE is set.
+  # Without it, precompile in RAILS_ENV=test loads structure.sql before an explicit db:setup
+  # and the next schema load fails on CREATE FUNCTION. Dockerfile already sets this; CI must too.
+  ENV['API_DOC_MODE'] ||= 'true'
   Rake::Task['rswag:specs:swaggerize'].invoke
 end

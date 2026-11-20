@@ -62,8 +62,8 @@ $searchable-checklist-focus-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8p
   float: none;
   min-width: 100%;
   width: 100%;
-  max-width: min(90vw, 28rem);
-  max-height: min(70vh, 70rem);
+  max-width: #{"min(90vw, 28rem)"};
+  max-height: #{"min(70vh, 70rem)"};
   margin: 2px 0 0;
   padding: 0;
   overflow: hidden;

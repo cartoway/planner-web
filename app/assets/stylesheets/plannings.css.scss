@@ -28,7 +28,7 @@
     display: none;
   }
   .overflow-500 {
-    max-height: calc(100% - 800px);
+    max-height: #{"calc(100% - 800px)"};
     overflow: auto;
   }
   .move-stops-toolbar {

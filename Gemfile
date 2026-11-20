@@ -9,8 +9,7 @@ gem 'railties', '~> 6.1', '>= 6.1.7.8'
 gem 'bootsnap'
 # Allow haml syntax for views
 gem 'haml-rails'
-# Use SCSS for stylesheets
-gem 'sass-rails', '~> 5'
+gem 'sassc-rails'
 # Use Uglifier as compressor for JavaScript assets
 gem 'uglifier', '< 4.0' # TODO: fixme with use strict functions should be declared at top level
 # Use CoffeeScript for .coffee assets and views
@@ -186,6 +185,7 @@ gem 'simplify_rb', git: 'https://github.com/cartoway/simplify_rb', branch: 'dev'
 gem 'ai4r'
 gem 'sim_annealing'
 gem 'csv' # missing dependency of ai4r
+gem 'drb' # extracted from stdlib in Ruby 3.4; ActiveSupport parallel tests require it
 
 gem 'nilify_blanks'
 gem 'auto_strip_attributes'
@@ -197,7 +197,7 @@ gem 'savon'
 gem 'savon-multipart'
 gem 'rest-client'
 gem 'macaddr'
-gem 'rubyzip'
+gem 'rubyzip', '~> 2.4'
 gem 'barby'
 
 gem 'pnotify-rails'

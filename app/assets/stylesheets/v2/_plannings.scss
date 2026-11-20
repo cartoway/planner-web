@@ -349,7 +349,7 @@ body[data-controller*='-v2'] {
 
   .form-control.input-sm {
     font-size: 0.875rem;
-    min-height: calc(1.5em + 0.25rem + 2px);
+    min-height: #{"calc(1.5em + 0.25rem + 2px)"};
     padding: 0.25rem 0.5rem;
   }
 

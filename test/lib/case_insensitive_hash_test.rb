@@ -20,6 +20,16 @@ require 'test_helper'
 require 'case_insensitive_hash'
 
 class CaseInsensitiveHashTest < ActiveSupport::TestCase
+  test "bracket constructor accepts an array of pairs like Hash[]" do
+    plan_a = Object.new
+    plan_b = Object.new
+    hash = CaseInsensitiveHash[[['RefA', plan_a], ['refb', plan_b]]]
+
+    assert_equal plan_a, hash['refa']
+    assert_equal plan_b, hash['REFB']
+    assert_equal ['RefA', 'refb'], hash.keys
+  end
+
   test "should handle case insensitive key lookups" do
     hash = CaseInsensitiveHash.new
 

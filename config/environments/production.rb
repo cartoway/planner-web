@@ -32,7 +32,8 @@ Rails.application.configure do
 
   # Uglifier 3 / uglify-js 2 cannot parse object spread, optional chaining, etc. in Sprockets bundles.
   config.assets.js_compressor = :uglifier unless ENV['SKIP_JS_COMPRESSOR'] == '1'
-  # config.assets.css_compressor = :sass
+  # LibSass compressor rejects modern CSS min()/calc() with mixed rem/vw units.
+  config.assets.css_compressor = nil
 
   # Do not fallback to assets pipeline if a precompiled asset is missed.
   config.assets.compile = false

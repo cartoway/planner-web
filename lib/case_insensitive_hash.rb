@@ -34,11 +34,15 @@ class CaseInsensitiveHash < ActiveSupport::HashWithIndifferentAccess
     end
   end
 
+  # Hash[*args] supports both Hash[k1, v1, ...] and Hash[[[k, v], ...]] (importer usage).
+  # Anonymous * forwarding breaks the pairs-array form used by importers.
+  # rubocop:disable Style/ArgumentsForwarding
   def self.[](*args)
     hash = new
     Hash[*args].each { |key, value| hash[key] = value }
     hash
   end
+  # rubocop:enable Style/ArgumentsForwarding
 
   def [](key)
     normalized_key = normalize_key(key)

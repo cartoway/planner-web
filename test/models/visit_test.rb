@@ -153,11 +153,9 @@ class VisitTest < ActiveSupport::TestCase
   end
 
   test 'should support localized number separator' do
-    orig_locale = I18n.locale
     visit = visits :visit_one
 
-    begin
-      I18n.locale = :en
+    I18n.with_locale(:en) do
       assert I18n.locale == :en
       assert_not_nil Visit.localize_numeric_value(nil)
       visit.update! deliveries: {1 => nil}
@@ -171,8 +169,9 @@ class VisitTest < ActiveSupport::TestCase
       visit.update! deliveries: {1 => 10.1} # Assign without localized separator
       assert_equal 10.1, visit.deliveries[1]
       assert_not_nil Visit.localize_numeric_value(nil)
+    end
 
-      I18n.locale = :fr
+    I18n.with_locale(:fr) do
       assert I18n.locale == :fr
       assert_not_nil Visit.localize_numeric_value(nil)
       visit.update! deliveries: {1 => nil}
@@ -185,8 +184,6 @@ class VisitTest < ActiveSupport::TestCase
       assert_equal '10', visit.localized_deliveries[1] # Remove trailing zeros
       visit.update! deliveries: {1 => 10.1} # Assign without localized separator
       assert_equal 10.1, visit.deliveries[1]
-    ensure
-      I18n.locale = orig_locale
     end
   end
 

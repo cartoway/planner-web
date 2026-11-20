@@ -3,10 +3,10 @@ require 'simplify_rb'
 AUTHORIZED_GEOMETRY_TYPES = %w[Feature Polygon MultiPolygon GeometryCollection].freeze
 
 class SimplifyGeometry
-  def self.polygones_to_coordinates(feature, **options)
+  def self.polygones_to_coordinates(feature, **)
     if feature['type'] == 'Polygon' && feature['coordinates']
       feature['coordinates'].map!{ |coords|
-        process(coords.map{ |a, b| {x: a, y: b} }, **options)
+        process(coords.map{ |a, b| {x: a, y: b} }, **)
       }
     end
     feature

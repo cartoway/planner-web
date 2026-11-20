@@ -35,12 +35,12 @@ class ApplicationRecord < ActiveRecord::Base
   end
 
   # Import records in batches and return all IDs
-  def self.import_in_batches(attributes_array, batch_size: 1000, **options)
+  def self.import_in_batches(attributes_array, batch_size: 1000, **)
     return [] if attributes_array.empty?
 
     all_ids = []
     attributes_array.each_slice(batch_size) do |batch|
-      import_result = self.import(batch, **options)
+      import_result = self.import(batch, **)
       all_ids.concat(import_result.ids) if import_result.ids
     end
     all_ids

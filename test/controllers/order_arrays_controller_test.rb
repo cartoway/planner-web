@@ -36,10 +36,8 @@ class OrderArraysControllerTest < ActionController::TestCase
   end
 
   test 'Create Order Array' do
-    orig_locale = I18n.locale
-    begin
-      # EN
-      I18n.locale = I18n.default_locale = :en
+    # EN
+    with_test_locale(:en) do
       assert_equal :en, I18n.locale
       assert_difference('OrderArray.count') do
         post :create, params: { order_array: { name: 'test', length: 'week', base_date: '10-30-2016' } }
@@ -47,9 +45,10 @@ class OrderArraysControllerTest < ActionController::TestCase
       assert_redirected_to edit_order_array_path(assigns(:order_array))
       assert assigns(:order_array).persisted?
       assert assigns(:order_array).base_date.strftime("%d-%m-%Y") == '30-10-2016'
+    end
 
-      # FR
-      I18n.locale = I18n.default_locale = :fr
+    # FR
+    with_test_locale(:fr) do
       assert_equal :fr, I18n.locale
       assert_difference('OrderArray.count') do
         post :create, params: { order_array: { name: 'test', length: 'week', base_date: '30-10-2016' } }
@@ -57,31 +56,26 @@ class OrderArraysControllerTest < ActionController::TestCase
       assert_redirected_to edit_order_array_path(assigns(:order_array))
       assert assigns(:order_array).persisted?
       assert assigns(:order_array).base_date.strftime("%d-%m-%Y") == '30-10-2016'
-    ensure
-      I18n.locale = I18n.default_locale = orig_locale
     end
   end
 
   test 'Update Order Array' do
-    orig_locale = I18n.locale
-    begin
-      # EN
-      I18n.locale = I18n.default_locale = :en
+    # EN
+    with_test_locale(:en) do
       assert_equal :en, I18n.locale
       patch :update, params: { id: @order_array, order_array: { name: @order_array.name, base_date: '10-30-2016' } }
       assert_redirected_to edit_order_array_path(assigns(:order_array))
       assert assigns(:order_array).persisted?
       assert assigns(:order_array).base_date.strftime("%d-%m-%Y") == '30-10-2016'
+    end
 
-      # FR
-      I18n.locale = I18n.default_locale = :fr
+    # FR
+    with_test_locale(:fr) do
       assert_equal :fr, I18n.locale
       patch :update, params: { id: @order_array, order_array: { name: @order_array.name, base_date: '30-10-2016' } }
       assert_redirected_to edit_order_array_path(assigns(:order_array))
       assert assigns(:order_array).persisted?
       assert assigns(:order_array).base_date.strftime("%d-%m-%Y") == '30-10-2016'
-    ensure
-      I18n.locale = I18n.default_locale = orig_locale
     end
   end
 

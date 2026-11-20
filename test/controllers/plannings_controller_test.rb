@@ -523,7 +523,11 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'new planning date field uses offset as placeholder without default value' do
     customers(:customer_one).update!(operation_date_offset: 2)
-    suggested = I18n.l(Date.current + 2, format: :datepicker)
+    # Match ApplicationController#set_time_zone (fixtures use Hawaii): Date.current
+    # outside the request can be a different calendar day than inside the action.
+    suggested = Time.use_zone(users(:user_one).time_zone) do
+      I18n.l(Date.current + 2, format: :datepicker)
+    end
 
     get :new
 
@@ -536,12 +540,8 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'Create Planning' do
-    orig_locale = I18n.locale
-    orig_default_locale = I18n.default_locale
-    begin
-      # EN
-      I18n.locale = :en
-      I18n.default_locale = :en
+    # EN
+    with_test_locale(:en) do
       assert_equal :en, I18n.locale
       assert_difference('Planning.count') do
         post :create, params: { planning: { name: @planning.name, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id, zoning_ids: @planning.zonings.collect(&:id), date: '10-30-2016' } }
@@ -549,10 +549,10 @@ class PlanningsControllerTest < ActionController::TestCase
       assert_redirected_to edit_planning_path(assigns(:planning))
       assert assigns(:planning).persisted?
       assert assigns(:planning).date.strftime("%d-%m-%Y") == '30-10-2016'
+    end
 
-      # FR
-      I18n.locale = :fr
-      I18n.default_locale = :fr
+    # FR
+    with_test_locale(:fr) do
       assert_equal :fr, I18n.locale
       assert_difference('Planning.count') do
         post :create, params: { planning: { name: @planning.name, vehicle_usage_set_id: vehicle_usage_sets(:vehicle_usage_set_one).id, zoning_ids: @planning.zonings.collect(&:id), date: '30-10-2016' } }
@@ -560,9 +560,6 @@ class PlanningsControllerTest < ActionController::TestCase
       assert_redirected_to edit_planning_path(assigns(:planning))
       assert assigns(:planning).persisted?
       assert assigns(:planning).date.strftime("%d-%m-%Y") == '30-10-2016'
-    ensure
-      I18n.locale = orig_locale
-      I18n.default_locale = orig_default_locale
     end
   end
 
@@ -603,29 +600,22 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'Update Planning' do
-    orig_locale = I18n.locale
-    orig_default_locale = I18n.default_locale
-    begin
-      # EN
-      I18n.locale = :en
-      I18n.default_locale = :en
+    # EN
+    with_test_locale(:en) do
       assert_equal :en, I18n.locale
       patch :update, params: { id: @planning, planning: { name: @planning.name, zoning_ids: @planning.zonings.collect(&:id), date: '10-30-2016' } }
       assert_redirected_to edit_planning_path(assigns(:planning))
       assert assigns(:planning).persisted?
       assert assigns(:planning).date.strftime("%d-%m-%Y") == '30-10-2016'
+    end
 
-      # FR
-      I18n.locale = :fr
-      I18n.default_locale = :fr
+    # FR
+    with_test_locale(:fr) do
       assert_equal :fr, I18n.locale
       patch :update, params: { id: @planning, planning: { name: @planning.name, zoning_ids: @planning.zonings.collect(&:id), date: '30-10-2016' } }
       assert_redirected_to edit_planning_path(assigns(:planning))
       assert assigns(:planning).persisted?
       assert assigns(:planning).date.strftime("%d-%m-%Y") == '30-10-2016'
-    ensure
-      I18n.locale = orig_locale
-      I18n.default_locale = orig_default_locale
     end
   end
 
@@ -649,27 +639,23 @@ class PlanningsControllerTest < ActionController::TestCase
     target_id = vehicle_usage_sets(:vehicle_usage_set_three).id
     assert_not_equal target_id, @planning.vehicle_usage_set_id
 
-    orig_locale = I18n.locale
-    orig_default_locale = I18n.default_locale
     begin
-      I18n.locale = :en
-      I18n.default_locale = :en
-      patch :update, params: {
-        id: @planning,
-        planning: {
-          name: @planning.name,
-          vehicle_usage_set_id: target_id,
-          zoning_ids: @planning.zonings.collect(&:id),
-          date: '10-10-2015'
+      with_test_locale(:en) do
+        patch :update, params: {
+          id: @planning,
+          planning: {
+            name: @planning.name,
+            vehicle_usage_set_id: target_id,
+            zoning_ids: @planning.zonings.collect(&:id),
+            date: '10-10-2015'
+          }
         }
-      }
+      end
 
       assert_redirected_to edit_planning_path(@planning)
       @planning.reload
       assert_equal vehicle_usage_sets(:vehicle_usage_set_one).id, @planning.vehicle_usage_set_id
     ensure
-      I18n.locale = orig_locale
-      I18n.default_locale = orig_default_locale
       u.update!(role_id: previous_role_id)
     end
   end
