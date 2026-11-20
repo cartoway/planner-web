@@ -46,7 +46,7 @@ class Customer < ApplicationRecord
   has_many :products, inverse_of: :customer, autosave: true, dependent: :delete_all
   before_destroy :delete_all_plannings # Declare and run before has_many :plannings
   has_many :plannings, inverse_of: :customer, autosave: true
-  has_many :operations
+  has_many :operations, dependent: :delete_all
   has_many :order_arrays, inverse_of: :customer, autosave: true, dependent: :delete_all
   has_many :zonings, inverse_of: :customer, dependent: :delete_all
   before_destroy :destroy_disable_vehicle_usage_sets_validation # Declare and run before has_many :vehicle_usage_sets

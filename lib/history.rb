@@ -38,11 +38,16 @@ class History
     scope = scope.where(planning_id: planning_id) if planning_id
     return scope.pluck(:id) unless hourly
 
+    # joins(:customer) skips orphaned ops (customer deleted; association has no dependent).
     # Resolve via ActiveSupport::TimeZone — PG aliases like US/Hawaii disappear with tzdata updates.
     hour_at = at.utc.change(min: 0, sec: 0)
+    scope = scope.joins(:customer)
     zone_by_customer_id = customer_time_zones(scope.distinct.pluck(:customer_id))
     scope.includes(:customer).filter_map { |operation|
-      cron_hour = operation.customer.history_cron_hour
+      customer = operation.customer
+      next unless customer
+
+      cron_hour = customer.history_cron_hour
       next unless cron_hour
 
       zone = zone_by_customer_id[operation.customer_id] || ActiveSupport::TimeZone['UTC']

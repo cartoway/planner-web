@@ -101,4 +101,14 @@ class HistoryHistorizeOperationsTest < ActiveSupport::TestCase
       assert_equal 'in_progress', today.reload.status
     end
   end
+
+  test 'hourly cron skips operations when customer association is nil' do
+    travel_to Time.utc(2026, 9, 30, 20, 5, 0) do
+      Operation.where(customer_id: @customer.id).delete_all
+      publish_operation!(planning: @planning, date: '2026-09-30', name: 'NilCust', allow_past: true)
+      Operation.any_instance.stubs(:customer).returns(nil)
+
+      assert_nothing_raised { History.historize(true, nil) }
+    end
+  end
 end
