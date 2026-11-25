@@ -156,12 +156,15 @@ class Planning < ApplicationRecord
 
   VEHICLE_USAGE_SET_ASSOCIATIONS = {
     vehicle_usages: [
-      :tags,
+      :tags, :store_start, :store_stop, :store_rest, :store_reloads,
       { vehicle: [:router, :tags, { customer: :router }] }
     ]
   }.freeze
 
-  VEHICLE_USAGE_SET_PRELOAD = [VEHICLE_USAGE_SET_ASSOCIATIONS].freeze
+  VEHICLE_USAGE_SET_PRELOAD = [
+    :store_start, :store_stop, :store_rest, :store_reloads,
+    VEHICLE_USAGE_SET_ASSOCIATIONS
+  ].freeze
 
   scope :preload_routes_without_stops, -> {
     preload(

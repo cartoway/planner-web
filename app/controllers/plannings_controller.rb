@@ -1062,9 +1062,10 @@ class PlanningsController < ApplicationController
   end
 
   def set_available_store_reloads
+    reloads_by_store_id = current_user.customer.store_reloads.group_by(&:store_id)
     @available_store_reloads =
-      current_user.customer.stores.includes(:store_reloads).flat_map { |store|
-        store.store_reloads.map.with_index { |store_reload, index|
+      current_user.customer.stores.flat_map { |store|
+        (reloads_by_store_id[store.id] || []).map.with_index { |store_reload, index|
           {
             id: store_reload.id,
             name: store_reload.name,
@@ -1074,7 +1075,7 @@ class PlanningsController < ApplicationController
             index: index + 1
           }
         }
-      }.compact
+      }
   end
 
   def assign_manage_planning!
@@ -1167,6 +1168,10 @@ class PlanningsController < ApplicationController
     @spreadsheet_summary_columns = export_summary_columns
     @with_devices = true
     capabilities
+    # One pass for map center (view used to call default_store_start twice).
+    map_store = @planning.vehicle_usage_set.vehicle_usages.select(&:active?).lazy.map(&:default_store_start).find { |s| s && s.lat && s.lng }
+    @map_lat = map_store&.lat || @planning.customer.default_position[:lat]
+    @map_lng = map_store&.lng || @planning.customer.default_position[:lng]
   end
 
   # When planning operations.vehicle_usage_set is hidden or disabled, ignore submitted vehicle_usage_set_id.

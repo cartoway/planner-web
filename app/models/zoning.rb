@@ -159,7 +159,15 @@ class Zoning < ApplicationRecord
   end
 
   def isowhat?(what, vehicle_usage_set, from_store = true)
-    vehicle_usage_set.vehicle_usages.where(active: true).with_vehicle.find{ |vehicle_usage|
+    # Prefer in-memory usages when preloaded (edit/capabilities); .where would bypass the preload.
+    usages = vehicle_usage_set.vehicle_usages
+    active_usages =
+      if usages.loaded?
+        usages.select(&:active?)
+      else
+        usages.where(active: true).with_vehicle
+      end
+    active_usages.find { |vehicle_usage|
       router = vehicle_usage.vehicle.default_router
       router.method(what).call && (vehicle_usage.default_store_start.try(&:position?) || !from_store)
     }

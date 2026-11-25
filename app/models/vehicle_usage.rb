@@ -22,7 +22,7 @@ class VehicleUsage < ApplicationRecord
 
   attr_accessor :import_skip, :rest_mode
 
-  belongs_to :vehicle_usage_set
+  belongs_to :vehicle_usage_set, inverse_of: :vehicle_usages
 
   belongs_to :vehicle
   belongs_to :store_start, class_name: 'Store', inverse_of: :vehicle_usage_starts, optional: true
