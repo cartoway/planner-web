@@ -136,15 +136,20 @@ class Route < ApplicationRecord
   end
 
   def stops_size
-    return route_data.stops_size if use_persisted_route_metrics?
-
-    stops.size
+    if association(:stops).loaded?
+      stops.size
+    else
+      # Never COUNT per route (data_header / sidebar stats): use persisted metrics.
+      route_data&.stops_size.to_i
+    end
   end
 
   def size_active
-    return route_data.size_active if use_persisted_route_metrics?
-
-    stops.count(&:active)
+    if association(:stops).loaded?
+      stops.count(&:active)
+    else
+      route_data&.size_active.to_i
+    end
   end
 
   def size_active_destinations

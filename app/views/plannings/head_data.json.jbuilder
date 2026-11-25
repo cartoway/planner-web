@@ -3,7 +3,13 @@ json.prefered_currency current_user.prefered_currency
 json.extract! @planning, :id, :ref
 json.planning_id @planning.id
 
-visible_for_stats = @planning.routes.available.includes_vehicle_usages.to_a
+# Prefer in-memory filter: set_planning_without_stops already preloaded routes + vehicle_usages.
+visible_for_stats =
+  if @planning.association(:routes).loaded?
+    @planning.routes.reject { |route| route.locked && route.hidden }
+  else
+    @planning.routes.available.includes_vehicle_usages.to_a
+  end
 stats_routes = planning_statistics_routes(@planning, visible_for_stats, current_user)
 
 time_totals = planning_time_totals_for_routes(stats_routes)
