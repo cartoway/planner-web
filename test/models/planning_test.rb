@@ -25,6 +25,19 @@ class PlanningTest < ActiveSupport::TestCase
     end
   end
 
+  def create_zone_visit(planning, name, lat: 49.18, lng: -0.37)
+    destination = Destination.create!(name: name, lat: lat, lng: lng, customer: planning.customer)
+    Visit.create!(destination: destination)
+  end
+
+  def stop_visit_ids(route)
+    route.stops.select{ |stop| stop.is_a?(StopVisit) }.map(&:visit_id)
+  end
+
+  def stop_visit_actives(route)
+    route.stops.select{ |stop| stop.is_a?(StopVisit) }.map(&:active)
+  end
+
   # default order, rest at the end
   def optimizer_route(planning, routes, options)
     returned_stops = routes.flat_map{ |r| r.stops.select{ |stop| stop.is_a?(StopVisit) }}
@@ -630,6 +643,122 @@ class PlanningTest < ActiveSupport::TestCase
       assert_not o.zoning_outdated
       assert_equal 1, o.routes.select{ |route| route == routes(:route_three_one) }.first.stops.size
     end
+  end
+
+  test 'split_by_zones preserves existing stop order and appends newcomers by id' do
+    planning = plannings(:planning_one)
+    route = planning.routes.find{ |r| r.vehicle_usage&.vehicle == vehicles(:vehicle_one) }
+    out_of_route = planning.routes.find{ |r| !r.vehicle_usage? }
+    zone = zones(:zone_one)
+
+    visit_a = create_zone_visit(planning, 'keep_a')
+    visit_b = create_zone_visit(planning, 'keep_b')
+    visit_c = create_zone_visit(planning, 'keep_c')
+    visit_d = create_zone_visit(planning, 'keep_d')
+
+    # Kept: reverse-id order, inactive preserved; newcomers b then d appended by id
+    route.set_visits([[visit_c, true], [visit_a, false]], false)
+    out_of_route.set_visits([[visit_d, true], [visit_b, true]], false)
+
+    Zoning.any_instance.stubs(:apply).returns(zone => [visit_a, visit_b, visit_c, visit_d])
+
+    planning.split_by_zones(nil)
+    route.reload
+
+    assert_equal [visit_c.id, visit_a.id, visit_b.id, visit_d.id], stop_visit_ids(route)
+    assert_equal [true, false, true, true], stop_visit_actives(route)
+  end
+
+  test 'split_by_zones appends to locked out_of_route without duplicating existing stops' do
+    planning = plannings(:planning_one)
+    route = planning.routes.find{ |r| r.vehicle_usage&.vehicle == vehicles(:vehicle_one) }
+    out_of_route = planning.routes.find{ |r| !r.vehicle_usage? }
+    zone = zones(:zone_one)
+
+    visit_keep = create_zone_visit(planning, 'locked_keep')
+    visit_already = create_zone_visit(planning, 'locked_already', lat: 1.5, lng: 1.5)
+    visit_move = create_zone_visit(planning, 'locked_move', lat: 1.6, lng: 1.6)
+
+    route.set_visits([[visit_keep, true], [visit_move, true]], false)
+    out_of_route.set_visits([[visit_already, true]], false)
+    out_of_route.update!(locked: true)
+
+    Zoning.any_instance.stubs(:apply).returns(
+      zone => [visit_keep],
+      nil => [visit_already, visit_move]
+    )
+
+    planning.split_by_zones(nil)
+    route.reload
+    out_of_route.reload
+
+    assert_equal [visit_keep.id], stop_visit_ids(route)
+    assert_equal [visit_already.id, visit_move.id], stop_visit_ids(out_of_route)
+    assert_equal 1, StopVisit.where(visit_id: visit_already.id).count
+  end
+
+  test 'split_by_zones moves visit between routes without leaving duplicates' do
+    planning = plannings(:planning_one)
+    route_one = planning.routes.find{ |r| r.vehicle_usage&.vehicle == vehicles(:vehicle_one) }
+    route_three = planning.routes.find{ |r| r.id == routes(:route_three_one).id }
+    out_of_route = planning.routes.find{ |r| !r.vehicle_usage? }
+    zone = zones(:zone_one)
+
+    visit_stay = create_zone_visit(planning, 'move_stay')
+    visit_from_three = create_zone_visit(planning, 'move_from_three')
+    visit_from_one = create_zone_visit(planning, 'move_from_one')
+
+    # visit_from_three changes tour (three → one); visit_from_one leaves one → out_of_route
+    route_one.set_visits([[visit_stay, true], [visit_from_one, true]], false)
+    route_three.set_visits([[visit_from_three, true]], false)
+    out_of_route.set_visits([], false)
+
+    Zoning.any_instance.stubs(:apply).returns(
+      zone => [visit_stay, visit_from_three],
+      nil => [visit_from_one]
+    )
+
+    compute_calls = 0
+    # Mocha 2: assertion must live in .with matcher — stubs(&block) ignores the block
+    Route.any_instance.stubs(:compute).with{
+      compute_calls += 1
+      dupes = StopVisit.unscoped.joins(:route).where(routes: { planning_id: planning.id })
+                       .group(:visit_id).having('COUNT(*) > 1').pluck(:visit_id)
+      assert_empty dupes, "compute saw duplicate visit_ids mid split_by_zones: #{dupes}"
+      true
+    }
+
+    planning.split_by_zones(nil)
+    route_one.reload
+    route_three.reload
+    out_of_route.reload
+
+    assert_operator compute_calls, :>, 0
+    assert_equal [visit_stay.id, visit_from_three.id], stop_visit_ids(route_one)
+    assert_empty stop_visit_ids(route_three)
+    assert_equal [visit_from_one.id], stop_visit_ids(out_of_route)
+    assert_equal 1, StopVisit.where(visit_id: visit_from_three.id).count
+    assert_equal 1, StopVisit.where(visit_id: visit_from_one.id).count
+  end
+
+  test 'split_by_zones initial path appends visits in Zoning apply order' do
+    planning = plannings(:planning_one)
+    route = planning.routes.find{ |r| r.vehicle_usage&.vehicle == vehicles(:vehicle_one) }
+    zone = zones(:zone_one)
+
+    visit_early = create_zone_visit(planning, 'initial_early')
+    visit_late = create_zone_visit(planning, 'initial_late')
+    # sort-by-id would put early before late; apply order is the opposite
+    assert_operator visit_early.id, :<, visit_late.id
+
+    planning.routes.reject(&:locked).each{ |r| r.set_visits([], false) }
+
+    Zoning.any_instance.stubs(:apply).returns(zone => [visit_late, visit_early])
+
+    assert planning.split_by_zones([visit_late, visit_early])
+    route.reload
+
+    assert_equal [visit_late.id, visit_early.id], stop_visit_ids(route)
   end
 
   test 'should automatic insert' do
