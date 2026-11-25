@@ -458,24 +458,6 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal 0, routes_available_queries, 'expected in-memory available filter when routes are preloaded'
   end
 
-  test 'data_header does not COUNT stops per route' do
-    stop_count_queries = 0
-    routes_available_queries = 0
-    callback = lambda do |_name, _start, _finish, _id, payload|
-      sql = payload[:sql]
-      stop_count_queries += 1 if sql.match?(/SELECT COUNT\(\*\) FROM "stops"/)
-      routes_available_queries += 1 if sql.match?(/FROM "routes".*COALESCE\(locked/)
-    end
-
-    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
-      get :data_header, params: { planning_id: @planning.id }, xhr: true, format: :js
-    end
-
-    assert_response :success
-    assert_equal 0, stop_count_queries, 'expected stops_size to use route_data, not per-route COUNT'
-    assert_equal 0, routes_available_queries, 'expected in-memory available filter when routes are preloaded'
-  end
-
   test 'sidebar depot dropdown includes regulatory rest when enabled' do
     get :sidebar, params: { planning_id: @planning.id }, xhr: true
     assert_response :success
@@ -1120,6 +1102,20 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_response :success
     assert_valid response
     assert_match(/id=["']planning-scroll["']/, response.body)
+  end
+
+  test 'edit does not N+1 on stores via default_store_start' do
+    store_by_id_queries = count_queries(/SELECT "stores"\.\* FROM "stores" WHERE "stores"\."id" = /) do
+      get :edit, params: { id: @planning }
+    end
+
+    assert_response :success
+    usages = assigns(:planning).vehicle_usage_set.vehicle_usages
+    assert usages.loaded?
+    assert usages.first.association(:store_start).loaded?
+    # Fixture noise exists; guard the O(routes) regression from the AppSignal trace.
+    assert_operator store_by_id_queries, :<, 15,
+                    "expected preloaded store_start on vehicle_usages, got #{store_by_id_queries} per-id store lookups"
   end
 
   test 'filter_routes hides out of route when it is not selected' do

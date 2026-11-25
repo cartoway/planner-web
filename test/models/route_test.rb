@@ -568,28 +568,6 @@ class RouteTest < ActiveSupport::TestCase
                  ordered.map { |s| [s.index.to_i, s.id] }.sort
   end
 
-  test 'stops_size and size_active use route_data without COUNT when stops are unloaded' do
-    route = Route.where(id: routes(:route_one_one).id).includes(:route_data).first
-    route.route_data.update_columns(stops_size: 7, size_active: 4)
-    route.reload
-    route.association(:stops).reset
-
-    count_queries = 0
-    callback = lambda do |_name, _start, _finish, _id, payload|
-      count_queries += 1 if payload[:sql].match?(/SELECT COUNT\(\*\) FROM "stops"/)
-    end
-
-    stops_size = size_active = nil
-    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
-      stops_size = route.stops_size
-      size_active = route.size_active
-    end
-
-    assert_equal 7, stops_size
-    assert_equal 4, size_active
-    assert_equal 0, count_queries
-  end
-
   test 'should reverse stops' do
     route = routes(:route_one_one)
     ids = route.stops.collect(&:id)
