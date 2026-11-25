@@ -292,6 +292,37 @@ class PlanningsControllerTest < ActionController::TestCase
     customer.update!(stops_preload_limit: original_limit) if customer
   end
 
+  test 'show json full mode does not re-query available routes for stops' do
+    customer = customers(:customer_one)
+    original_limit = customer.stops_preload_limit
+    customer.update!(stops_preload_limit: 1000)
+
+    @planning.routes.each do |route|
+      route.route_data.update!(stops_size: 100)
+    end
+
+    available_routes_queries = 0
+    stops_preloads = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql]
+      next if sql.match?(/\A\s*(BEGIN|COMMIT|SAVEPOINT|RELEASE|ROLLBACK)/i)
+
+      available_routes_queries += 1 if sql.match?(/FROM ["`]?routes["`]?.*COALESCE\(locked/i)
+      stops_preloads += 1 if sql.match?(/FROM ["`]?stops["`]?.*["`]?route_id["`]?/i)
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      get :show, params: { id: @planning.id, with_stops: true, format: :json }
+    end
+
+    assert_response :success
+    assert_equal true, assigns(:with_stops)
+    assert_equal 0, available_routes_queries, 'expected in-memory available filter, not a second routes query'
+    assert_equal 1, stops_preloads, 'expected a single stops preload for show.json'
+  ensure
+    customer.update!(stops_preload_limit: original_limit) if customer
+  end
+
   test 'sidebar full mode auto loads out of route and preloads vehicle routes' do
     customer = customers(:customer_one)
     original_limit = customer.stops_preload_limit
@@ -399,6 +430,20 @@ class PlanningsControllerTest < ActionController::TestCase
     assert vehicle_route.association(:stops).loaded?
   ensure
     hidden_locked&.update_columns(hidden: original_hidden, locked: original_locked)
+  end
+
+  test 'sidebar averages does not COUNT active destinations per route' do
+    count_queries = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      count_queries += 1 if payload[:sql].match?(/COUNT\(DISTINCT.*destination_id/)
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      get :sidebar, params: { planning_id: @planning.id }, xhr: true
+    end
+
+    assert_response :success
+    assert_equal 0, count_queries, 'expected size_active_destinations to use route_data, not per-route COUNT'
   end
 
   test 'sidebar depot dropdown includes regulatory rest when enabled' do
@@ -1512,6 +1557,25 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should refresh' do
     get :refresh, params: { planning_id: @planning, format: :json }
     assert_response :success
+  end
+
+  test 'refresh with_stops preloads stops once when nothing is outdated' do
+    @planning.routes.update_all(outdated: false)
+
+    stops_preloads = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql]
+      next if sql.match?(/\A\s*(BEGIN|COMMIT|SAVEPOINT|RELEASE|ROLLBACK)/i)
+
+      stops_preloads += 1 if sql.match?(/FROM ["`]?stops["`]?.*["`]?route_id["`]?/i)
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      get :refresh, params: { planning_id: @planning, with_stops: true, format: :json }
+    end
+
+    assert_response :success
+    assert_equal 1, stops_preloads, 'expected a single stops preload for the JSON response'
   end
 
   test 'refresh_route succeeds for unassigned (out) route' do

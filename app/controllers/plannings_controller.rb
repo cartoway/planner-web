@@ -29,13 +29,13 @@ class PlanningsController < ApplicationController
 
   UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
   UPDATE_ACTIONS_FULL_ROUTE_PRELOAD = UPDATE_ACTIONS - [:update_stop]
-  before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :refresh, :route_edit, :publish_operation, :sync_operation] + UPDATE_ACTIONS_FULL_ROUTE_PRELOAD
+  before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :route_edit, :publish_operation, :sync_operation] + UPDATE_ACTIONS_FULL_ROUTE_PRELOAD
   before_action :remember_vehicle_usage_set_id_for_state_capture, only: [:update]
   before_action :set_planning_for_edit, only: [:edit]
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
   before_action :enforce_operation_usable_for_refresh!, only: [:refresh]
   before_action :enforce_operation_usable_for_duplicate!, only: [:duplicate]
-  before_action :set_planning_without_stops, only: [:data_header, :operation_sync_preview, :summary, :filter_routes, :sidebar, :refresh_route, :refresh_routes, :move_stops_modal, :extract_inactive_stops_modal, :move, :update_stop]
+  before_action :set_planning_without_stops, only: [:data_header, :operation_sync_preview, :summary, :filter_routes, :sidebar, :refresh, :refresh_route, :refresh_routes, :move_stops_modal, :extract_inactive_stops_modal, :move, :update_stop]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :refresh_routes, :reverse_order, :sidebar, :update_stop]
   before_action :check_no_existing_job, only: [:optimize, :optimize_route]
@@ -108,18 +108,16 @@ class PlanningsController < ApplicationController
     @params = params
     @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
     @plannings = [@planning]
+    # Routes + vehicle_usages already loaded; filter in memory and batch-preload stops once.
     @routes = if params[:route_ids]
       route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
       @with_stops = true
-      @planning.routes.where(id: route_ids).includes_destinations_and_stores.includes_vehicle_usages
+      @planning.routes.select { |route| route_ids.include?(route.id) }
     else
       assign_stops_preload_from_planning!(@planning)
-      if @with_stops
-        @planning.routes.available.includes_destinations_and_stores.includes_vehicle_usages
-      else
-        @planning.routes.available.includes_vehicle_usages
-      end
+      @planning.routes.reject { |route| route.locked && route.hidden }
     end
+    Preloaders::RouteBatchPreload.preload!(@routes.to_a, summary: false) if @with_stops
     respond_to do |format|
       format.html
       format.json do
@@ -266,9 +264,11 @@ class PlanningsController < ApplicationController
   def refresh
     respond_to do |format|
       if @planning.compute_saved
-        @planning = Planning.where(id: @planning.id).preload_routes_without_stops.first!
-        @routes = @planning.routes.includes_vehicle_usages.includes_destinations_and_stores
+        # Routes already loaded without stops; batch-preload stops once for show.json.
+        @with_stops = true
         @with_devices = true
+        @routes = @planning.routes.to_a
+        Preloaders::RouteBatchPreload.preload!(@routes, summary: false)
         format.json { render action: 'show', location: @planning }
       else
         format.json { render json: @planning.errors, status: :unprocessable_entity }

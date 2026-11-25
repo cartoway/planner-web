@@ -1129,6 +1129,24 @@ class PlanningTest < ActiveSupport::TestCase
     assert_same planning.deliverable_units_for_compute, planning.deliverable_units_for_compute
   end
 
+  test 'all_skills batches vehicle usage and vehicle tags' do
+    # Fresh planning: no includes — mimics Route#compute_saved! → route.planning
+    planning = Planning.find(plannings(:planning_one).id)
+    tag_join_queries = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql]
+      tag_join_queries += 1 if sql.match?(/FROM "tags".*INNER JOIN "tag_vehicle/)
+    end
+
+    skills = nil
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      skills = planning.all_skills
+    end
+
+    assert_kind_of Array, skills
+    assert_operator tag_join_queries, :<, 2, "expected batched tag preload, got #{tag_join_queries} per-vehicle tag joins"
+  end
+
   test 'update vehicle usage set preloads new set before remapping routes' do
     planning = Planning.where(id: plannings(:planning_one).id).preload_route_details.first!
     vehicle_queries = 0
