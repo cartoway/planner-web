@@ -191,7 +191,15 @@ class ZoningsController < ApplicationController
 
   # Use callbacks to share common setup or constraints between actions.
   def set_zoning
-    @zoning = current_user.customer.zonings.includes(customer: [vehicle_usage_sets: [vehicle_usages: :vehicle]]).find(params[:id] || params[:zoning_id])
+    # Preload routers/stores so edit/capabilities/form avoid per-vehicle default_router N+1.
+    @zoning = current_user.customer.zonings.includes(
+      customer: [
+        :router,
+        :deliverable_units,
+        { vehicles: [:router, { customer: :router }] },
+        { vehicle_usage_sets: Planning::VEHICLE_USAGE_SET_PRELOAD }
+      ]
+    ).find(params[:id] || params[:zoning_id])
   end
 
   def set_planning

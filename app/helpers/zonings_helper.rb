@@ -17,15 +17,22 @@
 #
 module ZoningsHelper
   def zoning_vehicles(zoning, planning = nil, options = {})
-    if planning && planning.vehicle_usage_set.present?
-      planning.vehicle_usage_set.vehicle_usages.select{ |v|
-        options[:active].nil? || options[:active] == v.active
-      }.map(&:vehicle)
-    else
-      VehicleUsage.where(vehicle_usage_set_id: zoning.customer.vehicle_usage_set_ids).select{ |v|
-        options[:active].nil? || options[:active] == v.active
-      }.map(&:vehicle).uniq
-    end
+    usages =
+      if planning&.vehicle_usage_set.present?
+        planning.vehicle_usage_set.vehicle_usages
+      else
+        sets = zoning.customer.vehicle_usage_sets
+        # Prefer preloaded usages (set_zoning); .where would drop vehicle/router includes.
+        if sets.loaded?
+          sets.flat_map { |set| set.vehicle_usages.to_a }
+        else
+          VehicleUsage.where(vehicle_usage_set_id: zoning.customer.vehicle_usage_set_ids)
+        end
+      end
+    vehicles = usages.select { |v|
+      options[:active].nil? || options[:active] == v.active
+    }.map(&:vehicle)
+    planning&.vehicle_usage_set.present? ? vehicles : vehicles.uniq
   end
 
   def zoning_details(zoning)
