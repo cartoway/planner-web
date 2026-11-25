@@ -446,6 +446,24 @@ class PlanningsControllerTest < ActionController::TestCase
     assert_equal 0, count_queries, 'expected size_active_destinations to use route_data, not per-route COUNT'
   end
 
+  test 'data_header does not COUNT stops per route' do
+    stop_count_queries = 0
+    routes_available_queries = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql]
+      stop_count_queries += 1 if sql.match?(/SELECT COUNT\(\*\) FROM "stops"/)
+      routes_available_queries += 1 if sql.match?(/FROM "routes".*COALESCE\(locked/)
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      get :data_header, params: { planning_id: @planning.id }, xhr: true, format: :js
+    end
+
+    assert_response :success
+    assert_equal 0, stop_count_queries, 'expected stops_size to use route_data, not per-route COUNT'
+    assert_equal 0, routes_available_queries, 'expected in-memory available filter when routes are preloaded'
+  end
+
   test 'sidebar depot dropdown includes regulatory rest when enabled' do
     get :sidebar, params: { planning_id: @planning.id }, xhr: true
     assert_response :success
