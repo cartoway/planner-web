@@ -56,4 +56,22 @@ class SmsPartnerServiceTest < ActiveSupport::TestCase
       country: 'France'
     )
   end
+
+  test 'should return false and log when send fails with errors array' do
+    response = mock
+    response.expects(:body).returns({
+      'success' => false,
+      'code' => 9,
+      'errors' => [
+        { 'elementId' => 'children[phoneNumbers].data', 'message' => 'This phone number is not valid' }
+      ]
+    }.to_json)
+
+    RestClient.expects(:post).returns(response)
+
+    Rails.logger.expects(:error).with('SmsPartnerService error: SMS sending failed')
+    Rails.logger.expects(:error).with('  errors: This phone number is not valid')
+
+    refute @service.send_message('0612345678', 'Test message', from: 'SENDER', country: 'France')
+  end
 end

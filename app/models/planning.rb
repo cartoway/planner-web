@@ -1010,36 +1010,7 @@ class Planning < ApplicationRecord
   def split_by_zones(visits_free)
     self.zoning_outdated = false
     @zoning_ids_changed = false
-    if !zonings.empty? && !routes.empty?
-      # Make sure there is at least one Zone with Vehicle, else, don't apply Zones
-      return unless zonings.any?{ |zoning| zoning.zones.any?{ |zone| !zone.avoid_zone && !zone.vehicle_id.blank? } }
-
-      vehicles_map = Hash[routes.group_by(&:vehicle_usage).map { |vehicle_usage, routes|
-        next if vehicle_usage && !vehicle_usage.active?
-        [vehicle_usage && vehicle_usage.vehicle, routes[0]]
-      }]
-
-      # Get free visits if not the first initial split on planning building
-      if !visits_free
-        visits_free = routes.reject(&:locked).flat_map(&:stops).select{ |stop| stop.is_a?(StopVisit) }.map(&:visit)
-
-        routes.each{ |route|
-          route.locked || route.set_visits([])
-        }
-      end
-        # Directly assigning zones to a new zoning updates their zoning_id
-        collect_zones = zonings.collect{ |zoning| zoning.zones.map{ |z| z.dup }}.flatten
-        Zoning.new(zones: collect_zones).apply(visits_free).each{ |zone, visits|
-        if zone && zone.vehicle && vehicles_map[zone.vehicle] && !vehicles_map[zone.vehicle].locked
-          vehicles_map[zone.vehicle].add_visits(visits.collect{ |d| [d, true] })
-        else
-          # Add to unplanned route even if the route is locked
-          routes.find{ |r| !r.vehicle_usage? }.add_visits(visits.collect{ |d| [d, true] }, false)
-        end
-      }
-
-      true
-    end
+    PlanningSplitByZonesService.new(self).call(visits_free)
   end
 
   def optimize(routes, **options, &optimizer)
