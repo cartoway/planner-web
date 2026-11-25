@@ -171,6 +171,14 @@ class Planning < ApplicationRecord
     )
   }
 
+  # Light load for planning_summary + picking target routes (full vehicle_usage on targets only).
+  scope :preload_routes_for_summary, -> {
+    preload(
+      { customer: :custom_attributes },
+      { routes: ROUTE_DATA_PRELOAD + [{ vehicle_usage: :vehicle }] }
+    )
+  }
+
   scope :preload_route_details, -> {
     preload(
       routes: ROUTE_DETAILS_ROUTE_PRELOAD,
@@ -569,6 +577,11 @@ class Planning < ApplicationRecord
 
   def default_empty_routes(ignore_errors = false)
     delete_all_routes
+    # default_routes may have already loaded routes (e.g. routes.length). Reset so
+    # Route.new(planning: self) does not push into the collection; otherwise
+    # autosave on the later self.routes= fires after_create :complete_geojson
+    # and conflicts with the batch RouteGeojson.import below.
+    association(:routes).reset
     new_routes = [
       Route.new(planning: self, outdated: false, vehicle_usage_id: nil)
     ]
@@ -591,8 +604,8 @@ class Planning < ApplicationRecord
       validate_with_context: :update, raise_error: true, on_duplicate_key_update: {conflict_target: [:id], columns: :all}
     )
     # Map returned IDs to RouteData objects and routes
-    import_result.ids.each_with_index do |id, index|
-      route_data_to_import[index].id = id if route_data_to_import[index].id.nil?
+    import_result.ids.each_with_index do |route_data_id, index|
+      route_data_to_import[index].id = route_data_id if route_data_to_import[index].id.nil?
     end
 
     # Assign IDs to routes and update route_data objects in memory
@@ -608,19 +621,16 @@ class Planning < ApplicationRecord
       route.stop_route_data_id = route.stop_route_data.id
     end
 
-    Route.import(new_routes, validate: false)
-    self.routes = Route.where(planning_id: self.id).includes_vehicle_usages.ordered_for_planning.to_a
-    self.routes.each { |route| route.association(:planning).target = self; route.association(:planning).loaded! }
+    route_import = Route.import(new_routes, validate: false)
+    # Batch geojson before assigning association so autosave cannot race complete_geojson
+    RouteGeojson.import(route_import.ids.map { |route_id| { route_id: route_id, tracks: [], points: [] } }, validate: false)
 
-    # One INSERT instead of N× SELECT+INSERT ensure_route_geojson
-    RouteGeojson.import(self.routes.map { |route| { route_id: route.id, tracks: [], points: [] } }, validate: false)
+    self.routes = Route.where(planning_id: id).includes_vehicle_usages.ordered_for_planning.to_a
+    self.routes.each { |route| route.bind_planning!(self) }
 
     # Fresh routes have no stops yet: avoid N× EXISTS in init_stops and N× COUNT in sync
-    self.routes.each do |route|
-      route.association(:stops).target = []
-      route.association(:stops).loaded!
-    end
-    self.routes.each { |r| r.init_stops(false) }
+    self.routes.each { |route| route.mark_stops_loaded!([]) }
+    self.routes.each { |r| r.init_stops(false, ignore_errors) }
     self.routes.select { |r| r.stops.any? }.each(&:sync_route_data_stop_counters!)
     self
   end
@@ -1030,7 +1040,9 @@ class Planning < ApplicationRecord
 
       # Get free visits if not the first initial split on planning building
       if !visits_free
-        visits_free = routes.reject(&:locked).flat_map(&:stops).select{ |stop| stop.is_a?(StopVisit) }.map(&:visit)
+        visits_free = routes.reject(&:locked).flat_map { |route|
+          route.stops_ordered_by_index
+        }.select { |stop| stop.is_a?(StopVisit) }.map(&:visit)
 
         routes.each{ |route|
           route.locked || route.set_visits([])
@@ -1300,20 +1312,26 @@ class Planning < ApplicationRecord
   end
 
   def all_skills
+    return @all_skills if defined?(@all_skills)
+
     route_list = routes.to_a
-    # Route#compute_saved! → compute_out_of_skill hits all_skills on a fresh planning
-    # (route.planning), not the controller-preloaded one — batch tags or N+1 per route.
-    # Skip routes without vehicle_usage_id: Preloader would clear the in-memory association
-    # (vehicle create → vehicle_usage_add builds an unsaved usage before init_stops/compute!).
+    # compute_out_of_skill can hit this once per route; memoize + batch-preload tags.
+    # Skip routes without vehicle_usage_id: Preloader would clear an unsaved in-memory usage
+    # (vehicle create → vehicle_usage_add before init_stops/compute!).
     Preloaders::BatchAssociationPreload.preload!(
       route_list.select(&:vehicle_usage_id),
       { vehicle_usage: [:tags, { vehicle: :tags }] }
     )
-    route_list.flat_map { |r|
+    @all_skills = route_list.flat_map { |r|
       next [] unless r.vehicle_usage
 
       r.vehicle_usage.tags.to_a + r.vehicle_usage.vehicle.tags.to_a
     }
+  end
+
+  def reload(*)
+    remove_instance_variable(:@all_skills) if defined?(@all_skills)
+    super
   end
 
   def quantities(routes: nil)
@@ -1784,7 +1802,7 @@ class Planning < ApplicationRecord
       }
       persist_destroyed_stops!
       sync_routes_association_order!
-      routes.each { |route| route.association(:planning).target = self; route.association(:planning).loaded! }
+      routes.each { |route| route.bind_planning!(self) }
 
       if skip_compute_on_vehicle_usage_set_change
         routes.select(&:persisted?).each { |route| route.outdated = true unless route.outdated }

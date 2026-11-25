@@ -187,6 +187,19 @@ class ActiveSupport::TestCase
     #    assert validation.valid?, validation.exceptions
   end
 
+  # Count SQL statements matching pattern while yielding.
+  def count_queries(pattern)
+    count = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      next if payload[:name] == 'SCHEMA' || payload[:cached]
+      next if payload[:sql].match?(/\A\s*(BEGIN|COMMIT|SAVEPOINT|RELEASE|ROLLBACK)/i)
+
+      count += 1 if payload[:sql].match?(pattern)
+    end
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') { yield }
+    count
+  end
+
   def without_loading(klass, options = {})
     begin
       # TODO: find another way to transmit options

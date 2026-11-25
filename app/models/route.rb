@@ -88,8 +88,9 @@ class Route < ApplicationRecord
   SQL
   scope :ordered_for_planning, -> { order(Arel.sql(ORDER_FOR_PLANNING_SQL)) }
 
-  scope :available, -> { where("NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
-  scope :available_or_outdated, -> { where("NOT (COALESCE(locked, false) AND COALESCE(hidden, false))") }
+  AVAILABLE_SQL = 'NOT (COALESCE(locked, false) AND COALESCE(hidden, false))'.freeze
+  scope :available, -> { where(AVAILABLE_SQL) }
+  scope :available_or_outdated, -> { available }
   scope :for_customer_id, ->(customer_id) { joins(:planning).where(plannings: {customer_id: customer_id}) }
   scope :includes_vehicle_usages, -> {
     includes(vehicle_usage: [
@@ -135,32 +136,38 @@ class Route < ApplicationRecord
     super
   end
 
+  # Invariant: route_data stop counters stay in sync; unloaded/empty stops → read route_data.
   def stops_size
-    if association(:stops).loaded?
-      stops.size
-    else
-      # Never COUNT per route (data_header / sidebar stats): use persisted metrics.
-      route_data&.stops_size.to_i
-    end
+    metric_from_stops_or_route_data(route_data&.stops_size) { stops.size }
   end
 
   def size_active
-    if association(:stops).loaded?
-      stops.count(&:active)
-    else
-      route_data&.size_active.to_i
-    end
+    metric_from_stops_or_route_data(route_data&.size_active) { stops.count(&:active) }
   end
 
   def size_active_destinations
-    if association(:stops).loaded?
-      return route_data.size_active_destinations if use_persisted_route_metrics? && stops.empty?
-
+    metric_from_stops_or_route_data(route_data&.size_active_destinations) {
       stops.select { |s| s.is_a?(StopVisit) && s.active? }.filter_map { |s| s.visit&.destination_id }.uniq.size
-    else
-      # Never COUNT per route (sidebar averages / planning_statistics): use persisted metrics.
-      route_data&.size_active_destinations.to_i
-    end
+    }
+  end
+
+  # Same predicate as scope :available (nil locked/hidden treated as false).
+  def available?
+    !(locked && hidden)
+  end
+
+  def bind_planning!(planning)
+    association(:planning).target = planning
+    association(:planning).loaded!
+  end
+
+  def mark_stops_loaded!(loaded_stops)
+    association(:stops).target = loaded_stops
+    association(:stops).loaded!
+  end
+
+  def stops_ordered_by_index
+    stops.sort_by { |stop| [stop.index.to_i, stop.id.to_i] }
   end
 
   def outdated_if_changed
@@ -1725,7 +1732,7 @@ class Route < ApplicationRecord
     Route.where(id: self.id).includes_vehicle_usages.includes_destinations_and_stores.first
   end
 
-  # Mimic the reload method to avoid StaleObjectError in the context of partial route reload of a planning
+  # Partial in-memory reload: copy attributes/route_data; leave stops untouched unless already loaded.
   def reload_like_attributes(reloaded_route)
     return unless reloaded_route
 
@@ -2212,11 +2219,14 @@ class Route < ApplicationRecord
     nil
   end
 
-  def use_persisted_route_metrics?
-    return false unless route_data
-    return true if association(:stops).loaded? && stops.empty?
+  def metric_from_stops_or_route_data(persisted)
+    if association(:stops).loaded?
+      return persisted.to_i if stops.empty? && route_data
 
-    route_data.stops_size.positive?
+      yield
+    else
+      persisted.to_i
+    end
   end
 
   def rest_stop_import?(stop)

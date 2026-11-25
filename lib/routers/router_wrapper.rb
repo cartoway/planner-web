@@ -80,8 +80,7 @@ module Routers
           when 417
             ''
           else
-            response = (response && /json/.match(response.headers[:content_type]) && response.size > 1) ? JSON.parse(response) : nil
-            raise RouterError.new(result.message + (response && response['message'] ? ' - ' + response['message'] : ''))
+            raise_router_error!(result, parse_error_message(response))
           end
         }
 
@@ -118,8 +117,7 @@ module Routers
           when 417
             ''
           else
-            response = (response && /json/.match(response.headers[:content_type]) && response.size > 1) ? JSON.parse(response) : nil
-            raise RouterError.new(result.message + (response && response['message'] ? ' - ' + response['message'] : ''))
+            raise_router_error!(result, parse_error_message(response))
           end
         }
 
@@ -208,18 +206,23 @@ module Routers
       when 204 then '' # UnreachablePointError
       when 417 then '' # OutOfSupportedAreaError
       else
-        response_data = parse_error_response(response)
-        raise RouterError.new(result.message + response_data)
+        raise_router_error!(result, parse_error_message(response))
       end
     end
 
-    def parse_error_response(response)
-      return '' unless response && /json/.match(response.headers[:content_type]) && response.size > 1
+    # RestClient may leave result.message nil; never concatenate bare nil.
+    def raise_router_error!(result, detail = nil)
+      parts = [result.message.to_s]
+      parts << detail.to_s if detail.present?
+      raise RouterError.new(parts.reject(&:empty?).join(' - ').presence || 'Router error')
+    end
 
-      data = JSON.parse(response)
-      data['message'] ? " - #{data['message']}" : ''
+    def parse_error_message(response)
+      return unless response && /json/.match(response.headers[:content_type]) && response.size > 1
+
+      JSON.parse(response)['message']
     rescue JSON::ParserError
-      ''
+      nil
     end
 
     def process_response(response, segments, url, mode, dimension, sorted_options, results)

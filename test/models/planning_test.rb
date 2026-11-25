@@ -172,6 +172,9 @@ class PlanningTest < ActiveSupport::TestCase
     end
 
     begin
+      # Mimic default_routes' routes.length: loaded association must not make
+      # Route.new(planning: self) + autosave duplicate route_geojsons.
+      planning.routes.load
       planning.default_empty_routes
     ensure
       ActiveSupport::Notifications.unsubscribe(subscriber)
@@ -1167,19 +1170,23 @@ class PlanningTest < ActiveSupport::TestCase
   test 'all_skills batches vehicle usage and vehicle tags' do
     # Fresh planning: no includes — mimics Route#compute_saved! → route.planning
     planning = Planning.find(plannings(:planning_one).id)
-    tag_join_queries = 0
-    callback = lambda do |_name, _start, _finish, _id, payload|
-      sql = payload[:sql]
-      tag_join_queries += 1 if sql.match?(/FROM "tags".*INNER JOIN "tag_vehicle/)
-    end
 
     skills = nil
-    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+    tag_join_queries = count_queries(/FROM "tags".*INNER JOIN "tag_vehicle/) do
       skills = planning.all_skills
     end
 
     assert_kind_of Array, skills
     assert_operator tag_join_queries, :<, 2, "expected batched tag preload, got #{tag_join_queries} per-vehicle tag joins"
+  end
+
+  test 'all_skills memoization clears on reload' do
+    planning = Planning.find(plannings(:planning_one).id)
+    first = planning.all_skills
+    planning.reload
+    assert_not planning.instance_variable_defined?(:@all_skills)
+    assert_kind_of Array, planning.all_skills
+    assert_equal first.map(&:id).sort, planning.all_skills.map(&:id).sort
   end
 
   test 'update vehicle usage set preloads new set before remapping routes' do

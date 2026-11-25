@@ -474,18 +474,98 @@ class RouteTest < ActiveSupport::TestCase
   test 'size_active_destinations does not COUNT when stops are unloaded' do
     route = Route.where(id: routes(:route_one_one).id).first
     route.association(:stops).reset
-    count_queries = 0
-    callback = lambda do |_name, _start, _finish, _id, payload|
-      count_queries += 1 if payload[:sql].match?(/COUNT\(DISTINCT.*destination_id/)
-    end
 
     value = nil
-    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+    queries = count_queries(/COUNT\(DISTINCT.*destination_id/) do
       value = route.size_active_destinations
     end
 
     assert_kind_of Integer, value
-    assert_equal 0, count_queries
+    assert_equal 0, queries
+  end
+
+  test 'stops_size and size_active use route_data without COUNT when stops are unloaded' do
+    route = Route.where(id: routes(:route_one_one).id).includes(:route_data).first
+    route.route_data.update_columns(stops_size: 7, size_active: 4)
+    route.reload
+    route.association(:stops).reset
+
+    stops_size = size_active = nil
+    queries = count_queries(/SELECT COUNT\(\*\) FROM "stops"/) do
+      stops_size = route.stops_size
+      size_active = route.size_active
+    end
+
+    assert_equal 7, stops_size
+    assert_equal 4, size_active
+    assert_equal 0, queries
+  end
+
+  test 'metric methods use route_data when stops association is loaded empty' do
+    route = routes(:route_one_one)
+    route.route_data.update_columns(stops_size: 9, size_active: 5, size_active_destinations: 3)
+    route.mark_stops_loaded!([])
+
+    assert_equal 9, route.stops_size
+    assert_equal 5, route.size_active
+    assert_equal 3, route.size_active_destinations
+  end
+
+  test 'available? matches Route.available scope predicate' do
+    route = routes(:route_one_one)
+    [
+      [false, false],
+      [true, false],
+      [false, true],
+      [true, true]
+    ].each do |locked, hidden|
+      route.update_columns(locked: locked, hidden: hidden)
+      route.reload
+      assert_equal Route.available.exists?(id: route.id), route.available?,
+                   "locked=#{locked} hidden=#{hidden}"
+    end
+  ensure
+    route&.update_columns(locked: false, hidden: false)
+  end
+
+  test 'reload_like_attributes leaves stops unloaded when source has no stops' do
+    route = routes(:route_one_one)
+    route.association(:stops).reset
+    assert_not route.association(:stops).loaded?
+
+    reloaded = Route.where(id: route.id).includes(:route_data).first
+    assert_not reloaded.association(:stops).loaded?
+
+    route.reload_like_attributes(reloaded)
+    assert_not route.association(:stops).loaded?
+  end
+
+  test 'reload_like_attributes copies stops when source has them loaded' do
+    route = routes(:route_one_one)
+    reloaded = Route.where(id: route.id).includes(:stops, :route_data).first
+    assert reloaded.association(:stops).loaded?
+
+    route.association(:stops).reset
+    route.reload_like_attributes(reloaded)
+    assert route.association(:stops).loaded?
+    assert_equal reloaded.stops.map(&:id), route.stops.map(&:id)
+  end
+
+  test 'metric methods prefer in-memory stops when association is loaded non-empty' do
+    route = routes(:route_one_one)
+    route.stops.load
+    assert route.stops.any?
+
+    route.route_data.update_columns(stops_size: 999, size_active: 999, size_active_destinations: 999)
+    assert_equal route.stops.size, route.stops_size
+    assert_equal route.stops.count(&:active), route.size_active
+  end
+
+  test 'stops_ordered_by_index sorts by index then id' do
+    route = routes(:route_one_one)
+    ordered = route.stops_ordered_by_index
+    assert_equal ordered.map { |s| [s.index.to_i, s.id] },
+                 ordered.map { |s| [s.index.to_i, s.id] }.sort
   end
 
   test 'stops_size and size_active use route_data without COUNT when stops are unloaded' do

@@ -6,7 +6,7 @@ json.planning_id @planning.id
 # Prefer in-memory filter: set_planning_without_stops already preloaded routes + vehicle_usages.
 visible_for_stats =
   if @planning.association(:routes).loaded?
-    @planning.routes.reject { |route| route.locked && route.hidden }
+    @planning.routes.select(&:available?)
   else
     @planning.routes.available.includes_vehicle_usages.to_a
   end

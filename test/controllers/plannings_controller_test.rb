@@ -433,17 +433,29 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'sidebar averages does not COUNT active destinations per route' do
-    count_queries = 0
-    callback = lambda do |_name, _start, _finish, _id, payload|
-      count_queries += 1 if payload[:sql].match?(/COUNT\(DISTINCT.*destination_id/)
-    end
-
-    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+    queries = count_queries(/COUNT\(DISTINCT.*destination_id/) do
       get :sidebar, params: { planning_id: @planning.id }, xhr: true
     end
 
     assert_response :success
-    assert_equal 0, count_queries, 'expected size_active_destinations to use route_data, not per-route COUNT'
+    assert_equal 0, queries, 'expected size_active_destinations to use route_data, not per-route COUNT'
+  end
+
+  test 'data_header does not COUNT stops per route' do
+    stop_count_queries = routes_available_queries = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      sql = payload[:sql]
+      stop_count_queries += 1 if sql.match?(/SELECT COUNT\(\*\) FROM "stops"/)
+      routes_available_queries += 1 if sql.match?(/FROM "routes".*COALESCE\(locked/)
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      get :data_header, params: { planning_id: @planning.id }, xhr: true, format: :js
+    end
+
+    assert_response :success
+    assert_equal 0, stop_count_queries, 'expected stops_size to use route_data, not per-route COUNT'
+    assert_equal 0, routes_available_queries, 'expected in-memory available filter when routes are preloaded'
   end
 
   test 'data_header does not COUNT stops per route' do
@@ -1603,6 +1615,21 @@ class PlanningsControllerTest < ActionController::TestCase
     get :refresh_route, params: { planning_id: @planning.id, route_id: out_route.id, format: :js }, xhr: true
     assert_response :success
     assert_includes response.body, 'out_of_route'
+  end
+
+  test 'refresh_route does not bulk-load vehicle_usage_set usages' do
+    route = routes(:route_one_one)
+    set_queries = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      set_queries += 1 if payload[:sql].match?(/FROM "vehicle_usages" WHERE "vehicle_usages"."vehicle_usage_set_id"/)
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      get :refresh_route, params: { planning_id: @planning.id, route_id: route.id, format: :js }, xhr: true
+    end
+
+    assert_response :success
+    assert_equal 0, set_queries, 'expected summary preload, not full vehicle_usage_set tree'
   end
 
   test 'refresh_route out of route includes focused stop beyond the first page' do

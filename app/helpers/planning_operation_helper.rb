@@ -39,9 +39,9 @@ module PlanningOperationHelper
             :out_of_max_distance, :out_of_max_reload, :out_of_relation, :out_of_skill,
             :no_path, :unmanageable_capacity
           ).merge(
-            size: route.route_data.stops_size,
-            size_active: route.route_data.size_active,
-            size_store_reloads: route.route_data.size_store_reloads,
+            size: route.stops_size,
+            size_active: route.size_active,
+            size_store_reloads: route.size_store_reloads.to_i,
             out_of_route: route.vehicle_usage_id.nil?
           ),
         }.delete_if{ |_k, v| v.nil? }
