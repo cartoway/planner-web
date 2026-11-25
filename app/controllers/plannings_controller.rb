@@ -31,11 +31,11 @@ class PlanningsController < ApplicationController
   UPDATE_ACTIONS_FULL_ROUTE_PRELOAD = UPDATE_ACTIONS - [:update_stop]
   before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :route_edit, :publish_operation, :sync_operation] + UPDATE_ACTIONS_FULL_ROUTE_PRELOAD
   before_action :remember_vehicle_usage_set_id_for_state_capture, only: [:update]
-  before_action :set_planning_for_edit, only: [:edit]
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
   before_action :enforce_operation_usable_for_refresh!, only: [:refresh]
   before_action :enforce_operation_usable_for_duplicate!, only: [:duplicate]
-  before_action :set_planning_without_stops, only: [:data_header, :operation_sync_preview, :summary, :filter_routes, :sidebar, :refresh, :refresh_route, :refresh_routes, :move_stops_modal, :extract_inactive_stops_modal, :move, :update_stop]
+  before_action :set_planning_without_stops, only: [:edit, :data_header, :operation_sync_preview, :summary, :filter_routes, :sidebar, :refresh, :move_stops_modal, :extract_inactive_stops_modal, :move, :update_stop]
+  before_action :set_planning_for_route_refresh, only: [:refresh_route, :refresh_routes]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :refresh_routes, :reverse_order, :sidebar, :update_stop]
   before_action :check_no_existing_job, only: [:optimize, :optimize_route]
@@ -110,12 +110,12 @@ class PlanningsController < ApplicationController
     @plannings = [@planning]
     # Routes + vehicle_usages already loaded; filter in memory and batch-preload stops once.
     @routes = if params[:route_ids]
-      route_ids = params[:route_ids].split(',').map{ |s| Integer(s) }
+      route_ids = params[:route_ids].split(',').to_set { |s| Integer(s) }
       @with_stops = true
       @planning.routes.select { |route| route_ids.include?(route.id) }
     else
       assign_stops_preload_from_planning!(@planning)
-      @planning.routes.reject { |route| route.locked && route.hidden }
+      @planning.routes.select(&:available?)
     end
     Preloaders::RouteBatchPreload.preload!(@routes.to_a, summary: false) if @with_stops
     respond_to do |format|
@@ -304,7 +304,7 @@ class PlanningsController < ApplicationController
       if @route.vehicle_usage_id
         stops_for_sidebar.size
       else
-        @route.route_data.stops_size
+        @route.stops_size
       end
     planning_summary = planning_summary(@planning)
     route_data = RouteSidebarSerializer.new(
@@ -420,8 +420,8 @@ class PlanningsController < ApplicationController
     assign_stops_preload_from_planning!(@planning)
     # Routes + vehicle_usages already loaded by set_planning_without_stops; only add stops.
     focus_route_id = Integer(params[:route_id], exception: false) if params[:route_id].present?
-    @routes = @planning.routes.reject { |route|
-      route.locked && route.hidden && route.id != focus_route_id
+    @routes = @planning.routes.select { |route|
+      route.available? || route.id == focus_route_id
     }
     Preloaders::RouteBatchPreload.preload!(@routes, summary: false) if @with_stops
     external_callback_locals =
@@ -1077,26 +1077,35 @@ class PlanningsController < ApplicationController
       }.compact
   end
 
-  def set_planning_without_stops
+  def assign_manage_planning!
     @manage_planning =
       if request.referer&.match('api-web')
         ApiWeb::V01::PlanningsController.manage
       else
         PlanningsController.manage
       end
+  end
+
+  def load_planning_with(scope)
+    assign_manage_planning!
     @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
     @colors = COLORS_TABLE.dup.unshift(nil)
-    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
+    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).public_send(scope).first!
     apply_planning_toolbar_operation_flags!
   end
 
+  # Also used by :edit — page loads without stops; sidebar/show fetch details on demand.
+  def set_planning_without_stops
+    load_planning_with(:preload_routes_without_stops)
+  end
+
+  # refresh_route(s): summary fields on all routes; full vehicle_usage on targets only.
+  def set_planning_for_route_refresh
+    load_planning_with(:preload_routes_for_summary)
+  end
+
   def set_driver_planning
-    @manage_planning =
-      if request.referer&.match('api-web')
-        ApiWeb::V01::PlanningsController.manage
-      else
-        PlanningsController.manage
-      end
+    assign_manage_planning!
     planning = Planning.find(params[:planning_id])
     associated_route = planning.routes.find{ |route| route.vehicle_usage&.vehicle_id == current_vehicle.id }
     if associated_route && Stop.find(params[:stop_id]).route_id == associated_route.id
@@ -1106,33 +1115,8 @@ class PlanningsController < ApplicationController
     end
   end
 
-  # Use callbacks to share common setup or constraints between actions.
   def set_planning
-    @manage_planning =
-      if request.referer&.match('api-web')
-        ApiWeb::V01::PlanningsController.manage
-      else
-        PlanningsController.manage
-      end
-    @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
-    @colors = COLORS_TABLE.dup.unshift(nil)
-    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_route_details.first!
-    apply_planning_toolbar_operation_flags!
-  end
-
-  # Edit initial page render does not need route stops preloaded.
-  # Sidebar/show endpoints load detailed data on demand.
-  def set_planning_for_edit
-    @manage_planning =
-      if request.referer&.match('api-web')
-        ApiWeb::V01::PlanningsController.manage
-      else
-        PlanningsController.manage
-      end
-    @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
-    @colors = COLORS_TABLE.dup.unshift(nil)
-    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).preload_routes_without_stops.first!
-    apply_planning_toolbar_operation_flags!
+    load_planning_with(:preload_route_details)
   end
 
   def check_no_existing_job

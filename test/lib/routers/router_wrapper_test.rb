@@ -113,4 +113,35 @@ class Routers::RouterWrapperTest < ActionController::TestCase
       remove_request_stub(stub_matrix)
     end
   end
+
+  test 'raise_router_error! tolerates nil result.message' do
+    result = Struct.new(:message).new(nil)
+
+    error = assert_raises(RouterError) do
+      @router_wrapper.send(:raise_router_error!, result, 'upstream failed')
+    end
+    assert_equal 'upstream failed', error.message
+
+    error = assert_raises(RouterError) do
+      @router_wrapper.send(:raise_router_error!, result, nil)
+    end
+    assert_equal 'Router error', error.message
+  end
+
+  test 'matrix raises RouterError when body is non-json' do
+    points = [[44.82641, -0.55674], [44.83, -0.557]]
+    uri_template = Addressable::Template.new('http://localhost:5000/0.1/matrix.json')
+    stub_matrix = stub_request(:post, uri_template).to_return(
+      status: 500,
+      body: 'not-json',
+      headers: { 'Content-Type' => 'application/json' }
+    )
+
+    error = assert_raises(RouterError) do
+      @router_wrapper.matrix(routers(:router_one).url_time, :car, [:time], points, points)
+    end
+    assert_match(/500|Router error|Internal/, error.message)
+  ensure
+    remove_request_stub(stub_matrix) if stub_matrix
+  end
 end
