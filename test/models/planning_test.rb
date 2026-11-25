@@ -152,6 +152,41 @@ class PlanningTest < ActiveSupport::TestCase
     end
   end
 
+  test 'default_empty_routes does not N+1 on planning tags geojson or stop counts' do
+    planning = plannings(:planning_one)
+    planning_loads = 0
+    tag_planning_loads = 0
+    geojson_selects = 0
+    stops_exists = 0
+    stops_counts = 0
+
+    subscriber = ActiveSupport::Notifications.subscribe('sql.active_record') do |*args|
+      sql = args.last[:sql]
+      next if sql.match?(/SCHEMA|TRANSACTION|pg_|SHOW/)
+
+      planning_loads += 1 if sql.match?(/\A\s*SELECT "plannings"\.\* FROM "plannings"/)
+      tag_planning_loads += 1 if sql.match?(/\A\s*SELECT .*FROM "tag_plannings"/)
+      geojson_selects += 1 if sql.match?(/\A\s*SELECT .*FROM "route_geojsons"/)
+      stops_exists += 1 if sql.match?(/SELECT 1 AS one FROM "stops"/)
+      stops_counts += 1 if sql.match?(/SELECT COUNT\(\*\) FROM "stops"/)
+    end
+
+    begin
+      planning.default_empty_routes
+    ensure
+      ActiveSupport::Notifications.unsubscribe(subscriber)
+    end
+
+    assert planning.routes.size >= 2
+    assert_equal planning.routes.size, RouteGeojson.where(route_id: planning.routes.map(&:id)).count
+
+    assert_operator planning_loads, :<=, 1, "expected ≤1 planning reload, got #{planning_loads}"
+    assert_operator tag_planning_loads, :<=, 1, "expected ≤1 tag_plannings load, got #{tag_planning_loads}"
+    assert_equal 0, geojson_selects, 'expected batch RouteGeojson.import, no per-route SELECT'
+    assert_equal 0, stops_exists, 'expected stops association preloaded empty, no EXISTS'
+    assert_equal 0, stops_counts, 'expected in-memory stop counters, no COUNT(*)'
+  end
+
   test 'update_routes persists route ref from import hash' do
     planning = plannings(:planning_one)
     vehicle_route = routes(:route_one_one)

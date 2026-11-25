@@ -1040,12 +1040,14 @@ class Route < ApplicationRecord
 
   def after_inactive_stops_extracted!(removed_stop_ids)
     reindex_stops_after_extracting!(removed_stop_ids: removed_stop_ids)
-    sync_route_data_stop_counters!
-    route_data.reload if route_data&.persisted?
-    patch_route_geojson_after_stop_visit_removed!(removed_stop_ids: removed_stop_ids)
+    # Drop extracted stops from the in-memory collection before syncing counters
+    # (stops.loaded? path would otherwise keep the pre-extract size).
     if association(:stops).loaded?
       association(:stops).target.reject! { |stop| removed_stop_ids.include?(stop.id) }
     end
+    sync_route_data_stop_counters!
+    route_data.reload if route_data&.persisted?
+    patch_route_geojson_after_stop_visit_removed!(removed_stop_ids: removed_stop_ids)
     mark_computed_without_recompute!
   end
 
@@ -1084,8 +1086,13 @@ class Route < ApplicationRecord
 
   def sync_route_data_stop_counters!
     ensure_route_data
-    count = Stop.where(route_id: id).count
-    active_count = Stop.where(route_id: id, active: true).count
+    if stops.loaded?
+      count = stops.size
+      active_count = stops.count(&:active)
+    else
+      count = Stop.where(route_id: id).count
+      active_count = Stop.where(route_id: id, active: true).count
+    end
     route_data.update_columns(stops_size: count, size_active: active_count)
   end
 
