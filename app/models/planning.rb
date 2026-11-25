@@ -570,12 +570,12 @@ class Planning < ApplicationRecord
   def default_empty_routes(ignore_errors = false)
     delete_all_routes
     new_routes = [
-      Route.new(planning_id: self.id, outdated: false, vehicle_usage_id: nil)
+      Route.new(planning: self, outdated: false, vehicle_usage_id: nil)
     ]
     new_routes +=
       # load only necessary fields to avoid loading all vehicle_usages and dependancies
       vehicle_usage_set.vehicle_usages.includes(:vehicle).where(active: true).pluck(:id).map { |vehicle_usage_id|
-        Route.new(planning_id: self.id, vehicle_usage_id: vehicle_usage_id, outdated: false)
+        Route.new(planning: self, vehicle_usage_id: vehicle_usage_id, outdated: false)
       }
 
     route_data_to_import = []
@@ -609,10 +609,19 @@ class Planning < ApplicationRecord
     end
 
     Route.import(new_routes, validate: false)
-    self.routes = Route.where(planning_id: self.id).includes_vehicle_usages.ordered_for_planning
-    self.routes.each { |route| route.ensure_route_geojson }
-    self.routes.each{ |r| r.init_stops(false) }
-    self.routes.each(&:sync_route_data_stop_counters!)
+    self.routes = Route.where(planning_id: self.id).includes_vehicle_usages.ordered_for_planning.to_a
+    self.routes.each { |route| route.association(:planning).target = self; route.association(:planning).loaded! }
+
+    # One INSERT instead of N× SELECT+INSERT ensure_route_geojson
+    RouteGeojson.import(self.routes.map { |route| { route_id: route.id, tracks: [], points: [] } }, validate: false)
+
+    # Fresh routes have no stops yet: avoid N× EXISTS in init_stops and N× COUNT in sync
+    self.routes.each do |route|
+      route.association(:stops).target = []
+      route.association(:stops).loaded!
+    end
+    self.routes.each { |r| r.init_stops(false) }
+    self.routes.select { |r| r.stops.any? }.each(&:sync_route_data_stop_counters!)
     self
   end
 
