@@ -1291,10 +1291,20 @@ class Planning < ApplicationRecord
   end
 
   def all_skills
-    routes.map do |r|
-      next unless r.vehicle_usage
-      [r.vehicle_usage.tags, r.vehicle_usage.vehicle.tags].flatten
-    end.flatten.compact
+    route_list = routes.to_a
+    # Route#compute_saved! → compute_out_of_skill hits all_skills on a fresh planning
+    # (route.planning), not the controller-preloaded one — batch tags or N+1 per route.
+    # Skip routes without vehicle_usage_id: Preloader would clear the in-memory association
+    # (vehicle create → vehicle_usage_add builds an unsaved usage before init_stops/compute!).
+    Preloaders::BatchAssociationPreload.preload!(
+      route_list.select(&:vehicle_usage_id),
+      { vehicle_usage: [:tags, { vehicle: :tags }] }
+    )
+    route_list.flat_map { |r|
+      next [] unless r.vehicle_usage
+
+      r.vehicle_usage.tags.to_a + r.vehicle_usage.vehicle.tags.to_a
+    }
   end
 
   def quantities(routes: nil)
@@ -1521,7 +1531,8 @@ class Planning < ApplicationRecord
 
     if computed_routes.any?
       route_ids = computed_routes.map(&:id)
-      reloaded_routes_hash = Route.where(id: route_ids).includes_vehicle_usages.includes_destinations_and_stores.index_by(&:id)
+      # Attrs + route_data only: stops are reset just below, so destinations preload is wasted.
+      reloaded_routes_hash = Route.where(id: route_ids).includes_vehicle_usages.index_by(&:id)
 
       computed_routes.each do |r|
         reloaded_route = reloaded_routes_hash[r.id]

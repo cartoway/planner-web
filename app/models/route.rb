@@ -22,7 +22,7 @@ class Route < ApplicationRecord
   delegate :tracks, :tracks=, :points, :points=, to: :route_geojson, allow_nil: true, prefix: :geojson
   delegate :distance, :emission, :cost_distance, :cost_fixed, :cost_time, :revenue, :start, :end,
            :drive_time, :wait_time, :visits_duration, :rests_duration, :pickups, :deliveries, :departure,
-           :size_destinations, :size_store_reloads, :size_active_destinations, :no_geolocalization, :no_path,
+           :size_destinations, :size_store_reloads, :no_geolocalization, :no_path,
            :unmanageable_capacity, :out_of_window, :out_of_capacity, :out_of_drive_time,
            :out_of_force_position, :out_of_work_time, :out_of_max_distance, :out_of_max_reload,
            :out_of_relation, :out_of_skill, :out_of_max_ride_distance,
@@ -152,12 +152,9 @@ class Route < ApplicationRecord
       return route_data.size_active_destinations if use_persisted_route_metrics? && stops.empty?
 
       stops.select { |s| s.is_a?(StopVisit) && s.active? }.filter_map { |s| s.visit&.destination_id }.uniq.size
-    elsif route_data
-      route_data.size_active_destinations
-    elsif id.present?
-      StopVisit.joins(:visit).where(route_id: id, active: true).distinct.count('visits.destination_id')
     else
-      0
+      # Never COUNT per route (sidebar averages / planning_statistics): use persisted metrics.
+      route_data&.size_active_destinations.to_i
     end
   end
 
@@ -1724,8 +1721,10 @@ class Route < ApplicationRecord
     association(:route_data).target = reloaded_route.route_data
     association(:start_route_data).target = reloaded_route.start_route_data
     association(:stop_route_data).target = reloaded_route.stop_route_data
-    association(:stops).target = reloaded_route.stops.to_a
-    association(:stops).loaded!
+    if reloaded_route.association(:stops).loaded?
+      association(:stops).target = reloaded_route.stops.to_a
+      association(:stops).loaded!
+    end
     clear_changes_information
     instance_variable_set(:@new_record, false)
   end

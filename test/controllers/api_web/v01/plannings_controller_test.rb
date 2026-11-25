@@ -77,4 +77,18 @@ class ApiWeb::V01::PlanningsControllerTest < ActionController::TestCase
     get :print, params: { id: @planning }
     assert_response :success
   end
+
+  test 'print batches stop visit and destination loads' do
+    visit_queries = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      visit_queries += 1 if payload[:sql].match?(/FROM "visits" WHERE "visits"\."id" = /)
+    end
+
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      get :print, params: { id: @planning }
+    end
+
+    assert_response :success
+    assert_operator visit_queries, :<, 2, "expected batched visits preload, got #{visit_queries} per-id visit queries"
+  end
 end

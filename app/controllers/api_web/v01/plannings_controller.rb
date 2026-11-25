@@ -20,7 +20,6 @@ class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
 
   skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
   before_action :manage_planning
-  around_action :includes_sub_models, only: [:print]
 
   def edit
     @planning = current_user.customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
@@ -32,7 +31,9 @@ class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
   end
 
   def print
-    @planning = current_user.customer.plannings.where(ParseIdsRefs.read(params[:id])).first!
+    # Explicit preload: Route.includes(...).scoping does not apply to @planning.routes
+    # (only Route.default_scope route_data includes fire — classic N+1 on stops/visits/tags).
+    @planning = current_user.customer.plannings.where(ParseIdsRefs.read(params[:id])).preload_route_details.first!
     authorize! :print, @planning
     @params = params
     respond_to(&:html)
@@ -48,18 +49,6 @@ class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
   # permissions should be checked before thanks to CanCan::Ability
   def manage_planning
     @manage_planning = ApiWeb::V01::PlanningsController.manage
-  end
-
-  def includes_sub_models
-    if action_name.to_sym == :print
-      VehicleUsage.with_stores.scoping do
-        Route.includes_destinations_and_stores.scoping do
-          yield
-        end
-      end
-    else
-      yield
-    end
   end
 
   def capabilities

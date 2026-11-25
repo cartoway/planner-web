@@ -471,6 +471,23 @@ class RouteTest < ActiveSupport::TestCase
     route_data&.update_columns(original) if original
   end
 
+  test 'size_active_destinations does not COUNT when stops are unloaded' do
+    route = Route.where(id: routes(:route_one_one).id).first
+    route.association(:stops).reset
+    count_queries = 0
+    callback = lambda do |_name, _start, _finish, _id, payload|
+      count_queries += 1 if payload[:sql].match?(/COUNT\(DISTINCT.*destination_id/)
+    end
+
+    value = nil
+    ActiveSupport::Notifications.subscribed(callback, 'sql.active_record') do
+      value = route.size_active_destinations
+    end
+
+    assert_kind_of Integer, value
+    assert_equal 0, count_queries
+  end
+
   test 'should reverse stops' do
     route = routes(:route_one_one)
     ids = route.stops.collect(&:id)
