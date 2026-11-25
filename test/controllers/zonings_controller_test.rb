@@ -121,6 +121,22 @@ class ZoningsControllerTest < ActionController::TestCase
     end
   end
 
+  test 'edit does not n plus 1 on routers via default_router' do
+    router_by_id_queries = count_queries(/SELECT "routers"\.\* FROM "routers" WHERE "routers"\."id" = /) do
+      get :edit, params: { id: @zoning }
+    end
+
+    assert_response :success
+    sets = assigns(:zoning).customer.vehicle_usage_sets
+    assert sets.loaded?
+    usage = sets.first.vehicle_usages.first
+    assert usage.association(:vehicle).loaded?
+    assert usage.vehicle.association(:router).loaded? || usage.vehicle.association(:customer).loaded?
+    # Fixture noise exists; guard the O(vehicles) regression from the AppSignal trace.
+    assert_operator router_by_id_queries, :<, 15,
+                    "expected preloaded routers on vehicles, got #{router_by_id_queries} per-id router lookups"
+  end
+
   test 'should update zoning' do
     patch :update, params: { id: @zoning, zoning: { name: @zoning.name } }
     assert_redirected_to edit_zoning_path(assigns(:zoning))
