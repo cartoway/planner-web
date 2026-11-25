@@ -5,7 +5,7 @@ class SmsPartnerService < MessagingService
   class SmsPartnerResponse
     def initialize(body)
       @success    = body['success']
-      @errors     = body['error']
+      @errors     = body['errors'] # [{ "elementId" => ..., "message" => ... }, ...]
       @code       = body['code']
       @message_id = body['message_id']
       @raw_data   = body
@@ -55,7 +55,7 @@ class SmsPartnerService < MessagingService
       })
       true
     else
-      log_error("SMS sending failed", errors: response.errors.join(", "))
+      log_error("SMS sending failed", errors: format_errors(response))
       false
     end
   end
@@ -69,7 +69,7 @@ class SmsPartnerService < MessagingService
     if response.success?
       response.raw_data['credits']['balance']&.to_f
     else
-      log_error("SMS balance fetching failed", errors: response.errors.join(", "))
+      log_error("SMS balance fetching failed", errors: format_errors(response))
       nil
     end
   rescue RestClient::Forbidden => e
@@ -85,6 +85,10 @@ class SmsPartnerService < MessagingService
   def log_error(message, details = {})
     Rails.logger.error("#{self.class.name} error: #{message}")
     details.each { |k, v| Rails.logger.error("  #{k}: #{v}") }
+  end
+
+  def format_errors(response)
+    Array(response.errors).filter_map { |e| e.is_a?(Hash) ? e['message'] : e }.join(', ').presence || "code=#{response.code}"
   end
 
   def send_sms(to, content, options = {})
