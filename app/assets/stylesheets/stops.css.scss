@@ -499,12 +499,14 @@
   z-index: 2;
   display: flex;
   justify-content: center;
+  align-items: center;
   padding: 16px 12px calc(16px + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
 }
 
 // Same chrome as mobile modal close (btn-default), larger tap target for shutter.
-.stop-camera-modal-shutter {
+.stop-camera-modal-shutter,
+.stop-camera-modal-torch {
   min-width: 56px;
   height: 44px;
   padding: 0 16px;
@@ -512,6 +514,18 @@
   line-height: 44px;
   font-size: 1.25rem;
   border-radius: 16px; // same as .mobile-driver .btn
+}
+
+.stop-camera-modal-torch {
+  position: absolute;
+  left: 12px;
+  opacity: 0.85;
+}
+
+.stop-camera-modal-torch.is-on {
+  opacity: 1;
+  color: #ffc107;
+  border-color: #ffc107;
 }
 
 

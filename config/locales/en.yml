@@ -2833,6 +2833,7 @@ en:
       photo_delete: Delete
       photo_delete_confirm: Confirm photo deletion?
       camera_shutter: Take photo
+      camera_torch: Flash
       camera_count: "%{current} / %{max}"
       camera_error: Camera unavailable
       signature: Signature

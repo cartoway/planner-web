@@ -1,7 +1,7 @@
 import { Controller } from '@hotwired/stimulus'
 import { ExclusiveAccordion } from 'lib/exclusive_accordion'
 import { compressImages } from 'lib/compress_image'
-import { startCameraStream } from 'lib/camera_stream'
+import { cameraTorchSupported, getVideoTrack, setCameraTorch, startCameraStream } from 'lib/camera_stream'
 import { canCaptureVideoFrame, captureVideoFrameToFile, waitForVideoFrame } from 'lib/capture_video_frame'
 import {
   CONFIRMED_PHOTO_SELECTOR,
@@ -42,6 +42,7 @@ export default class extends Controller {
     this.signaturePanel = null
     this.cameraPanel = null
     this.cameraStream = null
+    this.cameraTorchOn = false
     this.cameraRequestId = 0
     this.cameraCapturing = false
     this.stopsAccordion = null
@@ -293,6 +294,7 @@ export default class extends Controller {
       return
     }
     if (target.closest('.stop-camera-modal-close')) this.closeCamera()
+    else if (target.closest('.stop-camera-modal-torch')) this.toggleCameraTorch()
     else if (target.closest('.stop-camera-modal-shutter')) this.captureCamera()
     else if (target.closest('.stop-photo-modal-close')) this.closePhoto()
     else if (target.closest('.stop-photo-modal-prev')) this.stepPhoto(-1)
@@ -594,6 +596,7 @@ export default class extends Controller {
       modal,
       video: modal.querySelector('.stop-camera-modal-video'),
       shutter: modal.querySelector('.stop-camera-modal-shutter'),
+      torch: modal.querySelector('.stop-camera-modal-torch'),
       count: modal.querySelector('.stop-camera-modal-count'),
       flash: modal.querySelector('.stop-camera-modal-flash')
     }
@@ -630,6 +633,8 @@ export default class extends Controller {
       }
       this.stopCameraStream()
       this.cameraStream = stream
+      this.cameraTorchOn = false
+      this.syncCameraTorchButton()
       els.video.srcObject = stream
       els.video.play().catch(() => {})
       els.modal.classList.remove('d-none')
@@ -659,8 +664,42 @@ export default class extends Controller {
 
   stopCameraStream () {
     if (!this.cameraStream) return
-    this.cameraStream.getTracks().forEach((track) => track.stop())
+    const stream = this.cameraStream
+    const track = getVideoTrack(stream)
+    const wasTorchOn = this.cameraTorchOn
     this.cameraStream = null
+    this.cameraTorchOn = false
+    const stop = () => stream.getTracks().forEach((t) => t.stop())
+    // Turn torch off before stop — on some Android Chromes stop() leaves the LED on.
+    if (wasTorchOn && track) setCameraTorch(track, false).catch(() => {}).finally(stop)
+    else stop()
+  }
+
+  syncCameraTorchButton () {
+    const torch = this.cameraEls()?.torch
+    if (!torch) return
+    const supported = cameraTorchSupported(getVideoTrack(this.cameraStream))
+    torch.classList.toggle('d-none', !supported)
+    torch.classList.toggle('is-on', this.cameraTorchOn)
+    torch.setAttribute('aria-pressed', this.cameraTorchOn ? 'true' : 'false')
+    torch.disabled = !supported
+  }
+
+  toggleCameraTorch () {
+    const stream = this.cameraStream
+    const track = getVideoTrack(stream)
+    if (!cameraTorchSupported(track)) return
+    const next = !this.cameraTorchOn
+    setCameraTorch(track, next).then(() => {
+      if (this.cameraStream !== stream) return
+      this.cameraTorchOn = next
+      this.syncCameraTorchButton()
+    }).catch(() => {
+      if (this.cameraStream !== stream) return
+      // Only clear local "on" if turning the torch on failed; keep prior state if turn-off failed.
+      if (next) this.cameraTorchOn = false
+      this.syncCameraTorchButton()
+    })
   }
 
   closeCamera () {
@@ -671,6 +710,7 @@ export default class extends Controller {
     if (els?.video) els.video.srcObject = null
     if (els?.shutter) els.shutter.disabled = false
     if (els?.modal) els.modal.classList.add('d-none')
+    this.syncCameraTorchButton()
     this.cameraPanel = null
     this.syncBodyScroll()
   }

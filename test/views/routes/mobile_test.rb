@@ -152,7 +152,9 @@ class RouteMobileTest < ActiveSupport::TestCase
     assert_match(/capture=["']environment["']/, last_response.body)
     assert_includes last_response.body, 'stop-camera-modal'
     assert_includes last_response.body, 'stop-camera-modal-shutter'
+    assert_includes last_response.body, 'stop-camera-modal-torch'
     assert_includes last_response.body, 'stop-camera-modal-video'
+    assert_includes last_response.body, I18n.t('stops.mobile.camera_torch')
     assert_includes last_response.body, 'stop-documents-accordion d-none'
     refute_match(/stop-documents-toggle[^>]*data-toggle/, last_response.body)
     refute_includes last_response.body, 'stop-photo-remove'
