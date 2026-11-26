@@ -4,6 +4,13 @@ import { compressImages } from 'lib/compress_image'
 import { cameraTorchSupported, getVideoTrack, setCameraTorch, startCameraStream } from 'lib/camera_stream'
 import { canCaptureVideoFrame, captureVideoFrameToFile, waitForVideoFrame } from 'lib/capture_video_frame'
 import {
+  MOBILE_NAV_DEFAULT,
+  MOBILE_NAV_STORAGE_KEY,
+  normalizeMobileNavApp,
+  openWithFallback,
+  pickMobileNavTarget
+} from 'lib/mobile_nav'
+import {
   CONFIRMED_PHOTO_SELECTOR,
   formatCameraCount,
   nextPhotoModalIndex,
@@ -61,6 +68,7 @@ export default class extends Controller {
     document.addEventListener('visibilitychange', this.onVisibilityChange)
     window.addEventListener('pagehide', this.onVisibilityChange)
     this.bindSignatureCanvas()
+    this.bindNavAppPicker()
     this.registerServiceWorker()
     // Drop GPS queued for another operation/route — otherwise SW replays the old URL forever.
     this.discardStalePositions()
@@ -259,7 +267,7 @@ export default class extends Controller {
     if (!target.closest('.route-select.dropdown')) this.closeTransferDropdowns()
 
     const nav = target.closest('.mobile-nav-link')
-    if (nav && nav.dataset.navPrimary) {
+    if (nav) {
       event.preventDefault()
       this.openNavigation(nav)
       return
@@ -1116,19 +1124,28 @@ export default class extends Controller {
     canvas.addEventListener('touchend', () => { drawing = false })
   }
 
-  openNavigation (link) {
-    const primary = link.dataset.navPrimary
-    const fallback = link.getAttribute('href')
-    const started = Date.now()
-    const timer = window.setTimeout(() => {
-      if (!document.hidden && Date.now() - started < 1700) window.location.href = fallback
-    }, 1200)
-    document.addEventListener('visibilitychange', function hide () {
-      if (!document.hidden) return
-      window.clearTimeout(timer)
-      document.removeEventListener('visibilitychange', hide)
+  preferredNavApp () {
+    try {
+      return normalizeMobileNavApp(window.localStorage.getItem(MOBILE_NAV_STORAGE_KEY))
+    } catch (_err) {
+      return MOBILE_NAV_DEFAULT
+    }
+  }
+
+  bindNavAppPicker () {
+    const select = this.element.querySelector('.mobile-nav-app-select')
+    if (!select) return
+    select.value = this.preferredNavApp()
+    select.addEventListener('change', () => {
+      const app = normalizeMobileNavApp(select.value)
+      select.value = app
+      try { window.localStorage.setItem(MOBILE_NAV_STORAGE_KEY, app) } catch (_err) { /* private mode */ }
     })
-    window.location.href = primary
+  }
+
+  openNavigation (link) {
+    const { primary, fallback } = pickMobileNavTarget(link.dataset, this.preferredNavApp())
+    openWithFallback(primary, fallback || link.getAttribute('href'))
   }
 
   swapSuffix (node, prefix, value) {

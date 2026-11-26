@@ -15,6 +15,8 @@
         .label.label-default.p-3.mr-2
           %i.fa.fa-truck-field.fa-fw
         = @operation_route.vehicle_name
+    - if agent == :ios
+      = render partial: 'stops/mobile_nav_app_picker'
     %h4.d-flex.align-items-center.justify-items-center
       .label.label-default.p-3.mr-2
         %i.fa.fa-calendar.fa-fw

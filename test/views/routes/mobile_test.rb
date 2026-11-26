@@ -27,15 +27,32 @@ class RouteMobileTest < ActiveSupport::TestCase
     assert_match(/#{new_user_session_path}/, last_response.location)
   end
 
-  test 'should offer benav on ios and keep apple maps as fallback' do
+  test 'should offer ios nav app picker and deep links with apple maps fallback' do
     vehicle = @route.vehicle_usage.vehicle
     header 'User-Agent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
     get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
 
     assert last_response.ok?
+    assert_includes last_response.body, 'mobile-nav-app-select'
+    assert_includes last_response.body, I18n.t('stops.mobile.nav_apps.apple')
+    assert_includes last_response.body, I18n.t('stops.mobile.nav_apps.benav')
+    assert_includes last_response.body, I18n.t('stops.mobile.nav_apps.google')
+    assert_includes last_response.body, I18n.t('stops.mobile.nav_apps.waze')
     assert_includes last_response.body, "href='http://maps.apple.com/?daddr="
     assert_includes last_response.body, 'mobile-nav-link'
-    assert_includes last_response.body, "data-nav-primary='benav://?cmd="
+    assert_includes last_response.body, "data-nav-benav='benav://?cmd="
+    assert_includes last_response.body, "data-nav-google='comgooglemaps://?daddr="
+    assert_includes last_response.body, "data-nav-waze='waze://?ll="
+  end
+
+  test 'should hide ios nav app picker on android' do
+    vehicle = @route.vehicle_usage.vehicle
+    header 'User-Agent', 'Mozilla/5.0 (Linux; Android 13; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36'
+    get "/operations/#{@operation.id}/routes/#{@operation_route.id}/mobile?driver_token=#{vehicle.driver_token}"
+
+    assert last_response.ok?
+    refute_includes last_response.body, 'mobile-nav-app-select'
+    refute_includes last_response.body, 'mobile-nav-link'
   end
 
   test 'should display the requested page if key is valid' do

@@ -1,0 +1,7 @@
+-# iOS tour header row: pick which nav app "Navigate" opens (stored in localStorage).
+%h4.mobile-nav-app-picker.d-flex.align-items-center.justify-items-center
+  .label.label-default.p-3.mr-2
+    %i.fa.fa-diamond-turn-right.fa-fw
+  %select#mobile-nav-app-select.form-control.mobile-nav-app-select{ 'aria-label': t('stops.mobile.nav_app') }
+    - MobileHelper::MOBILE_NAV_APPS.each do |app|
+      %option{ value: app, selected: (app == MobileHelper::MOBILE_NAV_DEFAULT) }= t("stops.mobile.nav_apps.#{app}")

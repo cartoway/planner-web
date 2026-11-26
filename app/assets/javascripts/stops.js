@@ -108,30 +108,24 @@ export const stops_edit = function(params) {
     }
   });
 
-  // iOS: try BeNav deep link, fall back to Apple Maps (href) if the page stays visible
+  // iOS (legacy layout): try BeNav, fall back to Apple Maps if the page stays visible.
+  // Picker / multi-app lives only in Stimulus mobile_controller + lib/mobile_nav.
   var NAV_FALLBACK_MS = 1200;
   $('.mobile-nav-link').on('click', function(e) {
-    var primary = this.getAttribute('data-nav-primary');
+    var primary = this.getAttribute('data-nav-benav') || this.getAttribute('data-nav-primary');
     if (!primary) return;
 
     e.preventDefault();
     e.stopPropagation();
 
-    var fallback = this.getAttribute('href');
+    var fallback = this.getAttribute('data-nav-apple') || this.getAttribute('href');
     var startedAt = Date.now();
-    var fallbackTimer = window.setTimeout(function() {
+    // Do not cancel on fleeting document.hidden (Control Center) — only skip if still hidden at fire time.
+    window.setTimeout(function() {
       if (!document.hidden && Date.now() - startedAt < NAV_FALLBACK_MS + 500) {
         window.location.href = fallback;
       }
     }, NAV_FALLBACK_MS);
-
-    var onVisibility = function() {
-      if (document.hidden) {
-        window.clearTimeout(fallbackTimer);
-        document.removeEventListener('visibilitychange', onVisibility);
-      }
-    };
-    document.addEventListener('visibilitychange', onVisibility);
     window.location.href = primary;
   });
 
