@@ -33,6 +33,14 @@ class V01::Stops < Grape::API
 
       error!(V01::Status.code_response(:code_403, message: 'Forbidden'), 403)
     end
+
+    def deny_stop_active_update_unless_permitted!
+      return unless params.key?(:active) || params.key?('active')
+
+      return if @current_user.admin? || @current_user.operation_segment_usable?(:stop, 'active_stop')
+
+      error!(V01::Status.code_response(:code_403, message: 'Forbidden'), 403)
+    end
   end
 
   resource :plannings do
@@ -72,6 +80,7 @@ class V01::Stops < Grape::API
             end
             put ':id' do
               deny_stop_locked_update_unless_permitted!
+              deny_stop_active_update_unless_permitted!
               planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!
               route = planning.routes.find{ |route| route.id == Integer(params[:route_id]) } || raise(ActiveRecord::RecordNotFound.new)
               stop = route.stops.find{ |stop| stop.id == Integer(params[:id]) } || raise(ActiveRecord::RecordNotFound.new)
@@ -93,7 +102,8 @@ class V01::Stops < Grape::API
               requires :index, type: Integer, desc: 'New position in the route'
             end
             patch ':id/move/:index' do
-              planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).preload_routes_without_stops.first!
+              # Bare planning + touched routes only (replace_routes_with_loaded sets association target).
+              planning = current_customer.plannings.where(ParseIdsRefs.where_clause([params[:planning_id]])).first!
 
               route_id = Integer(params[:route_id])
               stop_id = Integer(params[:id])
@@ -119,6 +129,7 @@ class V01::Stops < Grape::API
               begin
                 planning.move_stop(route, stop, Integer(params[:index]))
                 planning.compute_saved
+                planning.capture_state_later!(trigger: 'move')
                 status 204
               rescue Exceptions::StopIndexError => e
                 if e.route == route && e.bad_index == Integer(params[:index])

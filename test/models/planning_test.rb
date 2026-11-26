@@ -1476,6 +1476,33 @@ class PlanningTestError < ActiveSupport::TestCase
     assert_nothing_raised { planning.compute_saved }
   end
 
+  test 'replace_routes_with_loaded keeps only touched routes when association unloaded' do
+    vehicle_route_id = routes(:route_one_one).id
+    out_of_route_id = routes(:route_zero_one).id
+    planning = Planning.find(plannings(:planning_one).id)
+    refute planning.association(:routes).loaded?
+
+    planning.replace_routes_with_loaded([vehicle_route_id, out_of_route_id])
+
+    assert planning.association(:routes).loaded?
+    assert_equal [vehicle_route_id, out_of_route_id].sort, planning.routes.map(&:id).sort
+    assert planning.routes.all? { |route| route.association(:stops).loaded? }
+  end
+
+  test 'all_skills uses vehicle_usage_set even when routes association is a subset' do
+    planning = Planning.find(plannings(:planning_one).id)
+    full_skills = planning.all_skills.map(&:id).sort
+    planning.clear_all_skills_cache!
+
+    # Mimic move: only one route loaded into the association.
+    one_route_id = routes(:route_one_one).id
+    planning.replace_routes_with_loaded([one_route_id])
+    assert_equal 1, planning.routes.size
+
+    subset_skills = planning.all_skills.map(&:id).sort
+    assert_equal full_skills, subset_skills
+  end
+
   test 'compute_saved after move does not insert ghost StopVisit with null index' do
     planning = plannings(:planning_one)
     vehicle_route = planning.routes.find { |r| r.id == routes(:route_one_one).id }

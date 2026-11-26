@@ -32,7 +32,7 @@ class StopsController < ApplicationController
       @store_reload = current_user.customer.store_reloads.find(params[:store_reload_id])
       respond_to do |format|
         if @route.add_store_reload(@store_reload) && @route.save && load_planning_with_scope && @planning.compute_saved && load_planning_with_scope
-          @planning.capture_state!(trigger: 'update_stop')
+          @planning.capture_state_later!(trigger: 'update_stop')
           format.json { render json: { status: :ok } }
         else
           errors = (@route.errors&.full_messages || []) + (@planning&.errors&.full_messages || [])
@@ -57,7 +57,7 @@ class StopsController < ApplicationController
 
     respond_to do |format|
       if @route.add_rest && @route.save && load_planning_with_scope && @planning.compute_saved && load_planning_with_scope
-        @planning.capture_state!(trigger: 'update_stop')
+        @planning.capture_state_later!(trigger: 'update_stop')
         format.json { render json: { status: :ok } }
       else
         errors = (@route.errors&.full_messages || []) + (@planning&.errors&.full_messages || [])
@@ -81,10 +81,10 @@ class StopsController < ApplicationController
           return
         end
         if load_planning_with_scope && @planning.compute_saved && load_planning_with_scope
-          @planning.capture_state!(trigger: 'update_stop')
+          @planning.capture_state_later!(trigger: 'update_stop')
           planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
           route_data = planning_data[:routes].select{ |route| route[:route_id] == @route.id }
-          format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: route_data, summary: planning_summary(@planning) } }
+          format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: route_data, summary: planning_partial_summary(@planning, [@route.id]) } }
         else
           errors = @planning.errors.full_messages.size.zero? ? @planning.customer.errors.full_messages : @planning.errors.full_messages
           flash[:error] = errors

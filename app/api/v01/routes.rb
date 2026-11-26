@@ -123,7 +123,8 @@ class V01::Routes < Grape::API
             id_hash[:ref] || id_hash[:id]
           }.compact
 
-          @planning = current_customer.plannings.where(id: params[:planning_id]).preload_routes_without_stops.first!
+          # Bare planning + touched routes only (same pattern as web / API stop move).
+          @planning = current_customer.plannings.where(id: params[:planning_id]).first!
           route_id = Integer(params[:id])
           stops = Stop.joins(:route)
                      .where(routes: { planning_id: @planning.id })
@@ -143,6 +144,7 @@ class V01::Routes < Grape::API
             Planning.transaction do
               stops.each{ |stop| @planning.move_stop(route, stop, params[:automatic_insert] ? nil : -1) }
               @planning.compute_saved
+              @planning.capture_state_later!(trigger: 'move')
               status 204
             end
           end

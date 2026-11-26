@@ -20,6 +20,14 @@ class V100::Stops < Grape::API
 
       error!(V100::Status.code_response(:code_403, message: 'Forbidden'), 403)
     end
+
+    def deny_stop_active_update_unless_permitted!
+      return unless params.key?(:active) || params.key?('active')
+
+      return if @current_user.admin? || @current_user.operation_segment_usable?(:stop, 'active_stop')
+
+      error!(V100::Status.code_response(:code_403, message: 'Forbidden'), 403)
+    end
   end
 
   resource :plannings do
@@ -47,6 +55,7 @@ class V100::Stops < Grape::API
             end
             put ':id' do
               deny_stop_locked_update_unless_permitted!
+              deny_stop_active_update_unless_permitted!
               planning = current_customer.plannings.where(ParseIdsRefs.read(params[:planning_id])).first!
               route = planning.routes.find{ |route| route.id == Integer(params[:route_id]) } || raise(ActiveRecord::RecordNotFound.new)
               stop = route.stops.find{ |stop| stop.id == Integer(params[:id]) } || raise(ActiveRecord::RecordNotFound.new)
@@ -74,7 +83,7 @@ class V100::Stops < Grape::API
                 route.compute_saved
                 current_customer.save!
               end
-              Planning.where(id: planning.id).preload_route_details.first!.capture_state!(trigger: 'update_stop')
+              planning.capture_state_later!(trigger: 'update_stop')
               status 204
             rescue Exceptions::JobInProgressError
               status 409
