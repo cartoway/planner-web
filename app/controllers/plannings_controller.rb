@@ -1127,11 +1127,14 @@ class PlanningsController < ApplicationController
   end
 
   def route_sidebar_hashes_for(routes)
+    routes = Array(routes)
     RouteSidebarSerializer.as_hashes(
       routes,
       planning: @planning,
       with_stops: @with_stops,
-      view_helpers: view_context
+      view_helpers: view_context,
+      # Index-ordered stops so reverse_order stays correct without a reload.
+      stops_by_route_id: routes.to_h { |route| [route.id, route.stops_ordered_by_index] }
     )
   end
 
