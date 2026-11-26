@@ -17,6 +17,7 @@
 #
 class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
   include PlanningToolbarPermissions
+  include PlanningOperationHelper
 
   skip_before_action :verify_authenticity_token # because rails waits for a form token with POST
   before_action :manage_planning
@@ -28,6 +29,9 @@ class ApiWeb::V01::PlanningsController < ApiWeb::V01::ApiWebController
     @spreadsheet_columns = []
     @with_devices = true
     capabilities
+    center = planning_map_center(@planning)
+    @map_lat = center[:lat]
+    @map_lng = center[:lng]
   end
 
   def print

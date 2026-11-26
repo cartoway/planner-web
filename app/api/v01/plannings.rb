@@ -199,7 +199,7 @@ class V01::Plannings < Grape::API
         vehicle_usage = planning.vehicle_usage_set.vehicle_usages.find(params[:vehicle_usage_id])
         Planning.transaction do
           if route && vehicle_usage && planning.switch(route, vehicle_usage) && planning.save! && planning.compute && planning.save!
-            planning.capture_state!(trigger: 'switch')
+            planning.capture_state_later!(trigger: 'switch')
             if params[:details] || params[:with_details]
               present planning, with: V01::Entities::Planning, geojson: params[:with_geojson]
             else
@@ -416,7 +416,7 @@ class V01::Plannings < Grape::API
         end
       end
 
-      planning.reload.capture_state!(trigger: 'activate_stops') if params[:action].to_sym == :active
+      planning.reload.capture_state_later!(trigger: 'activate_stops') if params[:action].to_sym == :active
 
       present routes, with: V01::Entities::RouteProperties
     end

@@ -114,7 +114,7 @@ class V100::Routes < Grape::API
                 error! V100::Status.code_response(:code_400, after: route.errors.full_messages.join(', ')), 400
               end
             end
-            Planning.where(id: planning.id).preload_route_details.first!.capture_state!(trigger: 'update_stop')
+            planning.capture_state_later!(trigger: 'update_stop')
           rescue Exceptions::JobInProgressError
             status 409
             present planning.customer.blocking_job(planning_id: planning.id), with: V100::Entities::Job, message: I18n.t('errors.planning.job_in_progress')

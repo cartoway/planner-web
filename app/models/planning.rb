@@ -465,17 +465,31 @@ class Planning < ApplicationRecord
     end
   end
 
-  # Replace existing routes in planning.routes association with freshly loaded routes
+  # Load routes for mutation. When the association is unloaded, keeps ONLY those routes
+  # (touched-only / autosave-safe via target= — never planning.routes=).
   def replace_routes_with_loaded(route_ids, routes = nil)
     return if route_ids.empty? && routes.nil?
+
+    clear_all_skills_cache!
 
     loaded_routes = if routes
       routes.to_a
     else
-      self.routes.where(id: route_ids).includes_destinations_and_stores.includes_vehicle_usages.to_a
+      # Query by planning_id — avoid self.routes.where which can load the full association.
+      Route.where(planning_id: id, id: route_ids)
+           .includes_destinations_and_stores
+           .includes_vehicle_usages
+           .ordered_for_planning
+           .to_a
     end
 
     return if loaded_routes.empty?
+
+    # Unloaded: keep only touched routes (same as web move). Loaded: swap in place.
+    unless association(:routes).loaded?
+      association(:routes).target = loaded_routes
+      return
+    end
 
     loaded_routes_hash = loaded_routes.index_by(&:id)
     self.routes.each do |existing_route|
@@ -1317,24 +1331,26 @@ class Planning < ApplicationRecord
   def all_skills
     return @all_skills if defined?(@all_skills)
 
-    route_list = routes.to_a
-    # compute_out_of_skill can hit this once per route; memoize + batch-preload tags.
-    # Skip routes without vehicle_usage_id: Preloader would clear an unsaved in-memory usage
-    # (vehicle create → vehicle_usage_add before init_stops/compute!).
-    Preloaders::BatchAssociationPreload.preload!(
-      route_list.select(&:vehicle_usage_id),
-      { vehicle_usage: [:tags, { vehicle: :tags }] }
-    )
-    @all_skills = route_list.flat_map { |r|
-      next [] unless r.vehicle_usage
-
-      r.vehicle_usage.tags.to_a + r.vehicle_usage.vehicle.tags.to_a
+    # From vehicle_usage_set — not routes.to_a (may be a touched-only subset after move).
+    usages = vehicle_usage_set.vehicle_usages.to_a
+    Preloaders::BatchAssociationPreload.preload!(usages, [:tags, { vehicle: :tags }])
+    @all_skills = usages.flat_map { |usage|
+      usage.tags.to_a + usage.vehicle.tags.to_a
     }
   end
 
-  def reload(*)
-    remove_instance_variable(:@all_skills) if defined?(@all_skills)
+  def vehicle_usage_set_id=(value)
+    clear_all_skills_cache!
     super
+  end
+
+  def reload(*)
+    clear_all_skills_cache!
+    super
+  end
+
+  def clear_all_skills_cache!
+    remove_instance_variable(:@all_skills) if defined?(@all_skills)
   end
 
   def quantities(routes: nil)
