@@ -1278,10 +1278,49 @@ class PlanningsControllerTest < ActionController::TestCase
   test 'should move' do
     patch :move, params: { planning_id: @planning, route_id: route_one_for_planning, stop_id: route_three_for_planning.stops[0], index: 1, format: :json }
     assert_response :success
-    assert_equal 2, JSON.parse(response.body)['route_ids'].size
+    body = JSON.parse(response.body)
+    assert_equal 2, body['route_ids'].size
+    assert_equal true, body.dig('summary', 'partial')
+    assert_equal 2, body.dig('summary', 'routes')&.size
     @planning.routes.select(&:vehicle_usage).each{ |vu|
       assert_not vu.outdated
     }
+  end
+
+  test 'move returns partial summary for touched routes only' do
+    stop = route_three_for_planning.stops[0]
+    expected = [route_one_for_planning.id, route_three_for_planning.id].sort
+
+    patch :move, params: {
+      planning_id: @planning.id,
+      route_id: route_one_for_planning.id,
+      stop_id: stop.id,
+      index: 1,
+      format: :json
+    }
+
+    assert_response :success
+    body = JSON.parse(response.body)
+    assert_equal true, body.dig('summary', 'partial')
+    summary_route_ids = body.dig('summary', 'routes').map { |r| r['route_id'] }.sort
+    assert_equal expected, summary_route_ids
+    assert_equal expected, body['route_ids'].sort
+  end
+
+  test 'update_stop js returns partial summary for touched route only' do
+    route_id = routes(:route_one_one).id
+    patch :update_stop, params: {
+      planning_id: @planning,
+      format: :js,
+      route_id: route_id,
+      stop_id: stops(:stop_one_one).id,
+      stop: { active: false }
+    }, xhr: true
+
+    assert_response :success
+    locals = JSON.parse(response.body[/var locals = (\{.*\});/m, 1])
+    assert_equal true, locals.dig('summary', 'partial')
+    assert_equal [route_id], locals.dig('summary', 'routes').map { |r| r['route_id'] }
   end
 
   test 'show json includes last failed optimizer without blocking the planning' do

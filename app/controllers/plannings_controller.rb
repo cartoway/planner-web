@@ -28,13 +28,16 @@ class PlanningsController < ApplicationController
   before_action :authenticate_driver!, only: [:driver_move]
 
   UPDATE_ACTIONS = [:update, :switch, :automatic_insert, :update_stop, :active, :reverse_order, :apply_zonings, :optimize, :optimize_route]
-  UPDATE_ACTIONS_FULL_ROUTE_PRELOAD = UPDATE_ACTIONS - [:update_stop]
+  # Single-route mutations: bare planning + touched load (same as move).
+  UPDATE_ACTIONS_TOUCHED_ONLY = [:update_stop, :active, :reverse_order].freeze
+  UPDATE_ACTIONS_FULL_ROUTE_PRELOAD = UPDATE_ACTIONS - UPDATE_ACTIONS_TOUCHED_ONLY
   before_action :set_planning, only: [:duplicate, :destroy, :cancel_optimize, :route_edit, :publish_operation, :sync_operation] + UPDATE_ACTIONS_FULL_ROUTE_PRELOAD
   before_action :remember_vehicle_usage_set_id_for_state_capture, only: [:update]
   before_action :enforce_operation_usable_for_optimize!, only: %i[optimize optimize_route]
   before_action :enforce_operation_usable_for_refresh!, only: [:refresh]
   before_action :enforce_operation_usable_for_duplicate!, only: [:duplicate]
-  before_action :set_planning_without_stops, only: [:edit, :data_header, :operation_sync_preview, :summary, :filter_routes, :sidebar, :refresh, :move_stops_modal, :extract_inactive_stops_modal, :move, :update_stop]
+  before_action :set_planning_without_stops, only: [:edit, :data_header, :operation_sync_preview, :summary, :filter_routes, :sidebar, :refresh, :move_stops_modal, :extract_inactive_stops_modal]
+  before_action :set_planning_for_move, only: [:move] + UPDATE_ACTIONS_TOUCHED_ONLY
   before_action :set_planning_for_route_refresh, only: [:refresh_route, :refresh_routes]
   before_action :set_driver_planning, only: [:driver_move]
   before_action :set_available_store_reloads, only: [:active, :edit, :optimize, :optimize_route, :refresh_route, :refresh_routes, :reverse_order, :sidebar, :update_stop]
@@ -619,7 +622,6 @@ class PlanningsController < ApplicationController
           end
           @stop.assign_attributes(stop_params) if @stop
           if @stop && @route.compute_saved!
-            @planning = current_user.customer.plannings.where(id: @planning.id).preload_routes_without_stops.first!
             @route = Route.where(id: route_id, planning_id: @planning.id)
                           .includes_vehicle_usages
                           .includes_destinations_and_stores
@@ -627,7 +629,8 @@ class PlanningsController < ApplicationController
             @routes = [@route]
             planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
             capture_planning_state_after_success!
-            format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
+            summary = planning_partial_summary(@planning, [route_id])
+            format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: summary } }
             format.json { render action: 'show', location: @planning }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
@@ -723,13 +726,16 @@ class PlanningsController < ApplicationController
   end
 
   def active
-    route = @planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
+    route_id = Integer(params[:route_id])
+    @planning.replace_routes_with_loaded([route_id])
+    route = @planning.routes.find { |r| r.id == route_id }
     respond_to do |format|
       if route && route.active(params[:active].to_s.to_sym) && route.compute_saved!
         @routes = [route]
         planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
         capture_planning_state_after_success!
-        format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
+        summary = planning_partial_summary(@planning, [route_id])
+        format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: summary } }
       else
         flash[:error] = @planning.errors.full_messages
         format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
@@ -741,19 +747,22 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       @planning = @planning.duplicate
       @planning.save! validate: Planner::Application.config.validate_during_duplication
-      @planning.capture_state!(trigger: 'duplicate')
+      @planning.capture_state_later!(trigger: 'duplicate')
       format.html { redirect_to edit_planning_path(@planning), notice: t('activerecord.successful.messages.updated', model: @planning.class.model_name.human) }
     end
   end
 
   def reverse_order
-    route = @planning.routes.find{ |route| route.id == Integer(params[:route_id]) }
+    route_id = Integer(params[:route_id])
+    @planning.replace_routes_with_loaded([route_id])
+    route = @planning.routes.find { |r| r.id == route_id }
     respond_to do |format|
       if route && route.reverse_order && route.compute_saved! && route.reload
         @routes = [route]
         planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
         capture_planning_state_after_success!
-        format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: planning_summary(@planning) } }
+        summary = planning_partial_summary(@planning, [route_id])
+        format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: summary } }
       else
         flash[:error] = @planning.errors.full_messages
         format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
@@ -952,9 +961,10 @@ class PlanningsController < ApplicationController
           route_id = Integer(params[:route_id])
           route_ids = [route_id]
 
+          previous_route_id = nil
           if params[:stop_ids].nil?
             deny_unless_operation_usable!(:stop, 'move_stop')
-            previous_route_id = Stop.find(params[:stop_id]).route_id
+            previous_route_id = stop_route_id_for_planning!(params[:stop_id])
             route_ids << previous_route_id if previous_route_id != route_id
           else
             deny_unless_operation_usable!(:route, 'stops')
@@ -987,7 +997,6 @@ class PlanningsController < ApplicationController
 
           fast_path_used = false
           if params[:stop_ids].nil?
-            previous_route_id = Stop.find(params[:stop_id]).route_id
             if route.vehicle_usage_id.nil? && previous_route_id == route.id
               format.json { head :ok }
               return
@@ -1020,10 +1029,10 @@ class PlanningsController < ApplicationController
             # and can deadlock when precompute_traces runs in parallel inside the open transaction.
             @planning.invalidate_planning_cache
             capture_planning_state_after_success!
-            format.json { render json: { route_ids: route_ids, summary: planning_summary(@planning) } }
+            format.json { render json: move_success_payload(route_ids) }
           elsif @planning.compute_saved
             capture_planning_state_after_success!
-            format.json { render json: { route_ids: route_ids, summary: planning_summary(@planning) } }
+            format.json { render json: move_success_payload(route_ids) }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
           end
@@ -1100,6 +1109,28 @@ class PlanningsController < ApplicationController
     load_planning_with(:preload_routes_without_stops)
   end
 
+  # Bare planning for single-route mutations (move / update_stop / active / reverse_order).
+  # Touched routes loaded via Planning#replace_routes_with_loaded (autosave-safe target=).
+  def set_planning_for_move
+    assign_manage_planning!
+    @with_stops = ValueToBoolean.value_to_boolean(params[:with_stops], true)
+    @colors = COLORS_TABLE.dup.unshift(nil)
+    @planning = current_user.customer.plannings.where(id: params[:id] || params[:planning_id]).first!
+    apply_planning_toolbar_operation_flags!
+  end
+
+  def move_success_payload(route_ids)
+    {
+      route_ids: route_ids,
+      summary: planning_partial_summary(@planning, route_ids)
+    }
+  end
+
+  def stop_route_id_for_planning!(stop_id)
+    Stop.joins(:route).where(id: stop_id, routes: { planning_id: @planning.id }).pick('routes.id') ||
+      raise(ActiveRecord::RecordNotFound)
+  end
+
   # refresh_route(s): summary fields on all routes; full vehicle_usage on targets only.
   def set_planning_for_route_refresh
     load_planning_with(:preload_routes_for_summary)
@@ -1107,9 +1138,11 @@ class PlanningsController < ApplicationController
 
   def set_driver_planning
     assign_manage_planning!
-    planning = Planning.find(params[:planning_id])
+    # Driver session has current_vehicle, not necessarily current_user.
+    planning = current_vehicle.customer.plannings.where(id: params[:planning_id]).first!
     associated_route = planning.routes.find{ |route| route.vehicle_usage&.vehicle_id == current_vehicle.id }
-    if associated_route && Stop.find(params[:stop_id]).route_id == associated_route.id
+    stop_route_id = Stop.joins(:route).where(id: params[:stop_id], routes: { planning_id: planning.id }).pick('routes.id')
+    if associated_route && stop_route_id == associated_route.id
       @planning = planning
     else
       head :not_found
@@ -1128,7 +1161,7 @@ class PlanningsController < ApplicationController
     return unless @planning&.persisted?
 
     trigger ||= (action_name == 'driver_move' ? 'move' : action_name)
-    @planning.capture_state!(trigger: trigger)
+    @planning.capture_state_later!(trigger: trigger)
   end
 
   def capture_planning_state_after_vehicle_usage_set_change!
@@ -1168,10 +1201,9 @@ class PlanningsController < ApplicationController
     @spreadsheet_summary_columns = export_summary_columns
     @with_devices = true
     capabilities
-    # One pass for map center (view used to call default_store_start twice).
-    map_store = @planning.vehicle_usage_set.vehicle_usages.select(&:active?).lazy.map(&:default_store_start).find { |s| s && s.lat && s.lng }
-    @map_lat = map_store&.lat || @planning.customer.default_position[:lat]
-    @map_lng = map_store&.lng || @planning.customer.default_position[:lng]
+    center = planning_map_center(@planning)
+    @map_lat = center[:lat]
+    @map_lng = center[:lng]
   end
 
   # When planning operations.vehicle_usage_set is hidden or disabled, ignore submitted vehicle_usage_set_id.
