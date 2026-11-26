@@ -45,6 +45,31 @@ class RouteSidebarSerializer
     end
   end
 
+  # Canonical sidebar route hashes (+ today_operation). Prefer this over ad-hoc Serializer.new loops.
+  # stops_by_route_id: optional preloaded { route_id => [stops] } (e.g. refresh_routes batch).
+  def self.as_hashes(routes, planning:, with_stops:, view_helpers:, open_ops_by_route: nil, stops_by_route_id: nil)
+    if open_ops_by_route.nil? && planning.customer.device.operations_enabled?
+      open_ops_by_route = planning.open_operations_by_route_id
+    end
+
+    Array(routes).map do |route|
+      stops =
+        if stops_by_route_id
+          stops_by_route_id[route.id] || []
+        else
+          route.stops_ordered_by_index
+        end
+      data = new(
+        route: route,
+        planning: planning,
+        with_stops: with_stops,
+        view_helpers: view_helpers,
+        stops: stops
+      ).as_hash
+      view_helpers.attach_open_operations!(data, planning, open_ops_by_route: open_ops_by_route)
+    end
+  end
+
   def initialize(route:, planning:, with_stops:, view_helpers:, stops_count: nil, stops: nil)
     @route = route
     @planning = planning
