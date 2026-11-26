@@ -115,7 +115,7 @@ class RouteSidebarSerializerTest < ActionController::TestCase
     refute hash[:store_stop]&.key?(:status)
   end
 
-  test 'as_hashes orders stops by index and attaches route_id' do
+  test 'as_hashes orders stops by index when stops_by_route_id is given' do
     route = Route.where(id: routes(:route_one_one).id).includes_destinations_and_stores.first!
     expected_ids = route.stops_ordered_by_index.map(&:id)
 
@@ -123,12 +123,28 @@ class RouteSidebarSerializerTest < ActionController::TestCase
       [route],
       planning: route.planning,
       with_stops: true,
-      view_helpers: route_sidebar_view_helpers
+      view_helpers: route_sidebar_view_helpers,
+      stops_by_route_id: { route.id => route.stops_ordered_by_index }
     )
 
     assert_equal 1, hashes.size
     assert_equal route.id, hashes[0][:route_id]
     assert_equal expected_ids, hashes[0][:stops].map { |s| s[:stop_id] }
+  end
+
+  test 'as_hashes without stops_by_route_id keeps out-of-route progressive load' do
+    out_route = routes(:route_zero_one)
+    vehicle_route = routes(:route_one_one)
+
+    hashes = RouteSidebarSerializer.as_hashes(
+      [out_route, vehicle_route],
+      planning: out_route.planning,
+      with_stops: true,
+      view_helpers: route_sidebar_view_helpers
+    ).index_by { |h| h[:route_id] }
+
+    assert_equal false, hashes[out_route.id][:with_stops]
+    assert_equal true, hashes[vehicle_route.id][:with_stops]
   end
 
   test 'as_hash with stops omits proofs and delivery note (owned by operation stops)' do
