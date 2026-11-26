@@ -53,6 +53,8 @@
         %video.stop-camera-modal-video{ playsinline: true, muted: true, autoplay: true, 'aria-label': t('stops.mobile.take_photo') }
         .stop-camera-modal-flash{ 'aria-hidden': 'true' }
         .stop-camera-modal-actions
+          %button.stop-camera-modal-torch.btn.btn-default.d-none{ type: 'button', 'aria-label': t('stops.mobile.camera_torch'), 'aria-pressed': 'false' }
+            %i.fa.fa-bolt
           %button.stop-camera-modal-shutter.btn.btn-default{ type: 'button', 'aria-label': t('stops.mobile.camera_shutter') }
             %i.fa.fa-camera
 

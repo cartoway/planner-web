@@ -2946,6 +2946,7 @@ fr:
       photo_delete: Supprimer
       photo_delete_confirm: Confirmer la suppression de la photo ?
       camera_shutter: Prendre une photo
+      camera_torch: Flash
       camera_count: "%{current} / %{max}"
       camera_error: Caméra indisponible
       signature: Signature
