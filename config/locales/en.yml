@@ -2812,6 +2812,12 @@ en:
       back: Tour
       form: Form
       navigate: Navigate
+      nav_app: Navigation app
+      nav_apps:
+        apple: Apple Maps
+        benav: BeNav
+        google: Google Maps
+        waze: Waze
       next: Next
       previous: Previous
       status: Status

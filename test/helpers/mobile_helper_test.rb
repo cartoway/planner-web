@@ -38,6 +38,18 @@ class MobileHelperTest < ActionView::TestCase
     mock_user_agent(user_agent)
     assert_equal :ios, detect_agent
 
+    # iPad
+    user_agent =
+      "Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+    mock_user_agent(user_agent)
+    assert_equal :ios, detect_agent
+
+    # iPadOS desktop-class Safari
+    user_agent =
+      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
+    mock_user_agent(user_agent)
+    assert_equal :ios, detect_agent
+
     # Windows 10 - Edge
     user_agent =
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.246"
@@ -68,11 +80,20 @@ class MobileHelperTest < ActionView::TestCase
     )
   end
 
-  test 'ios nav link tries benav then falls back to apple maps' do
+  test 'ios nav link exposes all app deep links with apple maps fallback' do
     attrs = mobile_nav_link_attrs(48.85, 2.35, :ios)
     assert_equal 'http://maps.apple.com/?daddr=48.85,2.35', attrs[:href]
     assert_includes attrs[:class], 'mobile-nav-link'
-    assert_includes attrs[:data][:nav_primary], 'benav://?cmd='
+    assert_equal 'http://maps.apple.com/?daddr=48.85,2.35', attrs[:data][:nav_apple]
+    assert_includes attrs[:data][:nav_benav], 'benav://?cmd='
+    assert_equal 'comgooglemaps://?daddr=48.85,2.35&directionsmode=driving', attrs[:data][:nav_google]
+    assert_equal 'waze://?ll=48.85,2.35&navigate=yes', attrs[:data][:nav_waze]
+  end
+
+  test 'nav urls coerce string depot coords to floats' do
+    assert_equal 'http://maps.apple.com/?daddr=48.85,2.35', mobile_nav_apple_url('48.85', '2.35')
+    assert_equal 'geo:48.85,2.35?q=48.85,2.35', mobile_nav_android_url('48.85', '2.35')
+    assert_equal 'waze://?ll=48.85,2.35&navigate=yes', mobile_nav_waze_url('48.85', '2.35')
   end
 
   test 'android nav link uses geo scheme' do

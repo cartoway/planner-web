@@ -37,6 +37,16 @@
     width: 100%
   }
 
+  // Tour header row: pick which deep-link "Navigate" opens.
+  .mobile-nav-app-picker {
+    .mobile-nav-app-select {
+      flex: 1;
+      min-width: 0;
+      width: auto;
+      max-width: 100%;
+    }
+  }
+
   .label {
     display: inline-block;
     min-width: 32px;

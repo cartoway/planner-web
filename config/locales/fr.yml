@@ -2925,6 +2925,12 @@ fr:
       back: Tournée
       form: Formulaire
       navigate: Naviguer
+      nav_app: Application de navigation
+      nav_apps:
+        apple: Apple Plans
+        benav: BeNav
+        google: Google Maps
+        waze: Waze
       next: Suivant
       previous: Précédent
       status: Status
