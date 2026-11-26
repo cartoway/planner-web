@@ -1309,11 +1309,14 @@ class PlanningsControllerTest < ActionController::TestCase
 
   test 'update_stop js returns partial summary for touched route only' do
     route_id = routes(:route_one_one).id
+    stop = stops(:stop_one_one)
+    assert stop.active?
+
     patch :update_stop, params: {
       planning_id: @planning,
       format: :js,
       route_id: route_id,
-      stop_id: stops(:stop_one_one).id,
+      stop_id: stop.id,
       stop: { active: false }
     }, xhr: true
 
@@ -1321,6 +1324,13 @@ class PlanningsControllerTest < ActionController::TestCase
     locals = JSON.parse(response.body[/var locals = (\{.*\});/m, 1])
     assert_equal true, locals.dig('summary', 'partial')
     assert_equal [route_id], locals.dig('summary', 'routes').map { |r| r['route_id'] }
+    updated = locals['updated_routes']
+    assert_equal 1, updated.size
+    assert_equal route_id, updated[0]['route_id']
+    sidebar_stop = updated[0]['stops'].find { |s| s['stop_id'] == stop.id }
+    assert sidebar_stop, 'expected deactivated stop in updated_routes'
+    assert_equal false, sidebar_stop['active']
+    refute stop.reload.active?
   end
 
   test 'show json includes last failed optimizer without blocking the planning' do
@@ -2233,9 +2243,15 @@ class PlanningsControllerTest < ActionController::TestCase
   end
 
   test 'should reverse route stops' do
-    patch :reverse_order, params: { planning_id: @planning, format: :js, route_id: routes(:route_one_one).id }, xhr: true
+    route = routes(:route_one_one)
+    expected_stop_ids = route.stops.order(:index).pluck(:id).reverse
+
+    patch :reverse_order, params: { planning_id: @planning, format: :js, route_id: route.id }, xhr: true
     assert_response :success, response.body
-    assert_equal 1, JSON.parse(@response.body.match(/var locals = (.*);/)[1])['updated_routes'].size
+    locals = JSON.parse(@response.body.match(/var locals = (.*);/)[1])
+    assert_equal 1, locals['updated_routes'].size
+    actual_stop_ids = locals['updated_routes'][0]['stops'].map { |s| s['stop_id'] }
+    assert_equal expected_stop_ids, actual_stop_ids
   end
 
   test 'should update active while automatic insert is in progress' do
