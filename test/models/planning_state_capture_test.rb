@@ -37,9 +37,12 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
   end
 
   test 'capture_state includes unassigned stops in stop counters' do
-    expected_stops_size = @planning.routes.sum { |route| route.stops_size.to_i }
-    expected_stops_size_active = @planning.routes.select(&:vehicle_usage).sum { |route| route.size_active.to_i }
-    out_of_route = @planning.routes.find { |route| route.vehicle_usage_id.nil? }
+    snapshot = Planning.where(id: @planning.id)
+                       .preload(routes: Planning::ROUTE_DATA_PRELOAD + [:vehicle_usage])
+                       .first!
+    expected_stops_size = snapshot.routes.sum { |route| route.stops_size.to_i }
+    expected_stops_size_active = snapshot.routes.select(&:vehicle_usage).sum { |route| route.size_active.to_i }
+    out_of_route = snapshot.routes.find { |route| route.vehicle_usage_id.nil? }
     assert_operator out_of_route.stops_size.to_i, :>, 0
 
     @planning.capture_state!(trigger: 'move')
@@ -56,6 +59,45 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
 
     assert planning.association(:routes).loaded?
     assert planning.routes.all? { |route| !route.association(:stops).loaded? }
+  end
+
+  test 'capture_state does not load visits or destinations graph' do
+    planning = Planning.where(id: plannings(:planning_one).id).preload_routes_without_stops.first!
+    graph_queries = count_queries(/FROM "(visits|destinations)"/) do
+      planning.capture_state!(trigger: 'move')
+    end
+
+    assert_equal 0, graph_queries, 'state capture must not preload visits/destinations'
+    assert planning.planning_states.last.payload['routes'].present?
+  end
+
+  test 'capture_state statistics match route_data helpers without loading stops' do
+    snapshot = Planning.where(id: @planning.id)
+                       .preload(routes: Planning::ROUTE_DATA_PRELOAD + [{ vehicle_usage: :vehicle_usage_set }])
+                       .first!
+    expected = {
+      'stops_size' => snapshot.routes.sum { |route| route.stops_size.to_i },
+      'stops_size_active' => snapshot.routes.select(&:vehicle_usage).sum { |route| route.size_active.to_i },
+      'distance_total' => snapshot.routes.sum { |route| route.distance.to_f }
+    }
+
+    @planning.capture_state!(trigger: 'move')
+    statistics = @planning.planning_states.last.statistics
+
+    assert_equal expected['stops_size'], statistics['stops_size']
+    assert_equal expected['stops_size_active'], statistics['stops_size_active']
+    assert_in_delta expected['distance_total'], statistics['distance_total'], 0.001
+    assert snapshot.routes.none? { |route| route.association(:stops).loaded? }
+  end
+
+  test 'capture_state statistics do not N+1 on vehicle_usage_set' do
+    planning = Planning.find(@planning.id)
+    set_queries = count_queries(/FROM "vehicle_usage_sets"/) do
+      planning.capture_state!(trigger: 'move')
+    end
+
+    assert_operator set_queries, :<=, 1, 'vehicle_usage_set must be preloaded for duration stats'
+    assert planning.planning_states.last.statistics.key?('duration_total')
   end
 
   test 'capture_state does not run compute_saved' do
@@ -269,4 +311,54 @@ class PlanningStateCaptureTest < ActiveSupport::TestCase
     state = @planning.planning_states.where(trigger: 'optimize_route').order(:id).last
     assert_equal 'optimize_route', state.trigger
   end
+
+  test 'capture_state_later builds snapshot now and inserts via job when delayed_job_use' do
+    original = Planner::Application.config.delayed_job_use
+    Planner::Application.config.delayed_job_use = true
+    frozen_payload = {
+      'vehicle_usage_set_id' => @planning.vehicle_usage_set_id,
+      'routes' => [{ 'route_id' => -1 }]
+    }
+
+    Planning.stub_any_instance(:build_state_payload, lambda { |*_args| frozen_payload }) do
+      assert_no_difference('PlanningState.count') do
+        assert_difference('Delayed::Job.count', 1) do
+          @planning.capture_state_later!(trigger: 'move')
+        end
+      end
+    end
+
+    job = Delayed::Job.order(:id).last.payload_object
+    assert_instance_of PlanningStateCaptureJob, job
+    assert_equal @planning.id, job.planning_id
+    assert_equal 'move', job.trigger
+    assert_kind_of String, job.payload
+    assert_equal frozen_payload, PlanningStateCaptureJob.decompress_payload(job.payload)
+    assert_operator Delayed::Job.order(:id).last.handler.bytesize, :<, 2_000
+
+    # Planning changed after enqueue must not alter the frozen snapshot.
+    @planning.update_column(:name, "#{@planning.name}-changed")
+
+    assert_difference('PlanningState.count', 1) do
+      job.perform
+    end
+    state = @planning.planning_states.order(:id).last
+    assert_equal frozen_payload, state.payload
+  ensure
+    Planner::Application.config.delayed_job_use = original
+  end
+
+  test 'capture_state_later stays synchronous when delayed_job_use is off' do
+    original = Planner::Application.config.delayed_job_use
+    Planner::Application.config.delayed_job_use = false
+
+    assert_no_difference('Delayed::Job.count') do
+      assert_difference('PlanningState.count', 1) do
+        @planning.capture_state_later!(trigger: 'move')
+      end
+    end
+  ensure
+    Planner::Application.config.delayed_job_use = original
+  end
+
 end
