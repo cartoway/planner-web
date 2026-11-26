@@ -362,24 +362,21 @@ class PlanningsController < ApplicationController
 
     planning_summary = planning_summary(@planning)
     open_ops_by_route = @planning.customer.device.operations_enabled? ? @planning.open_operations_by_route_id : nil
-    payloads = ordered_routes.map do |route|
-      stops_for_sidebar = stops_by_route_id[route.id] || []
-      route_data = RouteSidebarSerializer.new(
-        route: route,
-        planning: @planning,
-        with_stops: true,
-        view_helpers: view_context,
-        stops_count: stops_for_sidebar.size,
-        stops: stops_for_sidebar
-      ).as_hash
-      route_data[:route_id] = route.id
-      attach_open_operations!(route_data, @planning, open_ops_by_route: open_ops_by_route)
+    route_hashes = RouteSidebarSerializer.as_hashes(
+      ordered_routes,
+      planning: @planning,
+      with_stops: true,
+      view_helpers: view_context,
+      open_ops_by_route: open_ops_by_route,
+      stops_by_route_id: stops_by_route_id
+    )
+    payloads = route_hashes.map do |route_data|
       html = render_to_string(
         partial: 'routes/in_route.html.haml',
         formats: [:html],
         locals: { route: route_data, summary: planning_summary }
       )
-      { route_id: route.id, html: html, route: route_data }
+      { route_id: route_data[:route_id], html: html, route: route_data }
     end
 
     respond_to do |format|
@@ -1129,19 +1126,13 @@ class PlanningsController < ApplicationController
     }
   end
 
-  # Sidebar hashes for update.js.erb — Sort by index so reverse_order stays correct without a reload.
   def route_sidebar_hashes_for(routes)
-    open_ops_by_route = @planning.customer.device.operations_enabled? ? @planning.open_operations_by_route_id : nil
-    Array(routes).map do |route|
-      route_data = RouteSidebarSerializer.new(
-        route: route,
-        planning: @planning,
-        with_stops: @with_stops,
-        view_helpers: view_context,
-        stops: route.stops_ordered_by_index
-      ).as_hash
-      attach_open_operations!(route_data, @planning, open_ops_by_route: open_ops_by_route)
-    end
+    RouteSidebarSerializer.as_hashes(
+      routes,
+      planning: @planning,
+      with_stops: @with_stops,
+      view_helpers: view_context
+    )
   end
 
   def stop_route_id_for_planning!(stop_id)
