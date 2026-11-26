@@ -434,7 +434,7 @@ export class MoveStopsModal {
         });
 
         if (this.routesLayer && this.routesLayer.refreshRoutes) {
-          this.routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
+          this.routesLayer.refreshRoutes(data.route_ids, data.summary);
         }
 
         this.updatePlanningDataHeader();

@@ -3018,7 +3018,7 @@ export const plannings_edit = function(params) {
         data.route_ids.forEach(function(route_id) {
           refreshSidebarRoute(planning_id, route_id);
         });
-        routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
+        routesLayer.refreshRoutes(data.route_ids, data.summary);
         updateDataHeader(planning_id);
       },
       complete: completeAjaxMap,
@@ -3597,7 +3597,8 @@ export const plannings_edit = function(params) {
         },
         success: function() {
           updateSuccess(locals.summary, map, locals.updated_routes, { skipCallbacks: true, updateHeader: true });
-          routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
+          // Summary already merged in updateSuccess — refresh map only.
+          routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id));
         },
         complete: completeAjaxMap,
         error: ajaxError
@@ -4266,6 +4267,20 @@ export const plannings_edit = function(params) {
     }
   };
 
+  // Merge partial summary into routesLayer once, then snapshot the full list.
+  var applySummaryToSnapshot = function(summary) {
+    if (!summary || !summary.routes) return summary;
+    if (!summary.partial) {
+      setPlanningPopoverSnapshot(summary);
+      return summary;
+    }
+    var mergedRoutes = routesLayer && routesLayer.mergeRouteSummaries(summary.routes);
+    if (!mergedRoutes) return planningPopoverSnapshot || summary;
+    var merged = Object.assign({}, summary, { partial: false, routes: mergedRoutes });
+    setPlanningPopoverSnapshot(merged);
+    return merged;
+  };
+
   var updateSuccess = function(data, map, updatedRoutes, options) {
     options = options || {};
     if (updatedRoutes && updatedRoutes.length) {
@@ -4276,7 +4291,7 @@ export const plannings_edit = function(params) {
     }
     if (data && data.routes) {
       // Keep full planning routes for stop popovers / move (updatedRoutes may be a subset after optim)
-      setPlanningPopoverSnapshot(data);
+      data = applySummaryToSnapshot(data);
     }
     var isBackgroundUpdate = !!(options && (options.skipCallbacks || options.background));
     var shouldBindRouteDelegates = !isBackgroundUpdate && !(options && options.skipCallbacks);
@@ -4502,7 +4517,7 @@ export const plannings_edit = function(params) {
       beforeSend: beforeSendWaiting,
       success: function() {
         updateSuccess(locals.summary, map, locals.updated_routes, { skipCallbacks: true, updateHeader: true });
-        routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
+        routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id));
       },
       complete: completeAjaxMap,
       error: ajaxError
@@ -4530,7 +4545,7 @@ export const plannings_edit = function(params) {
       beforeSend: beforeSendWaiting,
       success: function() {
         updateSuccess(locals.summary, map, locals.updated_routes, { skipCallbacks: true, updateHeader: true });
-        routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
+        routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id));
       },
       complete: completeAjaxMap,
       error: ajaxError
@@ -4558,7 +4573,7 @@ export const plannings_edit = function(params) {
         data.route_ids.forEach(function(route_id) {
           refreshSidebarRoute(planning_id, route_id);
         });
-        routesLayer.refreshRoutes(data.route_ids, data.summary.routes);
+        routesLayer.refreshRoutes(data.route_ids, data.summary);
         updateDataHeader(planning_id);
         map.closePopup();
       },
@@ -4819,7 +4834,7 @@ export const plannings_edit = function(params) {
         }
         else if (locals.updated_routes) {
           updateSuccess(locals.summary, map, locals.updated_routes, { skipCallbacks: true, updateHeader: true });
-          routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id), locals.summary.routes);
+          routesLayer.refreshRoutes(locals.updated_routes.map(route => route.route_id));
         }
       },
       complete: completeAjaxMap,

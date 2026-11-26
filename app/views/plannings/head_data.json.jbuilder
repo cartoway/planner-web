@@ -3,7 +3,7 @@ json.prefered_currency current_user.prefered_currency
 json.extract! @planning, :id, :ref
 json.planning_id @planning.id
 
-# Prefer in-memory filter: set_planning_without_stops already preloaded routes + vehicle_usages.
+# Prefer in-memory filter: data_header uses set_planning_without_stops (full plan).
 visible_for_stats =
   if @planning.association(:routes).loaded?
     @planning.routes.select(&:available?)

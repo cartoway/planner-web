@@ -15,13 +15,15 @@ module PlanningOperationHelper
     }
   end
 
-  def planning_summary(planning)
+  # routes: optional subset (partial summary) — avoids Planning refetch + target= hack.
+  def planning_summary(planning, routes: nil)
+    route_list = routes || planning.routes
     {
       planning_id: planning.id,
       planning_ref: planning.ref,
       external_callback_name: planning.customer.enable_external_callback && planning.customer.external_callback_name,
       external_callback_url: planning.customer.enable_external_callback && planning.customer.external_callback_url,
-      routes: planning.routes.map{ |route|
+      routes: route_list.map{ |route|
         vehicle = route.vehicle_usage&.vehicle
         {
           route_id: route.id,
@@ -47,6 +49,23 @@ module PlanningOperationHelper
         }.delete_if{ |_k, v| v.nil? }
       }
     }
+  end
+
+  # Touched-route summary for move / update_stop / active — front merges into its list.
+  def planning_partial_summary(planning, route_ids)
+    loaded = Route.where(planning_id: planning.id, id: route_ids)
+                  .preload(:route_data, :start_route_data, :stop_route_data, vehicle_usage: :vehicle)
+                  .ordered_for_planning
+                  .to_a
+    planning_summary(planning, routes: loaded).merge(partial: true)
+  end
+
+  # Active vehicle store center, else customer default (shared by web + api_web edit).
+  def planning_map_center(planning)
+    usages = planning.vehicle_usage_set&.vehicle_usages || []
+    store = usages.select(&:active?).lazy.map(&:default_store_start).find { |s| s&.lat && s.lng }
+    default = planning.customer.default_position
+    { lat: store&.lat || default[:lat], lng: store&.lng || default[:lng] }
   end
 
   # open_ops_by_route: optional { route_id => [Operation, ...] } from Planning#open_operations_by_route_id

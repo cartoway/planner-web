@@ -645,16 +645,46 @@ export const RoutesLayer = L.FeatureGroup.extend({
     }.bind(this));
   },
 
-  refreshRoutes: function(routeIds, routes, geojson) {
-    if (routes) {
-      this.options.routes = routes;
-      this.options.outOfRouteId = this._findOutOfRouteId(routes);
+  // Merge partial route rows into the in-memory list. Returns merged list or null if no base.
+  mergeRouteSummaries: function(partialRoutes) {
+    if (!partialRoutes || !partialRoutes.length) return null;
+    var base = this.options.routes;
+    if (!base || !base.length) return null; // do not replace a full list with a partial
+    var updates = {};
+    partialRoutes.forEach(function(route) {
+      updates[route.route_id] = route;
+    });
+    this.options.routes = base.map(function(route) {
+      return Object.prototype.hasOwnProperty.call(updates, route.route_id) ? updates[route.route_id] : route;
+    });
+    return this.options.routes;
+  },
+
+  // routesOrSummary: route array, or { routes, partial } summary object.
+  // When summary.partial, merges into options.routes; otherwise replaces.
+  refreshRoutes: function(routeIds, routesOrSummary, geojson) {
+    var routes = routesOrSummary;
+    var merge = false;
+    if (routesOrSummary && !Array.isArray(routesOrSummary) && routesOrSummary.routes) {
+      routes = routesOrSummary.routes;
+      merge = !!routesOrSummary.partial;
     }
+    if (routes) {
+      if (merge) {
+        this.mergeRouteSummaries(routes);
+      } else {
+        this.options.routes = routes;
+      }
+      if (this.options.routes && this.options.routes.length) {
+        this.options.outOfRouteId = this._findOutOfRouteId(this.options.routes);
+      }
+    }
+    var list = this.options.routes;
     var ids = routeIds || [];
     var visibleIds = [];
     var hiddenIds = [];
     ids.forEach(function(routeId) {
-      if (this._routeHiddenOnMap(routeId, routes)) {
+      if (this._routeHiddenOnMap(routeId, list)) {
         hiddenIds.push(routeId);
       } else {
         visibleIds.push(routeId);
