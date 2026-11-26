@@ -20,6 +20,7 @@
 
 module PlanningStateCapture
   extend ActiveSupport::Concern
+  using AfterCommitHelper
 
   included do
     has_many :planning_states, dependent: :destroy
@@ -31,17 +32,31 @@ module PlanningStateCapture
     return if skip_state_capture
     return unless persisted?
 
-    snapshot_source = planning_for_state_snapshot
-    return if trigger.to_s != 'import' && snapshot_source.routes.empty?
+    attrs = build_capture_attributes(trigger)
+    return unless attrs
 
-    planning_states.create!(
-      captured_at: Time.current,
-      trigger: trigger.to_s,
-      category: PlanningState.category_for(trigger),
-      payload: build_state_payload(snapshot_source),
-      statistics: build_state_statistics(snapshot_source)
+    persist_captured_state!(attrs)
+  end
+
+  # Build snapshot now (correct undo point), persist insert after commit via delayed job.
+  def capture_state_later!(trigger:)
+    return if skip_state_capture
+    return unless persisted?
+
+    attrs = build_capture_attributes(trigger)
+    return unless attrs
+
+    return persist_captured_state!(attrs) unless Planner::Application.config.delayed_job_use
+
+    job = PlanningStateCaptureJob.new(
+      attrs[:planning_id],
+      attrs[:captured_at],
+      attrs[:trigger],
+      attrs[:category],
+      PlanningStateCaptureJob.compress_payload(attrs[:payload]),
+      attrs[:statistics]
     )
-    PlanningState.prune_excess!(id)
+    after_commit { Delayed::Job.enqueue(job) }
   end
 
   def route_data_statistics
@@ -78,10 +93,38 @@ module PlanningStateCapture
 
   private
 
+  def build_capture_attributes(trigger)
+    snapshot_source = planning_for_state_snapshot
+    return if trigger.to_s != 'import' && snapshot_source.routes.empty?
+
+    {
+      planning_id: id,
+      captured_at: Time.current,
+      trigger: trigger.to_s,
+      category: PlanningState.category_for(trigger),
+      payload: build_state_payload(snapshot_source),
+      statistics: build_state_statistics(snapshot_source)
+    }
+  end
+
+  def persist_captured_state!(attrs)
+    # Use the association so in-memory planning_states stays consistent for callers/tests.
+    planning_states.create!(attrs.except(:planning_id))
+    PlanningState.prune_excess!(id)
+  end
+
   def build_state_payload(planning = self)
+    stops_by_route_id = serialized_stops_by_route_id(planning.routes.map(&:id))
     {
       'vehicle_usage_set_id' => planning.vehicle_usage_set_id,
-      'routes' => planning.routes.map { |route| serialize_route_for_state(route) }
+      'routes' => planning.routes.map { |route|
+        {
+          'route_id' => route.id,
+          'ref' => route.ref,
+          'vehicle_usage_id' => route.vehicle_usage_id,
+          'stops' => stops_by_route_id[route.id] || []
+        }
+      }
     }
   end
 
@@ -110,10 +153,11 @@ module PlanningStateCapture
     {
       'routes_cost' => averages_data[:routes_cost],
       'routes_revenue' => averages_data[:routes_revenue],
-      'routes_drive_time' => averages_data[:routes_drive_time],
-      'routes_wait_time' => averages_data[:routes_wait_time],
-      'routes_visits_duration' => averages_data[:routes_visits_duration],
-      'routes_rests_duration' => averages_data[:routes_rests_duration],
+      # Duration keys stay present when averages is nil (no active tour / stale dest counters).
+      'routes_drive_time' => averages_data.fetch(:routes_drive_time, 0),
+      'routes_wait_time' => averages_data.fetch(:routes_wait_time, 0),
+      'routes_visits_duration' => averages_data.fetch(:routes_visits_duration, 0),
+      'routes_rests_duration' => averages_data.fetch(:routes_rests_duration, 0),
       # Always keep vehicle counts (averages may be nil when no active tour)
       'vehicles_used' => averages_data.fetch(:vehicles_used, vehicles_used),
       'vehicles' => averages_data.fetch(:vehicles, vehicles),
@@ -126,37 +170,42 @@ module PlanningStateCapture
     }.compact
   end
 
-  def serialize_route_for_state(route)
-    {
-      'route_id' => route.id,
-      'ref' => route.ref,
-      'vehicle_usage_id' => route.vehicle_usage_id,
-      'stops' => route.stops.sort_by(&:index).filter_map { |stop| serialize_stop_for_state(stop) }
-    }
-  end
+  # select_rows + one-pass serialize: avoids AR pluck casting and an intermediate row array.
+  def serialized_stops_by_route_id(route_ids)
+    return {} if route_ids.empty?
 
-  def serialize_stop_for_state(stop)
-    case stop
-    when StopVisit
-      {
-        'type' => 'visit',
-        'visit_id' => stop.visit_id,
-        'active' => stop.active,
-        'index' => stop.index
-      }
-    when StopStore
-      {
-        'type' => 'store_reload',
-        'store_reload_id' => stop.store_reload_id,
-        'active' => stop.active,
-        'index' => stop.index
-      }
-    when StopRest
-      {
-        'type' => 'rest',
-        'active' => stop.active,
-        'index' => stop.index
-      }
+    sql = Stop.where(route_id: route_ids)
+              .order(:route_id, :index)
+              .select(:route_id, :type, :visit_id, :store_reload_id, :active, :index)
+              .to_sql
+    ActiveRecord::Base.connection.select_rows(sql).each_with_object({}) do |row, hash|
+      route_id, type, visit_id, store_reload_id, active, index = row
+      active_flag = [true, 't'].include?(active)
+      stop = case type
+             when 'StopVisit'
+               {
+                 'type' => 'visit',
+                 'visit_id' => visit_id.to_i,
+                 'active' => active_flag,
+                 'index' => index.to_i
+               }
+             when 'StopStore'
+               {
+                 'type' => 'store_reload',
+                 'store_reload_id' => store_reload_id.to_i,
+                 'active' => active_flag,
+                 'index' => index.to_i
+               }
+             when 'StopRest'
+               {
+                 'type' => 'rest',
+                 'active' => active_flag,
+                 'index' => index.to_i
+               }
+             end
+      next unless stop
+
+      (hash[route_id.to_i] ||= []) << stop
     end
   end
 
@@ -289,7 +338,11 @@ module PlanningStateCapture
   end
 
   def planning_for_state_snapshot
-    Planning.where(id: id).preload_route_details.first!
+    # route_data + vehicle_usage(+set for service times in total/work_duration);
+    # stops come from pluck in build_state_payload.
+    Planning.where(id: id).preload(
+      routes: Planning::ROUTE_DATA_PRELOAD + [{ vehicle_usage: :vehicle_usage_set }]
+    ).first!
   end
 
   def capture_state_for_mutation!(trigger)

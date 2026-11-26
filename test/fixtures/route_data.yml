@@ -21,6 +21,8 @@ route_data_three_one:
   start: 07:00
   pickups: {}
   deliveries: {}
+  size_active: 2
+  stops_size: 2
 
 route_data_zero_two:
   distance:
