@@ -622,15 +622,14 @@ class PlanningsController < ApplicationController
           end
           @stop.assign_attributes(stop_params) if @stop
           if @stop && @route.compute_saved!
-            @route = Route.where(id: route_id, planning_id: @planning.id)
-                          .includes_vehicle_usages
-                          .includes_destinations_and_stores
-                          .first!
+            # Reuse in-memory route after compute_saved! (avoids a second heavy includes find).
             @routes = [@route]
-            planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
             capture_planning_state_after_success!
             summary = planning_partial_summary(@planning, [route_id])
-            format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: summary } }
+            format.js do
+              render partial: 'routes/update.js.erb',
+                     locals: { updated_routes: route_sidebar_hashes_for(@routes), summary: summary }
+            end
             format.json { render action: 'show', location: @planning }
           else
             format.json { render json: @planning.errors, status: :unprocessable_entity }
@@ -732,10 +731,12 @@ class PlanningsController < ApplicationController
     respond_to do |format|
       if route && route.active(params[:active].to_s.to_sym) && route.compute_saved!
         @routes = [route]
-        planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
         capture_planning_state_after_success!
         summary = planning_partial_summary(@planning, [route_id])
-        format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: summary } }
+        format.js do
+          render partial: 'routes/update.js.erb',
+                 locals: { updated_routes: route_sidebar_hashes_for(@routes), summary: summary }
+        end
       else
         flash[:error] = @planning.errors.full_messages
         format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
@@ -757,12 +758,14 @@ class PlanningsController < ApplicationController
     @planning.replace_routes_with_loaded([route_id])
     route = @planning.routes.find { |r| r.id == route_id }
     respond_to do |format|
-      if route && route.reverse_order && route.compute_saved! && route.reload
+      if route && route.reverse_order && route.compute_saved!
         @routes = [route]
-        planning_data = JSON.parse(render_to_string(template: 'plannings/show.json.jbuilder'), symbolize_names: true)
         capture_planning_state_after_success!
         summary = planning_partial_summary(@planning, [route_id])
-        format.js { render partial: 'routes/update.js.erb', locals: { updated_routes: planning_data[:routes], summary: summary } }
+        format.js do
+          render partial: 'routes/update.js.erb',
+                 locals: { updated_routes: route_sidebar_hashes_for(@routes), summary: summary }
+        end
       else
         flash[:error] = @planning.errors.full_messages
         format.js { render partial: 'shared/error_messages.js.erb', status: :unprocessable_entity }
@@ -1124,6 +1127,21 @@ class PlanningsController < ApplicationController
       route_ids: route_ids,
       summary: planning_partial_summary(@planning, route_ids)
     }
+  end
+
+  # Sidebar hashes for update.js.erb — Sort by index so reverse_order stays correct without a reload.
+  def route_sidebar_hashes_for(routes)
+    open_ops_by_route = @planning.customer.device.operations_enabled? ? @planning.open_operations_by_route_id : nil
+    Array(routes).map do |route|
+      route_data = RouteSidebarSerializer.new(
+        route: route,
+        planning: @planning,
+        with_stops: @with_stops,
+        view_helpers: view_context,
+        stops: route.stops_ordered_by_index
+      ).as_hash
+      attach_open_operations!(route_data, @planning, open_ops_by_route: open_ops_by_route)
+    end
   end
 
   def stop_route_id_for_planning!(stop_id)
